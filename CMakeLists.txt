@@ -17,6 +17,9 @@ project(
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(PREDEFINED_TARGETS_FOLDER "PredefinedTargets")
 
+# Add spdlog as a third party library.
+set(SPDLOG_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/spdlog/include)
+
 # Set global compile definitions.
 add_compile_definitions(
 	$<$<CONFIG:Debug>:XENON_DEBUG>

@@ -14,9 +14,11 @@ add_library(
 	STATIC
 
 	"Xenon.hpp"
-
-	"Source/Xenon.cpp"
+	"Xenon.cpp"
 )
+
+# Add the target links.
+target_link_libraries(XenonRuntime XenonCommon)
 
 # Make sure to specify the C++ standard to C++20.
 set_property(TARGET XenonRuntime PROPERTY CXX_STANDARD 20)
