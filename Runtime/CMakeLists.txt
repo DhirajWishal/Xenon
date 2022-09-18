@@ -15,7 +15,7 @@ add_library(
 
 	"Xenon.hpp"
 	"Xenon.cpp"
-)
+ "GameFramework/Entity.cpp")
 
 # Add the target links.
 target_link_libraries(XenonRuntime XenonCommon)
