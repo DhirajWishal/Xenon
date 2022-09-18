@@ -5,6 +5,9 @@
 
 #include <typeindex>
 
+#define XENON_DISABLE_COPY(object)		object(const object&) = delete; object& operator=(const object&) = delete
+#define XENON_DISABLE_MOVE(object)		object(object&&) = delete; object& operator=(object&&) = delete 
+
 namespace Xenon
 {
 	/**

@@ -9,7 +9,6 @@
 #include <functional>
 #include <unordered_map>
 #include <vector>
-#include <thread>
 #include <mutex>
 
 namespace Xenon
@@ -51,6 +50,16 @@ namespace Xenon
 
 	private:
 		std::function<void(Request&)> m_Callback;
+	};
+
+	/**
+	 * Request handling mode enum.
+	 * This explains how the enums should be handled by the system.
+	 */
+	enum class RequestHandlingMode : uint8_t
+	{
+		Synchronous,
+		Asynchronous
 	};
 
 	/**
@@ -96,6 +105,8 @@ namespace Xenon
 		virtual void onTermination() = 0;
 
 	public:
+		XENON_DISABLE_COPY(System);
+
 		/**
 		 * Issue a request to the system.
 		 *

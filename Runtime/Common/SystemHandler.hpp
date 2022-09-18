@@ -5,6 +5,8 @@
 
 #include "System.hpp"
 
+#include <thread>
+
 namespace Xenon
 {
 	/**
@@ -57,6 +59,9 @@ namespace Xenon
 		}
 
 	public:
+		XENON_DISABLE_COPY(SystemHandler);
+		XENON_DISABLE_MOVE(SystemHandler);
+
 		/**
 		 * Get the system instance.
 		 *

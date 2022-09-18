@@ -10,7 +10,7 @@ public:
 	{
 		registerRequestHandler<int>([](int& value) { XENON_LOG_INFORMATION(value); });
 		registerRequestHandler<float>([](float& value) { XENON_LOG_INFORMATION(value); });
-		// registerRequestHandler<double>([](double& value) { XENON_LOG_INFORMATION(value); });
+		registerRequestHandler<double>([](double& value) { XENON_LOG_INFORMATION(value); });
 	}
 
 	void onStart() override { XENON_LOG_INFORMATION("On Start Method"); }
