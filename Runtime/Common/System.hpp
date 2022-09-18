@@ -57,19 +57,24 @@ namespace Xenon
 	 * System class.
 	 * Systems are special classes which provides the support to host a system on another thread, and enables other threads to request
 	 * different things from.
+	 *
+	 * It's recommended to use the constructor to register all the request handlers to avoid unnecessary problems with issuing requests.
 	 */
 	class System
 	{
-	public:
+		template<class Type>
+		friend class SystemHandler;
+
+	protected:
 		/**
 		 * Default constructor.
 		 */
-		System();
+		System() = default;
 
 		/**
 		 * Virtual destructor.
 		 */
-		virtual ~System();
+		virtual ~System() = default;
 
 		/**
 		 * On start pure virtual method.
@@ -90,11 +95,6 @@ namespace Xenon
 		 */
 		virtual void onTermination() = 0;
 
-		/**
-		 * This method will terminate the system.
-		 */
-		void terminate();
-
 	public:
 		/**
 		 * Issue a request to the system.
@@ -105,7 +105,7 @@ namespace Xenon
 		 * @return The created request pointer.
 		 */
 		template<class Request, class... Arguments>
-		[[nodiscard]] Request* issueRequest(Arguments&&... arguments)
+		Request* issueRequest(Arguments&&... arguments)
 		{
 			const auto index = GetTypeIndex<Request>();
 			const auto lock = std::scoped_lock(m_RequestMutex);
@@ -154,10 +154,8 @@ namespace Xenon
 		void handleRequests();
 
 	private:
-		std::jthread m_Worker;
 		std::mutex m_RequestMutex;
-		std::vector<void()> m_Requests;
+		std::vector<std::function<void()>> m_Requests;
 		std::unordered_map<std::type_index, std::shared_ptr<IRequestHandler>> m_RequestHandlerMap;
-		std::atomic_bool m_bShouldRun = true;
 	};
 }

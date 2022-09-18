@@ -15,6 +15,13 @@ add_executable(
 	"Main.cpp"
 )
 
+# Set the include directories.
+target_include_directories(
+	XenonStudio 
+
+	PUBLIC ${CMAKE_SOURCE_DIR}/Runtime
+)
+
 # Add the target links.
 target_link_libraries(XenonStudio XenonRuntime)
 
