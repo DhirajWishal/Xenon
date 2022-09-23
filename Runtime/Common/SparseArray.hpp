@@ -249,7 +249,7 @@ namespace Xenon
 
 			// Find the last free index in the availability map.
 			uint64_t lastFreeIndex = finalIndex;
-			for (uint64_t index = 0; index < m_SparseArray.size(); i++)
+			for (uint64_t index = 0; index < m_SparseArray.size(); index++)
 			{
 				if (!m_AvailabilityMap[index])
 					lastFreeIndex = index;

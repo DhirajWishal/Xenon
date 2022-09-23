@@ -10,6 +10,7 @@ class Studio final : public Xenon::Application
 public:
 	Studio() : Application("Xenon Studio", 1)
 	{
+		XENON_LOG_INFORMATION("Hello from the studio application!");
 	}
 };
 
@@ -28,18 +29,20 @@ public:
 	void onTermination() override { XENON_LOG_INFORMATION("On Termination Method"); }
 };
 
-int main()
-{
-	auto& handler = Xenon::SystemHandler<TestSystem>::Instance();
-	handler.issueRequest<int>(100);
-	handler.issueRequest<float>(200);
-	handler.issueRequest<double>(300);
-	handler.terminate();
+XENON_SETUP_APPLICATION(Studio)
 
-	auto jobs = Xenon::JobSystem(std::thread::hardware_concurrency());
-	jobs.insert([] { XENON_LOG_INFORMATION("Job 1 is been run!"); });
-	jobs.insert([] { XENON_LOG_INFORMATION("Job 2 is been run!"); });
-	jobs.insert([] { XENON_LOG_INFORMATION("Job 3 is been run!"); });
-
-	return 0;
-}
+// int main()
+// {
+// 	auto& handler = Xenon::SystemHandler<TestSystem>::Instance();
+// 	handler.issueRequest<int>(100);
+// 	handler.issueRequest<float>(200);
+// 	handler.issueRequest<double>(300);
+// 	handler.terminate();
+// 
+// 	auto jobs = Xenon::JobSystem(std::thread::hardware_concurrency());
+// 	jobs.insert([] { XENON_LOG_INFORMATION("Job 1 is been run!"); });
+// 	jobs.insert([] { XENON_LOG_INFORMATION("Job 2 is been run!"); });
+// 	jobs.insert([] { XENON_LOG_INFORMATION("Job 3 is been run!"); });
+// 
+// 	return 0;
+// }
