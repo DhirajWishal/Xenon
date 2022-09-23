@@ -17,6 +17,10 @@ add_library(
 	"System.cpp"
 	"Logging.hpp"
 	"Common.hpp"
+	"JobSystem.hpp"
+	"JobSystem.cpp"
+	"EntityStorage.hpp"
+	"SparseArray.hpp"
 )
 
 # Set the include directories.

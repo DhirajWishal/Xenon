@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "Common/SystemHandler.hpp"
+#include "Common/JobSystem.hpp"
 
 class TestSystem final : public Xenon::System
 {
@@ -25,6 +26,11 @@ int main()
 	handler.issueRequest<float>(200);
 	handler.issueRequest<double>(300);
 	handler.terminate();
+
+	auto jobs = Xenon::JobSystem(std::thread::hardware_concurrency());
+	jobs.insert([] { XENON_LOG_INFORMATION("Job 1 is been run!"); });
+	jobs.insert([] { XENON_LOG_INFORMATION("Job 2 is been run!"); });
+	jobs.insert([] { XENON_LOG_INFORMATION("Job 3 is been run!"); });
 
 	return 0;
 }
