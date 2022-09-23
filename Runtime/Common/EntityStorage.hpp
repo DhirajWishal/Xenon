@@ -37,7 +37,7 @@ namespace Xenon
 		 * @return The index and the created entity pointer.
 		 */
 		template<class...Arguments>
-		decltype(auto) create(Arguments&&... arguments)
+		[[nodiscard]] decltype(auto) create(Arguments&&... arguments)
 		{
 			return m_Container.insert(std::forward<Arguments>(arguments)...);
 		}
@@ -56,6 +56,11 @@ namespace Xenon
 	class EntityStorage final
 	{
 	public:
+		/**
+		 * Default constructor.
+		 */
+		EntityStorage() = default;
+
 		/**
 		 * Check if an entity type is registered in the storage.
 		 *
@@ -103,14 +108,15 @@ namespace Xenon
 		/**
 		 * Create a new entity.
 		 *
+		 * @tparam Type The entity type.
 		 * @tparam Arguments The argument types.
 		 * @param arguments The arguments.
 		 * @return The index and the created entity pointer.
 		 */
-		template<class...Arguments>
-		decltype(auto) create(Arguments&&... arguments)
+		template<class Type, class...Arguments>
+		[[nodiscard]] decltype(auto) create(Arguments&&... arguments)
 		{
-			return m_Container.insert(std::forward<Arguments>(arguments)...);
+			return getContainer<Type>().create(std::forward<Arguments>(arguments)...);
 		}
 
 	private:

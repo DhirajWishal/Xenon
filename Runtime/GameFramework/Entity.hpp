@@ -4,6 +4,7 @@
 #pragma once
 
 #include "../Common/JobSystem.hpp"
+#include "../Common/EntityStorage.hpp"
 
 namespace Xenon
 {
@@ -39,13 +40,12 @@ namespace Xenon
 		 * @tparam Type The entity type.
 		 * @tparam Arguments The constructor argument types.
 		 * @param arguments The constructor arguments.
-		 * @return The created entity pointer.
+		 * @return The pair containing the entity index and the pointer.
 		 */
 		template<class Type, class... Arguments>
-		Type* spawn(Arguments&&... arguments)
+		[[nodiscard]] decltype(auto) spawn(Arguments&&... arguments)
 		{
-			// TODO: Implement the entity storage system and add support to this function.
-			return new Type(std::forward<Arguments>(arguments)...);
+			return getEntityStorage().create<Type>(std::forward<Arguments>(arguments)...);
 		}
 
 	public:
@@ -80,6 +80,39 @@ namespace Xenon
 		 */
 		[[nodiscard]] const Entity* getParent() const { return m_pParent; }
 
+	public:
+		/**
+		 * Get the entity storage of the entity.
+		 *
+		 * @return The entity storage reference.
+		 */
+		[[nodiscard]] EntityStorage& getEntityStorage() { return m_EntityStorage; }
+
+		/**
+		 * Get the entity storage of the entity.
+		 *
+		 * @return The const entity storage reference.
+		 */
+		[[nodiscard]] const EntityStorage& getEntityStorage() const { return m_EntityStorage; }
+
+		/**
+		 * Store the entity index.
+		 * The index can be retrieved by it's associated name.
+		 * Note that we rather recommend storing this index as a member variable. This is just for convenience.
+		 *
+		 * @param index The index to store.
+		 * @param name The associated name.
+		 */
+		void setEntityIndex(uint64_t index, const std::string& name) { m_EntityIndexMap[name] = index; }
+
+		/**
+		 * Get the entity index using it's associated name.
+		 *
+		 * @param name The name of the entity.
+		 * @return The entity index.
+		 */
+		[[nodiscard]] uint64_t getEntityIndex(const std::string& name) { return m_EntityIndexMap[name]; }
+
 	protected:
 		/**
 		 * Get the entity job system which executes all the necessary asynchronous tasks.
@@ -102,6 +135,8 @@ namespace Xenon
 		}
 
 	private:
+		EntityStorage m_EntityStorage;
+		std::unordered_map<std::string, uint64_t> m_EntityIndexMap;
 		Entity* m_pParent = nullptr;
 	};
 }
