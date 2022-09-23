@@ -3,6 +3,15 @@
 
 #include "Common/SystemHandler.hpp"
 #include "Common/JobSystem.hpp"
+#include "Xenon.hpp"
+
+class Studio final : public Xenon::Application
+{
+public:
+	Studio() : Application("Xenon Studio", 1)
+	{
+	}
+};
 
 class TestSystem final : public Xenon::System
 {
