@@ -4,9 +4,9 @@
 #pragma once
 
 #include "SparseArray.hpp"
+#include "Common.hpp"
 
 #include <unordered_map>
-#include <typeindex>
 
 namespace Xenon
 {
@@ -85,7 +85,7 @@ namespace Xenon
 				return;
 
 			// Else create the entity container.
-			m_pEntityContainers[GetTypeIndex<Type>()] = std::make_unique<EntityContainer<Type>>();
+			m_pEntityContainers[GetTypeIndex<Type>()] = std::make_shared<EntityContainer<Type>>();
 		}
 
 		/**
@@ -120,6 +120,6 @@ namespace Xenon
 		}
 
 	private:
-		std::unordered_map<std::type_index, std::unique_ptr<IEntityContainer>> m_pEntityContainers;
+		std::unordered_map<std::type_index, std::shared_ptr<IEntityContainer>> m_pEntityContainers;
 	};
 }

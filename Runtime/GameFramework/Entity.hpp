@@ -16,6 +16,8 @@ namespace Xenon
 	 * We encourage the use of Composition-Over-Inheritance. Do not take it as an advice to completely avoid inheritance altogether, use it where it fits.
 	 * For components, it's the best to have them stored in the class as members than pointers (look into cache locality). Since components are not exposed to the
 	 * engine directly, the entity must update them explicitly (using the updateComponent() or updateComponents() functions).
+	 *
+	 * Note that for all the entities, the first constructor argument will be the parent object pointer. Everything else comes next.
 	 */
 	class Entity
 	{
@@ -45,8 +47,17 @@ namespace Xenon
 		template<class Type, class... Arguments>
 		[[nodiscard]] decltype(auto) spawn(Arguments&&... arguments)
 		{
-			return getEntityStorage().create<Type>(std::forward<Arguments>(arguments)...);
+			return getEntityStorage().create<Type>(this, std::forward<Arguments>(arguments)...);
 		}
+
+	public:
+		/**
+		 * This method is called once every frame to update the internal state and components
+		 * Child entities are updated after this call.
+		 *
+		 * @param delta The time difference taken from the previous frame to the current frame.
+		 */
+		virtual void onUpdate(DeltaTime delta) = 0;
 
 	public:
 		/**

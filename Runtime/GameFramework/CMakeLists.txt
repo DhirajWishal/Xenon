@@ -14,6 +14,8 @@ add_library(
 	STATIC
 
 	"Entity.hpp"
+	"Entity.cpp"
+	"UniversalEntity.hpp"
 )
 
 # Add the target links.

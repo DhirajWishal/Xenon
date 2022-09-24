@@ -40,6 +40,9 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Launcher)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Runtime)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Studio)
 
+# Include the templates.
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Templates/FirstPerson)
+
 # Set the startup project for Visual Studio and set multi processor compilation for other projects that we build.
 if (MSVC) 
 	set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT XenonStudio)

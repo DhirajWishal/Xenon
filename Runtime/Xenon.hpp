@@ -10,10 +10,6 @@ namespace Xenon
 	/**
 	 * Application class.
 	 * This class is to be inherited by the game application.
-	 *
-	 * The constructor and destructor will initiate all the other sub systems of the application. These are the
-	 * only two functions which will be called, so all the other functions are required to be executed from within
-	 * these two functions, including the game loop.
 	 */
 	class Application
 	{
@@ -32,6 +28,21 @@ namespace Xenon
 		virtual ~Application() = default;
 
 		/**
+		 * This method is called by the entry point to execute the application.
+		 */
+		void execute();
+
+	protected:
+		/**
+		 * On update method.
+		 * This method is called to update the game systems.
+		 *
+		 * @param delta The time difference in microseconds from the last frame to this frame.
+		 */
+		virtual void onUpdate(std::chrono::microseconds delta) = 0;
+
+	public:
+		/**
 		 * Get the game name.
 		 *
 		 * @return The name.
@@ -48,6 +59,8 @@ namespace Xenon
 	private:
 		const std::string m_Name;
 		const uint64_t m_Version;
+
+		bool m_bShouldRun = true;
 	};
 }
 
@@ -55,4 +68,11 @@ namespace Xenon
  * Xenon setup application macro.
  * This macro contains the entry point and other information required to setup the engine's entry point.
  */
-#define XENON_SETUP_APPLICATION(object)		int main() { object instance; return 0; }
+#define XENON_SETUP_APPLICATION(object)		\
+int main()									\
+{											\
+	object instance;						\
+	instance.execute();						\
+											\
+	return 0;								\
+}											
