@@ -18,7 +18,7 @@ add_library(
 	"JobSystem.hpp"
 	"Logging.hpp"
 	"SparseArray.hpp"
-)
+ "Instance.cpp")
 
 # Set the target links.
 target_link_libraries(XenonEngine XenonAbstraction)
