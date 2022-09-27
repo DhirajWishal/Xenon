@@ -14,15 +14,15 @@ namespace Xenon
 	 */
 	enum class RenderTargetType : uint8_t
 	{
-		Rasterizer = 1 << 0,
-		RayTracer = 1 << 1,
-		PathTracer = 1 << 2,
+		Rasterizer = XENON_BIT_SHIFT(0),
+		RayTracer = XENON_BIT_SHIFT(1),
+		PathTracer = XENON_BIT_SHIFT(2),
 
 		All = Rasterizer | RayTracer | PathTracer
 	};
 
-	XENON_DEFINE_ENUM_AND(RenderTargetType);
 	XENON_DEFINE_ENUM_OR(RenderTargetType);
+	XENON_DEFINE_ENUM_AND(RenderTargetType);
 
 	/**
 	 * Instance class.

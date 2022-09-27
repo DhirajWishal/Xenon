@@ -5,6 +5,8 @@
 
 #include "../Instance.hpp"
 
+#include <volk.h>
+
 namespace Xenon
 {
 	namespace Backend
@@ -15,7 +17,11 @@ namespace Xenon
 		 */
 		class VulkanInstance final : public Instance
 		{
-
+		public:
+			/**
+			 * Constructor.
+			 */
+			VulkanInstance();
 		};
 	}
 }

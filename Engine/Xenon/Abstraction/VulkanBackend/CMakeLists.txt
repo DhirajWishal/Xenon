@@ -15,6 +15,18 @@ add_library(
 
 	"VulkanInstance.cpp"
 	"VulkanInstance.hpp"
+	
+	"ThirdParty/volk.cpp"
+	"ThirdParty/vk_mem_alloc.cpp"
+)
+
+# Set the include directories.
+target_include_directories(
+	XenonVulkanBackend 
+
+	PRIVATE ${VULKAN_HEADERS_INCLUDE_DIR}
+	PRIVATE ${VOLK_INCLUDE_DIR}
+	PRIVATE ${VMA_INCLUDE_DIR}
 )
 
 # Make sure to specify the C++ standard to C++20.

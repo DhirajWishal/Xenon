@@ -13,7 +13,16 @@ namespace Xenon
 		 */
 		class Instance
 		{
+		public:
+			/**
+			 * Default constructor.
+			 */
+			Instance() = default;
 
+			/**
+			 * Default virtual destructor.
+			 */
+			virtual ~Instance() = default;
 		};
 	}
 }

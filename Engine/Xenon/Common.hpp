@@ -5,20 +5,12 @@
 
 #include <typeindex>
 
-/**
- * This macro will disable the object from copying.
- *
- * @param object The object type.
- */
+#define XENON_BIT_SHIFT(x)	(1 << x)
+
 #define XENON_DISABLE_COPY(object)				\
 object(const object&) = delete;					\
 object& operator=(const object&) = delete
 
- /**
-  * This macro will disable the object from moving.
-  *
-  * @param object The object type.
-  */
 #define XENON_DISABLE_MOVE(object)				\
 object(object&&) = delete;						\
 object& operator=(object&&) = delete 
@@ -65,22 +57,12 @@ namespace Xenon
 	constexpr std::underlying_type_t<Type> EnumToInt(Type value) { return static_cast<std::underlying_type_t<Type>>(value); }
 }
 
-/**
- * This macro defines the bitwise-AND operation operator for the specified enum.
- *
- * @param name The name of the enum.
- */
 #define XENON_DEFINE_ENUM_AND(name)													\
 constexpr bool operator&(const name lhs, const name rhs)							\
 {																					\
 	return ::Xenon::EnumToInt(lhs) & ::Xenon::EnumToInt(rhs);						\
 }
 
- /**
-  * This macro defines the bitwise-OR operation operator for the specified enum.
-  *
-  * @param name The name of the enum.
-  */
 #define XENON_DEFINE_ENUM_OR(name)													\
 constexpr name operator|(const name lhs, const name rhs)							\
 {																					\

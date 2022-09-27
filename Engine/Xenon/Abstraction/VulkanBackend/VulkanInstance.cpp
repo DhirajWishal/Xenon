@@ -2,3 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "VulkanInstance.hpp"
+
+namespace Xenon
+{
+	namespace Backend
+	{
+		VulkanInstance::VulkanInstance()
+		{
+		}
+	}
+}
