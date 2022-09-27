@@ -1,3 +1,3 @@
 # Xenon
 
-Cross-platform open-world game engine
+Cross-platform graphics engine.

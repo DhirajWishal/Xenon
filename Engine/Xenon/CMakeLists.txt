@@ -3,37 +3,40 @@
 
 # Set the basic project information.
 project(
-	XenonCommon
+	XenonEngine
 	VERSION 1.0.0
-	DESCRIPTION "The common library containing all the common data and support structures used throughout the engine."
+	DESCRIPTION "The main runtime library."
 )
 
 # Add the library.
 add_library(
-	XenonCommon
+	XenonEngine
 	STATIC
 
-	"System.hpp"
-	"System.cpp"
-	"Logging.hpp"
 	"Common.hpp"
-	"JobSystem.hpp"
 	"JobSystem.cpp"
-	"EntityStorage.hpp"
+	"JobSystem.hpp"
+	"Logging.hpp"
 	"SparseArray.hpp"
 )
 
+# Set the target links.
+target_link_libraries(XenonEngine XenonAbstraction)
+
 # Set the include directories.
 target_include_directories(
-	XenonCommon 
+	XenonEngine 
 
 	PUBLIC ${SPDLOG_INCLUDE_DIR}
 )
 
 # Make sure to specify the C++ standard to C++20.
-set_property(TARGET XenonCommon PROPERTY CXX_STANDARD 20)
+set_property(TARGET XenonEngine PROPERTY CXX_STANDARD 20)
 
 # If we are on MSVC, we can use the Multi Processor Compilation option.
 if (MSVC)
-	target_compile_options(XenonCommon PRIVATE "/MP")	
+	target_compile_options(XenonEngine PRIVATE "/MP")	
 endif ()
+
+# Include the subdirectories.
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Abstraction)

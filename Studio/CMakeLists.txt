@@ -19,11 +19,11 @@ add_executable(
 target_include_directories(
 	XenonStudio 
 
-	PUBLIC ${CMAKE_SOURCE_DIR}/Runtime
+	PUBLIC ${CMAKE_SOURCE_DIR}/Engine
 )
 
 # Add the target links.
-target_link_libraries(XenonStudio XenonRuntime)
+target_link_libraries(XenonStudio XenonEngine)
 
 # Make sure to specify the C++ standard to C++20.
 set_property(TARGET XenonStudio PROPERTY CXX_STANDARD 20)

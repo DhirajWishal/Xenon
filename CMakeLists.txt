@@ -9,7 +9,7 @@ cmake_minimum_required(VERSION 3.22.2)
 project(
 	Xenon
 	VERSION 1.0.0 
-	DESCRIPTION "Cross-platform open-world game engine."
+	DESCRIPTION "Cross-platform graphics engine."
 )
 
 # Lets tell CMake to add the default ALL_BUILD, ZERO_CHECK and INSTALL to a group.
@@ -36,12 +36,8 @@ add_compile_definitions(
 )
 
 # Include the main subdirectories.
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Launcher)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Runtime)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/Xenon)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Studio)
-
-# Include the templates.
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Templates/FirstPerson)
 
 # Set the startup project for Visual Studio and set multi processor compilation for other projects that we build.
 if (MSVC) 
