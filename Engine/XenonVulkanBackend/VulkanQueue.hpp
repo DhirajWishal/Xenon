@@ -5,7 +5,6 @@
 
 #include <volk.h>
 
-#include <optional>
 
 namespace Xenon
 {
@@ -35,9 +34,24 @@ namespace Xenon
 			 */
 			void setupFamily(VkPhysicalDevice physicalDevice, VkQueueFlagBits flag);
 
+			/**
+			 * Set the queue.
+			 *
+			 * @param queue The queue to set.
+			 */
+			void setQueue(VkQueue queue);
+
+		public:
+			/**
+			 * Get the queue family.
+			 *
+			 * @return The optional family.
+			 */
+			[[nodiscard]] uint32_t getFamily() const { return m_Family; }
+
 		private:
 			VkQueue m_Queue = VK_NULL_HANDLE;
-			std::optional<uint32_t> m_Family;
+			uint32_t m_Family = -1;
 		};
 	}
 }

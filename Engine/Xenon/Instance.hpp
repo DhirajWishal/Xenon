@@ -39,6 +39,11 @@ namespace Xenon
 		 */
 		explicit Instance(const std::string& applicationName, uint32_t applicationVersion, RenderTargetType renderTargets);
 
+		/**
+		 * Destructor.
+		 */
+		~Instance();
+
 	public:
 		/**
 		 * Get the application name.

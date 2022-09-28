@@ -51,8 +51,11 @@ namespace /* anonymous */
 	 *
 	 * @param physicalDevice The physical device to check.
 	 * @param deviceExtensions The extension to check.
+	 * @param supportedTypes The variable to store the supported render target types.
+	 * @return True if the device supports at least one of the device extensions.
+	 * @return False if the device does not support any of the required extensions.
 	 */
-	bool CheckDeviceExtensionSupport(VkPhysicalDevice physicalDevice, const std::vector<const char*>& deviceExtensions)
+	bool CheckDeviceExtensionSupport(VkPhysicalDevice physicalDevice, const std::vector<const char*>& deviceExtensions, Xenon::RenderTargetType* supportedTypes = nullptr)
 	{
 		// If there are no extension to check, we can just return true.
 		if (deviceExtensions.empty())
@@ -73,8 +76,29 @@ namespace /* anonymous */
 		for (const VkExtensionProperties& extension : availableExtensions)
 			requiredExtensions.erase(extension.extensionName);
 
-		// If the required extensions set is empty, it means that all the required extensions exist within the physical device.
-		return requiredExtensions.empty();
+		// If the required extension count did not change, we don't support any of those required extensions.
+		if (requiredExtensions.size() == deviceExtensions.size())
+		{
+			XENON_LOG_INFORMATION("The physical device {} does not support any of the required extensions.", fmt::ptr(physicalDevice));
+			return false;
+		}
+
+		// If the extension count is more than 0, that means it supports a few of those required extensions.
+		if (requiredExtensions.size() > 0)
+			XENON_LOG_INFORMATION("The physical device {} supports only some of the required extensions.");
+
+		// Set the supported types if required.
+		if (supportedTypes)
+		{
+			if (requiredExtensions.contains(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME)
+				&& requiredExtensions.contains(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME)
+				/* && requiredExtensions.contains(VK_KHR_RAY_QUERY_EXTENSION_NAME)*/)
+			{
+				*supportedTypes = Xenon::RenderTargetType::All;
+			}
+		}
+
+		return true;
 	}
 }
 
@@ -86,21 +110,32 @@ namespace Xenon
 			: Device(pInstance, requiredRenderTargets)
 			, m_pInstance(pInstance)
 		{
-			// Select the physical device.
-			selectPhysicalDevice();
-		}
-
-		VulkanDevice::~VulkanDevice()
-		{
-
-		}
-
-		void VulkanDevice::selectPhysicalDevice()
-		{
 			// Set up the device extensions.
 			m_DeviceExtensions.emplace_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 			m_DeviceExtensions.emplace_back(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
 
+			// If the user needs ray tracing, we need to enable the following extensions.
+			if (requiredRenderTargets & (RenderTargetType::PathTracer | RenderTargetType::RayTracer))
+			{
+				m_DeviceExtensions.emplace_back(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME);
+				m_DeviceExtensions.emplace_back(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME);
+				// m_DeviceExtensions.emplace_back(VK_KHR_RAY_QUERY_EXTENSION_NAME);
+			}
+
+			// Select the physical device.
+			selectPhysicalDevice();
+
+			// Create the logical device.
+			createLogicalDevice();
+		}
+
+		VulkanDevice::~VulkanDevice()
+		{
+			m_DeviceTable.vkDestroyDevice(m_LogicalDevice, nullptr);
+		}
+
+		void VulkanDevice::selectPhysicalDevice()
+		{
 			// Enumerate physical devices.
 			uint32_t deviceCount = 0;
 			XENON_VK_ASSERT(vkEnumeratePhysicalDevices(m_pInstance->getInstance(), &deviceCount, nullptr), "Failed to enumerate physical devices.");
@@ -175,10 +210,90 @@ namespace Xenon
 				}
 			}
 
+			// Check if we found a physical device.
+			if (m_PhysicalDevice == VK_NULL_HANDLE)
+			{
+				XENON_LOG_FATAL("Could not find a physical device with the required requirements!");
+				return;
+			}
+
+			// Get the supported render target types.
+			CheckDeviceExtensionSupport(m_PhysicalDevice, m_DeviceExtensions, &m_SupportedRenderTargetTypes);
+
 			// Setup the queue families.
 			m_ComputeQueue.setupFamily(m_PhysicalDevice, VkQueueFlagBits::VK_QUEUE_COMPUTE_BIT);
 			m_GraphicsQueue.setupFamily(m_PhysicalDevice, VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT);
 			m_TransferQueue.setupFamily(m_PhysicalDevice, VkQueueFlagBits::VK_QUEUE_TRANSFER_BIT);
+		}
+
+		void VulkanDevice::createLogicalDevice()
+		{
+			// Setup device queues.
+			constexpr float priority = 1.0f;
+			std::set<uint32_t> uniqueQueueFamilies = {
+				m_GraphicsQueue.getFamily(),
+				m_ComputeQueue.getFamily(),
+				m_TransferQueue.getFamily()
+			};
+
+			VkDeviceQueueCreateInfo queueCreateInfo = {};
+			queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+			queueCreateInfo.pNext = nullptr;
+			queueCreateInfo.flags = 0;
+			queueCreateInfo.queueFamilyIndex = 0;
+			queueCreateInfo.queueCount = 1;
+			queueCreateInfo.pQueuePriorities = &priority;
+
+			std::vector< VkDeviceQueueCreateInfo> queueCreateInfos;
+			for (const auto& family : uniqueQueueFamilies)
+			{
+				queueCreateInfo.queueFamilyIndex = family;
+				queueCreateInfos.emplace_back(queueCreateInfo);
+			}
+
+			// Setup all the required features.
+			VkPhysicalDeviceFeatures features = {};
+			features.samplerAnisotropy = VK_TRUE;
+			features.sampleRateShading = VK_TRUE;
+			features.tessellationShader = VK_TRUE;
+			features.geometryShader = VK_TRUE;
+
+			// Setup the device create info.
+			VkDeviceCreateInfo deviceCreateInfo = {};
+			deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+			deviceCreateInfo.pNext = nullptr;
+			deviceCreateInfo.flags = 0;
+			deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
+			deviceCreateInfo.pQueueCreateInfos = queueCreateInfos.data();
+			deviceCreateInfo.enabledLayerCount = 0;
+			deviceCreateInfo.ppEnabledLayerNames = nullptr;
+			deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(m_DeviceExtensions.size());
+			deviceCreateInfo.ppEnabledExtensionNames = m_DeviceExtensions.data();
+			deviceCreateInfo.pEnabledFeatures = &features;
+
+#ifdef XENON_DEBUG
+			// Get the validation layers and initialize it.
+			deviceCreateInfo.enabledLayerCount = static_cast<uint32_t>(m_pInstance->getValidationLayers().size());
+			deviceCreateInfo.ppEnabledLayerNames = m_pInstance->getValidationLayers().data();
+
+#endif // XENON_DEBUG
+
+			// Create the device.
+			XENON_VK_ASSERT(vkCreateDevice(m_PhysicalDevice, &deviceCreateInfo, nullptr, &m_LogicalDevice), "Failed to create the logical device!");
+
+			// Load the device table.
+			volkLoadDeviceTable(&m_DeviceTable, m_LogicalDevice);
+
+			// Get the queues.
+			VkQueue queue = VK_NULL_HANDLE;
+			m_DeviceTable.vkGetDeviceQueue(m_LogicalDevice, m_GraphicsQueue.getFamily(), 0, &queue);
+			m_GraphicsQueue.setQueue(queue);
+
+			m_DeviceTable.vkGetDeviceQueue(m_LogicalDevice, m_ComputeQueue.getFamily(), 0, &queue);
+			m_ComputeQueue.setQueue(queue);
+
+			m_DeviceTable.vkGetDeviceQueue(m_LogicalDevice, m_TransferQueue.getFamily(), 0, &queue);
+			m_TransferQueue.setQueue(queue);
 		}
 	}
 }

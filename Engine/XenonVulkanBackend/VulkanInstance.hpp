@@ -46,6 +46,13 @@ namespace Xenon
 			 */
 			[[nodiscard]] VkInstance getInstance() const { return m_Instance; }
 
+			/**
+			 * Get the validation layers.
+			 *
+			 * @return The validation layers.
+			 */
+			[[nodiscard]] const std::vector<const char*>& getValidationLayers() const { return m_pValidationLayers; }
+
 		private:
 			/**
 			 * Create the Vulkan instance.

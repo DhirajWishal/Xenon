@@ -37,10 +37,16 @@ namespace Xenon
 			 */
 			void selectPhysicalDevice();
 
+			/**
+			 * Create the logical device.
+			 */
+			void createLogicalDevice();
+
 		private:
 			std::vector<const char*> m_DeviceExtensions;
 
 			VkPhysicalDeviceProperties m_PhysicalDeviceProperties = {};
+			VolkDeviceTable m_DeviceTable;
 
 			VulkanInstance* m_pInstance = nullptr;
 

@@ -42,5 +42,10 @@ namespace Xenon
 				}
 			}
 		}
+
+		void VulkanQueue::setQueue(VkQueue queue)
+		{
+			m_Queue = queue;
+		}
 	}
 }

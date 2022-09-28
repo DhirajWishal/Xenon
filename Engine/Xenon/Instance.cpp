@@ -21,5 +21,12 @@ namespace Xenon
 
 		// Create the device.
 		m_pDevice = Globals::BackendFactory->createDevice(m_pInstance.get(), renderTargets);
+		m_RenderTargets = m_pDevice->getSupportedRenderTargetTypes();
+	}
+
+	Instance::~Instance()
+	{
+		m_pDevice.reset();
+		m_pInstance.reset();
 	}
 }

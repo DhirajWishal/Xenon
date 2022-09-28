@@ -45,6 +45,17 @@ namespace Xenon
 			 * Default virtual destructor.
 			 */
 			virtual ~Device() = default;
+
+		public:
+			/**
+			 * Get the supported render target types.
+			 *
+			 * @return The supported render target types.
+			 */
+			[[nodiscard]] RenderTargetType getSupportedRenderTargetTypes() const { return m_SupportedRenderTargetTypes; }
+
+		protected:
+			RenderTargetType m_SupportedRenderTargetTypes = RenderTargetType::All;
 		};
 	}
 }
