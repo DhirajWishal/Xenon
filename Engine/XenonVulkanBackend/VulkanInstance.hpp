@@ -7,10 +7,17 @@
 
 #include <volk.h>
 
+#include <vector>
+
 namespace Xenon
 {
 	namespace Backend
 	{
+		/**
+		 * This is the Vulkan API version used by the engine.
+		 */
+		constexpr auto VulkanVersion = VK_API_VERSION_1_3;
+
 		/**
 		 * Instance class.
 		 * This is the base class for the backend instance.
@@ -19,11 +26,30 @@ namespace Xenon
 		{
 		public:
 			/**
-			 * Constructor.
+			 * Explicit constructor.
+			 *
+			 * @param appliationName The name of the application.
+			 * @param applicationVersion The application version.
 			 */
-			VulkanInstance();
+			explicit VulkanInstance(const std::string& applicationName, uint32_t applicationVersion);
+
+			/**
+			 * Destructor.
+			 */
+			~VulkanInstance() override;
 
 		private:
+			/**
+			 * Create the Vulkan instance.
+			 *
+			 * @param applicationName The name of the application.
+			 * @param applicationVersion The application version.
+			 */
+			void createInstance(const std::string& applicationName, uint32_t applicationVersion);
+
+		private:
+			std::vector<const char*> m_pValidationLayers;
+
 			VkInstance m_Instance = VK_NULL_HANDLE;
 			VkDebugUtilsMessengerEXT m_DebugMessenger = VK_NULL_HANDLE;
 		};

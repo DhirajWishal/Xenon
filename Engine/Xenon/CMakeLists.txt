@@ -13,24 +13,12 @@ add_library(
 	XenonEngine
 	STATIC
 
-	"Common.hpp"
-	"JobSystem.cpp"
-	"JobSystem.hpp"
-	"Logging.hpp"
-	"SparseArray.hpp"
 	"Instance.cpp"
-	"Instance.hpp"
+	
 )
 
 # Set the target links.
 target_link_libraries(XenonEngine XenonVulkanBackend)
-
-# Set the include directories.
-target_include_directories(
-	XenonEngine 
-
-	PUBLIC ${SPDLOG_INCLUDE_DIR}
-)
 
 # Make sure to specify the C++ standard to C++20.
 set_property(TARGET XenonEngine PROPERTY CXX_STANDARD 20)

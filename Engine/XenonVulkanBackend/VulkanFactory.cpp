@@ -9,9 +9,9 @@ namespace Xenon
 {
 	namespace Backend
 	{
-		std::unique_ptr<Xenon::Backend::Instance> VulkanFactory::createInstance()
+		std::unique_ptr<Xenon::Backend::Instance> VulkanFactory::createInstance(const std::string& applicationName, uint32_t applicationVersion)
 		{
-			return std::make_unique<VulkanInstance>();
+			return std::make_unique<VulkanInstance>(applicationName, applicationVersion);
 		}
 	}
 }

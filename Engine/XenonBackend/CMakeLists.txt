@@ -18,6 +18,9 @@ add_library(
 	"IFactory.hpp"
 )
 
+# Add the target links.
+target_link_libraries(XenonBackend XenonCore)
+
 # Make sure to specify the C++ standard to C++20.
 set_property(TARGET XenonBackend PROPERTY CXX_STANDARD 20)
 

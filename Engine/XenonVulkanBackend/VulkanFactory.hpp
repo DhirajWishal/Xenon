@@ -29,9 +29,11 @@ namespace Xenon
 			/**
 			 * Create a new instance.
 			 *
+			 * @param appliationName The name of the application.
+			 * @param applicationVersion The application version.
 			 * @return The instance pointer.
 			 */
-			std::unique_ptr<Instance> createInstance() override;
+			std::unique_ptr<Instance> createInstance(const std::string& applicationName, uint32_t applicationVersion) override;
 		};
 	}
 }

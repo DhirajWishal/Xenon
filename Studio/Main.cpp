@@ -1,7 +1,7 @@
 // Copyright 2022 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
-#include "Xenon/Logging.hpp"
+#include "XenonCore/Logging.hpp"
 
 int main()
 {

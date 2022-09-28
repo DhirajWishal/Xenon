@@ -15,5 +15,8 @@ namespace Xenon
 		// If the global backend factory is not initialized, let's initialize it.
 		if (Globals::BackendFactory == nullptr)
 			Globals::BackendFactory = std::make_unique<Backend::VulkanFactory>();
+
+		// Create the instance.
+		m_pInstance = Globals::BackendFactory->createInstance(applicationName, applicationVersion);
 	}
 }

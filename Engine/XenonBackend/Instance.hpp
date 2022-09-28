@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <string>
 #include <memory>
 
 namespace Xenon
@@ -17,9 +18,12 @@ namespace Xenon
 		{
 		public:
 			/**
-			 * Default constructor.
+			 * Explicit constructor.
+			 *
+			 * @param appliationName The name of the application.
+			 * @param applicationVersion The application version.
 			 */
-			Instance() = default;
+			explicit Instance(const std::string& applicationName, uint32_t applicationVersion) {}
 
 			/**
 			 * Default virtual destructor.

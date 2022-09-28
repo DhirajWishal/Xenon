@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Common.hpp"
+#include "../XenonCore/Common.hpp"
 
 #include "../XenonBackend/IFactory.hpp"
 
