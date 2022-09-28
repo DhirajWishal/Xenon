@@ -33,7 +33,16 @@ namespace Xenon
 			 * @param applicationVersion The application version.
 			 * @return The instance pointer.
 			 */
-			std::unique_ptr<Instance> createInstance(const std::string& applicationName, uint32_t applicationVersion) override;
+			[[nodiscard]] std::unique_ptr<Instance> createInstance(const std::string& applicationName, uint32_t applicationVersion) override;
+
+			/**
+			 * Create a new device.
+			 *
+			 * @param pInstance The instance pointer to which the device is bound to.
+			 * @param requriedRenderTargets The render targets which are required to have.
+			 * @return The device pointer.
+			 */
+			[[nodiscard]] std::unique_ptr<Device> createDevice(Instance* pInstance, RenderTargetType requiredRenderTargets) override;
 		};
 	}
 }

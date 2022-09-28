@@ -38,6 +38,14 @@ namespace Xenon
 			 */
 			~VulkanInstance() override;
 
+		public:
+			/**
+			 * Get the instance handle.
+			 *
+			 * @return The Vulkan instance handle.
+			 */
+			[[nodiscard]] VkInstance getInstance() const { return m_Instance; }
+
 		private:
 			/**
 			 * Create the Vulkan instance.

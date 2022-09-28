@@ -18,5 +18,8 @@ namespace Xenon
 
 		// Create the instance.
 		m_pInstance = Globals::BackendFactory->createInstance(applicationName, applicationVersion);
+
+		// Create the device.
+		m_pDevice = Globals::BackendFactory->createDevice(m_pInstance.get(), renderTargets);
 	}
 }

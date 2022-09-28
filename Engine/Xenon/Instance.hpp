@@ -21,21 +21,6 @@ namespace Xenon
 	}
 
 	/**
-	 * Render target type enum.
-	 */
-	enum class RenderTargetType : uint8_t
-	{
-		Rasterizer = XENON_BIT_SHIFT(0),
-		RayTracer = XENON_BIT_SHIFT(1),
-		PathTracer = XENON_BIT_SHIFT(2),
-
-		All = Rasterizer | RayTracer | PathTracer
-	};
-
-	XENON_DEFINE_ENUM_OR(RenderTargetType);
-	XENON_DEFINE_ENUM_AND(RenderTargetType);
-
-	/**
 	 * Instance class.
 	 * This is the main class which the user needs to instantiate to use the engine.
 	 *
@@ -82,5 +67,6 @@ namespace Xenon
 		RenderTargetType m_RenderTargets;
 
 		std::unique_ptr<Backend::Instance> m_pInstance = nullptr;
+		std::unique_ptr<Backend::Device> m_pDevice = nullptr;
 	};
 }

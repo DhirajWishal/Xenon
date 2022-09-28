@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "BackendObject.hpp"
+
 #include <string>
 #include <memory>
 
@@ -14,7 +16,7 @@ namespace Xenon
 		 * Instance class.
 		 * This is the base class for the backend instance.
 		 */
-		class Instance
+		class Instance : public BackendObject
 		{
 		public:
 			/**

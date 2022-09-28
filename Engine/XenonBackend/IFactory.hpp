@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Instance.hpp"
+#include "Device.hpp"
 
 namespace Xenon
 {
@@ -33,7 +33,16 @@ namespace Xenon
 			 * @param applicationVersion The application version.
 			 * @return The instance pointer.
 			 */
-			virtual std::unique_ptr<Instance> createInstance(const std::string& applicationName, uint32_t applicationVersion) = 0;
+			[[nodiscard]] virtual std::unique_ptr<Instance> createInstance(const std::string& applicationName, uint32_t applicationVersion) = 0;
+
+			/**
+			 * Create a new device.
+			 *
+			 * @param pInstance The instance pointer to which the device is bound to.
+			 * @param requriedRenderTargets The render targets which are required to have.
+			 * @return The device pointer.
+			 */
+			[[nodiscard]] virtual std::unique_ptr<Device> createDevice(Instance* pInstance, RenderTargetType requiredRenderTargets) = 0;
 		};
 	}
 }

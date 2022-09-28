@@ -21,6 +21,10 @@ add_library(
 	"VulkanFactory.cpp"
 	"VulkanFactory.hpp"
 	"VulkanMacros.hpp"
+	"VulkanDevice.cpp"
+	"VulkanDevice.hpp"
+	"VulkanQueue.cpp"
+	"VulkanQueue.hpp"
 )
 
 # Set the include directories.

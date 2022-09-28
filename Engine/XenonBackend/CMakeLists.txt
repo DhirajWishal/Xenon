@@ -13,9 +13,11 @@ add_library(
 	XenonBackend
 	STATIC
 
+	"BackendObject.hpp"
 	"Instance.cpp"
 	"Instance.hpp"
 	"IFactory.hpp"
+	"Device.hpp"
 )
 
 # Add the target links.
