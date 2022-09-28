@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "../Instance.hpp"
+#include "../XenonBackend/Instance.hpp"
 
 #include <volk.h>
 
@@ -22,6 +22,10 @@ namespace Xenon
 			 * Constructor.
 			 */
 			VulkanInstance();
+
+		private:
+			VkInstance m_Instance = VK_NULL_HANDLE;
+			VkDebugUtilsMessengerEXT m_DebugMessenger = VK_NULL_HANDLE;
 		};
 	}
 }

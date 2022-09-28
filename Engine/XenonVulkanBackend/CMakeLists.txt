@@ -13,11 +13,13 @@ add_library(
 	XenonVulkanBackend
 	STATIC
 
-	"VulkanInstance.cpp"
-	"VulkanInstance.hpp"
-	
 	"ThirdParty/volk.cpp"
 	"ThirdParty/vk_mem_alloc.cpp"
+	
+	"VulkanInstance.cpp"
+	"VulkanInstance.hpp"
+	"VulkanFactory.cpp"
+	"VulkanFactory.hpp"
 )
 
 # Set the include directories.
@@ -36,3 +38,6 @@ set_property(TARGET XenonVulkanBackend PROPERTY CXX_STANDARD 20)
 if (MSVC)
 	target_compile_options(XenonVulkanBackend PRIVATE "/MP")	
 endif ()
+
+# Set the target links.
+target_link_libraries(XenonVulkanBackend XenonBackend)

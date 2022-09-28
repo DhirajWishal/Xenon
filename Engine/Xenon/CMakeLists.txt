@@ -18,10 +18,12 @@ add_library(
 	"JobSystem.hpp"
 	"Logging.hpp"
 	"SparseArray.hpp"
- "Instance.cpp")
+	"Instance.cpp"
+	"Instance.hpp"
+)
 
 # Set the target links.
-target_link_libraries(XenonEngine XenonAbstraction)
+target_link_libraries(XenonEngine XenonVulkanBackend)
 
 # Set the include directories.
 target_include_directories(
@@ -37,6 +39,3 @@ set_property(TARGET XenonEngine PROPERTY CXX_STANDARD 20)
 if (MSVC)
 	target_compile_options(XenonEngine PRIVATE "/MP")	
 endif ()
-
-# Include the subdirectories.
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Abstraction)

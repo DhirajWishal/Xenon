@@ -5,10 +5,21 @@
 
 #include "Common.hpp"
 
+#include "../XenonBackend/IFactory.hpp"
+
 #include <string>
 
 namespace Xenon
 {
+	namespace Globals
+	{
+		/**
+		 * This variable contains the global backend object factory which is backend specific.
+		 * It is used by the frontend to create the required backend objects.
+		 */
+		inline std::unique_ptr<Backend::IFactory> BackendFactory = nullptr;
+	}
+
 	/**
 	 * Render target type enum.
 	 */
@@ -69,5 +80,7 @@ namespace Xenon
 		std::string m_ApplicationName;
 		uint32_t m_ApplicationVersion;
 		RenderTargetType m_RenderTargets;
+
+		std::unique_ptr<Backend::Instance> m_pInstance = nullptr;
 	};
 }

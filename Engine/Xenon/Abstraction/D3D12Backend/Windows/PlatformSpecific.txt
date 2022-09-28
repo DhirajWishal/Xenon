@@ -1,1 +1,0 @@
-This is where we have the Windows specific classes used by the DirectX 12 backend.

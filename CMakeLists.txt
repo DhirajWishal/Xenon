@@ -40,6 +40,8 @@ add_compile_definitions(
 
 # Include the main subdirectories.
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/Xenon)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonBackend)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonVulkanBackend)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Studio)
 
 # Set the startup project for Visual Studio and set multi processor compilation for other projects that we build.
