@@ -10,3 +10,6 @@
 [submodule "ThirdParty/VulkanMemoryAllocator"]
 	path = ThirdParty/VulkanMemoryAllocator
 	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
+[submodule "ThirdParty/DirectX-Headers"]
+	path = ThirdParty/DirectX-Headers
+	url = https://github.com/microsoft/DirectX-Headers

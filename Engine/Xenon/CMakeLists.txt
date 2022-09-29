@@ -37,4 +37,5 @@ set_property(TARGET XenonEngine PROPERTY CXX_STANDARD 20)
 # If we are on MSVC, we can use the Multi Processor Compilation option.
 if (MSVC)
 	target_compile_options(XenonEngine PRIVATE "/MP")	
+	target_link_libraries(XenonEngine XenonDX12Backend)
 endif ()

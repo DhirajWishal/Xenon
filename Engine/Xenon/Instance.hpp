@@ -19,6 +19,17 @@ namespace Xenon
 	}
 
 	/**
+	 * Backend type enum.
+	 */
+	enum class BackendType : uint8_t
+	{
+		Vulkan,
+		DirectX_12,
+
+		Any
+	};
+
+	/**
 	 * Instance class.
 	 * This is the main class which the user needs to instantiate to use the engine.
 	 *
@@ -34,8 +45,9 @@ namespace Xenon
 		 * @param applicationName The name of the application.
 		 * @param applicationVersion The version of the application.
 		 * @param renderTargets The render targets which the application will use.
+		 * @param backendType The backend type to use. Default is any.
 		 */
-		explicit Instance(const std::string& applicationName, uint32_t applicationVersion, RenderTargetType renderTargets);
+		explicit Instance(const std::string& applicationName, uint32_t applicationVersion, RenderTargetType renderTargets, BackendType backendType = BackendType::Any);
 
 		/**
 		 * Destructor.
