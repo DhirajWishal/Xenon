@@ -51,6 +51,53 @@ namespace Xenon
 			 * @param bufferCount The number of buffers to use.
 			 */
 			[[nodiscard]] std::unique_ptr<CommandBuffers> createCommandBuffers(Device* pDevice, uint32_t bufferCount) override;
+
+			/**
+			 * Create a new index buffer.
+			 *
+			 * @param pDevice The device pointer.
+			 * @param size The size of the buffer in bytes.
+			 * @param indexSize The size of a single index.
+			 * @return The buffer pointer.
+			 */
+			[[nodiscard]] std::unique_ptr<IndexBuffer> createIndexBuffer(Device* pDevice, uint64_t size, IndexSize indexSize) override;
+
+			/**
+			 * Create a new vertex buffer.
+			 *
+			 * @param pDevice The device pointer.
+			 * @param size The size of the buffer in bytes.
+			 * @param stride The vertex stride.
+			 * @return The buffer pointer.
+			 */
+			[[nodiscard]] std::unique_ptr<VertexBuffer> createVertexBuffer(Device* pDevice, uint64_t size, uint64_t stride) override;
+
+			/**
+			 * Create a new staging buffer.
+			 *
+			 * @param pDevice The device pointer.
+			 * @param size The size of the buffer in bytes.
+			 * @return The buffer pointer.
+			 */
+			[[nodiscard]] std::unique_ptr<StagingBuffer> createStagingBuffer(Device* pDevice, uint64_t size) override;
+
+			/**
+			 * Create a new storage buffer.
+			 *
+			 * @param pDevice The device pointer.
+			 * @param size The size of the buffer in bytes.
+			 * @return The buffer pointer.
+			 */
+			[[nodiscard]] std::unique_ptr<StorageBuffer> createStorageBuffer(Device* pDevice, uint64_t size) override;
+
+			/**
+			 * Create a new uniform buffer.
+			 *
+			 * @param pDevice The device pointer.
+			 * @param size The size of the buffer in bytes.
+			 * @return The buffer pointer.
+			 */
+			[[nodiscard]] std::unique_ptr<UniformBuffer> createUniformBuffer(Device* pDevice, uint64_t size) override;
 		};
 	}
 }

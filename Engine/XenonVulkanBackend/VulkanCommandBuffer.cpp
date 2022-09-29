@@ -52,6 +52,24 @@ namespace Xenon
 			}
 		}
 
+		void VulkanCommandBuffer::submit(VkPipelineStageFlags pipelineStageFlags, VkQueue queue)
+		{
+			// Create the submit info structure.
+			VkSubmitInfo submitInfo = {};
+			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+			submitInfo.waitSemaphoreCount = 0;
+			submitInfo.pWaitSemaphores = nullptr;
+			submitInfo.commandBufferCount = 1;
+			submitInfo.pCommandBuffers = &m_CommandBuffer;
+			submitInfo.pWaitDstStageMask = &pipelineStageFlags;
+			submitInfo.signalSemaphoreCount = 0;
+			submitInfo.pSignalSemaphores = nullptr;
+
+			// Submit the queue.
+			XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkQueueSubmit(queue, 1, &submitInfo, m_Fence), "Failed to submit the queue!");
+			m_IsFenceFree = false;
+		}
+
 		VulkanCommandBuffer& VulkanCommandBuffer::operator=(VulkanCommandBuffer&& other) noexcept
 		{
 			VulkanDeviceBoundObject::operator=(std::move(other));

@@ -35,7 +35,7 @@ namespace Xenon
 			 * @param size The size of the buffer in bytes.
 			 * @param indexSize The size of a single index.
 			 */
-			explicit IndexBuffer(Device* pDevice, uint64_t size, IndexSize indexSize) : Buffer(pDevice, size), m_IndexSize(indexSize) {}
+			explicit IndexBuffer(Device* pDevice, uint64_t size, IndexSize indexSize) : Buffer(pDevice, size, BufferType::Index), m_IndexSize(indexSize) {}
 
 			/**
 			 * Default virtual destructor.
@@ -51,7 +51,7 @@ namespace Xenon
 			[[nodiscard]] uint64_t getIndexCount() const { return m_Size / static_cast<uint8_t>(m_IndexSize); }
 
 		protected:
-			IndexSize m_IndexSize = 0;
+			IndexSize m_IndexSize = IndexSize::Undefined;
 		};
 	}
 }

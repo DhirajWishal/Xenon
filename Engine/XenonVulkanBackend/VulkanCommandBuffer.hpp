@@ -44,6 +44,14 @@ namespace Xenon
 			 */
 			void wait(uint64_t timeout = std::numeric_limits<uint64_t>::max());
 
+			/**
+			 * Submit the command buffer to the device.
+			 *
+			 * @param pipelineStageFlags The pipeline stage flags.
+			 * @param queue The queue to submit to.
+			 */
+			void submit(VkPipelineStageFlags pipelineStageFlags, VkQueue queue);
+
 		public:
 			/**
 			 * Move assignment operator.
@@ -52,6 +60,21 @@ namespace Xenon
 			 * @return The moved buffer reference.
 			 */
 			VulkanCommandBuffer& operator=(VulkanCommandBuffer&& other) noexcept;
+
+		public:
+			/**
+			 * Get the command buffer.
+			 *
+			 * @return The command buffer.
+			 */
+			[[nodiscard]] VkCommandBuffer getCommandBuffer() const { return m_CommandBuffer; }
+
+			/**
+			 * Get the command buffer address (pointer).
+			 *
+			 * @return The const command buffer pointer.
+			 */
+			[[nodiscard]] const VkCommandBuffer* getCommandBufferAddress() const { return &m_CommandBuffer; }
 
 		private:
 			VkCommandBuffer m_CommandBuffer = VK_NULL_HANDLE;

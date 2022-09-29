@@ -49,6 +49,13 @@ namespace Xenon
 			 */
 			[[nodiscard]] uint32_t getFamily() const { return m_Family; }
 
+			/**
+			 * Get the internally stored queue.
+			 *
+			 * @return The queue.
+			 */
+			[[nodiscard]] VkQueue getQueue() const { return m_Queue; }
+
 		private:
 			VkQueue m_Queue = VK_NULL_HANDLE;
 			uint32_t m_Family = -1;

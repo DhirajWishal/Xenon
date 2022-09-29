@@ -22,7 +22,7 @@ namespace Xenon
 			 * @param pDevice The device pointer.
 			 * @param size The size of the buffer in bytes.
 			 */
-			explicit UniformBuffer(Device* pDevice, uint64_t size) : HostAccessibleBuffer(pDevice, size) {}
+			explicit UniformBuffer(Device* pDevice, uint64_t size) : HostAccessibleBuffer(pDevice, size, BufferType::Uniform) {}
 
 			/**
 			 * Default virtual destructor.

@@ -23,7 +23,7 @@ namespace Xenon
 			 * @param size The size of the buffer in bytes.
 			 * @param stride The byte size of a single vertex entry.
 			 */
-			explicit VertexBuffer(Device* pDevice, uint64_t size, uint64_t stride) : Buffer(pDevice, size), m_Stride(stride) {}
+			explicit VertexBuffer(Device* pDevice, uint64_t size, uint64_t stride) : Buffer(pDevice, size, BufferType::Vertex), m_Stride(stride) {}
 
 			/**
 			 * Default virtual destructor.

@@ -29,6 +29,18 @@ add_library(
 	"VulkanCommandBuffers.hpp"
 	"VulkanCommandBuffer.cpp"
 	"VulkanCommandBuffer.hpp"
+	"VulkanBuffer.cpp"
+	"VulkanBuffer.hpp"
+	"VulkanIndexBuffer.cpp"
+	"VulkanIndexBuffer.hpp"
+	"VulkanStagingBuffer.cpp"
+	"VulkanStagingBuffer.hpp"
+	"VulkanStorageBuffer.cpp"
+	"VulkanStorageBuffer.hpp"
+	"VulkanUniformBuffer.cpp" 
+	"VulkanUniformBuffer.hpp" 
+	"VulkanVertexBuffer.cpp"
+	"VulkanVertexBuffer.hpp"
 )
 
 # Set the include directories.

@@ -9,7 +9,17 @@ namespace Xenon
 {
 	namespace Backend
 	{
-		class CommandBuffers;
+		/**
+		 * Buffer type enum.
+		 */
+		enum class BufferType : uint8_t
+		{
+			Index,
+			Vertex,
+			Staging,
+			Storage,
+			Uniform
+		};
 
 		/**
 		 * Buffer class.
@@ -23,8 +33,9 @@ namespace Xenon
 			 *
 			 * @param pDevice The device pointer.
 			 * @param size The size of the buffer in bytes.
+			 * @param type The buffer type.
 			 */
-			explicit Buffer([[maybe_unused]] Device* pDevice, uint64_t size) : m_Size(size) {}
+			explicit Buffer([[maybe_unused]] Device* pDevice, uint64_t size, BufferType type) : m_Size(size), m_Type(type) {}
 
 			/**
 			 * Default virtual destructor.
@@ -41,20 +52,24 @@ namespace Xenon
 			 */
 			virtual void copy(const Buffer* pBuffer, uint64_t size, uint64_t srcOffset = 0, uint64_t dstOffset = 0) = 0;
 
+		public:
 			/**
-			 * Copy data from another buffer to this buffer.
-			 * This will attach the copy command to the attached command buffers.
+			 * Get the byte size of the buffer.
 			 *
-			 * @param pCommandBuffers The command buffers to record the commands to.
-			 * @param pBuffer The buffer to copy the data from.
-			 * @param size The size in bytes to copy.
-			 * @param srcOffset The source buffer's offset. Default is 0.
-			 * @param dstOffset The destination buffer's (this) offset. Default is 0.
+			 * @return The size.
 			 */
-			virtual void copy(CommandBuffers* pCommandBuffers, const Buffer* pBuffer, uint64_t size, uint64_t srcOffset = 0, uint64_t dstOffset = 0) = 0;
+			[[nodiscard]] uint64_t getSize() const { return m_Size; }
+
+			/**
+			 * Get the buffer type.
+			 *
+			 * @return The buffer type.
+			 */
+			[[nodiscard]] BufferType getType() const { return m_Type; }
 
 		protected:
 			uint64_t m_Size = 0;
+			BufferType m_Type;
 		};
 	}
 }
