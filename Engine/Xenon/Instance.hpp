@@ -64,12 +64,11 @@ namespace Xenon
 		 *
 		 * @return The render target types.
 		 */
-		[[nodsicard]] RenderTargetType getSupportedRenderTargetTypes() const { return m_RenderTargets; }
+		[[nodsicard]] RenderTargetType getSupportedRenderTargetTypes() const { return m_pDevice->getSupportedRenderTargetTypes(); }
 
 	private:
 		std::string m_ApplicationName;
 		uint32_t m_ApplicationVersion;
-		RenderTargetType m_RenderTargets;
 
 		std::unique_ptr<Backend::Instance> m_pInstance = nullptr;
 		std::unique_ptr<Backend::Device> m_pDevice = nullptr;

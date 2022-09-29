@@ -73,7 +73,7 @@ namespace /* anonymous */
 
 		// Iterate and check if it contains the extensions we need. If it does, remove them from the set so we can later check if 
 		// all the required extensions exist.
-		for (const VkExtensionProperties& extension : availableExtensions)
+		for (const auto& extension : availableExtensions)
 			requiredExtensions.erase(extension.extensionName);
 
 		// If the required extension count did not change, we don't support any of those required extensions.
@@ -127,10 +127,14 @@ namespace Xenon
 
 			// Create the logical device.
 			createLogicalDevice();
+
+			// Create the memory allocator.
+			createMemoryAllocator();
 		}
 
 		VulkanDevice::~VulkanDevice()
 		{
+			vmaDestroyAllocator(m_Allocator);
 			m_DeviceTable.vkDestroyDevice(m_LogicalDevice, nullptr);
 		}
 
@@ -221,9 +225,9 @@ namespace Xenon
 			CheckDeviceExtensionSupport(m_PhysicalDevice, m_DeviceExtensions, &m_SupportedRenderTargetTypes);
 
 			// Setup the queue families.
-			m_ComputeQueue.setupFamily(m_PhysicalDevice, VkQueueFlagBits::VK_QUEUE_COMPUTE_BIT);
-			m_GraphicsQueue.setupFamily(m_PhysicalDevice, VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT);
-			m_TransferQueue.setupFamily(m_PhysicalDevice, VkQueueFlagBits::VK_QUEUE_TRANSFER_BIT);
+			m_ComputeQueue.setupFamily(m_PhysicalDevice, VK_QUEUE_COMPUTE_BIT);
+			m_GraphicsQueue.setupFamily(m_PhysicalDevice, VK_QUEUE_GRAPHICS_BIT);
+			m_TransferQueue.setupFamily(m_PhysicalDevice, VK_QUEUE_TRANSFER_BIT);
 		}
 
 		void VulkanDevice::createLogicalDevice()
@@ -294,6 +298,50 @@ namespace Xenon
 
 			m_DeviceTable.vkGetDeviceQueue(m_LogicalDevice, m_TransferQueue.getFamily(), 0, &queue);
 			m_TransferQueue.setQueue(queue);
+		}
+
+		void VulkanDevice::createMemoryAllocator()
+		{
+			// Setup the Vulkan functions needed by VMA.
+			VmaVulkanFunctions functions = {};
+			functions.vkGetInstanceProcAddr = vkGetInstanceProcAddr;
+			functions.vkGetDeviceProcAddr = vkGetDeviceProcAddr;
+			functions.vkGetPhysicalDeviceProperties = vkGetPhysicalDeviceProperties;
+			functions.vkGetPhysicalDeviceMemoryProperties = vkGetPhysicalDeviceMemoryProperties;
+			functions.vkAllocateMemory = m_DeviceTable.vkAllocateMemory;
+			functions.vkFreeMemory = m_DeviceTable.vkFreeMemory;
+			functions.vkMapMemory = m_DeviceTable.vkMapMemory;
+			functions.vkUnmapMemory = m_DeviceTable.vkUnmapMemory;
+			functions.vkFlushMappedMemoryRanges = m_DeviceTable.vkFlushMappedMemoryRanges;
+			functions.vkInvalidateMappedMemoryRanges = m_DeviceTable.vkInvalidateMappedMemoryRanges;
+			functions.vkBindBufferMemory = m_DeviceTable.vkBindBufferMemory;
+			functions.vkBindImageMemory = m_DeviceTable.vkBindImageMemory;
+			functions.vkGetBufferMemoryRequirements = m_DeviceTable.vkGetBufferMemoryRequirements;
+			functions.vkGetImageMemoryRequirements = m_DeviceTable.vkGetImageMemoryRequirements;
+			functions.vkCreateBuffer = m_DeviceTable.vkCreateBuffer;
+			functions.vkDestroyBuffer = m_DeviceTable.vkDestroyBuffer;
+			functions.vkCreateImage = m_DeviceTable.vkCreateImage;
+			functions.vkDestroyImage = m_DeviceTable.vkDestroyImage;
+			functions.vkCmdCopyBuffer = m_DeviceTable.vkCmdCopyBuffer;
+			functions.vkGetBufferMemoryRequirements2KHR = m_DeviceTable.vkGetBufferMemoryRequirements2KHR;
+			functions.vkGetImageMemoryRequirements2KHR = m_DeviceTable.vkGetImageMemoryRequirements2KHR;
+			functions.vkBindBufferMemory2KHR = m_DeviceTable.vkBindBufferMemory2KHR;
+			functions.vkBindImageMemory2KHR = m_DeviceTable.vkBindImageMemory2KHR;
+			functions.vkGetPhysicalDeviceMemoryProperties2KHR = vkGetPhysicalDeviceMemoryProperties2KHR;
+			functions.vkGetDeviceBufferMemoryRequirements = m_DeviceTable.vkGetDeviceBufferMemoryRequirements;
+			functions.vkGetDeviceImageMemoryRequirements = m_DeviceTable.vkGetDeviceImageMemoryRequirements;
+
+			// Setup create info.
+			VmaAllocatorCreateInfo createInfo = {};
+			createInfo.flags = VMA_ALLOCATOR_CREATE_EXTERNALLY_SYNCHRONIZED_BIT;
+			createInfo.physicalDevice = m_PhysicalDevice;
+			createInfo.device = m_LogicalDevice;
+			createInfo.pVulkanFunctions = &functions;
+			createInfo.instance = m_pInstance->getInstance();
+			createInfo.vulkanApiVersion = VulkanVersion;
+
+			// Create the allocator.
+			XENON_VK_ASSERT(vmaCreateAllocator(&createInfo, &m_Allocator), "Failed to create the allocator!");
 		}
 	}
 }
