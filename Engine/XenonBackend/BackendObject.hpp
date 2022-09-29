@@ -30,6 +30,7 @@ namespace Xenon
 			 */
 			BackendObject(BackendObject&& other) noexcept : m_IsValid(std::exchange(other.m_IsValid, false)) {}
 
+			// Disable copy for the object.
 			XENON_DISABLE_COPY(BackendObject);
 
 			/**
@@ -81,12 +82,7 @@ namespace Xenon
 			 * @param other The other object.
 			 * @return The moved object.
 			 */
-			BackendObject& operator=(BackendObject&& other) noexcept
-			{
-				m_IsValid = std::exchange(other.m_IsValid, false);
-
-				return *this;
-			}
+			BackendObject& operator=(BackendObject&& other) noexcept { m_IsValid = std::exchange(other.m_IsValid, false); return *this; }
 
 		protected:
 			bool m_IsValid = true;

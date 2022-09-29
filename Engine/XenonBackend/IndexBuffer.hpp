@@ -7,20 +7,20 @@
 
 namespace Xenon
 {
+	/**
+	 * Index size enum.
+	 * This contains all the available sizes of a single index entry.
+	 */
+	enum class IndexSize : uint8_t
+	{
+		Undefined,
+		Uint8,
+		Uint16,
+		Uint32,
+	};
+
 	namespace Backend
 	{
-		/**
-		 * Index size enum.
-		 * This contains all the available sizes of a single index entry.
-		 */
-		enum class IndexSize : uint8_t
-		{
-			Undefined,
-			Uint8,
-			Uint16,
-			Uint32,
-		};
-
 		/**
 		 * Index buffer class.
 		 * This class is used to store index information.

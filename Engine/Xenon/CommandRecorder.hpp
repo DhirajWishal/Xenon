@@ -27,7 +27,7 @@ namespace Xenon
 		/**
 		 * Destructor.
 		 */
-		~CommandRecorder();
+		~CommandRecorder() = default;
 
 	private:
 		std::unique_ptr<Backend::CommandBuffers> m_pCommandBuffers = nullptr;

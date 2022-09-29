@@ -9,8 +9,4 @@ namespace Xenon
 		: m_pCommandBuffers(Globals::BackendFactory->createCommandBuffers(instance.getBackendDevice(), bufferCount))
 	{
 	}
-
-	CommandRecorder::~CommandRecorder()
-	{
-	}
 }

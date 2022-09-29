@@ -16,6 +16,16 @@ add_library(
 	"Instance.cpp"
 	"CommandRecorder.cpp"
 	"CommandRecorder.hpp"	
+	"VertexBuffer.cpp"
+	"VertexBuffer.hpp"	
+	"IndexBuffer.cpp"
+	"IndexBuffer.hpp"
+	"StagingBuffer.cpp"
+	"StagingBuffer.hpp"
+	"UniformBuffer.cpp"
+	"UniformBuffer.hpp"
+	"StorageBuffer.cpp"
+	"StorageBuffer.hpp"
 )
 
 # Set the target links.

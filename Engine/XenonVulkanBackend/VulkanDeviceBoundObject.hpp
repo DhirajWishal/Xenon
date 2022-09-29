@@ -30,6 +30,7 @@ namespace Xenon
 			 */
 			VulkanDeviceBoundObject(VulkanDeviceBoundObject&& other) noexcept : m_pDevice(std::exchange(other.m_pDevice, nullptr)) {}
 
+			// Disable copy for the class.
 			XENON_DISABLE_COPY(VulkanDeviceBoundObject);
 
 			/**
