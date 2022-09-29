@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "DX12Instance.hpp"
+#include "../XenonCore/Logging.hpp"
 
 namespace Xenon
 {
@@ -10,16 +11,19 @@ namespace Xenon
 		DX12Instance::DX12Instance(const std::string& applicationName, uint32_t applicationVersion)
 			: Instance(applicationName, applicationVersion)
 		{
-			UINT dxgiFactoryFlags = 0;
-
 #ifdef XENON_DEBUG
 			if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&m_Debugger))))
 			{
 				m_Debugger->EnableDebugLayer();
 
 				// Enable additional debug layers.
-				dxgiFactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
+				m_FactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
 			}
+			else
+			{
+				XENON_LOG_ERROR("Failed to create the DirectX 12 debug interface.");
+			}
+
 #endif // XENON_DEBUG
 		}
 	}

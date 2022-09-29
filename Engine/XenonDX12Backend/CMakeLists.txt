@@ -18,6 +18,9 @@ add_library(
 	"DX12Factory.cpp"
 	"DX12Factory.hpp"
 	"DX12Includes.hpp"
+	"DX12Device.cpp"
+	"DX12Device.hpp"
+	"DX12Macros.hpp"
 )
 
 # Set the include directories.

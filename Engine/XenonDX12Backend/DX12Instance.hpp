@@ -32,8 +32,17 @@ namespace Xenon
 			 */
 			~DX12Instance() override = default;
 
+		public:
+			/**
+			 * Get the DXGI factory flags.
+			 *
+			 * @return The flags.
+			 */
+			[[nodiscard]] UINT getFactoryFlags() const { return m_FactoryFlags; }
+
 		private:
 			ComPtr<ID3D12Debug> m_Debugger;
+			UINT m_FactoryFlags = 0;
 		};
 	}
 }
