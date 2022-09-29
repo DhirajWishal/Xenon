@@ -5,6 +5,7 @@
 
 #include "VulkanInstance.hpp"
 #include "VulkanDevice.hpp"
+#include "VulkanCommandBuffers.hpp"
 
 namespace Xenon
 {
@@ -18,6 +19,11 @@ namespace Xenon
 		std::unique_ptr<Xenon::Backend::Device> VulkanFactory::createDevice(Instance* pInstance, RenderTargetType requiredRenderTargets)
 		{
 			return std::make_unique<VulkanDevice>(pInstance->as<VulkanInstance>(), requiredRenderTargets);
+		}
+
+		std::unique_ptr<Xenon::Backend::CommandBuffers> VulkanFactory::createCommandBuffers(Device* pDevice, uint32_t bufferCount)
+		{
+			return std::make_unique<VulkanCommandBuffers>(pDevice->as<VulkanDevice>(), bufferCount);
 		}
 	}
 }

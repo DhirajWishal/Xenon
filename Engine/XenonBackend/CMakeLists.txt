@@ -18,6 +18,7 @@ add_library(
 	"Instance.hpp"
 	"IFactory.hpp"
 	"Device.hpp"
+	"CommandBuffers.hpp"
 )
 
 # Add the target links.

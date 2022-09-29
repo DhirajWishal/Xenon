@@ -3,7 +3,9 @@
 
 #pragma once
 
-#include <type_traits>
+#include "../XenonCore/Common.hpp"
+
+#include <utility>
 
 namespace Xenon
 {
@@ -20,6 +22,15 @@ namespace Xenon
 			 * Default constructor.
 			 */
 			BackendObject() = default;
+
+			/**
+			 * Move constructor.
+			 *
+			 * @param other The other constructor.
+			 */
+			BackendObject(BackendObject&& other) noexcept : m_IsValid(std::exchange(other.m_IsValid, false)) {}
+
+			XENON_DISABLE_COPY(BackendObject);
 
 			/**
 			 * Default virtual destructor.
@@ -53,6 +64,32 @@ namespace Xenon
 				static_assert(std::is_base_of_v<BackendObject, Type>, "Invalid type cast! Make sure that the type to cast to is inherited from this class.");
 				return static_cast<const Type*>(this);
 			}
+
+			/**
+			 * Check if the object is valid or not.
+			 * Invalid objects are not recommended to have around. But they might be the result of a move operation.
+			 *
+			 * @return True if the object is valid.
+			 * @return False if the object is invalid.
+			 */
+			[[nodiscard]] bool isValid() const { return m_IsValid; }
+
+		public:
+			/**
+			 * Move assignment operator.
+			 *
+			 * @param other The other object.
+			 * @return The moved object.
+			 */
+			BackendObject& operator=(BackendObject&& other) noexcept
+			{
+				m_IsValid = std::exchange(other.m_IsValid, false);
+
+				return *this;
+			}
+
+		protected:
+			bool m_IsValid = true;
 		};
 	}
 }

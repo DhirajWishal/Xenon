@@ -14,7 +14,8 @@ add_library(
 	STATIC
 
 	"Instance.cpp"
-	
+	"CommandRecorder.cpp"
+	"CommandRecorder.hpp"	
 )
 
 # Set the target links.

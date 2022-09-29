@@ -25,7 +25,7 @@ namespace Xenon
 			 * @param appliationName The name of the application.
 			 * @param applicationVersion The application version.
 			 */
-			explicit Instance(const std::string& applicationName, uint32_t applicationVersion) {}
+			explicit Instance([[maybe_unused]] const std::string& applicationName, [[maybe_unused]] uint32_t applicationVersion) {}
 
 			/**
 			 * Default virtual destructor.

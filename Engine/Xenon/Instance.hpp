@@ -66,6 +66,34 @@ namespace Xenon
 		 */
 		[[nodsicard]] RenderTargetType getSupportedRenderTargetTypes() const { return m_pDevice->getSupportedRenderTargetTypes(); }
 
+		/**
+		 * Get the backend instance pointer.
+		 *
+		 * @return The instance pointer.
+		 */
+		[[nodiscard]] Backend::Instance* getBackendInstance() { return m_pInstance.get(); }
+
+		/**
+		 * Get the backend instance pointer.
+		 *
+		 * @return The const instance pointer.
+		 */
+		[[nodiscard]] const Backend::Instance* getBackendInstance() const { return m_pInstance.get(); }
+
+		/**
+		 * Get the backend device pointer.
+		 *
+		 * @return The device pointer.
+		 */
+		[[nodiscard]] Backend::Device* getBackendDevice() { return m_pDevice.get(); }
+
+		/**
+		 * Get the backend device pointer.
+		 *
+		 * @return The const device pointer.
+		 */
+		[[nodiscard]] const Backend::Device* getBackendDevice() const { return m_pDevice.get(); }
+
 	private:
 		std::string m_ApplicationName;
 		uint32_t m_ApplicationVersion;

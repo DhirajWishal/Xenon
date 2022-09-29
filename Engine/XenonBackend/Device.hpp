@@ -39,7 +39,7 @@ namespace Xenon
 			 * @param pInstance The instance pointer.
 			 * @param requiredRenderTargets The render targets the device must support.
 			 */
-			explicit Device(Instance* pInstance, RenderTargetType requiredRenderTargets) {}
+			explicit Device([[maybe_unused]] Instance* pInstance, [[maybe_unused]] RenderTargetType requiredRenderTargets) {}
 
 			/**
 			 * Default virtual destructor.

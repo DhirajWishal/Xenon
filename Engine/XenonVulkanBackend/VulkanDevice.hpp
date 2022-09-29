@@ -69,6 +69,27 @@ namespace Xenon
 			 */
 			[[nodiscard]] const VkPhysicalDeviceProperties& getPhysicalDeviceProperties() const { return m_PhysicalDeviceProperties; }
 
+			/**
+			 * Get the compute queue from the device.
+			 * 
+			 * @return The compute queue.
+			 */
+			[[nodiscard]] const VulkanQueue& getComputeQueue() const { return m_ComputeQueue; }
+
+			/**
+			 * Get the graphics queue from the device.
+			 *
+			 * @return The graphics queue.
+			 */
+			[[nodiscard]] const VulkanQueue& getGraphicsQueue() const { return m_GraphicsQueue; }
+
+			/**
+			 * Get the transfer queue from the device.
+			 *
+			 * @return The transfer queue.
+			 */
+			[[nodiscard]] const VulkanQueue& getTransferQueue() const { return m_TransferQueue; }
+
 		private:
 			/**
 			 * Select the required physical device.

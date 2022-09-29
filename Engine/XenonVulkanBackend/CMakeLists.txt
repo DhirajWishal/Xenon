@@ -25,6 +25,10 @@ add_library(
 	"VulkanDevice.hpp"
 	"VulkanQueue.cpp"
 	"VulkanQueue.hpp"
+	"VulkanCommandBuffers.cpp"
+	"VulkanCommandBuffers.hpp"
+	"VulkanCommandBuffer.cpp"
+	"VulkanCommandBuffer.hpp"
 )
 
 # Set the include directories.

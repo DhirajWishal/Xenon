@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Device.hpp"
+#include "CommandBuffers.hpp"
 
 namespace Xenon
 {
@@ -43,6 +43,14 @@ namespace Xenon
 			 * @return The device pointer.
 			 */
 			[[nodiscard]] virtual std::unique_ptr<Device> createDevice(Instance* pInstance, RenderTargetType requiredRenderTargets) = 0;
+
+			/**
+			 * Create new command buffers.
+			 *
+			 * @param pDevice The device pointer.
+			 * @param bufferCount The number of buffers to use.
+			 */
+			[[nodiscard]] virtual std::unique_ptr<CommandBuffers> createCommandBuffers(Device* pDevice, uint32_t bufferCount) = 0;
 		};
 	}
 }

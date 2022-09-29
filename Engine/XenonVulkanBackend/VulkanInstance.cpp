@@ -233,7 +233,7 @@ namespace Xenon
 			applicationInfo.pNext = nullptr;
 			applicationInfo.applicationVersion = applicationVersion;
 			applicationInfo.pApplicationName = applicationName.data();
-			applicationInfo.engineVersion = VK_MAKE_VERSION(0, 0, 1);
+			applicationInfo.engineVersion = VK_MAKE_API_VERSION(0, 0, 1, 0);
 			applicationInfo.pEngineName = "Xenon";
 			applicationInfo.apiVersion = VulkanVersion;
 
