@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include "../XenonCore/Common.hpp"
-
 #include "Instance.hpp"
 
 namespace Xenon
@@ -39,7 +37,7 @@ namespace Xenon
 			 * @param pInstance The instance pointer.
 			 * @param requiredRenderTargets The render targets the device must support.
 			 */
-			explicit Device([[maybe_unused]] Instance* pInstance, [[maybe_unused]] RenderTargetType requiredRenderTargets) {}
+			explicit Device([[maybe_unused]] Instance* pInstance, [[maybe_unused]] RenderTargetType requiredRenderTargets) : m_SupportedRenderTargetTypes(requiredRenderTargets) {}
 
 			/**
 			 * Default virtual destructor.

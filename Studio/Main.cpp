@@ -8,10 +8,7 @@ int main()
 {
 	XENON_LOG_INFORMATION("Hello from the Xenon Studio!");
 	auto instance = Xenon::Instance("Xenon Studio", 0, Xenon::RenderTargetType::All);
-
-	{
-		auto recorder = Xenon::CommandRecorder(instance, 3);
-	}
+	auto recorder = Xenon::CommandRecorder(instance, 3);
 
 	return 0;
 }

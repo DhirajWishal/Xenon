@@ -24,6 +24,15 @@ namespace Xenon
 			explicit VulkanDeviceBoundObject(VulkanDevice* pDevice) : m_pDevice(pDevice) {}
 
 			/**
+			 * Move constructor.
+			 *
+			 * @param other The other device bound object.
+			 */
+			VulkanDeviceBoundObject(VulkanDeviceBoundObject&& other) noexcept : m_pDevice(std::exchange(other.m_pDevice, nullptr)) {}
+
+			XENON_DISABLE_COPY(VulkanDeviceBoundObject);
+
+			/**
 			 * Default virtual destructor.
 			 */
 			virtual ~VulkanDeviceBoundObject() = default;
@@ -41,6 +50,15 @@ namespace Xenon
 			 * @return The const device pointer.
 			 */
 			[[nodiscard]] const VulkanDevice* getDevice() const { return m_pDevice; }
+
+		public:
+			/**
+			 * Move assignment operator.
+			 *
+			 * @param other The other device bound object.
+			 * @return The moved device bound object.
+			 */
+			VulkanDeviceBoundObject& operator=(VulkanDeviceBoundObject&& other) noexcept { m_pDevice = std::exchange(other.m_pDevice, nullptr); return *this; }
 
 		protected:
 			VulkanDevice* m_pDevice = nullptr;

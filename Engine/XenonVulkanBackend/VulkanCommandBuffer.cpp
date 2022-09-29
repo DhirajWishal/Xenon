@@ -23,7 +23,7 @@ namespace Xenon
 		}
 
 		VulkanCommandBuffer::VulkanCommandBuffer(VulkanCommandBuffer&& other) noexcept
-			: VulkanDeviceBoundObject(std::exchange(other.m_pDevice, nullptr))
+			: VulkanDeviceBoundObject(std::move(other))
 			, m_CommandBuffer(std::exchange(other.m_CommandBuffer, VK_NULL_HANDLE))
 			, m_CommandPool(std::exchange(other.m_CommandPool, VK_NULL_HANDLE))
 			, m_WaitSemaphore(std::exchange(other.m_WaitSemaphore, VK_NULL_HANDLE))
@@ -54,7 +54,8 @@ namespace Xenon
 
 		VulkanCommandBuffer& VulkanCommandBuffer::operator=(VulkanCommandBuffer&& other) noexcept
 		{
-			m_pDevice = std::exchange(other.m_pDevice, nullptr);
+			VulkanDeviceBoundObject::operator=(std::move(other));
+
 			m_CommandBuffer = std::exchange(other.m_CommandBuffer, VK_NULL_HANDLE);
 			m_CommandPool = std::exchange(other.m_CommandPool, VK_NULL_HANDLE);
 			m_WaitSemaphore = std::exchange(other.m_WaitSemaphore, VK_NULL_HANDLE);

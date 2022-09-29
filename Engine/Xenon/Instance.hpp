@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include "../XenonCore/Common.hpp"
-
 #include "../XenonBackend/IFactory.hpp"
 
 #include <string>

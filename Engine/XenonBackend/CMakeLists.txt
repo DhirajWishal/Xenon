@@ -19,6 +19,12 @@ add_library(
 	"IFactory.hpp"
 	"Device.hpp"
 	"CommandBuffers.hpp"
+	"Buffer.hpp"
+	"HostAccessibleBuffer.hpp"
+	"StagingBuffer.hpp"
+	"VertexBuffer.hpp"
+	"IndexBuffer.hpp"
+	"UniformBuffer.hpp"
 )
 
 # Add the target links.
