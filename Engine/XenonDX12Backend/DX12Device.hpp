@@ -25,7 +25,42 @@ namespace Xenon
 			 */
 			explicit DX12Device(DX12Instance* pInstance, RenderTargetType requiredRenderTargets);
 
+			/**
+			 * Destructor.
+			 */
+			~DX12Device() override = default;
+
+		public:
+			/**
+			 * Get the backend device object.
+			 *
+			 * @return The device pointer.
+			 */
+			[[nodiscard]] ID3D12Device* getDevice() { return m_Device.Get(); }
+
+			/**
+			 * Get the backend device object.
+			 *
+			 * @return The const device pointer.
+			 */
+			[[nodiscard]] const ID3D12Device* getDevice() const { return m_Device.Get(); }
+
 		private:
+			/**
+			 * Create the DXGI factory.
+			 */
+			void createFactory();
+
+			/**
+			 * Create the DirectX 12 device.
+			 */
+			void createDevice();
+
+			/**
+			 * Create the required queues.
+			 */
+			void createQueue();
+
 			/**
 			 * Get a suitable hardware adapter.
 			 *
@@ -40,6 +75,7 @@ namespace Xenon
 
 			ComPtr<IDXGIFactory4> m_Factory;
 			ComPtr<ID3D12Device> m_Device;
+			ComPtr<ID3D12CommandQueue> m_GraphicsQueue;
 		};
 	}
 }

@@ -13,8 +13,22 @@ namespace Xenon
 			, m_pInstance(pInstance)
 		{
 			// Create the factory.
-			XENON_DX12_ASSERT(CreateDXGIFactory2(pInstance->getFactoryFlags(), IID_PPV_ARGS(&m_Factory)), "Failed to create the DXGI factory!");
+			createFactory();
 
+			// Create the device.
+			createDevice();
+
+			// Create the queues.
+			createQueue();
+		}
+
+		void DX12Device::createFactory()
+		{
+			XENON_DX12_ASSERT(CreateDXGIFactory2(m_pInstance->getFactoryFlags(), IID_PPV_ARGS(&m_Factory)), "Failed to create the DXGI factory!");
+		}
+
+		void DX12Device::createDevice()
+		{
 			// Setup the test feature levels if a device was not found.
 			constexpr D3D_FEATURE_LEVEL testFeatureLevels[] = {
 				D3D_FEATURE_LEVEL_12_2,
@@ -22,6 +36,7 @@ namespace Xenon
 				D3D_FEATURE_LEVEL_12_0
 			};
 
+			// Iterate over the features and check if the best feature is available.
 			for (uint8_t i = 0; (i < 3) && !m_Device; i++)
 			{
 				const auto featureLevel = testFeatureLevels[i];
@@ -54,6 +69,16 @@ namespace Xenon
 			// Check if we were able to create a device.
 			if (!m_Device)
 				XENON_LOG_FATAL("Failed to create a DirectX device!");
+		}
+
+		void DX12Device::createQueue()
+		{
+			// Setup graphics queue.
+			D3D12_COMMAND_QUEUE_DESC queueDesc = {};
+			queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+			queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+
+			XENON_DX12_ASSERT(m_Device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_GraphicsQueue)), "Failed to create the DirectX 12 graphics queue!");
 		}
 
 		_Use_decl_annotations_ void DX12Device::getHardwareAdapter(IDXGIFactory1* pFactory, IDXGIAdapter1** ppAdapter, D3D_FEATURE_LEVEL featureLevel)
