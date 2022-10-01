@@ -8,6 +8,8 @@
 #include "DX12VertexBuffer.hpp"
 #include "DX12IndexBuffer.hpp"
 #include "DX12StagingBuffer.hpp"
+#include "DX12StorageBuffer.hpp"
+#include "DX12UniformBuffer.hpp"
 
 namespace Xenon
 {
@@ -41,12 +43,12 @@ namespace Xenon
 
 		std::unique_ptr<Xenon::Backend::StorageBuffer> DX12Factory::createStorageBuffer(Device* pDevice, uint64_t size)
 		{
-			return nullptr;
+			return std::make_unique<DX12StorageBuffer>(pDevice->as<DX12Device>(), size);
 		}
 
 		std::unique_ptr<Xenon::Backend::UniformBuffer> DX12Factory::createUniformBuffer(Device* pDevice, uint64_t size)
 		{
-			return nullptr;
+			return std::make_unique<DX12UniformBuffer>(pDevice->as<DX12Device>(), size);
 		}
 	}
 }

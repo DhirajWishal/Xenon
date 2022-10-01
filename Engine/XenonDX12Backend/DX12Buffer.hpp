@@ -9,6 +9,8 @@ namespace Xenon
 {
 	namespace Backend
 	{
+		class Buffer;
+
 		/**
 		 * DirectX 12 buffer class.
 		 * This is the base class for all the DirectX 12 buffers.
@@ -32,7 +34,36 @@ namespace Xenon
 			 */
 			virtual ~DX12Buffer() = default;
 
+			/**
+			 * Convert a backend buffer pointer to Vulkan buffer pointer.
+			 *
+			 * @param pBuffer The buffer pointer.
+			 * @return The casted Vulkan buffer pointer.
+			 */
+			static DX12Buffer* From(Buffer* pBuffer);
+
+			/**
+			 * Convert a backend buffer pointer to Vulkan buffer pointer.
+			 *
+			 * @param pBuffer The buffer pointer.
+			 * @return The casted const Vulkan buffer pointer.
+			 */
+			static const DX12Buffer* From(const Buffer* pBuffer);
+
 		protected:
+			/**
+			 * Copy data from another buffer to this buffer.
+			 *
+			 * @param pBuffer The other buffer to copy the data from.
+			 * @param size The number of bytes to copy.
+			 * @param srcOffset The offset to copy the data from.
+			 * @param dstOffset The offset to store the data to (in this buffer).
+			 */
+			void copyFrom(const DX12Buffer* pBuffer, uint64_t size, uint64_t srcOffset, uint64_t dstOffset);
+
+		protected:
+			DX12Device* m_pDevice = nullptr;
+
 			ComPtr<ID3D12Resource> m_Buffer;
 			D3D12MA::Allocation* m_pAllocation = nullptr;
 		};

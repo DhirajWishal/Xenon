@@ -18,8 +18,8 @@ namespace Xenon
 			// Create the device.
 			createDevice();
 
-			// Create the queues.
-			createQueue();
+			// Create the command structures.
+			createCommandStructures();
 
 			// Create the allocator.
 			createAllocator();
@@ -83,7 +83,7 @@ namespace Xenon
 				XENON_LOG_FATAL("Failed to create a DirectX device!");
 		}
 
-		void DX12Device::createQueue()
+		void DX12Device::createCommandStructures()
 		{
 			// Setup graphics queue.
 			D3D12_COMMAND_QUEUE_DESC queueDesc = {};
@@ -91,6 +91,9 @@ namespace Xenon
 			queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 
 			XENON_DX12_ASSERT(m_Device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_GraphicsQueue)), "Failed to create the DirectX 12 graphics queue!");
+
+			// Create the global command allocator.
+			XENON_DX12_ASSERT(m_Device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_GlobalCommandAllocator)), "Failed to create the DirectX 12 global command allocator!");
 		}
 
 		void DX12Device::createAllocator()

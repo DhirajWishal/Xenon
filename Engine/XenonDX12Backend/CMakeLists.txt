@@ -33,6 +33,10 @@ add_library(
 	"DX12IndexBuffer.hpp" 
 	"DX12StagingBuffer.cpp"
 	"DX12StagingBuffer.hpp"
+	"DX12StorageBuffer.cpp"
+	"DX12StorageBuffer.hpp"
+	"DX12UniformBuffer.cpp"
+	"DX12UniformBuffer.hpp"
 )
 
 # Set the include directories.

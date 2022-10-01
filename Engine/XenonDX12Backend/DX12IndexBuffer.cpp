@@ -10,7 +10,7 @@ namespace Xenon
 	{
 		DX12IndexBuffer::DX12IndexBuffer(DX12Device* pDevice, uint64_t size, IndexSize indexSize)
 			: IndexBuffer(pDevice, size, indexSize)
-			, DX12Buffer(pDevice, size, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_INDEX_BUFFER)
+			, DX12Buffer(pDevice, size, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_INDEX_BUFFER)
 		{
 			// Initialize the buffer view.
 			m_BufferView.BufferLocation = m_Buffer->GetGPUVirtualAddress();
@@ -20,7 +20,7 @@ namespace Xenon
 
 		void DX12IndexBuffer::copy(const Buffer* pBuffer, uint64_t size, uint64_t srcOffset /*= 0*/, uint64_t dstOffset /*= 0*/)
 		{
-			// TODO: Copy the buffer.
+			copyFrom(From(pBuffer), size, srcOffset, dstOffset);
 		}
 
 		DXGI_FORMAT DX12IndexBuffer::getFormatFromIndexSize(IndexSize size) const
@@ -41,6 +41,5 @@ namespace Xenon
 				return DXGI_FORMAT_UNKNOWN;
 			}
 		}
-
 	}
 }

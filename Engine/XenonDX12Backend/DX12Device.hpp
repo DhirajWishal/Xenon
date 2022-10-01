@@ -61,6 +61,34 @@ namespace Xenon
 			 */
 			[[nodiscard]] const D3D12MA::Allocator* getAllocator() const { return m_pAllocator; }
 
+			/**
+			 * Get the command queue.
+			 *
+			 * @return The command queue pointer.
+			 */
+			[[nodiscard]] ID3D12CommandQueue* getCommandQueue() { return m_GraphicsQueue.Get(); }
+
+			/**
+			 * Get the command queue.
+			 *
+			 * @return The const command queue pointer.
+			 */
+			[[nodiscard]] const ID3D12CommandQueue* getCommandQueue() const { return m_GraphicsQueue.Get(); }
+
+			/**
+			 * Get the global command allocator.
+			 *
+			 * @return The command allocator pointer.
+			 */
+			[[nodsicard]] ID3D12CommandAllocator* getCommandAllocator() { return m_GlobalCommandAllocator.Get(); }
+
+			/**
+			 * Get the global command allocator.
+			 *
+			 * @return The const command allocator pointer.
+			 */
+			[[nodsicard]] const ID3D12CommandAllocator* getCommandAllocator() const { return m_GlobalCommandAllocator.Get(); }
+
 		private:
 			/**
 			 * Create the DXGI factory.
@@ -73,9 +101,9 @@ namespace Xenon
 			void createDevice();
 
 			/**
-			 * Create the required queues.
+			 * Create the required command structures.
 			 */
-			void createQueue();
+			void createCommandStructures();
 
 			/**
 			 * Create the D3D12MA allocator.
@@ -97,7 +125,9 @@ namespace Xenon
 			ComPtr<IDXGIFactory4> m_Factory;
 			ComPtr<ID3D12Device> m_Device;
 			ComPtr<IDXGIAdapter> m_Adapter;
+
 			ComPtr<ID3D12CommandQueue> m_GraphicsQueue;
+			ComPtr<ID3D12CommandAllocator> m_GlobalCommandAllocator;
 
 			D3D12MA::Allocator* m_pAllocator = nullptr;
 		};
