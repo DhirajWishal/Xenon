@@ -8,8 +8,8 @@
 int main()
 {
 	XENON_LOG_INFORMATION("Hello from the Xenon Studio!");
-	// auto instance = Xenon::Instance("Xenon Studio", 0, Xenon::RenderTargetType::All, Xenon::BackendType::DirectX_12);
-	auto instance = Xenon::Instance("Xenon Studio", 0, Xenon::RenderTargetType::All, Xenon::BackendType::Vulkan);
+	auto instance = Xenon::Instance("Xenon Studio", 0, Xenon::RenderTargetType::All, Xenon::BackendType::DirectX_12);
+	// auto instance = Xenon::Instance("Xenon Studio", 0, Xenon::RenderTargetType::All, Xenon::BackendType::Vulkan);
 	auto vertexBuffer = Xenon::VertexBuffer(instance, 1024, 3 * sizeof(float));
 	auto stagingBuffer = Xenon::StagingBuffer(instance, 1024);
 
