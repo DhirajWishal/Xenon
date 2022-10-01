@@ -13,6 +13,8 @@ add_library(
 	XenonDX12Backend
 	STATIC
 
+	"${D3DMA_SOURCE_DIR}/D3D12MemAlloc.cpp"	# We need this as described by the API.
+
 	"DX12Instance.cpp"
 	"DX12Instance.hpp"
 	"DX12Factory.cpp"
@@ -29,6 +31,8 @@ add_library(
 	"DX12VertexBuffer.hpp"
 	"DX12IndexBuffer.cpp" 
 	"DX12IndexBuffer.hpp" 
+	"DX12StagingBuffer.cpp"
+	"DX12StagingBuffer.hpp"
 )
 
 # Set the include directories.
@@ -36,6 +40,7 @@ target_include_directories(
 	XenonDX12Backend 
 
 	PRIVATE ${DIRECT_X_HEADERS_INCLUDE_DIR}
+	PRIVATE ${D3DMA_INCLUDE_DIR}
 )
 
 # Make sure to specify the C++ standard to C++20.

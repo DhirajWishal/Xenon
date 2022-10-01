@@ -7,6 +7,8 @@
 
 #include "DX12Instance.hpp"
 
+#include <D3D12MemAlloc.h>
+
 namespace Xenon
 {
 	namespace Backend
@@ -28,7 +30,7 @@ namespace Xenon
 			/**
 			 * Destructor.
 			 */
-			~DX12Device() override = default;
+			~DX12Device() override;
 
 		public:
 			/**
@@ -62,6 +64,11 @@ namespace Xenon
 			void createQueue();
 
 			/**
+			 * Create the D3D12MA allocator.
+			 */
+			void createAllocator();
+
+			/**
 			 * Get a suitable hardware adapter.
 			 *
 			 * @param pFactory The factory pointer.
@@ -75,7 +82,10 @@ namespace Xenon
 
 			ComPtr<IDXGIFactory4> m_Factory;
 			ComPtr<ID3D12Device> m_Device;
+			ComPtr<IDXGIAdapter> m_Adapter;
 			ComPtr<ID3D12CommandQueue> m_GraphicsQueue;
+
+			D3D12MA::Allocator* m_pAllocator = nullptr;
 		};
 	}
 }

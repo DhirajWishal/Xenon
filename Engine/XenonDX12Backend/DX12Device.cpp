@@ -20,6 +20,14 @@ namespace Xenon
 
 			// Create the queues.
 			createQueue();
+
+			// Create the allocator.
+			createAllocator();
+		}
+
+		DX12Device::~DX12Device()
+		{
+			m_pAllocator->Release();
 		}
 
 		void DX12Device::createFactory()
@@ -52,6 +60,8 @@ namespace Xenon
 					IID_PPV_ARGS(&m_Device)
 				);
 
+				m_Adapter = hardwareAdapter;
+
 				// If it failed, try making a software rasterizing device.
 				if (FAILED(result))
 				{
@@ -63,6 +73,8 @@ namespace Xenon
 						featureLevel,
 						IID_PPV_ARGS(&m_Device)
 					);
+
+					m_Adapter = warpAdapter;
 				}
 			}
 
@@ -79,6 +91,15 @@ namespace Xenon
 			queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 
 			XENON_DX12_ASSERT(m_Device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_GraphicsQueue)), "Failed to create the DirectX 12 graphics queue!");
+		}
+
+		void DX12Device::createAllocator()
+		{
+			D3D12MA::ALLOCATOR_DESC allocatorDesc = {};
+			allocatorDesc.pDevice = m_Device.Get();
+			allocatorDesc.pAdapter = m_Adapter.Get();
+
+			XENON_DX12_ASSERT(D3D12MA::CreateAllocator(&allocatorDesc, &m_pAllocator), "Failed to create the DirectX 12 memory allocator!");
 		}
 
 		_Use_decl_annotations_ void DX12Device::getHardwareAdapter(IDXGIFactory1* pFactory, IDXGIAdapter1** ppAdapter, D3D_FEATURE_LEVEL featureLevel)
