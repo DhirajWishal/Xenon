@@ -18,7 +18,7 @@ namespace Xenon
 			Vertex,
 			Staging,
 			Storage,
-			Uniform
+			Uniform,
 		};
 
 		/**

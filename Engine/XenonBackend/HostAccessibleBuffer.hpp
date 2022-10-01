@@ -33,32 +33,25 @@ namespace Xenon
 			virtual ~HostAccessibleBuffer() = default;
 
 			/**
-			 * Map the buffer memory for host access.
+			 * Write data to the buffer.
 			 *
-			 * @return The buffer memory.
+			 * @param pData The data pointer to copy the data from.
+			 * @param size The size of the data to copy in bytes.
+			 * @param offset The buffer's offset to copy to. Default is 0.
 			 */
-			[[nodiscard]] virtual std::byte* map() = 0;
+			virtual void write(const std::byte* pData, uint64_t size, uint64_t offset = 0) = 0;
 
 			/**
-			 * Unmap the buffer memory from host access.
+			 * Begin reading data from the GPU.
+			 *
+			 * @return The const data pointer.
 			 */
-			virtual void unmap() = 0;
+			[[nodiscard]] virtual const std::byte* beginRead() = 0;
 
 			/**
-			 * Utility method to copy data from any type of data.
-			 *
-			 * @tparam Type The data type.
-			 * @param data The data pointer to copy.
-			 * @param size The data size to copy. Default is the size of the Type.
-			 * @param offset The buffer offset to copy to. Default is 0.
+			 * End the buffer reading.
 			 */
-			template<class Type>
-			void copy(const Type* data, uint64_t size = sizeof(Type), uint64_t offset = 0)
-			{
-				auto destination = map() + offset;
-				std::copy_n(reinterpret_cast<const std::byte*>(data), size, destination);
-				unmap();
-			}
+			virtual void endRead() = 0;
 		};
 	}
 }

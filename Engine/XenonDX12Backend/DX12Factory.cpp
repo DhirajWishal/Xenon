@@ -7,6 +7,7 @@
 #include "DX12Device.hpp"
 #include "DX12VertexBuffer.hpp"
 #include "DX12IndexBuffer.hpp"
+#include "DX12StagingBuffer.hpp"
 
 namespace Xenon
 {
@@ -35,7 +36,7 @@ namespace Xenon
 
 		std::unique_ptr<Xenon::Backend::StagingBuffer> DX12Factory::createStagingBuffer(Device* pDevice, uint64_t size)
 		{
-			return nullptr;
+			return std::make_unique<DX12StagingBuffer>(pDevice->as<DX12Device>(), size);
 		}
 
 		std::unique_ptr<Xenon::Backend::StorageBuffer> DX12Factory::createStorageBuffer(Device* pDevice, uint64_t size)

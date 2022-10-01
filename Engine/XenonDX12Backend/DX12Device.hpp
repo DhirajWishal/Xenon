@@ -47,6 +47,20 @@ namespace Xenon
 			 */
 			[[nodiscard]] const ID3D12Device* getDevice() const { return m_Device.Get(); }
 
+			/**
+			 * Get the memory allocator.
+			 *
+			 * @return The allocator.
+			 */
+			[[nodiscard]] D3D12MA::Allocator* getAllocator() { return m_pAllocator; }
+
+			/**
+			 * Get the memory allocator.
+			 *
+			 * @return The const allocator.
+			 */
+			[[nodiscard]] const D3D12MA::Allocator* getAllocator() const { return m_pAllocator; }
+
 		private:
 			/**
 			 * Create the DXGI factory.

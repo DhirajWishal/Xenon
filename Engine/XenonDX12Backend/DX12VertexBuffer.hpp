@@ -42,7 +42,7 @@ namespace Xenon
 			void copy(const Buffer* pBuffer, uint64_t size, uint64_t srcOffset = 0, uint64_t dstOffset = 0) override;
 
 		private:
-			D3D12_VERTEX_BUFFER_VIEW m_BufferView;
+			D3D12_VERTEX_BUFFER_VIEW m_BufferView = {};
 		};
 	}
 }

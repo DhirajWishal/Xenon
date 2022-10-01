@@ -10,7 +10,7 @@ namespace Xenon
 	{
 		DX12IndexBuffer::DX12IndexBuffer(DX12Device* pDevice, uint64_t size, IndexSize indexSize)
 			: IndexBuffer(pDevice, size, indexSize)
-			, DX12Buffer(pDevice, size, CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD))
+			, DX12Buffer(pDevice, size, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_INDEX_BUFFER)
 		{
 			// Initialize the buffer view.
 			m_BufferView.BufferLocation = m_Buffer->GetGPUVirtualAddress();

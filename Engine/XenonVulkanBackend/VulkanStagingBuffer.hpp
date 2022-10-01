@@ -41,16 +41,25 @@ namespace Xenon
 			void copy(const Buffer* pBuffer, uint64_t size, uint64_t srcOffset = 0, uint64_t dstOffset = 0) override;
 
 			/**
-			 * Map the buffer memory for host access.
+			 * Write data to the buffer.
 			 *
-			 * @return The buffer memory.
+			 * @param pData The data pointer to copy the data from.
+			 * @param size The size of the data to copy in bytes.
+			 * @param offset The buffer's offset to copy to. Default is 0.
 			 */
-			[[nodiscard]] std::byte* map() override;
+			void write(const std::byte* pData, uint64_t size, uint64_t offset = 0) override;
 
 			/**
-			 * Unmap the buffer memory from host access.
+			 * Begin reading data from the GPU.
+			 *
+			 * @return The const data pointer.
 			 */
-			void unmap() override;
+			[[nodiscard]] const std::byte* beginRead() override;
+
+			/**
+			 * End the buffer reading.
+			 */
+			void endRead() override;
 		};
 	}
 }
