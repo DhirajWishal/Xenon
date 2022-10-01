@@ -4,6 +4,8 @@
 #include "VulkanBuffer.hpp"
 #include "VulkanMacros.hpp"
 
+#include "VulkanCommandPool.hpp"
+
 #include "VulkanIndexBuffer.hpp"
 #include "VulkanStagingBuffer.hpp"
 #include "VulkanStorageBuffer.hpp"
@@ -99,6 +101,15 @@ namespace Xenon
 				XENON_LOG_ERROR("Invalid buffer type!");
 				return nullptr;
 			}
+		}
+
+		void VulkanBuffer::copyFrom(const VulkanBuffer* pBuffer, uint64_t size, uint64_t srcOffset, uint64_t dstOffset)
+		{
+			auto commandBuffers = VulkanCommandPool(m_pDevice);
+			commandBuffers.begin();
+			commandBuffers.copyBuffers(pBuffer, srcOffset, this, dstOffset, size);
+			commandBuffers.end();
+			commandBuffers.submitTransfer();
 		}
 	}
 }

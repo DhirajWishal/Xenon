@@ -3,7 +3,6 @@
 
 #include "VulkanIndexBuffer.hpp"
 #include "VulkanMacros.hpp"
-#include "VulkanCommandBuffers.hpp"
 
 namespace Xenon
 {
@@ -17,11 +16,7 @@ namespace Xenon
 
 		void VulkanIndexBuffer::copy(const Buffer* pBuffer, uint64_t size, uint64_t srcOffset /*= 0*/, uint64_t dstOffset /*= 0*/)
 		{
-			auto commandBuffers = VulkanCommandBuffers(m_pDevice);
-			commandBuffers.begin();
-			commandBuffers.copyBuffers(From(pBuffer), srcOffset, this, dstOffset, size);
-			commandBuffers.end();
-			commandBuffers.submitTransfer();
+			copyFrom(From(pBuffer), size, srcOffset, dstOffset);
 		}
 	}
 }

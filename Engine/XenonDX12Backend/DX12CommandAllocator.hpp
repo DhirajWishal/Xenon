@@ -10,9 +10,9 @@ namespace Xenon
 	namespace Backend
 	{
 		/**
-		 * DirectX 12 command buffers.
+		 * DirectX 12 command allocator.
 		 */
-		class DX12CommandBuffers final
+		class DX12CommandAllocator final
 		{
 		public:
 			/**
@@ -20,7 +20,7 @@ namespace Xenon
 			 *
 			 * @param pDevice The device pointer.
 			 */
-			explicit DX12CommandBuffers(DX12Device* pDevice);
+			explicit DX12CommandAllocator(DX12Device* pDevice);
 
 		private:
 			ComPtr<ID3D12CommandAllocator> m_CommandAllocator;

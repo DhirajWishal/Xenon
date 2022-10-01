@@ -72,6 +72,18 @@ namespace Xenon
 			[[nodiscard]] VkDescriptorBufferInfo getDescriptorBufferInfo() const { return m_BufferInfo; }
 
 		protected:
+			/**
+			 * Copy data from another buffer to this.
+			 * This is a utility function for the inherited Buffer class.
+			 *
+			 * @param pBuffer The buffer pointer.
+			 * @param size The number of bytes to copy.
+			 * @param srcOffset The source buffer offset.
+			 * @param dstOffset The destination (this) buffer's offset to copy to.
+			 */
+			void copyFrom(const VulkanBuffer* pBuffer, uint64_t size, uint64_t srcOffset, uint64_t dstOffset);
+
+		protected:
 			VkDescriptorBufferInfo m_BufferInfo;
 
 			VkBuffer m_Buffer = VK_NULL_HANDLE;

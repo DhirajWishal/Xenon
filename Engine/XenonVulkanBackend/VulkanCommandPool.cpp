@@ -1,7 +1,7 @@
 // Copyright 2022 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
-#include "VulkanCommandBuffers.hpp"
+#include "VulkanCommandPool.hpp"
 #include "VulkanMacros.hpp"
 
 #include "VulkanBuffer.hpp"
@@ -10,7 +10,7 @@ namespace Xenon
 {
 	namespace Backend
 	{
-		VulkanCommandBuffers::VulkanCommandBuffers(VulkanDevice* pDevice)
+		VulkanCommandPool::VulkanCommandPool(VulkanDevice* pDevice)
 			: VulkanDeviceBoundObject(pDevice)
 		{
 			// Create the command pool.
@@ -40,7 +40,7 @@ namespace Xenon
 			m_pCurrentCommandBuffer = &m_CommandBuffers[m_CurrentIndex];
 		}
 
-		VulkanCommandBuffers::VulkanCommandBuffers(VulkanDevice* pDevice, uint32_t bufferCount)
+		VulkanCommandPool::VulkanCommandPool(VulkanDevice* pDevice, uint32_t bufferCount)
 			: VulkanDeviceBoundObject(pDevice)
 		{
 			// Create the command pool.
@@ -72,13 +72,13 @@ namespace Xenon
 			m_pCurrentCommandBuffer = &m_CommandBuffers[m_CurrentIndex];
 		}
 
-		VulkanCommandBuffers::~VulkanCommandBuffers()
+		VulkanCommandPool::~VulkanCommandPool()
 		{
 			m_CommandBuffers.clear();
 			m_pDevice->getDeviceTable().vkDestroyCommandPool(m_pDevice->getLogicalDevice(), m_CommandPool, nullptr);
 		}
 
-		void VulkanCommandBuffers::next()
+		void VulkanCommandPool::next()
 		{
 			if (++m_CurrentIndex == m_CommandBuffers.size())
 				m_CurrentIndex = 0;
@@ -86,7 +86,7 @@ namespace Xenon
 			m_pCurrentCommandBuffer = &m_CommandBuffers[m_CurrentIndex];
 		}
 
-		void VulkanCommandBuffers::submitGraphics(bool shouldWait /*= true*/)
+		void VulkanCommandPool::submitGraphics(bool shouldWait /*= true*/)
 		{
 			m_pCurrentCommandBuffer->submit(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, m_pDevice->getGraphicsQueue().getQueue());
 
@@ -94,7 +94,7 @@ namespace Xenon
 				m_pCurrentCommandBuffer->wait();
 		}
 
-		void VulkanCommandBuffers::submitCompute(bool shouldWait /*= true*/)
+		void VulkanCommandPool::submitCompute(bool shouldWait /*= true*/)
 		{
 			m_pCurrentCommandBuffer->submit(VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, m_pDevice->getComputeQueue().getQueue());
 
@@ -102,7 +102,7 @@ namespace Xenon
 				m_pCurrentCommandBuffer->wait();
 		}
 
-		void VulkanCommandBuffers::submitTransfer(bool shouldWait /*= true*/)
+		void VulkanCommandPool::submitTransfer(bool shouldWait /*= true*/)
 		{
 			m_pCurrentCommandBuffer->submit(VK_PIPELINE_STAGE_TRANSFER_BIT, m_pDevice->getTransferQueue().getQueue());
 
@@ -110,7 +110,7 @@ namespace Xenon
 				m_pCurrentCommandBuffer->wait();
 		}
 
-		void VulkanCommandBuffers::begin()
+		void VulkanCommandPool::begin()
 		{
 			VkCommandBufferBeginInfo beginInfo = {};
 			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -121,7 +121,7 @@ namespace Xenon
 			m_pDevice->getDeviceTable().vkBeginCommandBuffer(m_pCurrentCommandBuffer->getCommandBuffer(), &beginInfo);
 		}
 
-		void VulkanCommandBuffers::copyBuffers(const VulkanBuffer* pSourceBuffer, uint64_t srcOffset, const VulkanBuffer* pDestinationBuffer, uint64_t dstOffset, uint64_t size)
+		void VulkanCommandPool::copyBuffers(const VulkanBuffer* pSourceBuffer, uint64_t srcOffset, const VulkanBuffer* pDestinationBuffer, uint64_t dstOffset, uint64_t size)
 		{
 			VkBufferCopy copy = {};
 			copy.size = size;
@@ -131,7 +131,7 @@ namespace Xenon
 			m_pDevice->getDeviceTable().vkCmdCopyBuffer(m_pCurrentCommandBuffer->getCommandBuffer(), pSourceBuffer->getBuffer(), pDestinationBuffer->getBuffer(), 1, &copy);
 		}
 
-		void VulkanCommandBuffers::end()
+		void VulkanCommandPool::end()
 		{
 			m_pDevice->getDeviceTable().vkEndCommandBuffer(m_pCurrentCommandBuffer->getCommandBuffer());
 		}

@@ -14,7 +14,7 @@ namespace Xenon
 		/**
 		 * Vulkan command buffers class.
 		 */
-		class VulkanCommandBuffers final : public VulkanDeviceBoundObject
+		class VulkanCommandPool final : public VulkanDeviceBoundObject
 		{
 		public:
 			/**
@@ -23,7 +23,7 @@ namespace Xenon
 			 *
 			 * @param pDevice The Vulkan device.
 			 */
-			explicit VulkanCommandBuffers(VulkanDevice* pDevice);
+			explicit VulkanCommandPool(VulkanDevice* pDevice);
 
 			/**
 			 * Explicit constructor.
@@ -31,12 +31,12 @@ namespace Xenon
 			 * @param pDevice The Vulkan device.
 			 * @param bufferCount The number of command buffers to have.
 			 */
-			explicit VulkanCommandBuffers(VulkanDevice* pDevice, uint32_t bufferCount);
+			explicit VulkanCommandPool(VulkanDevice* pDevice, uint32_t bufferCount);
 
 			/**
 			 * Destructor.
 			 */
-			~VulkanCommandBuffers() override;
+			~VulkanCommandPool() override;
 
 			/**
 			 * This will internally select the next command buffer primitive for recording and execution.

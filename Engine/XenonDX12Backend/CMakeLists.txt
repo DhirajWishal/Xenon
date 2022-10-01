@@ -21,8 +21,8 @@ add_library(
 	"DX12Device.cpp"
 	"DX12Device.hpp"
 	"DX12Macros.hpp"
-	"DX12CommandBuffers.cpp"
-	"DX12CommandBuffers.hpp"
+	"DX12CommandAllocator.cpp"
+	"DX12CommandAllocator.hpp"
 )
 
 # Set the include directories.
