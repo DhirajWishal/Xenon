@@ -9,6 +9,8 @@ namespace Xenon
 {
 	namespace Backend
 	{
+		class Buffer;
+
 		/**
 		 * Vulkan buffer class.
 		 * This class is a universal buffer which can be created to be any type.
@@ -29,7 +31,23 @@ namespace Xenon
 			/**
 			 * Destructor.
 			 */
-			~VulkanBuffer() override;
+			virtual ~VulkanBuffer() override;
+
+			/**
+			 * Convert a backend buffer pointer to Vulkan buffer pointer.
+			 *
+			 * @param pBuffer The buffer pointer.
+			 * @return The casted Vulkan buffer pointer.
+			 */
+			static VulkanBuffer* From(Buffer* pBuffer);
+
+			/**
+			 * Convert a backend buffer pointer to Vulkan buffer pointer.
+			 *
+			 * @param pBuffer The buffer pointer.
+			 * @return The casted const Vulkan buffer pointer.
+			 */
+			static const VulkanBuffer* From(const Buffer* pBuffer);
 
 		public:
 			/**

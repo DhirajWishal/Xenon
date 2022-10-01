@@ -3,18 +3,18 @@
 
 #pragma once
 
-#include "../XenonBackend/CommandBuffers.hpp"
-
 #include "VulkanCommandBuffer.hpp"
 
 namespace Xenon
 {
 	namespace Backend
 	{
+		class VulkanBuffer;
+
 		/**
 		 * Vulkan command buffers class.
 		 */
-		class VulkanCommandBuffers final : public CommandBuffers, public VulkanDeviceBoundObject
+		class VulkanCommandBuffers final : public VulkanDeviceBoundObject
 		{
 		public:
 			/**
@@ -41,34 +41,34 @@ namespace Xenon
 			/**
 			 * This will internally select the next command buffer primitive for recording and execution.
 			 */
-			void next() override;
+			void next();
 
 			/**
 			 * Submit all the graphics commands.
 			 *
 			 * @param shouldWait Whether we should wait till the commands are executed. Default is true.
 			 */
-			void submitGraphics(bool shouldWait = true) override;
+			void submitGraphics(bool shouldWait = true);
 
 			/**
 			 * Submit all the compute commands.
 			 *
 			 * @param shouldWait Whether we should wait till the commands are executed. Default is true.
 			 */
-			void submitCompute(bool shouldWait = true) override;
+			void submitCompute(bool shouldWait = true);
 
 			/**
 			 * Submit all the transfer commands.
 			 *
 			 * @param shouldWait Whether we should wait till the commands are executed. Default is true.
 			 */
-			void submitTransfer(bool shouldWait = true) override;
+			void submitTransfer(bool shouldWait = true);
 
 		public:
 			/**
 			 * Begin the current command buffer recording.
 			 */
-			void begin() override;
+			void begin();
 
 			/**
 			 * Copy data from one buffer to another.
@@ -79,21 +79,12 @@ namespace Xenon
 			 * @param dstOffset The destination buffer's offset to copy the data to.
 			 * @param size The number of bytes to copy.
 			 */
-			void copyBuffers(const Buffer* pSourceBuffer, uint64_t srcOffset, const Buffer* pDestinationBuffer, uint64_t dstOffset, uint64_t size) override;
+			void copyBuffers(const VulkanBuffer* pSourceBuffer, uint64_t srcOffset, const VulkanBuffer* pDestinationBuffer, uint64_t dstOffset, uint64_t size);
 
 			/**
 			 * End the current command buffer recording.
 			 */
-			void end() override;
-
-		private:
-			/**
-			 * Get the Vulkan buffer handle from the buffer.
-			 *
-			 * @param pBuffer The buffer pointer to get the buffer handle from.
-			 * @return The buffer handle.
-			 */
-			[[nodiscard]] VkBuffer getBufferHandle(const Buffer* pBuffer) const;
+			void end();
 
 		private:
 			std::vector<VulkanCommandBuffer> m_CommandBuffers;

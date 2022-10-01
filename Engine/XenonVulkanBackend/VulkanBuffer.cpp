@@ -4,6 +4,12 @@
 #include "VulkanBuffer.hpp"
 #include "VulkanMacros.hpp"
 
+#include "VulkanIndexBuffer.hpp"
+#include "VulkanStagingBuffer.hpp"
+#include "VulkanStorageBuffer.hpp"
+#include "VulkanUniformBuffer.hpp"
+#include "VulkanVertexBuffer.hpp"
+
 namespace Xenon
 {
 	namespace Backend
@@ -43,6 +49,56 @@ namespace Xenon
 		VulkanBuffer::~VulkanBuffer()
 		{
 			vmaDestroyBuffer(m_pDevice->getAllocator(), m_Buffer, m_Allocation);;
+		}
+
+		VulkanBuffer* VulkanBuffer::From(Buffer* pBuffer)
+		{
+			switch (pBuffer->getType())
+			{
+			case Xenon::Backend::BufferType::Index:
+				return pBuffer->as<VulkanIndexBuffer>();
+
+			case Xenon::Backend::BufferType::Vertex:
+				return pBuffer->as<VulkanVertexBuffer>();
+
+			case Xenon::Backend::BufferType::Staging:
+				return pBuffer->as<VulkanStagingBuffer>();
+
+			case Xenon::Backend::BufferType::Storage:
+				return pBuffer->as<VulkanStorageBuffer>();
+
+			case Xenon::Backend::BufferType::Uniform:
+				return pBuffer->as<VulkanUniformBuffer>();
+
+			default:
+				XENON_LOG_ERROR("Invalid buffer type!");
+				return nullptr;
+			}
+		}
+
+		const VulkanBuffer* VulkanBuffer::From(const Buffer* pBuffer)
+		{
+			switch (pBuffer->getType())
+			{
+			case Xenon::Backend::BufferType::Index:
+				return pBuffer->as<VulkanIndexBuffer>();
+
+			case Xenon::Backend::BufferType::Vertex:
+				return pBuffer->as<VulkanVertexBuffer>();
+
+			case Xenon::Backend::BufferType::Staging:
+				return pBuffer->as<VulkanStagingBuffer>();
+
+			case Xenon::Backend::BufferType::Storage:
+				return pBuffer->as<VulkanStorageBuffer>();
+
+			case Xenon::Backend::BufferType::Uniform:
+				return pBuffer->as<VulkanUniformBuffer>();
+
+			default:
+				XENON_LOG_ERROR("Invalid buffer type!");
+				return nullptr;
+			}
 		}
 	}
 }

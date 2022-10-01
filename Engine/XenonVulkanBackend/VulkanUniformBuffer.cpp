@@ -15,15 +15,11 @@ namespace Xenon
 		{
 		}
 
-		VulkanUniformBuffer::~VulkanUniformBuffer()
-		{
-		}
-
 		void VulkanUniformBuffer::copy(const Buffer* pBuffer, uint64_t size, uint64_t srcOffset /*= 0*/, uint64_t dstOffset /*= 0*/)
 		{
 			auto commandBuffers = VulkanCommandBuffers(m_pDevice);
 			commandBuffers.begin();
-			commandBuffers.copyBuffers(pBuffer, srcOffset, this, dstOffset, size);
+			commandBuffers.copyBuffers(From(pBuffer), srcOffset, this, dstOffset, size);
 			commandBuffers.end();
 			commandBuffers.submitTransfer();
 		}

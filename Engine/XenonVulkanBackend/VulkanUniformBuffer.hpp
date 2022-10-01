@@ -28,7 +28,7 @@ namespace Xenon
 			/**
 			 * Destructor.
 			 */
-			~VulkanUniformBuffer() override;
+			~VulkanUniformBuffer() override = default;
 
 			/**
 			 * Copy data from another buffer to this buffer.

@@ -18,7 +18,6 @@ add_library(
 	"Instance.hpp"
 	"IFactory.hpp"
 	"Device.hpp"
-	"CommandBuffers.hpp"
 	"Buffer.hpp"
 	"HostAccessibleBuffer.hpp"
 	"StagingBuffer.hpp"

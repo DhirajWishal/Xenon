@@ -4,19 +4,14 @@
 #include "VulkanCommandBuffers.hpp"
 #include "VulkanMacros.hpp"
 
-#include "VulkanIndexBuffer.hpp"
-#include "VulkanStagingBuffer.hpp"
-#include "VulkanStorageBuffer.hpp"
-#include "VulkanUniformBuffer.hpp"
-#include "VulkanVertexBuffer.hpp"
+#include "VulkanBuffer.hpp"
 
 namespace Xenon
 {
 	namespace Backend
 	{
 		VulkanCommandBuffers::VulkanCommandBuffers(VulkanDevice* pDevice)
-			: CommandBuffers(pDevice, 1)
-			, VulkanDeviceBoundObject(pDevice)
+			: VulkanDeviceBoundObject(pDevice)
 		{
 			// Create the command pool.
 			VkCommandPoolCreateInfo createInfo = {};
@@ -46,8 +41,7 @@ namespace Xenon
 		}
 
 		VulkanCommandBuffers::VulkanCommandBuffers(VulkanDevice* pDevice, uint32_t bufferCount)
-			: CommandBuffers(pDevice, bufferCount)
-			, VulkanDeviceBoundObject(pDevice)
+			: VulkanDeviceBoundObject(pDevice)
 		{
 			// Create the command pool.
 			VkCommandPoolCreateInfo createInfo = {};
@@ -127,44 +121,19 @@ namespace Xenon
 			m_pDevice->getDeviceTable().vkBeginCommandBuffer(m_pCurrentCommandBuffer->getCommandBuffer(), &beginInfo);
 		}
 
-		void VulkanCommandBuffers::copyBuffers(const Buffer* pSourceBuffer, uint64_t srcOffset, const Buffer* pDestinationBuffer, uint64_t dstOffset, uint64_t size)
+		void VulkanCommandBuffers::copyBuffers(const VulkanBuffer* pSourceBuffer, uint64_t srcOffset, const VulkanBuffer* pDestinationBuffer, uint64_t dstOffset, uint64_t size)
 		{
 			VkBufferCopy copy = {};
 			copy.size = size;
 			copy.dstOffset = dstOffset;
 			copy.srcOffset = srcOffset;
 
-			m_pDevice->getDeviceTable().vkCmdCopyBuffer(m_pCurrentCommandBuffer->getCommandBuffer(), getBufferHandle(pSourceBuffer), getBufferHandle(pDestinationBuffer), 1, &copy);
+			m_pDevice->getDeviceTable().vkCmdCopyBuffer(m_pCurrentCommandBuffer->getCommandBuffer(), pSourceBuffer->getBuffer(), pDestinationBuffer->getBuffer(), 1, &copy);
 		}
 
 		void VulkanCommandBuffers::end()
 		{
 			m_pDevice->getDeviceTable().vkEndCommandBuffer(m_pCurrentCommandBuffer->getCommandBuffer());
-		}
-
-		VkBuffer VulkanCommandBuffers::getBufferHandle(const Buffer* pBuffer) const
-		{
-			switch (pBuffer->getType())
-			{
-			case Xenon::Backend::BufferType::Index:
-				return pBuffer->as<VulkanIndexBuffer>()->getBuffer();
-
-			case Xenon::Backend::BufferType::Vertex:
-				return pBuffer->as<VulkanVertexBuffer>()->getBuffer();
-
-			case Xenon::Backend::BufferType::Staging:
-				return pBuffer->as<VulkanStagingBuffer>()->getBuffer();
-
-			case Xenon::Backend::BufferType::Storage:
-				return pBuffer->as<VulkanStorageBuffer>()->getBuffer();
-
-			case Xenon::Backend::BufferType::Uniform:
-				return pBuffer->as<VulkanUniformBuffer>()->getBuffer();
-
-			default:
-				XENON_LOG_ERROR("Invalid buffer type!");
-				return VK_NULL_HANDLE;
-			}
 		}
 	}
 }
