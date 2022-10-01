@@ -21,24 +21,18 @@ namespace Xenon
 
 		void VulkanStorageBuffer::write(const std::byte* pData, uint64_t size, uint64_t offset /*= 0*/)
 		{
-			void* pDataStore = nullptr;
-			XENON_VK_ASSERT(vmaMapMemory(m_pDevice->getAllocator(), m_Allocation, &pDataStore), "Failed to map the staging buffer memory!");
-
-			std::copy_n(pData, size, reinterpret_cast<std::byte*>(pDataStore));
-			endRead();
+			std::copy_n(pData, size, map());
+			unmap();
 		}
 
 		const std::byte* VulkanStorageBuffer::beginRead()
 		{
-			void* pDataStore = nullptr;
-
-			XENON_VK_ASSERT(vmaMapMemory(m_pDevice->getAllocator(), m_Allocation, &pDataStore), "Failed to map the staging buffer memory!");
-			return reinterpret_cast<std::byte*>(pDataStore);
+			return map();
 		}
 
 		void VulkanStorageBuffer::endRead()
 		{
-			vmaUnmapMemory(m_pDevice->getAllocator(), m_Allocation);
+			unmap();
 		}
 	}
 }

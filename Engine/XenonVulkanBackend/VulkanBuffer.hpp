@@ -49,6 +49,18 @@ namespace Xenon
 			 */
 			static const VulkanBuffer* From(const Buffer* pBuffer);
 
+			/**
+			 * Map the buffer memory to the local address space.
+			 *
+			 * @return The buffer memory.
+			 */
+			std::byte* map();
+
+			/**
+			 * Unmap the buffer memory.
+			 */
+			void unmap();
+
 		public:
 			/**
 			 * Get the Vulkan buffer.

@@ -13,7 +13,7 @@ namespace Xenon
 			, DX12Buffer(pDevice, size, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER)
 		{
 			// Initialize the buffer view.
-			m_BufferView.BufferLocation = m_Buffer->GetGPUVirtualAddress();
+			m_BufferView.BufferLocation = m_pAllocation->GetResource()->GetGPUVirtualAddress();
 			m_BufferView.StrideInBytes = stride;
 			m_BufferView.SizeInBytes = size;
 		}

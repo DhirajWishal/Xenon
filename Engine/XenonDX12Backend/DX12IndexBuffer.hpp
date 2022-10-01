@@ -51,8 +51,7 @@ namespace Xenon
 			[[nodiscard]] DXGI_FORMAT getFormatFromIndexSize(IndexSize size) const;
 
 		private:
-			ComPtr<ID3D12Resource> m_Buffer;
-			D3D12_INDEX_BUFFER_VIEW m_BufferView;
+			D3D12_INDEX_BUFFER_VIEW m_BufferView = {};
 		};
 	}
 }

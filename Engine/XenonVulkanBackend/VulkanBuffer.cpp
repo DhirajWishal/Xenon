@@ -103,6 +103,19 @@ namespace Xenon
 			}
 		}
 
+		std::byte* VulkanBuffer::map()
+		{
+			void* pDataStore = nullptr;
+
+			XENON_VK_ASSERT(vmaMapMemory(m_pDevice->getAllocator(), m_Allocation, &pDataStore), "Failed to map the staging buffer memory!");
+			return reinterpret_cast<std::byte*>(pDataStore);
+		}
+
+		void VulkanBuffer::unmap()
+		{
+			vmaUnmapMemory(m_pDevice->getAllocator(), m_Allocation);
+		}
+
 		void VulkanBuffer::copyFrom(const VulkanBuffer* pBuffer, uint64_t size, uint64_t srcOffset, uint64_t dstOffset)
 		{
 			auto commandBuffers = VulkanCommandPool(m_pDevice);

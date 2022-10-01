@@ -32,7 +32,7 @@ namespace Xenon
 			/**
 			 * Default virtual destructor.
 			 */
-			virtual ~DX12Buffer() = default;
+			virtual ~DX12Buffer();
 
 			/**
 			 * Convert a backend buffer pointer to Vulkan buffer pointer.
@@ -50,7 +50,6 @@ namespace Xenon
 			 */
 			static const DX12Buffer* From(const Buffer* pBuffer);
 
-		protected:
 			/**
 			 * Copy data from another buffer to this buffer.
 			 *
@@ -61,11 +60,51 @@ namespace Xenon
 			 */
 			void copyFrom(const DX12Buffer* pBuffer, uint64_t size, uint64_t srcOffset, uint64_t dstOffset);
 
+			/**
+			 * Copy the data from a raw pointer to this buffer.
+			 *
+			 * @param pData The data pointer to copy the data from.
+			 * @param size The size of the data to copy in bytes.
+			 * @param offset The buffer's offset to copy to. Default is 0.
+			 */
+			void copyFrom(const std::byte* pData, uint64_t size, uint64_t offset = 0);
+
+			/**
+			 * Map the buffer memory to the local address space.
+			 *
+			 * @return The buffer memory.
+			 */
+			const std::byte* map();
+
+			/**
+			 * Unmap the buffer memory.
+			 */
+			void unmap();
+
+		public:
+			/**
+			 * Get the internally managed resource.
+			 *
+			 * @return The resource pointer.
+			 */
+			[[nodiscard]] ID3D12Resource* getResource() { return m_pAllocation->GetResource(); }
+
+			/**
+			 * Get the internally managed resource.
+			 *
+			 * @return The const resource pointer.
+			 */
+			[[nodiscard]] const ID3D12Resource* getResource() const { return m_pAllocation->GetResource(); }
+
 		protected:
 			DX12Device* m_pDevice = nullptr;
 
-			ComPtr<ID3D12Resource> m_Buffer;
 			D3D12MA::Allocation* m_pAllocation = nullptr;
+
+			std::unique_ptr<DX12Buffer> m_pTemporaryBuffer = nullptr;
+
+		private:
+			uint64_t m_Size = 0;
 		};
 	}
 }

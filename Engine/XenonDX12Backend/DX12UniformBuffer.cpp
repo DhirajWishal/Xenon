@@ -20,18 +20,17 @@ namespace Xenon
 
 		void DX12UniformBuffer::write(const std::byte* pData, uint64_t size, uint64_t offset /*= 0*/)
 		{
-			// TODO: Copy the data to a write only buffer and send it to the GPU (this buffer).
+			copyFrom(pData, size, offset);
 		}
 
 		const std::byte* DX12UniformBuffer::beginRead()
 		{
-			// TODO: Copy the data to read only buffer and get its memory.
-			return nullptr;
+			return map();
 		}
 
 		void DX12UniformBuffer::endRead()
 		{
-			// TODO: Unmap the copy only buffer and delete it.
+			unmap();
 		}
 	}
 }
