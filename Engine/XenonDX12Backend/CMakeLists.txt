@@ -23,7 +23,13 @@ add_library(
 	"DX12Macros.hpp"
 	"DX12CommandAllocator.cpp"
 	"DX12CommandAllocator.hpp"
- "DX12VertexBuffer.cpp")
+	"DX12Buffer.cpp"
+	"DX12Buffer.hpp"
+	"DX12VertexBuffer.cpp"
+	"DX12VertexBuffer.hpp"
+	"DX12IndexBuffer.cpp" 
+	"DX12IndexBuffer.hpp" 
+)
 
 # Set the include directories.
 target_include_directories(
