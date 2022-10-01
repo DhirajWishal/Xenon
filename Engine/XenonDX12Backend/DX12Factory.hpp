@@ -45,14 +45,6 @@ namespace Xenon
 			[[nodiscard]] std::unique_ptr<Device> createDevice(Instance* pInstance, RenderTargetType requiredRenderTargets) override;
 
 			/**
-			 * Create new command buffers.
-			 *
-			 * @param pDevice The device pointer.
-			 * @param bufferCount The number of buffers to use.
-			 */
-			[[nodiscard]] std::unique_ptr<CommandBuffers> createCommandBuffers(Device* pDevice, uint32_t bufferCount) override;
-
-			/**
 			 * Create a new index buffer.
 			 *
 			 * @param pDevice The device pointer.

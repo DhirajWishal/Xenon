@@ -5,7 +5,6 @@
 
 #include "VulkanInstance.hpp"
 #include "VulkanDevice.hpp"
-#include "VulkanCommandBuffers.hpp"
 #include "VulkanIndexBuffer.hpp"
 #include "VulkanStagingBuffer.hpp"
 #include "VulkanStorageBuffer.hpp"
@@ -24,11 +23,6 @@ namespace Xenon
 		std::unique_ptr<Xenon::Backend::Device> VulkanFactory::createDevice(Instance* pInstance, RenderTargetType requiredRenderTargets)
 		{
 			return std::make_unique<VulkanDevice>(pInstance->as<VulkanInstance>(), requiredRenderTargets);
-		}
-
-		std::unique_ptr<Xenon::Backend::CommandBuffers> VulkanFactory::createCommandBuffers(Device* pDevice, uint32_t bufferCount)
-		{
-			return std::make_unique<VulkanCommandBuffers>(pDevice->as<VulkanDevice>(), bufferCount);
 		}
 
 		std::unique_ptr<Xenon::Backend::IndexBuffer> VulkanFactory::createIndexBuffer(Device* pDevice, uint64_t size, IndexSize indexSize)

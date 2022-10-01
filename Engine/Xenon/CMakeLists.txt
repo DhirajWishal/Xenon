@@ -14,8 +14,6 @@ add_library(
 	STATIC
 
 	"Instance.cpp"
-	"CommandRecorder.cpp"
-	"CommandRecorder.hpp"	
 	"VertexBuffer.cpp"
 	"VertexBuffer.hpp"	
 	"IndexBuffer.cpp"
