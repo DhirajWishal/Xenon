@@ -24,7 +24,7 @@ namespace Xenon
 			 * @param pDevice The device pointer.
 			 * @param size The size of the buffer in bytes.
 			 * @param heapType The buffer's heap type.
-			 * @param resourceStates The buffer's resource states. Internally it'll automatically set copy source and destination flags.
+			 * @param resourceStates The buffer's resource states.
 			 * @param resourceFlags The optional usage resource flags. Default is none.
 			 */
 			explicit DX12Buffer(DX12Device* pDevice, uint64_t size, D3D12_HEAP_TYPE heapType, D3D12_RESOURCE_STATES resourceStates, D3D12_RESOURCE_FLAGS resourceFlags = D3D12_RESOURCE_FLAG_NONE);

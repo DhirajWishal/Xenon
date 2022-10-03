@@ -6,7 +6,7 @@
 namespace Xenon
 {
 	IndexBuffer::IndexBuffer(Instance& instance, uint64_t size, IndexSize indexSize)
-		: m_pIndexBuffer(Globals::BackendFactory->createIndexBuffer(instance.getBackendDevice(), size, indexSize))
+		: m_pIndexBuffer(instance.getFactory()->createIndexBuffer(instance.getBackendDevice(), size, indexSize))
 	{
 	}
 }

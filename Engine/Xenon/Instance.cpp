@@ -17,16 +17,24 @@ namespace Xenon
 		, m_ApplicationVersion(applicationVersion)
 	{
 		// If the global backend factory is not initialized, let's initialize it.
-		if (Globals::BackendFactory == nullptr)
+		if (m_pFactory == nullptr)
 		{
 #ifdef XENON_PLATFORM_WINDOWS
 			if (backendType == BackendType::Any || backendType == BackendType::Vulkan)
-				Globals::BackendFactory = std::make_unique<Backend::VulkanFactory>();
+			{
+				m_pFactory = std::make_unique<Backend::VulkanFactory>();
+				m_BackendType = BackendType::Vulkan;
+			}
+
 			else
-				Globals::BackendFactory = std::make_unique<Backend::DX12Factory>();
+			{
+				m_pFactory = std::make_unique<Backend::DX12Factory>();
+				m_BackendType = BackendType::DirectX_12;
+			}
 
 #else 
-			Globals::BackendFactory = std::make_unique<Backend::VulkanFactory>();
+			m_pFactory = std::make_unique<Backend::VulkanFactory>();
+			m_BackendType = BackendType::Vulkan;
 
 			if (backendType == BackendType::DirectX_12)
 				XENON_LOG_WARNING("DirectX 12 is not supported in the current platform. The current backend is set to Vulkan.");
@@ -35,10 +43,10 @@ namespace Xenon
 		}
 
 		// Create the instance.
-		m_pInstance = Globals::BackendFactory->createInstance(applicationName, applicationVersion);
+		m_pInstance = m_pFactory->createInstance(applicationName, applicationVersion);
 
 		// Create the device.
-		m_pDevice = Globals::BackendFactory->createDevice(m_pInstance.get(), renderTargets);
+		m_pDevice = m_pFactory->createDevice(m_pInstance.get(), renderTargets);
 	}
 
 	Instance::~Instance()

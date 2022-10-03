@@ -9,15 +9,6 @@
 
 namespace Xenon
 {
-	namespace Globals
-	{
-		/**
-		 * This variable contains the global backend object factory which is backend specific.
-		 * It is used by the frontend to create the required backend objects.
-		 */
-		inline std::unique_ptr<Backend::IFactory> BackendFactory = nullptr;
-	}
-
 	/**
 	 * Backend type enum.
 	 */
@@ -77,6 +68,27 @@ namespace Xenon
 		[[nodsicard]] RenderTargetType getSupportedRenderTargetTypes() const { return m_pDevice->getSupportedRenderTargetTypes(); }
 
 		/**
+		 * Get the current backend type that's been used.
+		 *
+		 * @return The backend type.
+		 */
+		[[nodiscard]] BackendType getBackendType() const { return m_BackendType; }
+
+		/**
+		 * Get the backend factory.
+		 *
+		 * @return The backend factory pointer.
+		 */
+		[[nodiscard]] Backend::IFactory* getFactory() { return m_pFactory.get(); }
+
+		/**
+		 * Get the backend factory.
+		 *
+		 * @return The const backend factory pointer.
+		 */
+		[[nodiscard]] const Backend::IFactory* getFactory() const { return m_pFactory.get(); }
+
+		/**
 		 * Get the backend instance pointer.
 		 *
 		 * @return The instance pointer.
@@ -108,7 +120,10 @@ namespace Xenon
 		std::string m_ApplicationName;
 		uint32_t m_ApplicationVersion;
 
+		std::unique_ptr<Backend::IFactory> m_pFactory = nullptr;
 		std::unique_ptr<Backend::Instance> m_pInstance = nullptr;
 		std::unique_ptr<Backend::Device> m_pDevice = nullptr;
+
+		BackendType m_BackendType = BackendType::Any;
 	};
 }

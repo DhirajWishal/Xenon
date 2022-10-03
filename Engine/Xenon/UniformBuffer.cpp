@@ -6,7 +6,7 @@
 namespace Xenon
 {
 	UniformBuffer::UniformBuffer(Instance& instance, uint64_t size)
-		: m_pUniformBuffer(Globals::BackendFactory->createUniformBuffer(instance.getBackendDevice(), size))
+		: m_pUniformBuffer(instance.getFactory()->createUniformBuffer(instance.getBackendDevice(), size))
 	{
 	}
 }

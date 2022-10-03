@@ -6,7 +6,7 @@
 namespace Xenon
 {
 	VertexBuffer::VertexBuffer(Instance& instance, uint64_t size, uint64_t stride)
-		: m_pVertexBuffer(Globals::BackendFactory->createVertexBuffer(instance.getBackendDevice(), size, stride))
+		: m_pVertexBuffer(instance.getFactory()->createVertexBuffer(instance.getBackendDevice(), size, stride))
 	{
 	}
 }

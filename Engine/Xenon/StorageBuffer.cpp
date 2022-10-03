@@ -6,7 +6,7 @@
 namespace Xenon
 {
 	StorageBuffer::StorageBuffer(Instance& instance, uint64_t size)
-		: m_pStorageBuffer(Globals::BackendFactory->createStorageBuffer(instance.getBackendDevice(), size))
+		: m_pStorageBuffer(instance.getFactory()->createStorageBuffer(instance.getBackendDevice(), size))
 	{
 	}
 }
