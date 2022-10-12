@@ -16,10 +16,10 @@ add_executable(
 	"Test.hpp"
 	"TestContainer.cpp"
 	"TestContainer.hpp"
-	"InstanceTest/VulkanInstanceTest.cpp"
-	"InstanceTest/VulkanInstanceTest.hpp"
-	"InstanceTest/DX12InstanceTest.cpp"
-	"InstanceTest/DX12InstanceTest.hpp"
+	"InstanceTests/VulkanInstanceTest.cpp"
+	"InstanceTests/VulkanInstanceTest.hpp"
+	"InstanceTests/DX12InstanceTest.cpp"
+	"InstanceTests/DX12InstanceTest.hpp"
 )
 
 # Set the include directories.

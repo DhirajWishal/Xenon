@@ -24,6 +24,8 @@ add_library(
 	"VertexBuffer.hpp"
 	"IndexBuffer.hpp"
 	"UniformBuffer.hpp"
+	"Camera.hpp"
+	"RenderTarget.hpp"
 )
 
 # Add the target links.

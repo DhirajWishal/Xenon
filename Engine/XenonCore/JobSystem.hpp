@@ -62,6 +62,7 @@ namespace Xenon
 
 		/**
 		 * Insert a new job to the job system.
+		 * Note that a job might start right after inserting it.
 		 *
 		 * @tparam Job The job type.
 		 * @param job The job to insert.

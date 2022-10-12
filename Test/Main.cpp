@@ -3,8 +3,8 @@
 
 #include "TestContainer.hpp"
 
-#include "InstanceTest/VulkanInstanceTest.hpp"
-#include "InstanceTest/DX12InstanceTest.hpp"
+#include "InstanceTests/VulkanInstanceTest.hpp"
+#include "InstanceTests/DX12InstanceTest.hpp"
 
 int main()
 {
@@ -14,5 +14,6 @@ int main()
 	container.insert<VulkanInstanceTest>();
 	container.insert<DX12InstanceTest>();
 
+	// Execute the tests!
 	return static_cast<int>(container.test());
 }
