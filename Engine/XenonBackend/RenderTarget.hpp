@@ -11,8 +11,6 @@ namespace Xenon
 	{
 		/**
 		 * Attachment type enum.
-		 *
-		 * Note that both depth and depth with stencil cannot be set at the same time!
 		 */
 		enum class AttachmentType : uint8_t
 		{
@@ -40,8 +38,9 @@ namespace Xenon
 			 * @param pDevice The device pointer.
 			 * @param pCamera The camera which is used to render the scene.
 			 * @param attachmentTypes The attachment types the render target should support.
+			 * @param enableMultisampling Whether to enable multi-sampling. Default is true.
 			 */
-			explicit RenderTarget(Device* pDevice, Camera* pCamera, AttachmentType attachmentTypes) : m_pCamera(pCamera), m_AttachmentTypes(attachmentTypes) {}
+			explicit RenderTarget(Device* pDevice, Camera* pCamera, AttachmentType attachmentTypes, bool enableMultisampling = true) : m_pCamera(pCamera), m_AttachmentTypes(attachmentTypes) {}
 
 			/**
 			 * Default virtual destructor.

@@ -14,7 +14,6 @@ add_library(
 	STATIC
 
 	"BackendObject.hpp"
-	"Instance.cpp"
 	"Instance.hpp"
 	"IFactory.hpp"
 	"Device.hpp"
@@ -26,6 +25,8 @@ add_library(
 	"UniformBuffer.hpp"
 	"Camera.hpp"
 	"RenderTarget.hpp"
+	"BufferMemoryView.cpp"
+	"BufferMemoryView.hpp"
 )
 
 # Add the target links.

@@ -18,7 +18,7 @@ add_library(
 	"JobSystem.hpp"
 	"Logging.hpp"
 	"SparseArray.hpp"
-)
+  "Logging.cpp")
 
 # Set the include directories.
 target_include_directories(

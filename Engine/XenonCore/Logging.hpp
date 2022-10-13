@@ -12,6 +12,14 @@ namespace Xenon
 	 * This function compiles down to nothing and the compiler can optimize it out when needed.
 	 */
 	constexpr void NoOp() {}
+
+	/**
+	 * Print a string of bytes to the console.
+	 *
+	 * @param pBegin The begin pointer.
+	 * @param pEnd The end pointer.
+	 */
+	void HexDump(const std::byte* pBegin, const std::byte* pEnd);
 }
 
 #define XENON_LOG_INFORMATION(...)			::spdlog::info(__VA_ARGS__)

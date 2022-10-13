@@ -4,8 +4,7 @@
 #pragma once
 
 #include "Buffer.hpp"
-
-#include <cstddef>
+#include "BufferMemoryView.hpp"
 
 namespace Xenon
 {
@@ -17,6 +16,8 @@ namespace Xenon
 		 */
 		class HostAccessibleBuffer : public Buffer
 		{
+			friend BufferMemoryView;
+
 		public:
 			/**
 			 * Explicit constructor.
@@ -41,6 +42,14 @@ namespace Xenon
 			 */
 			virtual void write(const std::byte* pData, uint64_t size, uint64_t offset = 0) = 0;
 
+			/**
+			 * Read data from the buffer.
+			 *
+			 * @return The buffer's memory view.
+			 */
+			[[nodiscard]] BufferMemoryView read() { return BufferMemoryView(this); }
+
+		protected:
 			/**
 			 * Begin reading data from the GPU.
 			 *
