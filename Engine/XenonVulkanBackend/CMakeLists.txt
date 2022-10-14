@@ -41,6 +41,8 @@ add_library(
 	"VulkanUniformBuffer.hpp" 
 	"VulkanVertexBuffer.cpp"
 	"VulkanVertexBuffer.hpp"
+	"VulkanRasterizer.cpp"
+	"VulkanRasterizer.hpp"
 )
 
 # Set the include directories.

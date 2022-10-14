@@ -25,6 +25,7 @@ add_library(
 	"UniformBuffer.hpp"
 	"Camera.hpp"
 	"RenderTarget.hpp"
+	"Rasterizer.hpp"
 	"BufferMemoryView.cpp"
 	"BufferMemoryView.hpp"
 )

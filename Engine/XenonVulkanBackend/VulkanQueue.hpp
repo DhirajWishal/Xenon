@@ -5,7 +5,6 @@
 
 #include <volk.h>
 
-
 namespace Xenon
 {
 	namespace Backend

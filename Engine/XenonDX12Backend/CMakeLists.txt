@@ -37,6 +37,8 @@ add_library(
 	"DX12StorageBuffer.hpp"
 	"DX12UniformBuffer.cpp"
 	"DX12UniformBuffer.hpp"
+	"DX12Rasterizer.cpp"
+	"DX12Rasterizer.hpp"
 )
 
 # Set the include directories.
