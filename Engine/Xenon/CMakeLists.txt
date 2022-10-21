@@ -26,9 +26,10 @@ add_library(
 	"StorageBuffer.hpp"
 	"RasterizingRenderer.cpp"
 	"RasterizingRenderer.hpp"
+	"MeshStorage.cpp"
 	"MeshStorage.hpp"
 	"StaticModel.hpp"
-	"VertexTraits.hpp"
+	"VertexSpecification.hpp"
 )
 
 # Set the target links.
@@ -36,6 +37,13 @@ target_link_libraries(XenonEngine XenonVulkanBackend)
 
 # Make sure to specify the C++ standard to C++20.
 set_property(TARGET XenonEngine PROPERTY CXX_STANDARD 20)
+
+# SEt the include directories.
+target_include_directories(
+	XenonEngine 
+
+	PRIVATE ${RAPID_JSON_INCLUDE_DIR}
+)
 
 # If we are on MSVC, we can use the Multi Processor Compilation option.
 if (MSVC)

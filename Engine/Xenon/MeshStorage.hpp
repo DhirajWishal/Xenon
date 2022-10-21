@@ -4,7 +4,10 @@
 #pragma once
 
 #include "VertexBuffer.hpp"
-#include "VertexTraits.hpp"
+#include "IndexBuffer.hpp"
+#include "VertexSpecification.hpp"
+
+#include <filesystem>
 
 namespace Xenon
 {
@@ -23,8 +26,21 @@ namespace Xenon
 		 */
 		explicit MeshStorage(Instance& instance) {}
 
+		/**
+		 * Load the meshes from a file and create the mesh storage class.
+		 *
+		 * Note that the loader only supports glTF.
+		 *
+		 * @param instance The instance reference.
+		 * @param file The file path to load the data from.
+		 * @return The created mesh storage.
+		 */
+		[[nodiscard]] static MeshStorage FromFile(Instance& instance, const std::filesystem::path& file);
+
 	private:
-		VertexSpecification m_VertexSpecification;
+		std::unique_ptr<Backend::IndexBuffer> m_pIndexBuffer = nullptr;
 		std::unique_ptr<Backend::VertexBuffer> m_pVertexBuffer = nullptr;
+
+		VertexSpecification m_VertexSpecification;
 	};
 }

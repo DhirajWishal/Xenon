@@ -4,7 +4,7 @@
 #include "XenonCore/Logging.hpp"
 #include "Xenon/VertexBuffer.hpp"
 #include "Xenon/StagingBuffer.hpp"
-#include "Xenon/VertexTraits.hpp"
+#include "Xenon/VertexSpecification.hpp"
 
 int main()
 {
@@ -15,8 +15,8 @@ int main()
 	auto stagingBuffer = Xenon::StagingBuffer(instance, 1024);
 
 	Xenon::VertexSpecification specification;
-	specification.addElement(Xenon::VertexElement::Position, sizeof(float));
-	specification.addElement(Xenon::VertexElement::Normal, sizeof(float));
+	specification.addElement(Xenon::VertexElement::Position);
+	specification.addElement(Xenon::VertexElement::Normal);
 	specification.addElement(Xenon::VertexElement::Color_0, sizeof(uint8_t));
 	specification.addElement(Xenon::VertexElement::TextureCoordinate_0);
 

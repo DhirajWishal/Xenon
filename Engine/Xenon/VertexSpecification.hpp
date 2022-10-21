@@ -12,41 +12,102 @@ namespace Xenon
 	/**
 	 * Vertex element enum.
 	 * This contains different elements which a single vertex could contain.
-	 *
-	 * Note that when accessing these elements from a vertex shader, the layout location is the same as the value of the element.
-	 * For example, the position values are passed into location layout 0 and color index 0 values are passed into layout location 4.
 	 */
 	enum class VertexElement : uint8_t
 	{
-		Position,				// Stored and used as a 3 component vector.
-		Normal,					// Stored and used as a 3 component vector.
+		// Stored and used as a 3 component vector. 
+		// Access this from GLSL: layout(location = 0) in vec3
+		Position,
 
-		Tangent,				// Stored and used as a 3 component vector.
-		BiTangent,				// Stored and used as a 3 component vector.
+		// Stored and used as a 3 component vector. 
+		// Access this from GLSL: layout(location = 1) in vec3
+		Normal,
 
-		Color_0,				// Stored and used as a 4 component vector.
-		Color_1,				// Stored and used as a 4 component vector.
-		Color_2,				// Stored and used as a 4 component vector.
-		Color_3,				// Stored and used as a 4 component vector.
-		Color_4,				// Stored and used as a 4 component vector.
-		Color_5,				// Stored and used as a 4 component vector.
-		Color_6,				// Stored and used as a 4 component vector.
-		Color_7,				// Stored and used as a 4 component vector.
+		// Stored and used as a 3 component vector. 
+		// Access this from GLSL: layout(location = 2) in vec3
+		Tangent,
 
-		TextureCoordinate_0,	// Stored and used as a 2 component vector.
-		TextureCoordinate_1,	// Stored and used as a 2 component vector.
-		TextureCoordinate_2,	// Stored and used as a 2 component vector.
-		TextureCoordinate_3,	// Stored and used as a 2 component vector.
-		TextureCoordinate_4,	// Stored and used as a 2 component vector.
-		TextureCoordinate_5,	// Stored and used as a 2 component vector.
-		TextureCoordinate_6,	// Stored and used as a 2 component vector.
-		TextureCoordinate_7,	// Stored and used as a 2 component vector.
+		// Stored and used as a 3 component vector. 
+		// Access this from GLSL: layout(location = 3) in vec3
+		BiTangent,
 
-		JointIndices,			// Stored and used as a 4 component vector.
-		JointWeight,			// Stored and used as a 4 component vector.
+		// Stored and used as a 4 component vector. 
+		// Access this from GLSL: layout(location = 4) in vec4
+		Color_0,
 
-		Count,					// This is just a count of the number of supported vertex elements.
-		Undefined				// Undefined element.
+		// Stored and used as a 4 component vector. 
+		// Access this from GLSL: layout(location = 5) in vec4
+		Color_1,
+
+		// Stored and used as a 4 component vector. 
+		// Access this from GLSL: layout(location = 6) in vec4
+		Color_2,
+
+		// Stored and used as a 4 component vector. 
+		// Access this from GLSL: layout(location = 7) in vec4
+		Color_3,
+
+		// Stored and used as a 4 component vector. 
+		// Access this from GLSL: layout(location = 8) in vec4
+		Color_4,
+
+		// Stored and used as a 4 component vector. 
+		// Access this from GLSL: layout(location = 9) in vec4
+		Color_5,
+
+		// Stored and used as a 4 component vector. 
+		// Access this from GLSL: layout(location = 10) in vec4
+		Color_6,
+
+		// Stored and used as a 4 component vector. 
+		// Access this from GLSL: layout(location = 11) in vec4
+		Color_7,
+
+		// Stored and used as a 2 component vector. 
+		// Access this from GLSL: layout(location = 12) in vec2
+		TextureCoordinate_0,
+
+		// Stored and used as a 2 component vector. 
+		// Access this from GLSL: layout(location = 13) in vec2
+		TextureCoordinate_1,
+
+		// Stored and used as a 2 component vector. 
+		// Access this from GLSL: layout(location = 14) in vec2
+		TextureCoordinate_2,
+
+		// Stored and used as a 2 component vector. 
+		// Access this from GLSL: layout(location = 15) in vec2
+		TextureCoordinate_3,
+
+		// Stored and used as a 2 component vector. 
+		// Access this from GLSL: layout(location = 16) in vec2
+		TextureCoordinate_4,
+
+		// Stored and used as a 2 component vector. 
+		// Access this from GLSL: layout(location = 17) in vec2
+		TextureCoordinate_5,
+
+		// Stored and used as a 2 component vector. 
+		// Access this from GLSL: layout(location = 18) in vec2
+		TextureCoordinate_6,
+
+		// Stored and used as a 2 component vector. 
+		// Access this from GLSL: layout(location = 19) in vec2
+		TextureCoordinate_7,
+
+		// Stored and used as a 4 component vector. 
+		// Access this from GLSL: layout(location = 20) in vec4
+		JointIndices,
+
+		// Stored and used as a 4 component vector. 
+		// Access this from GLSL: layout(location = 21) in vec4
+		JointWeight,
+
+		// This is just a count of the number of supported vertex elements.
+		Count,
+
+		// Undefined element.
+		Undefined
 	};
 
 	/**
@@ -105,7 +166,7 @@ namespace Xenon
 		/**
 		 * Default constructor.
 		 */
-		VertexSpecification() = default;
+		constexpr VertexSpecification() = default;
 
 		/**
 		 * Add a vertex element to the specification.
