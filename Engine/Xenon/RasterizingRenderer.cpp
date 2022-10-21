@@ -1,0 +1,11 @@
+// Copyright 2022 Dhiraj Wishal
+// SPDX-License-Identifier: Apache-2.0
+
+#include "RasterizingRenderer.hpp"
+
+namespace Xenon
+{
+	RasterizingRenderer::RasterizingRenderer(Instance& instance)
+	{
+	}
+}

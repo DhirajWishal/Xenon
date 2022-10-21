@@ -20,7 +20,7 @@ namespace Xenon
 			Storage,
 			Uniform,
 		};
-
+		
 		/**
 		 * Buffer class.
 		 * This is the base class for all the backend buffers used by Xenon.
@@ -36,12 +36,12 @@ namespace Xenon
 			 * @param type The buffer type.
 			 */
 			explicit Buffer([[maybe_unused]] Device* pDevice, uint64_t size, BufferType type) : m_Size(size), m_Type(type) {}
-
+		
 			/**
 			 * Default virtual destructor.
 			 */
 			virtual ~Buffer() = default;
-
+		
 			/**
 			 * Copy data from another buffer to this buffer.
 			 *
@@ -51,7 +51,7 @@ namespace Xenon
 			 * @param dstOffset The destination buffer's (this) offset. Default is 0.
 			 */
 			virtual void copy(const Buffer* pBuffer, uint64_t size, uint64_t srcOffset = 0, uint64_t dstOffset = 0) = 0;
-
+		
 		public:
 			/**
 			 * Get the byte size of the buffer.
@@ -59,14 +59,14 @@ namespace Xenon
 			 * @return The size.
 			 */
 			[[nodiscard]] uint64_t getSize() const { return m_Size; }
-
+		
 			/**
 			 * Get the buffer type.
 			 *
 			 * @return The buffer type.
 			 */
 			[[nodiscard]] BufferType getType() const { return m_Type; }
-
+		
 		protected:
 			uint64_t m_Size = 0;
 			BufferType m_Type;

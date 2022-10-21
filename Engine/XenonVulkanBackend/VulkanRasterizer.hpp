@@ -32,6 +32,10 @@ namespace Xenon
 			 * Destructor.
 			 */
 			~VulkanRasterizer() override = default;
+
+		private:
+			VkRenderPass m_RenderPass = VK_NULL_HANDLE;
+			std::vector<VkFramebuffer> m_Framebuffers;
 		};
 	}
 }

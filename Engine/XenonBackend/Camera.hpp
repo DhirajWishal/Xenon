@@ -5,6 +5,8 @@
 
 #include "UniformBuffer.hpp"
 
+#include <vector>
+
 namespace Xenon
 {
 	namespace Backend

@@ -18,8 +18,9 @@ namespace Xenon
 			EntityID = XENON_BIT_SHIFT(1),				// Commonly used for mouse picking. Shader output: layout(location = 1) out float
 			Normal = XENON_BIT_SHIFT(2),				// Used for normal output. Shader output: layout(location = 2) out vec3
 
-			Depth = XENON_BIT_SHIFT(8),					// Used for depth information.
-			DepthWithStencil = XENON_BIT_SHIFT(7)		// Used for depth information. It also contains a stencil component.
+			Depth = XENON_BIT_SHIFT(6),					// Used for depth information.
+			Stencil = XENON_BIT_SHIFT(7),				// Used for stencil information.
+			DepthWithStencil = Depth | Stencil			// Used for depth information. It also contains a stencil component.
 		};
 
 		XENON_DEFINE_ENUM_AND(AttachmentType);

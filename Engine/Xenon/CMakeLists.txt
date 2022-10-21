@@ -24,6 +24,11 @@ add_library(
 	"UniformBuffer.hpp"
 	"StorageBuffer.cpp"
 	"StorageBuffer.hpp"
+	"RasterizingRenderer.cpp"
+	"RasterizingRenderer.hpp"
+	"MeshStorage.hpp"
+	"StaticModel.hpp"
+	"VertexTraits.hpp"
 )
 
 # Set the target links.
