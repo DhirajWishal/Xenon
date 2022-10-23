@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "MeshStorage.hpp"
+#include "../XenonCore/Logging.hpp"
 
 #define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
@@ -27,34 +28,49 @@ namespace Xenon
 		{
 			// Get the vertex buffer size.
 			uint64_t vertexSize = 0;
-			std::vector<std::unique_ptr<Backend::StagingBuffer>> pStagingBuffers;
+			std::vector<std::unique_ptr<Backend::Buffer>> pStagingBuffers;
 			for (const auto& buffer : model.buffers)
 			{
 				vertexSize += buffer.data.size();
 
-				auto& pBuffer = pStagingBuffers.emplace_back(instance.getFactory()->createStagingBuffer(instance.getBackendDevice(), buffer.data.size()));
+				auto& pBuffer = pStagingBuffers.emplace_back(instance.getFactory()->createBuffer(instance.getBackendDevice(), buffer.data.size(), Backend::BufferType::Staging));
 				pBuffer->write(reinterpret_cast<const std::byte*>(buffer.data.data()), buffer.data.size());
 			}
 
 			// Create the vertex buffer.
-			storage.m_pVertexBuffer = instance.getFactory()->createVertexBuffer(instance.getBackendDevice(), vertexSize, sizeof(uint8_t));
+			storage.m_pVertexBuffer = instance.getFactory()->createBuffer(instance.getBackendDevice(), vertexSize, Backend::BufferType::Vertex);
 
-			// Load the vertex buffer data.
-			uint64_t offset = 0;
-			for (const auto& buffer : pStagingBuffers)
+			// Copy the data to the vertex buffer.
 			{
-				storage.m_pVertexBuffer->copy(buffer.get(), buffer->getSize(), 0, offset);
-				offset += buffer->getSize();
+				auto pCommandRecorder = instance.getFactory()->createCommandRecorder(instance.getBackendDevice(), Backend::CommandRecorderUsage::Transfer);
+				pCommandRecorder->begin();
+
+				uint64_t offset = 0;
+				for (auto& pBuffer : pStagingBuffers)
+				{
+					pCommandRecorder->copyBuffer(pBuffer.get(), 0, storage.m_pVertexBuffer.get(), offset, pBuffer->getSize());
+					offset += pBuffer->getSize();
+				}
+
+				pCommandRecorder->end();
+				pCommandRecorder->submit();
+				pCommandRecorder->wait();
 			}
 
-			for (size_t i = 0; i < model.bufferViews.size(); ++i) {
-				const auto& bufferView = model.bufferViews[i];
-				if (bufferView.target == 0)
-					continue;
+			// Clear the staging buffers to save memory.
+			pStagingBuffers.clear();
 
-				const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
+			const auto bufferView = storage.m_pVertexBuffer->read();
+			HexDump(bufferView.begin(), bufferView.end());
 
-			}
+			// for (size_t i = 0; i < model.bufferViews.size(); ++i) {
+			// 	const auto& bufferView = model.bufferViews[i];
+			// 	if (bufferView.target == 0)
+			// 		continue;
+			// 
+			// 	const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
+			// 
+			// }
 		}
 
 		return storage;

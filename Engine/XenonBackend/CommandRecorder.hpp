@@ -9,6 +9,8 @@ namespace Xenon
 {
 	namespace Backend
 	{
+		class Buffer;
+
 		/**
 		 * Command recorder usage enum.
 		 */
@@ -44,6 +46,17 @@ namespace Xenon
 			 * Set the command recorder state to recording.
 			 */
 			virtual void begin() = 0;
+
+			/**
+			 * Copy data from one buffer to another.
+			 *
+			 * @param pSource The source buffer to copy the data from.
+			 * @param srcOffset The source buffer offset.
+			 * @param pDestination The destination buffer to copy the data to.
+			 * @param dstOffse The destination buffer offset.
+			 * @param size The amount of data to copy in bytes.
+			 */
+			virtual void copyBuffer(Buffer* pSource, uint64_t srcOffset, Buffer* pDestination, uint64_t dstOffset, uint64_t size) = 0;
 
 			/**
 			 * End the command recorder recording.

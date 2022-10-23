@@ -2,18 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "XenonCore/Logging.hpp"
-#include "Xenon/VertexBuffer.hpp"
-#include "Xenon/StagingBuffer.hpp"
+#include "Xenon/Instance.hpp"
 #include "Xenon/VertexSpecification.hpp"
 #include "Xenon/MeshStorage.hpp"
 
-int main()
+void run(Xenon::BackendType backend)
 {
-	XENON_LOG_INFORMATION("Hello from the Xenon Studio!");
-	auto instance = Xenon::Instance("Xenon Studio", 0, Xenon::RenderTargetType::All, Xenon::BackendType::DirectX_12);
-	// auto instance = Xenon::Instance("Xenon Studio", 0, Xenon::RenderTargetType::All, Xenon::BackendType::Vulkan);
-	auto vertexBuffer = Xenon::VertexBuffer(instance, 1024, 3 * sizeof(float));
-	auto stagingBuffer = Xenon::StagingBuffer(instance, 1024);
+	auto instance = Xenon::Instance("Xenon Studio", 0, Xenon::RenderTargetType::All, backend);
 
 	Xenon::VertexSpecification specification;
 	specification.addElement(Xenon::VertexElement::Position);
@@ -22,6 +17,19 @@ int main()
 	specification.addElement(Xenon::VertexElement::TextureCoordinate_0);
 
 	const auto storage = Xenon::MeshStorage::FromFile(instance, "E:\\Flint\\ThirdParty\\glTF-Sample-Models\\2.0\\Cube\\glTF\\Cube.gltf");
+}
+
+int main()
+{
+	XENON_LOG_INFORMATION("Hello from the Xenon Studio!");
+
+	// Run using Direct X.
+	XENON_LOG_INFORMATION("Running Xenon Studio using the DirectX 12 backend.");
+	run(Xenon::BackendType::DirectX_12);
+
+	// Run using Vulkan.
+	XENON_LOG_INFORMATION("Running Xenon Studio using the Vulkan backend.");
+	run(Xenon::BackendType::Vulkan);
 
 	return 0;
 }

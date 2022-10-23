@@ -62,6 +62,14 @@ namespace Xenon
 			 */
 			void endRead() override;
 
+		public:
+			/**
+			 * Get the buffer handle.
+			 *
+			 * @return The buffer handle.
+			 */
+			[[nodiscard]] VkBuffer getBuffer() const { return m_Buffer; }
+
 		private:
 			/**
 			 * Map the buffer memory to the local address space.

@@ -4,12 +4,6 @@
 #include "DX12Buffer.hpp"
 #include "DX12Macros.hpp"
 
-#include "DX12VertexBuffer.hpp"
-#include "DX12IndexBuffer.hpp"
-#include "DX12StagingBuffer.hpp"
-#include "DX12StorageBuffer.hpp"
-#include "DX12UniformBuffer.hpp"
-
 #ifdef max
 #undef max
 
@@ -77,7 +71,7 @@ namespace Xenon
 				nullptr,
 				&m_pAllocation,
 				IID_NULL,
-				nullptr), "Failed to create the DirectX 12 buffer!");
+				nullptr), "Failed to create the buffer!");
 		}
 
 		DX12Buffer::DX12Buffer(DX12Device* pDevice, uint64_t size, D3D12_HEAP_TYPE heapType, D3D12_RESOURCE_STATES resourceStates, D3D12_RESOURCE_FLAGS resourceFlags /*= D3D12_RESOURCE_FLAG_NONE*/)
@@ -97,7 +91,7 @@ namespace Xenon
 				nullptr,
 				&m_pAllocation,
 				IID_NULL,
-				nullptr), "Failed to create the DirectX 12 buffer!");
+				nullptr), "Failed to create the buffer!");
 		}
 
 		DX12Buffer::~DX12Buffer()
@@ -109,13 +103,13 @@ namespace Xenon
 		{
 			// Create the command list.
 			ComPtr<ID3D12GraphicsCommandList> commandList;
-			XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_pDevice->getCommandAllocator(), nullptr, IID_PPV_ARGS(&commandList)), "Failed to create the DirectX 12 copy command list!");
+			XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_pDevice->getCommandAllocator(), nullptr, IID_PPV_ARGS(&commandList)), "Failed to create the copy command list!");
 
 			// Copy the buffer region.
 			commandList->CopyBufferRegion(m_pAllocation->GetResource(), dstOffset, pBuffer->as<DX12Buffer>()->m_pAllocation->GetResource(), srcOffset, size);
 
 			// End the command list.
-			XENON_DX12_ASSERT(commandList->Close(), "Failed to stop the current DirectX 12 command list!");
+			XENON_DX12_ASSERT(commandList->Close(), "Failed to stop the current command list!");
 
 			// Submit the command list to be executed.
 			ID3D12CommandList* ppCommandLists[] = { commandList.Get() };
@@ -123,8 +117,8 @@ namespace Xenon
 
 			// Wait till the command is done executing.
 			ComPtr<ID3D12Fence> fence;
-			XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence)), "Failed to create the DirectX 12 fence!");
-			XENON_DX12_ASSERT(m_pDevice->getCommandQueue()->Signal(fence.Get(), 1), "Failed to signal the DirectX 12 fence!");
+			XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence)), "Failed to create the fence!");
+			XENON_DX12_ASSERT(m_pDevice->getCommandQueue()->Signal(fence.Get(), 1), "Failed to signal the fence!");
 
 			// Setup synchronization.
 			auto fenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
@@ -132,12 +126,12 @@ namespace Xenon
 			// Validate the event.
 			if (fenceEvent == nullptr)
 			{
-				XENON_LOG_ERROR("Failed to wait till the DirectX 12 command list execution!");
+				XENON_LOG_ERROR("Failed to wait till the command list execution!");
 				return;
 			}
 
 			// Set the event and wait.
-			XENON_DX12_ASSERT(fence->SetEventOnCompletion(1, fenceEvent), "Failed to set the DirectX 12 fence event on completion event!");
+			XENON_DX12_ASSERT(fence->SetEventOnCompletion(1, fenceEvent), "Failed to set the fence event on completion event!");
 			WaitForSingleObjectEx(fenceEvent, std::numeric_limits<DWORD>::max(), FALSE);
 			CloseHandle(fenceEvent);
 		}

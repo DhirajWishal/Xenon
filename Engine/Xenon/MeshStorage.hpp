@@ -3,8 +3,7 @@
 
 #pragma once
 
-#include "VertexBuffer.hpp"
-#include "IndexBuffer.hpp"
+#include "Instance.hpp"
 #include "VertexSpecification.hpp"
 
 #include <filesystem>
@@ -38,8 +37,8 @@ namespace Xenon
 		[[nodiscard]] static MeshStorage FromFile(Instance& instance, const std::filesystem::path& file);
 
 	private:
-		std::unique_ptr<Backend::IndexBuffer> m_pIndexBuffer = nullptr;
-		std::unique_ptr<Backend::VertexBuffer> m_pVertexBuffer = nullptr;
+		std::unique_ptr<Backend::Buffer> m_pIndexBuffer = nullptr;
+		std::unique_ptr<Backend::Buffer> m_pVertexBuffer = nullptr;
 
 		VertexSpecification m_VertexSpecification;
 	};

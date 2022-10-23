@@ -14,16 +14,6 @@ add_library(
 	STATIC
 
 	"Instance.cpp"
-	"VertexBuffer.cpp"
-	"VertexBuffer.hpp"	
-	"IndexBuffer.cpp"
-	"IndexBuffer.hpp"
-	"StagingBuffer.cpp"
-	"StagingBuffer.hpp"
-	"UniformBuffer.cpp"
-	"UniformBuffer.hpp"
-	"StorageBuffer.cpp"
-	"StorageBuffer.hpp"
 	"RasterizingRenderer.cpp"
 	"RasterizingRenderer.hpp"
 	"MeshStorage.cpp"

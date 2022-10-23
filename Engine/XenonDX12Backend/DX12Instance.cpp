@@ -21,7 +21,7 @@ namespace Xenon
 			}
 			else
 			{
-				XENON_LOG_ERROR("Failed to create the DirectX 12 debug interface.");
+				XENON_LOG_ERROR("Failed to create the debug interface.");
 			}
 
 #endif // XENON_DEBUG

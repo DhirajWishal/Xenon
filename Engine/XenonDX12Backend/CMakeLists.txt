@@ -23,8 +23,6 @@ add_library(
 	"DX12Device.cpp"
 	"DX12Device.hpp"
 	"DX12Macros.hpp"
-	"DX12CommandAllocator.cpp"
-	"DX12CommandAllocator.hpp"
 	"DX12Buffer.cpp"
 	"DX12Buffer.hpp"
 	"DX12Rasterizer.cpp"

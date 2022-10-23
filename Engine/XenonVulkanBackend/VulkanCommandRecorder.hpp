@@ -37,6 +37,17 @@ namespace Xenon
 			void begin() override;
 
 			/**
+			 * Copy data from one buffer to another.
+			 *
+			 * @param pSource The source buffer to copy the data from.
+			 * @param srcOffset The source buffer offset.
+			 * @param pDestination The destination buffer to copy the data to.
+			 * @param dstOffse The destination buffer offset.
+			 * @param size The amount of data to copy in bytes.
+			 */
+			void copyBuffer(Buffer* pSource, uint64_t srcOffset, Buffer* pDestination, uint64_t dstOffset, uint64_t size) override;
+
+			/**
 			 * End the command recorder recording.
 			 */
 			void end() override;

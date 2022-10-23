@@ -4,6 +4,8 @@
 #include "VulkanCommandRecorder.hpp"
 #include "VulkanMacros.hpp"
 
+#include "VulkanBuffer.hpp"
+
 namespace Xenon
 {
 	namespace Backend
@@ -61,6 +63,16 @@ namespace Xenon
 			beginInfo.pInheritanceInfo = nullptr;
 
 			m_pDevice->getDeviceTable().vkBeginCommandBuffer(*m_pCurrentBuffer, &beginInfo);
+		}
+
+		void VulkanCommandRecorder::copyBuffer(Buffer* pSource, uint64_t srcOffset, Buffer* pDestination, uint64_t dstOffset, uint64_t size)
+		{
+			VkBufferCopy copy = {};
+			copy.size = size;
+			copy.srcOffset = srcOffset;
+			copy.dstOffset = dstOffset;
+
+			m_pDevice->getDeviceTable().vkCmdCopyBuffer(*m_pCurrentBuffer, pSource->as<VulkanBuffer>()->getBuffer(), pDestination->as<VulkanBuffer>()->getBuffer(), 1, &copy);
 		}
 
 		void VulkanCommandRecorder::end()

@@ -90,10 +90,10 @@ namespace Xenon
 			queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 			queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 
-			XENON_DX12_ASSERT(m_Device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_GraphicsQueue)), "Failed to create the DirectX 12 graphics queue!");
+			XENON_DX12_ASSERT(m_Device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_GraphicsQueue)), "Failed to create the graphics queue!");
 
 			// Create the global command allocator.
-			XENON_DX12_ASSERT(m_Device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_GlobalCommandAllocator)), "Failed to create the DirectX 12 global command allocator!");
+			XENON_DX12_ASSERT(m_Device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_GlobalCommandAllocator)), "Failed to create the global command allocator!");
 		}
 
 		void DX12Device::createAllocator()
@@ -102,7 +102,7 @@ namespace Xenon
 			allocatorDesc.pDevice = m_Device.Get();
 			allocatorDesc.pAdapter = m_Adapter.Get();
 
-			XENON_DX12_ASSERT(D3D12MA::CreateAllocator(&allocatorDesc, &m_pAllocator), "Failed to create the DirectX 12 memory allocator!");
+			XENON_DX12_ASSERT(D3D12MA::CreateAllocator(&allocatorDesc, &m_pAllocator), "Failed to create the memory allocator!");
 		}
 
 		_Use_decl_annotations_ void DX12Device::getHardwareAdapter(IDXGIFactory1* pFactory, IDXGIAdapter1** ppAdapter, D3D_FEATURE_LEVEL featureLevel)
