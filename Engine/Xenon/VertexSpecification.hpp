@@ -24,7 +24,7 @@ namespace Xenon
 		Normal,
 
 		// Stored and used as a 3 component vector. 
-		// Access this from GLSL: layout(location = 2) in vec4
+		// Access this from GLSL: layout(location = 2) in vec3
 		Tangent,
 
 		// Stored and used as a 4 component vector. 
@@ -119,10 +119,8 @@ namespace Xenon
 		{
 		case Xenon::VertexElement::Position:
 		case Xenon::VertexElement::Normal:
-			return 3;
-
 		case Xenon::VertexElement::Tangent:
-			return 4;
+			return 3;
 
 		case Xenon::VertexElement::Color_0:
 		case Xenon::VertexElement::Color_1:

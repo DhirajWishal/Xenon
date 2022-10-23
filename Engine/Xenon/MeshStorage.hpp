@@ -43,8 +43,6 @@ namespace Xenon
 		/**
 		 * Load the meshes from a file and create the mesh storage class.
 		 *
-		 * Note that the loader only supports glTF.
-		 *
 		 * @param instance The instance reference.
 		 * @param file The file path to load the data from.
 		 * @return The created mesh storage.
@@ -54,6 +52,8 @@ namespace Xenon
 	private:
 		std::unique_ptr<Backend::Buffer> m_pIndexBuffer = nullptr;
 		std::unique_ptr<Backend::Buffer> m_pVertexBuffer = nullptr;
+
+		std::vector<Mesh> m_Meshes;
 
 		VertexSpecification m_VertexSpecification;
 	};

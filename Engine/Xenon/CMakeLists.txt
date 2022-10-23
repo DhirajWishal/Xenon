@@ -32,7 +32,6 @@ set_property(TARGET XenonEngine PROPERTY CXX_STANDARD 20)
 target_include_directories(
 	XenonEngine 
 
-	PRIVATE ${TINYGLTF_INCLUDE_DIR}
 	PRIVATE ${ASSIMP_INCLUDE_DIR}
 )
 

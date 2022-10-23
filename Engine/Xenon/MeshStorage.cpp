@@ -3,11 +3,7 @@
 
 #include "MeshStorage.hpp"
 #include "../XenonCore/Logging.hpp"
-
-#define TINYGLTF_IMPLEMENTATION
-#define STB_IMAGE_IMPLEMENTATION
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include <tiny_gltf.h>
+#include "../XenonCore/JobSystem.hpp"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -15,115 +11,144 @@
 
 #include <fstream>
 
-constexpr const char* Attributes[] = {
-	"POSITION",
-	"NORMAL",
-	"TANGENT",
-	"COLOR_0",
-	"COLOR_1",
-	"COLOR_2",
-	"COLOR_3",
-	"COLOR_4",
-	"COLOR_5",
-	"COLOR_6",
-	"COLOR_7",
-	"TEXCOORD_0",
-	"TEXCOORD_1",
-	"TEXCOORD_2",
-	"TEXCOORD_3",
-	"TEXCOORD_4",
-	"TEXCOORD_5",
-	"TEXCOORD_6",
-	"TEXCOORD_7",
-	"JOINTS_0",
-	"WEIGHTS_0",
-};
-
 namespace /* anonymous */
 {
 	/**
-	 * Check if the attribute exists in the primitive and if so, setup the vertex specification for that element.
+	 * Copy the Assimp vector to the destination and increment the pointer by the type size.
 	 *
-	 * @param model The model to get the element information.
-	 * @param primitive The primitive containing the attribute information.
-	 * @param attribute The attribute name to check.
-	 * @param element The vertex element.
-	 * @param specification The specification to configure.
+	 * @tparam Type The vector type.
+	 * @param vector The vector to copy.
+	 * @param pDestination The location to copy to.
 	 */
-	void ResolvePrimitive(const tinygltf::Model& model, const tinygltf::Primitive& primitive, const std::string& attribute, Xenon::VertexElement element, Xenon::VertexSpecification& specification)
+	template<class Type>
+	void CopyIncrement(const Type& vector, std::byte*& pDestination)
 	{
-		if (primitive.attributes.contains(attribute))
+		Type& destination = *reinterpret_cast<Type*>(pDestination);
+		destination = vector;
+		pDestination += sizeof(Type);
+	}
+
+	/**
+	 * Load a node from the scene recursively.
+	 *
+	 * @param pScene The scene to which the node is attached to.
+	 * @param pNode The node to load.
+	 * @param pDestination The location to load the data to.
+	 * @param indices The vector to store the indices.
+	 * @param specification The vertex specification to load the data.
+	 * @param meshes The mesh storage.
+	 */
+	void LoadNode(const aiScene* pScene, const aiNode* pNode, std::byte*& pDestination, std::vector<uint32_t>& indices, const Xenon::VertexSpecification& specification, std::vector<Xenon::Mesh>& meshes)
+	{
+		static auto jobSystem = Xenon::JobSystem(std::thread::hardware_concurrency());
+
+		const auto vertexSize = specification.getSize();
+
+		// Load the meshes of the current node.
+		for (uint32_t i = 0; i < pNode->mNumMeshes; i++)
 		{
-			const auto index = primitive.attributes.at(attribute);
-			const auto& accessor = model.accessors[index];
+			const auto pMesh = pScene->mMeshes[pNode->mMeshes[i]];
 
-			// Setup the component type.
-			switch (accessor.componentType)
+			// Resolve the offsets.
+			uint64_t vertexOffset = 0;
+			uint64_t indexOffset = 0;
+
+			if (meshes.size() > 0)
 			{
-			case TINYGLTF_COMPONENT_TYPE_BYTE:
-			case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
-				specification.addElement(element, sizeof(std::byte));
-				break;
-
-			case TINYGLTF_COMPONENT_TYPE_SHORT:
-			case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT:
-				specification.addElement(element, sizeof(short));
-				break;
-
-			case TINYGLTF_COMPONENT_TYPE_INT:
-			case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT:
-				specification.addElement(element, sizeof(int));
-				break;
-
-			case TINYGLTF_COMPONENT_TYPE_FLOAT:
-				specification.addElement(element, sizeof(float));
-				break;
-
-			case TINYGLTF_COMPONENT_TYPE_DOUBLE:
-				specification.addElement(element, sizeof(double));
-				break;
-
-			default:
-				XENON_LOG_ERROR("Invalid or unsupported vertex element type in the provided model file.");
-				break;
+				const auto& backMesh = meshes.back();
+				vertexOffset = (backMesh.m_VertexCount * vertexSize) + backMesh.m_IndexOffset;
+				indexOffset = (backMesh.m_IndexCount * sizeof(uint32_t)) + backMesh.m_IndexOffset;
 			}
 
-			// Setup the data type.
-			switch (accessor.type)
-			{
-			case TINYGLTF_TYPE_VEC2:
-			case TINYGLTF_TYPE_VEC3:
-			case TINYGLTF_TYPE_VEC4:
-			case TINYGLTF_TYPE_MAT2:
-			case TINYGLTF_TYPE_MAT3:
-			case TINYGLTF_TYPE_MAT4:
-			case TINYGLTF_TYPE_SCALAR:
-			case TINYGLTF_TYPE_VECTOR:
-			case TINYGLTF_TYPE_MATRIX:
-				break;
+			// Setup the new mesh.
+			auto& mesh = meshes.emplace_back();
+			mesh.m_Name = pMesh->mName.C_Str();
+			mesh.m_VertexCount = pMesh->mNumVertices;
+			mesh.m_VertexOffset = vertexOffset;
+			mesh.m_IndexOffset = indexOffset;
 
-			default:
-				XENON_LOG_ERROR("Invalid or unsupported vertex data type in the provided model file.");
-				break;
+			// Load the vertex data.
+			for (uint32_t j = 0; j < pMesh->mNumVertices; j++)
+			{
+				// Load the position.
+				if (specification.isAvailable(Xenon::VertexElement::Position))
+				{
+					if (pMesh->HasPositions())
+						CopyIncrement(pMesh->mVertices[j], pDestination);
+
+					else
+						CopyIncrement(aiVector3D(0.0), pDestination);
+				}
+
+				// Load the normal.
+				if (specification.isAvailable(Xenon::VertexElement::Normal))
+				{
+					if (pMesh->HasNormals())
+						CopyIncrement(pMesh->mNormals[j], pDestination);
+
+					else
+						CopyIncrement(aiVector3D(0.0), pDestination);
+				}
+
+				// Load the tangent.
+				if (specification.isAvailable(Xenon::VertexElement::Tangent))
+				{
+					if (pMesh->HasTangentsAndBitangents())
+						CopyIncrement(pMesh->mTangents[j], pDestination);
+
+					else
+						CopyIncrement(aiVector3D(0.0), pDestination);
+				}
+
+				// Load the color values.
+				for (uint8_t k = 0; k < 8; k++)
+				{
+					if (specification.isAvailable(static_cast<Xenon::VertexElement>(EnumToInt(Xenon::VertexElement::Color_0) + k)))
+					{
+						if (pMesh->HasVertexColors(k))
+							CopyIncrement(pMesh->mColors[k][j], pDestination);
+
+						else
+							CopyIncrement(aiColor4D(0.0), pDestination);
+					}
+				}
+
+				// Load the texture coordinate values.
+				for (uint8_t k = 0; k < 8; k++)
+				{
+					if (specification.isAvailable(static_cast<Xenon::VertexElement>(EnumToInt(Xenon::VertexElement::TextureCoordinate_0) + k)))
+					{
+						if (pMesh->HasTextureCoords(0))
+						{
+							const auto coordinate = pMesh->mTextureCoords[0][j];
+							CopyIncrement(aiVector2D(coordinate.x, coordinate.y), pDestination);
+						}
+
+						else
+						{
+							CopyIncrement(aiVector2D(0.0), pDestination);
+						}
+					}
+				}
+
+				// TODO: Bone stuff.
 			}
 
-			// Setup the vertex mode.
-			switch (primitive.mode)
+			// Load the index data.
+			const auto previousSize = indices.size();
+			for (uint32_t f = 0; f < pMesh->mNumFaces; f++)
 			{
-			case TINYGLTF_MODE_POINTS:
-			case TINYGLTF_MODE_LINE:
-			case TINYGLTF_MODE_LINE_LOOP:
-			case TINYGLTF_MODE_LINE_STRIP:
-			case TINYGLTF_MODE_TRIANGLES:
-			case TINYGLTF_MODE_TRIANGLE_STRIP:
-			case TINYGLTF_MODE_TRIANGLE_FAN:
-				break;
-
-			default:
-				XENON_LOG_ERROR("Invalid or unsupported vertex mode type in the provided model file.");
-				break;
+				const auto& face = pMesh->mFaces[f];
+				for (uint32_t index = 0; index < face.mNumIndices; index++)
+					indices.emplace_back(face.mIndices[index]);
 			}
+
+			mesh.m_IndexCount = indices.size() - previousSize;
 		}
+
+		// Load the children.
+		for (uint32_t i = 0; i < pNode->mNumChildren; i++)
+			LoadNode(pScene, pNode->mChildren[i], pDestination, indices, specification, meshes);
 	}
 }
 
@@ -131,9 +156,9 @@ namespace Xenon
 {
 	Xenon::MeshStorage MeshStorage::FromFile(Instance& instance, const std::filesystem::path& file)
 	{
-		const auto extension = file.extension();
 		auto storage = MeshStorage(instance);
 
+		// Load the asset.
 		Assimp::Importer importer = {};
 		const aiScene* pScene = importer.ReadFile(file.string(),
 			aiProcess_CalcTangentSpace |
@@ -152,84 +177,70 @@ namespace Xenon
 			return storage;
 		}
 
-		// Load the model data.
-		tinygltf::Model model;
-		std::string errorString;
-		std::string warningString;
-
-		tinygltf::TinyGLTF loader;
-		if (loader.LoadASCIIFromFile(&model, &errorString, &warningString, file.string()))
+		// Setup the vertex specification and get the vertex count.
+		uint64_t vertexCount = 0;
+		for (uint32_t i = 0; i < pScene->mNumMeshes; i++)
 		{
-			// Get the vertex buffer size.
-			uint64_t vertexSize = 0;
-			std::vector<std::unique_ptr<Backend::Buffer>> pStagingBuffers;
-			for (const auto& buffer : model.buffers)
-			{
-				vertexSize += buffer.data.size();
+			const auto pMesh = pScene->mMeshes[i];
+			vertexCount += pMesh->mNumVertices;
 
-				auto& pBuffer = pStagingBuffers.emplace_back(instance.getFactory()->createBuffer(instance.getBackendDevice(), buffer.data.size(), Backend::BufferType::Staging));
-				pBuffer->write(reinterpret_cast<const std::byte*>(buffer.data.data()), buffer.data.size());
-			}
+			if (pMesh->HasPositions()) storage.m_VertexSpecification.addElement(VertexElement::Position);
+			if (pMesh->HasNormals()) storage.m_VertexSpecification.addElement(VertexElement::Normal);
+			if (pMesh->HasTangentsAndBitangents()) storage.m_VertexSpecification.addElement(VertexElement::Tangent);
 
-			// Create the vertex buffer.
-			storage.m_pVertexBuffer = instance.getFactory()->createBuffer(instance.getBackendDevice(), vertexSize, Backend::BufferType::Vertex);
+			if (pMesh->HasVertexColors(0)) storage.m_VertexSpecification.addElement(VertexElement::Color_0);
+			if (pMesh->HasVertexColors(1)) storage.m_VertexSpecification.addElement(VertexElement::Color_1);
+			if (pMesh->HasVertexColors(2)) storage.m_VertexSpecification.addElement(VertexElement::Color_2);
+			if (pMesh->HasVertexColors(3)) storage.m_VertexSpecification.addElement(VertexElement::Color_3);
+			if (pMesh->HasVertexColors(4)) storage.m_VertexSpecification.addElement(VertexElement::Color_4);
+			if (pMesh->HasVertexColors(5)) storage.m_VertexSpecification.addElement(VertexElement::Color_5);
+			if (pMesh->HasVertexColors(6)) storage.m_VertexSpecification.addElement(VertexElement::Color_6);
+			if (pMesh->HasVertexColors(7)) storage.m_VertexSpecification.addElement(VertexElement::Color_7);
 
-			// Copy the data to the vertex buffer.
-			{
-				auto pCommandRecorder = instance.getFactory()->createCommandRecorder(instance.getBackendDevice(), Backend::CommandRecorderUsage::Transfer);
-				pCommandRecorder->begin();
+			if (pMesh->HasTextureCoords(0)) storage.m_VertexSpecification.addElement(VertexElement::TextureCoordinate_0);
+			if (pMesh->HasTextureCoords(1)) storage.m_VertexSpecification.addElement(VertexElement::TextureCoordinate_1);
+			if (pMesh->HasTextureCoords(2)) storage.m_VertexSpecification.addElement(VertexElement::TextureCoordinate_2);
+			if (pMesh->HasTextureCoords(3)) storage.m_VertexSpecification.addElement(VertexElement::TextureCoordinate_3);
+			if (pMesh->HasTextureCoords(4)) storage.m_VertexSpecification.addElement(VertexElement::TextureCoordinate_4);
+			if (pMesh->HasTextureCoords(5)) storage.m_VertexSpecification.addElement(VertexElement::TextureCoordinate_5);
+			if (pMesh->HasTextureCoords(6)) storage.m_VertexSpecification.addElement(VertexElement::TextureCoordinate_6);
+			if (pMesh->HasTextureCoords(7)) storage.m_VertexSpecification.addElement(VertexElement::TextureCoordinate_7);
+			// if (pMesh->HasBones()) storage.m_VertexSpecification.addElement(VertexElement::Bone);
+		}
 
-				uint64_t offset = 0;
-				for (auto& pBuffer : pStagingBuffers)
-				{
-					pCommandRecorder->copyBuffer(pBuffer.get(), 0, storage.m_pVertexBuffer.get(), offset, pBuffer->getSize());
-					offset += pBuffer->getSize();
-				}
+		// Setup the staging buffer to load the vertex data to.
+		const auto vertexBufferSize = vertexCount * storage.m_VertexSpecification.getSize();
 
-				pCommandRecorder->end();
-				pCommandRecorder->submit();
-				pCommandRecorder->wait();
-			}
+		// Load the nodes recursively.
+		auto pLocalBuffer = std::make_unique<std::byte[]>(vertexBufferSize);
+		auto localPointer = pLocalBuffer.get();
 
-			// Clear the staging buffers to save memory.
-			pStagingBuffers.clear();
+		std::vector<uint32_t> localIndexBuffer;
+		LoadNode(pScene, pScene->mRootNode, localPointer, localIndexBuffer, storage.m_VertexSpecification, storage.m_Meshes);
 
-			// Resolve the vertex specification.
-			for (const auto& mesh : model.meshes)
-			{
-				for (const auto& primitive : mesh.primitives)
-				{
-					for (std::underlying_type_t<VertexElement> i = 0; i < EnumToInt(VertexElement::Count); i++)
-						ResolvePrimitive(model, primitive, Attributes[i], static_cast<VertexElement>(i), storage.m_VertexSpecification);
-				}
-			}
+		// Setup the buffers and load the data.
+		auto pVertexStagingBuffer = instance.getFactory()->createBuffer(instance.getBackendDevice(), vertexBufferSize, Backend::BufferType::Staging);
+		pVertexStagingBuffer->write(pLocalBuffer.get(), vertexBufferSize);
 
-			// Load the mesh information.
-			for (const auto& gltfMesh : model.meshes)
-			{
-				Mesh mesh;
-				mesh.m_Name = gltfMesh.name;
+		const auto indexBufferSize = localIndexBuffer.size() * sizeof(uint32_t);
+		auto pIndexStagingBuffer = instance.getFactory()->createBuffer(instance.getBackendDevice(), indexBufferSize, Backend::BufferType::Staging);
+		pIndexStagingBuffer->write(reinterpret_cast<const std::byte*>(localIndexBuffer.data()), indexBufferSize);
 
-				for (const auto& gltfPrimitive : gltfMesh.primitives)
-				{
-					const auto& material = model.materials[gltfPrimitive.material];
+		// Create the actual final buffers.
+		storage.m_pVertexBuffer = instance.getFactory()->createBuffer(instance.getBackendDevice(), vertexBufferSize, Backend::BufferType::Vertex);
+		storage.m_pIndexBuffer = instance.getFactory()->createBuffer(instance.getBackendDevice(), indexBufferSize, Backend::BufferType::Index);
 
-					if (gltfPrimitive.attributes.contains(Attributes[EnumToInt(VertexElement::Position)]))
-					{
-						const auto& accessor = model.accessors[gltfPrimitive.attributes.at(Attributes[EnumToInt(VertexElement::Position)])];
-						const auto& bufferView = model.bufferViews[accessor.bufferView];
-						const auto& buffer = model.buffers[bufferView.buffer];
+		// Load the data to them.
+		{
+			auto pCommandRecorder = instance.getFactory()->createCommandRecorder(instance.getBackendDevice(), Backend::CommandRecorderUsage::Transfer);
+			pCommandRecorder->begin();
 
-						auto positionBegin = buffer.data.begin() + accessor.byteOffset + bufferView.byteOffset;
-						auto positionEnd = positionBegin + accessor.count;
-						const auto stride = accessor.ByteStride(bufferView);
+			pCommandRecorder->copyBuffer(pVertexStagingBuffer.get(), 0, storage.m_pVertexBuffer.get(), 0, vertexBufferSize);
+			pCommandRecorder->copyBuffer(pIndexStagingBuffer.get(), 0, storage.m_pIndexBuffer.get(), 0, indexBufferSize);
 
-						bufferView.byteStride;
-						accessor.componentType;
-						accessor.type;
-					}
-				}
-			}
+			pCommandRecorder->end();
+			pCommandRecorder->submit();
+			pCommandRecorder->wait();
 		}
 
 		return storage;
