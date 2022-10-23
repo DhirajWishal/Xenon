@@ -49,7 +49,6 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonCore)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonVulkanBackend)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonDX12Backend)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Studio)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Test)
 
 # Set the startup project for Visual Studio and set multi processor compilation for other projects that we build.
 if (MSVC) 
