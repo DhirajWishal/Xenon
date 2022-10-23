@@ -82,7 +82,11 @@ namespace Xenon
 
 		VulkanBuffer::~VulkanBuffer()
 		{
-			vmaDestroyBuffer(m_pDevice->getAllocator(), m_Buffer, m_Allocation);;
+			m_pDevice->getInstance()->getDeletionQueue().insert([pDevice = m_pDevice, buffer = m_Buffer, allocation = m_Allocation]
+				{
+					vmaDestroyBuffer(pDevice->getAllocator(), buffer, allocation);
+				}
+			);
 		}
 
 		void VulkanBuffer::copy(const Buffer* pBuffer, uint64_t size, uint64_t srcOffset /*= 0*/, uint64_t dstOffset /*= 0*/)

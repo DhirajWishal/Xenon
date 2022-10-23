@@ -25,12 +25,32 @@ namespace Xenon
 			 * @param appliationName The name of the application.
 			 * @param applicationVersion The application version.
 			 */
-			explicit Instance([[maybe_unused]] const std::string& applicationName, [[maybe_unused]] uint32_t applicationVersion) {}
+			explicit Instance([[maybe_unused]] const std::string& applicationName, [[maybe_unused]] uint32_t applicationVersion) : m_DeletionQueue(1) {}
 
 			/**
 			 * Default virtual destructor.
 			 */
 			virtual ~Instance() = default;
+
+		public:
+			/**
+			 * Get the deletion queue.
+			 * The deletion queue is used to asynchronously destroy object's backend handles without affecting the application runtime.
+			 *
+			 * @return The job system reference.
+			 */
+			[[nodiscard]] JobSystem& getDeletionQueue() { return m_DeletionQueue; }
+
+			/**
+			 * Get the deletion queue.
+			 * The deletion queue is used to asynchronously destroy object's backend handles without affecting the application runtime.
+			 *
+			 * @return The job system const reference.
+			 */
+			[[nodiscard]] const JobSystem& getDeletionQueue() const { return m_DeletionQueue; }
+
+		private:
+			JobSystem m_DeletionQueue;
 		};
 	}
 }

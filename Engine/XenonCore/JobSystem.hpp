@@ -4,43 +4,14 @@
 #pragma once
 
 #include <thread>
-#include <atomic>
 #include <functional>
 #include <condition_variable>
 #include <list>
 #include <mutex>
+#include <future>
 
 namespace Xenon
 {
-	/**
-	 * Job status enum.
-	 */
-	enum class JobStatus : uint8_t
-	{
-		Pending,
-		Executing,
-		Completed
-	};
-
-	/**
-	 * Job entry structure.
-	 * This contains the actual job and it's current state.
-	 */
-	struct JobEntry final
-	{
-		/**
-		 * Explicit constructor.
-		 *
-		 * @tparam Job The job type.
-		 * @param job The job to execute.
-		 */
-		template<class Job>
-		explicit JobEntry(Job&& job) : m_Job(std::move(job)), m_pJobStatus(std::make_shared<std::atomic<JobStatus>>(JobStatus::Pending)) {}
-
-		std::function<void()> m_Job;
-		std::shared_ptr<std::atomic<JobStatus>> m_pJobStatus;
-	};
-
 	/**
 	 * Job system class.
 	 * This contains multiple threads, which simultaneously executes a job which is been given to the system.
@@ -66,16 +37,36 @@ namespace Xenon
 		 *
 		 * @tparam Job The job type.
 		 * @param job The job to insert.
-		 * @return The job status pointer.
+		 * @return The job's return future.
 		 */
 		template<class Job>
-		std::shared_ptr<const std::atomic<JobStatus>> insert(Job&& job)
+		decltype(auto) insert(Job&& job)
 		{
-			const auto lock = std::scoped_lock(m_JobMutex);
-			const auto jobStatus = m_JobEntries.emplace_back(JobEntry(std::move(job))).m_pJobStatus;
-			m_ConditionVariable.notify_one();
+			using ReturnType = std::invoke_result_t<Job>;
 
-			return jobStatus;
+			// Create the promise and get the future.
+			auto pPromise = new std::promise<ReturnType>();
+			auto future = pPromise->get_future();
+
+			// Insert the job to the system.
+			const auto lock = std::scoped_lock(m_JobMutex);
+			const auto jobStatus = m_JobEntries.emplace_back([pPromise, job = std::move(job)]
+				{
+					if constexpr (std::is_void_v<ReturnType>)
+					{
+						job();
+						pPromise->set_value();
+					}
+					else
+					{
+						pPromise->set_value(job());
+					}
+
+					delete pPromise;
+				});
+
+			m_ConditionVariable.notify_one();
+			return future;
 		}
 
 		/**
@@ -85,6 +76,18 @@ namespace Xenon
 		 * @param theradCount The number of threads the job system will have.
 		 */
 		void setThreadCount(uint32_t threadCount);
+
+		/**
+		 * Wait till all the submitted jobs are completed.
+		 */
+		void wait();
+
+		/**
+		 * Wait for a timeout nanoseconds till the submitted jobs are completed.
+		 *
+		 * @param timeout The timeout time to wait in nanoseconds.
+		 */
+		void waitFor(std::chrono::nanoseconds timeout);
 
 		/**
 		 * Clear the job system.
@@ -109,8 +112,10 @@ namespace Xenon
 	private:
 		/**
 		 * This function is the worker function which is run on a separate thread.
+		 *
+		 * @param index The thread index.
 		 */
-		void worker();
+		void worker(uint32_t index);
 
 		/**
 		 * This function will execute a single job in the worker thread.
@@ -125,7 +130,8 @@ namespace Xenon
 		std::atomic_bool m_ShouldFinishJobs = true;
 		std::condition_variable m_ConditionVariable;
 
-		std::list<JobEntry> m_JobEntries;
+		std::list<std::function<void()>> m_JobEntries;
 		std::vector<std::jthread> m_Workers;
+		std::vector<bool> m_WorkerState;
 	};
 }

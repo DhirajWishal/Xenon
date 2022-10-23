@@ -56,7 +56,7 @@ namespace /* anonymous */
 			if (meshes.size() > 0)
 			{
 				const auto& backMesh = meshes.back();
-				vertexOffset = (backMesh.m_VertexCount * vertexSize) + backMesh.m_IndexOffset;
+				vertexOffset = (backMesh.m_VertexCount * vertexSize) + backMesh.m_VertexOffset;
 				indexOffset = (backMesh.m_IndexCount * sizeof(uint32_t)) + backMesh.m_IndexOffset;
 			}
 

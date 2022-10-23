@@ -4,6 +4,7 @@
 #pragma once
 
 #include "../XenonCore/Common.hpp"
+#include "../XenonCore/XObject.hpp"
 
 #include <utility>
 
@@ -15,7 +16,7 @@ namespace Xenon
 		 * Backend object class.
 		 * This is the base class for all the backend objects.
 		 */
-		class BackendObject
+		class BackendObject : public XObject
 		{
 		public:
 			/**

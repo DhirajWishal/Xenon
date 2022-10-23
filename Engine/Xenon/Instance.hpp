@@ -27,7 +27,7 @@ namespace Xenon
 	 * If the requested render target types are not available by the device, it will only enable the render targets which are supported.
 	 * A warning will be issued for this issue.
 	 */
-	class Instance final
+	class Instance final : public XObject
 	{
 	public:
 		/**

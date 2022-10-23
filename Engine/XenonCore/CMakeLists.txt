@@ -19,6 +19,8 @@ add_library(
 	"Logging.hpp"
 	"SparseArray.hpp"
 	"Logging.cpp"
+	"XObject.cpp"
+	"XObject.hpp"
 )
 
 # Set the include directories.

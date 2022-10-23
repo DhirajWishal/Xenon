@@ -35,6 +35,20 @@ namespace Xenon
 
 		public:
 			/**
+			 * Get the instance pointer to which the object is bound to.
+			 *
+			 * @return The instance pointer.
+			 */
+			[[nodiscard]] VulkanInstance* getInstance() { return m_pInstance; }
+
+			/**
+			 * Get the instance pointer to which the object is bound to.
+			 *
+			 * @return The const instance pointer.
+			 */
+			[[nodiscard]] const VulkanInstance* getInstance() const { return m_pInstance; }
+
+			/**
 			 * Get the physical device.
 			 *
 			 * @return The physical device.

@@ -9,21 +9,20 @@
 void run(Xenon::BackendType backend)
 {
 	auto instance = Xenon::Instance("Xenon Studio", 0, Xenon::RenderTargetType::All, backend);
+	auto storage = Xenon::Instance::GetJobSystem().insert([&instance] { return Xenon::MeshStorage::FromFile(instance, "E:\\Flint\\ThirdParty\\glTF-Sample-Models\\2.0\\Sponza\\glTF\\Sponza.gltf"); });
 
-	Xenon::VertexSpecification specification;
-	specification.addElement(Xenon::VertexElement::Position);
-	specification.addElement(Xenon::VertexElement::Normal);
-	specification.addElement(Xenon::VertexElement::Color_0, sizeof(uint8_t));
-	specification.addElement(Xenon::VertexElement::TextureCoordinate_0);
+	for (int i = 0; i < 20; i++)
+		Xenon::Instance::GetJobSystem().insert([] { std::this_thread::sleep_for(std::chrono::milliseconds(1)); });
 
-	const auto storage = Xenon::MeshStorage::FromFile(instance, "E:\\Flint\\ThirdParty\\glTF-Sample-Models\\2.0\\Cube\\glTF\\Cube.gltf");
+	Xenon::Instance::GetJobSystem().wait();
+	storage.wait();
 }
 
 int main()
 {
 	XENON_LOG_INFORMATION("Hello from the Xenon Studio!");
 
-	// Run using Direct X.
+	// Run using Direct X 12.
 	XENON_LOG_INFORMATION("Running Xenon Studio using the DirectX 12 backend.");
 	run(Xenon::BackendType::DirectX_12);
 

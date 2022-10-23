@@ -6,10 +6,11 @@
 namespace Xenon
 {
 	JobSystem::JobSystem(uint32_t threadCount)
+		: m_WorkerState(threadCount, false)
 	{
 		m_Workers.reserve(threadCount);
 		for (uint32_t i = 0; i < threadCount; i++)
-			m_Workers.emplace_back([this] { worker(); });
+			m_Workers.emplace_back([this, i] { worker(i); });
 	}
 
 	JobSystem::~JobSystem()
@@ -29,7 +30,18 @@ namespace Xenon
 
 		m_Workers.reserve(threadCount);
 		for (uint32_t i = 0; i < threadCount; i++)
-			m_Workers.emplace_back([this] { worker(); });
+			m_Workers.emplace_back([this, i] { worker(i); });
+	}
+
+	void JobSystem::wait()
+	{
+		while (!completed());
+	}
+
+	void JobSystem::waitFor(std::chrono::nanoseconds timeout)
+	{
+		const auto targetTimeStamp = std::chrono::high_resolution_clock::now() + timeout;
+		while (!completed() && targetTimeStamp > std::chrono::high_resolution_clock::now());
 	}
 
 	void JobSystem::clear()
@@ -42,10 +54,23 @@ namespace Xenon
 	bool JobSystem::completed()
 	{
 		const auto lock = std::scoped_lock(m_JobMutex);
-		return m_JobEntries.empty();
+
+		// If the entries are not empty, return false.
+		if (!m_JobEntries.empty())
+			return false;
+
+		// Else if at least one state is running, return false.
+		for (const auto state : m_WorkerState)
+		{
+			if (state)
+				return false;
+		}
+
+		// Else we're truly complete.
+		return true;
 	}
 
-	void JobSystem::worker()
+	void JobSystem::worker(uint32_t index)
 	{
 		auto locker = std::unique_lock(m_JobMutex);
 
@@ -54,10 +79,15 @@ namespace Xenon
 			// Wait till we get notified, or if the job entries have jobs to execute, or if we can end the thread.
 			m_ConditionVariable.wait(locker, [this] { return !m_JobEntries.empty() || m_ShouldRun == false; });
 
+			// Update the thread's state.
+			m_WorkerState[index] = true;
+
 			// If we have jobs, execute one.
 			if (!m_JobEntries.empty())
 				execute(locker);
 
+			// Update the state to completed.
+			m_WorkerState[index] = false;
 		} while (m_ShouldRun);
 
 
@@ -65,7 +95,11 @@ namespace Xenon
 		if (m_ShouldFinishJobs)
 		{
 			while (!m_JobEntries.empty())
+			{
+				m_WorkerState[index] = true;
 				execute(locker);
+				m_WorkerState[index] = false;
+			}
 		}
 	}
 
@@ -78,14 +112,8 @@ namespace Xenon
 		// Unlock the locker.
 		if (lock) lock.unlock();
 
-		// Notify that we're executing.
-		jobEntry.m_pJobStatus->store(JobStatus::Executing);
-
 		// Execute the job.
-		jobEntry.m_Job();
-
-		// Notify that we've completed the job.
-		jobEntry.m_pJobStatus->store(JobStatus::Completed);
+		jobEntry();
 
 		// Lock it back again.
 		lock.lock();
