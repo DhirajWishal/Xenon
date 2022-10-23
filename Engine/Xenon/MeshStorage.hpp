@@ -11,6 +11,21 @@
 namespace Xenon
 {
 	/**
+	 * Mesh structure.
+	 * This contains information about a single mesh instance.
+	 */
+	struct Mesh final
+	{
+		std::string m_Name;
+
+		uint64_t m_IndexCount = 0;
+		uint64_t m_IndexOffset = 0;
+
+		uint64_t m_VertexCount = 0;
+		uint64_t m_VertexOffset = 0;
+	};
+
+	/**
 	 * Mesh storage class.
 	 * This class contains all the meshes of a single model, with or without animation.
 	 *

@@ -24,12 +24,8 @@ namespace Xenon
 		Normal,
 
 		// Stored and used as a 3 component vector. 
-		// Access this from GLSL: layout(location = 2) in vec3
+		// Access this from GLSL: layout(location = 2) in vec4
 		Tangent,
-
-		// Stored and used as a 3 component vector. 
-		// Access this from GLSL: layout(location = 3) in vec3
-		BiTangent,
 
 		// Stored and used as a 4 component vector. 
 		// Access this from GLSL: layout(location = 4) in vec4
@@ -123,9 +119,10 @@ namespace Xenon
 		{
 		case Xenon::VertexElement::Position:
 		case Xenon::VertexElement::Normal:
-		case Xenon::VertexElement::Tangent:
-		case Xenon::VertexElement::BiTangent:
 			return 3;
+
+		case Xenon::VertexElement::Tangent:
+			return 4;
 
 		case Xenon::VertexElement::Color_0:
 		case Xenon::VertexElement::Color_1:
@@ -177,8 +174,14 @@ namespace Xenon
 		 */
 		VertexSpecification& addElement(VertexElement element, uint8_t componentSize = sizeof(float))
 		{
-			m_VertexElements |= 1 << EnumToInt(element);
-			m_ElementSizes[EnumToInt(element)] = componentSize * GetVertexElementComponentCount(element);
+			const auto size = componentSize * GetVertexElementComponentCount(element);
+
+			// Update the information only if it's needed.
+			if (!isAvailable(element) || m_ElementSizes[EnumToInt(element)] != size)
+			{
+				m_VertexElements |= 1 << EnumToInt(element);
+				m_ElementSizes[EnumToInt(element)] = size;
+			}
 
 			return *this;
 		}

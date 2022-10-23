@@ -45,7 +45,7 @@ namespace Xenon
 			};
 
 			// Iterate over the features and check if the best feature is available.
-			for (uint8_t i = 0; (i < 3) && !m_Device; i++)
+			for (uint8_t i = 0; (i < _countof(testFeatureLevels)) && !m_Device; i++)
 			{
 				const auto featureLevel = testFeatureLevels[i];
 
