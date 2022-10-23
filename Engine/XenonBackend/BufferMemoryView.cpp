@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "BufferMemoryView.hpp"
-#include "HostAccessibleBuffer.hpp"
+#include "Buffer.hpp"
 
 namespace Xenon
 {
 	namespace Backend
 	{
-		BufferMemoryView::BufferMemoryView(HostAccessibleBuffer* pBuffer)
+		BufferMemoryView::BufferMemoryView(Buffer* pBuffer)
 			: m_pSourceBuffer(pBuffer)
 		{
 			m_pBegin = m_pSourceBuffer->beginRead();

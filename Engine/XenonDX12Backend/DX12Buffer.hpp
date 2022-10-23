@@ -5,6 +5,8 @@
 
 #include "DX12Device.hpp"
 
+#include "../XenonBackend/Buffer.hpp"
+
 namespace Xenon
 {
 	namespace Backend
@@ -15,7 +17,7 @@ namespace Xenon
 		 * DirectX 12 buffer class.
 		 * This is the base class for all the DirectX 12 buffers.
 		 */
-		class DX12Buffer
+		class DX12Buffer final : public Buffer
 		{
 		public:
 			/**
@@ -23,52 +25,59 @@ namespace Xenon
 			 *
 			 * @param pDevice The device pointer.
 			 * @param size The size of the buffer in bytes.
-			 * @param heapType The buffer's heap type.
-			 * @param resourceStates The buffer's resource states.
-			 * @param resourceFlags The optional usage resource flags. Default is none.
+			 * @param type The buffer type.
+			 */
+			explicit DX12Buffer(DX12Device* pDevice, uint64_t size, BufferType type);
+
+			/**
+			 * Explicit constructor.
+			 * Note that this is an internal constructor and is not exposed across the backend layer.
+			 *
+			 * @param pDevice The device pointer.
+			 * @param size The size of the buffer.
+			 * @param heapType The type of the heap.
+			 * @param resourceStates The resource states.
+			 * @param resourceFlags The buffer resource flags. Default is none.
 			 */
 			explicit DX12Buffer(DX12Device* pDevice, uint64_t size, D3D12_HEAP_TYPE heapType, D3D12_RESOURCE_STATES resourceStates, D3D12_RESOURCE_FLAGS resourceFlags = D3D12_RESOURCE_FLAG_NONE);
 
 			/**
 			 * Default virtual destructor.
 			 */
-			virtual ~DX12Buffer();
-
-			/**
-			 * Convert a backend buffer pointer to Vulkan buffer pointer.
-			 *
-			 * @param pBuffer The buffer pointer.
-			 * @return The casted Vulkan buffer pointer.
-			 */
-			static DX12Buffer* From(Buffer* pBuffer);
-
-			/**
-			 * Convert a backend buffer pointer to Vulkan buffer pointer.
-			 *
-			 * @param pBuffer The buffer pointer.
-			 * @return The casted const Vulkan buffer pointer.
-			 */
-			static const DX12Buffer* From(const Buffer* pBuffer);
+			~DX12Buffer() override;
 
 			/**
 			 * Copy data from another buffer to this buffer.
 			 *
-			 * @param pBuffer The other buffer to copy the data from.
-			 * @param size The number of bytes to copy.
-			 * @param srcOffset The offset to copy the data from.
-			 * @param dstOffset The offset to store the data to (in this buffer).
+			 * @param pBuffer The buffer to copy the data from.
+			 * @param size The size in bytes to copy.
+			 * @param srcOffset The source buffer's offset. Default is 0.
+			 * @param dstOffset The destination buffer's (this) offset. Default is 0.
 			 */
-			void copyFrom(const DX12Buffer* pBuffer, uint64_t size, uint64_t srcOffset, uint64_t dstOffset);
+			void copy(const Buffer* pBuffer, uint64_t size, uint64_t srcOffset = 0, uint64_t dstOffset = 0) override;
 
 			/**
-			 * Copy the data from a raw pointer to this buffer.
+			 * Write data to the buffer.
 			 *
 			 * @param pData The data pointer to copy the data from.
 			 * @param size The size of the data to copy in bytes.
 			 * @param offset The buffer's offset to copy to. Default is 0.
 			 */
-			void copyFrom(const std::byte* pData, uint64_t size, uint64_t offset = 0);
+			void write(const std::byte* pData, uint64_t size, uint64_t offset = 0) override;
 
+			/**
+			 * Begin reading data from the GPU.
+			 *
+			 * @return The const data pointer.
+			 */
+			[[nodiscard]] const std::byte* beginRead() override;
+
+			/**
+			 * End the buffer reading.
+			 */
+			void endRead() override;
+
+		private:
 			/**
 			 * Map the buffer memory to the local address space.
 			 *
@@ -96,14 +105,13 @@ namespace Xenon
 			 */
 			[[nodiscard]] const ID3D12Resource* getResource() const { return m_pAllocation->GetResource(); }
 
-		protected:
+		private:
 			DX12Device* m_pDevice = nullptr;
 
 			D3D12MA::Allocation* m_pAllocation = nullptr;
 
 			std::unique_ptr<DX12Buffer> m_pTemporaryBuffer = nullptr;
 
-		private:
 			uint64_t m_Size = 0;
 		};
 	}

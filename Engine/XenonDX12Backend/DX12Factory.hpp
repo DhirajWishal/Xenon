@@ -45,51 +45,24 @@ namespace Xenon
 			[[nodiscard]] std::unique_ptr<Device> createDevice(Instance* pInstance, RenderTargetType requiredRenderTargets) override;
 
 			/**
+			 * Create a new command recorder.
+			 *
+			 * @param pDevice The device pointer.
+			 * @param usage The command recorder usage.
+			 * @param bufferCount The backend primitive buffer count. Default is 1.
+			 * @return The command recorder pointer.
+			 */
+			[[nodiscard]] std::unique_ptr<CommandRecorder> createCommandRecorder(Device* pDevice, CommandRecorderUsage usage, uint32_t bufferCount = 1) override;
+
+			/**
 			 * Create a new index buffer.
 			 *
 			 * @param pDevice The device pointer.
 			 * @param size The size of the buffer in bytes.
-			 * @param indexSize The size of a single index.
+			 * @param type The buffer type.
 			 * @return The buffer pointer.
 			 */
-			[[nodiscard]] std::unique_ptr<IndexBuffer> createIndexBuffer(Device* pDevice, uint64_t size, IndexSize indexSize) override;
-
-			/**
-			 * Create a new vertex buffer.
-			 *
-			 * @param pDevice The device pointer.
-			 * @param size The size of the buffer in bytes.
-			 * @param stride The vertex stride.
-			 * @return The buffer pointer.
-			 */
-			[[nodiscard]] std::unique_ptr<VertexBuffer> createVertexBuffer(Device* pDevice, uint64_t size, uint64_t stride) override;
-
-			/**
-			 * Create a new staging buffer.
-			 *
-			 * @param pDevice The device pointer.
-			 * @param size The size of the buffer in bytes.
-			 * @return The buffer pointer.
-			 */
-			[[nodiscard]] std::unique_ptr<StagingBuffer> createStagingBuffer(Device* pDevice, uint64_t size) override;
-
-			/**
-			 * Create a new storage buffer.
-			 *
-			 * @param pDevice The device pointer.
-			 * @param size The size of the buffer in bytes.
-			 * @return The buffer pointer.
-			 */
-			[[nodiscard]] std::unique_ptr<StorageBuffer> createStorageBuffer(Device* pDevice, uint64_t size) override;
-
-			/**
-			 * Create a new uniform buffer.
-			 *
-			 * @param pDevice The device pointer.
-			 * @param size The size of the buffer in bytes.
-			 * @return The buffer pointer.
-			 */
-			[[nodiscard]] std::unique_ptr<UniformBuffer> createUniformBuffer(Device* pDevice, uint64_t size) override;
+			[[nodiscard]] std::unique_ptr<Buffer> createBuffer(Device* pDevice, uint64_t size, BufferType type) override;
 		};
 	}
 }

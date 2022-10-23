@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "UniformBuffer.hpp"
+#include "Buffer.hpp"
 
 #include <vector>
 
@@ -17,7 +17,7 @@ namespace Xenon
 		 */
 		struct Viewport final
 		{
-			UniformBuffer* m_pUniformBuffer = nullptr;	// This contains the view and projection matrices.
+			Buffer* m_pUniformBuffer = nullptr;	// This contains the view and projection matrices.
 
 			float m_XOffset = 0;
 			float m_YOffset = 0;

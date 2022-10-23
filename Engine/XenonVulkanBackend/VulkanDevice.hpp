@@ -71,7 +71,7 @@ namespace Xenon
 
 			/**
 			 * Get the compute queue from the device.
-			 * 
+			 *
 			 * @return The compute queue.
 			 */
 			[[nodiscard]] const VulkanQueue& getComputeQueue() const { return m_ComputeQueue; }
@@ -90,6 +90,27 @@ namespace Xenon
 			 */
 			[[nodiscard]] const VulkanQueue& getTransferQueue() const { return m_TransferQueue; }
 
+			/**
+			 * Get the compute command pool.
+			 *
+			 * @return The compute command pool.
+			 */
+			[[nodiscard]] VkCommandPool getComputeCommandPool() const { return m_ComputeCommandPool; }
+
+			/**
+			 * Get the graphics command pool.
+			 *
+			 * @return The graphics command pool.
+			 */
+			[[nodiscard]] VkCommandPool getGraphicsCommandPool() const { return m_GraphicsCommandPool; }
+
+			/**
+			 * Get the transfer command pool.
+			 *
+			 * @return The transfer command pool.
+			 */
+			[[nodiscard]] VkCommandPool getTransferCommandPool() const { return m_TransferCommandPool; }
+
 		private:
 			/**
 			 * Select the required physical device.
@@ -106,6 +127,11 @@ namespace Xenon
 			 */
 			void createMemoryAllocator();
 
+			/**
+			 * Create the compute, graphics and transfer command pools.
+			 */
+			void createCommandPools();
+
 		private:
 			VkPhysicalDeviceProperties m_PhysicalDeviceProperties = {};
 			VolkDeviceTable m_DeviceTable;
@@ -120,6 +146,10 @@ namespace Xenon
 
 			VkDevice m_LogicalDevice = VK_NULL_HANDLE;
 			VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;
+
+			VkCommandPool m_ComputeCommandPool = VK_NULL_HANDLE;
+			VkCommandPool m_GraphicsCommandPool = VK_NULL_HANDLE;
+			VkCommandPool m_TransferCommandPool = VK_NULL_HANDLE;
 
 			VmaAllocator m_Allocator = nullptr;
 		};

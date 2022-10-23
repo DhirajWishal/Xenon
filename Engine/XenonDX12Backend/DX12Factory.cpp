@@ -5,11 +5,8 @@
 
 #include "DX12Instance.hpp"
 #include "DX12Device.hpp"
-#include "DX12VertexBuffer.hpp"
-#include "DX12IndexBuffer.hpp"
-#include "DX12StagingBuffer.hpp"
-#include "DX12StorageBuffer.hpp"
-#include "DX12UniformBuffer.hpp"
+#include "DX12CommandRecorder.hpp"
+#include "DX12Buffer.hpp"
 
 namespace Xenon
 {
@@ -26,29 +23,14 @@ namespace Xenon
 			return std::make_unique<DX12Device>(pInstance->as<DX12Instance>(), requiredRenderTargets);
 		}
 
-		std::unique_ptr<Xenon::Backend::IndexBuffer> DX12Factory::createIndexBuffer(Device* pDevice, uint64_t size, IndexSize indexSize)
+		std::unique_ptr<Xenon::Backend::CommandRecorder> DX12Factory::createCommandRecorder(Device* pDevice, CommandRecorderUsage usage, uint32_t bufferCount /*= 1*/)
 		{
-			return std::make_unique<DX12IndexBuffer>(pDevice->as<DX12Device>(), size, indexSize);
+			return std::make_unique<DX12CommandRecorder>(pDevice->as<DX12Device>(), usage, bufferCount);
 		}
 
-		std::unique_ptr<Xenon::Backend::VertexBuffer> DX12Factory::createVertexBuffer(Device* pDevice, uint64_t size, uint64_t stride)
+		std::unique_ptr<Xenon::Backend::Buffer> DX12Factory::createBuffer(Device* pDevice, uint64_t size, BufferType type)
 		{
-			return std::make_unique<DX12VertexBuffer>(pDevice->as<DX12Device>(), size, stride);
-		}
-
-		std::unique_ptr<Xenon::Backend::StagingBuffer> DX12Factory::createStagingBuffer(Device* pDevice, uint64_t size)
-		{
-			return std::make_unique<DX12StagingBuffer>(pDevice->as<DX12Device>(), size);
-		}
-
-		std::unique_ptr<Xenon::Backend::StorageBuffer> DX12Factory::createStorageBuffer(Device* pDevice, uint64_t size)
-		{
-			return std::make_unique<DX12StorageBuffer>(pDevice->as<DX12Device>(), size);
-		}
-
-		std::unique_ptr<Xenon::Backend::UniformBuffer> DX12Factory::createUniformBuffer(Device* pDevice, uint64_t size)
-		{
-			return std::make_unique<DX12UniformBuffer>(pDevice->as<DX12Device>(), size);
+			return std::make_unique<DX12Buffer>(pDevice->as<DX12Device>(), size, type);
 		}
 	}
 }

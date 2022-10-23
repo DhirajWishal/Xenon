@@ -4,6 +4,7 @@
 #pragma once
 
 #include "Device.hpp"
+#include "BufferMemoryView.hpp"
 
 namespace Xenon
 {
@@ -14,16 +15,20 @@ namespace Xenon
 		 */
 		enum class BufferType : uint8_t
 		{
+			// This buffer can store index data and can be used for rendering.
 			Index,
 			Vertex,
 			Staging,
 			Storage,
 			Uniform,
+
+			// This buffer type is not available for normal use, but is only defined in backend(s).
+			BackendSpecific
 		};
-		
+
 		/**
 		 * Buffer class.
-		 * This is the base class for all the backend buffers used by Xenon.
+		 * Buffers are used to store data for different purposes, including vertex data, index data, uniform data and even for transient usage.
 		 */
 		class Buffer : public BackendObject
 		{
@@ -36,12 +41,12 @@ namespace Xenon
 			 * @param type The buffer type.
 			 */
 			explicit Buffer([[maybe_unused]] Device* pDevice, uint64_t size, BufferType type) : m_Size(size), m_Type(type) {}
-		
+
 			/**
 			 * Default virtual destructor.
 			 */
 			virtual ~Buffer() = default;
-		
+
 			/**
 			 * Copy data from another buffer to this buffer.
 			 *
@@ -51,7 +56,35 @@ namespace Xenon
 			 * @param dstOffset The destination buffer's (this) offset. Default is 0.
 			 */
 			virtual void copy(const Buffer* pBuffer, uint64_t size, uint64_t srcOffset = 0, uint64_t dstOffset = 0) = 0;
-		
+
+			/**
+			 * Write data to the buffer.
+			 *
+			 * @param pData The data pointer to copy the data from.
+			 * @param size The size of the data to copy in bytes.
+			 * @param offset The buffer's offset to copy to. Default is 0.
+			 */
+			virtual void write(const std::byte* pData, uint64_t size, uint64_t offset = 0) = 0;
+
+			/**
+			 * Read data from the buffer.
+			 *
+			 * @return The buffer's memory view.
+			 */
+			[[nodiscard]] BufferMemoryView read() { return BufferMemoryView(this); }
+
+			/**
+			 * Begin reading data from the GPU.
+			 *
+			 * @return The const data pointer.
+			 */
+			[[nodiscard]] virtual const std::byte* beginRead() = 0;
+
+			/**
+			 * End the buffer reading.
+			 */
+			virtual void endRead() = 0;
+
 		public:
 			/**
 			 * Get the byte size of the buffer.
@@ -59,14 +92,14 @@ namespace Xenon
 			 * @return The size.
 			 */
 			[[nodiscard]] uint64_t getSize() const { return m_Size; }
-		
+
 			/**
 			 * Get the buffer type.
 			 *
 			 * @return The buffer type.
 			 */
 			[[nodiscard]] BufferType getType() const { return m_Type; }
-		
+
 		protected:
 			uint64_t m_Size = 0;
 			BufferType m_Type;

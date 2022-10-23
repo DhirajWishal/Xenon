@@ -19,11 +19,73 @@ namespace Xenon
 {
 	namespace Backend
 	{
-		DX12Buffer::DX12Buffer(DX12Device* pDevice, uint64_t size, D3D12_HEAP_TYPE heapType, D3D12_RESOURCE_STATES resourceStates, D3D12_RESOURCE_FLAGS resourceFlags /*= D3D12_RESOURCE_FLAG_NONE*/)
-			: m_pDevice(pDevice)
+		DX12Buffer::DX12Buffer(DX12Device* pDevice, uint64_t size, BufferType type)
+			: Buffer(pDevice, size, type)
+			, m_pDevice(pDevice)
 			, m_Size(size)
 		{
-			const auto resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(size, resourceFlags);
+			D3D12MA::ALLOCATION_DESC allocationDesc = {};
+			CD3DX12_RESOURCE_DESC resourceDescriptor = {};
+			D3D12_RESOURCE_STATES resourceStates = {};
+
+			switch (type)
+			{
+			case Xenon::Backend::BufferType::Index:
+				resourceStates = D3D12_RESOURCE_STATE_INDEX_BUFFER;
+				allocationDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
+				resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(size, D3D12_RESOURCE_FLAG_NONE);
+				break;
+
+			case Xenon::Backend::BufferType::Vertex:
+				resourceStates = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+				allocationDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
+				resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(size, D3D12_RESOURCE_FLAG_NONE);
+				break;
+
+			case Xenon::Backend::BufferType::Staging:
+				resourceStates = D3D12_RESOURCE_STATE_COMMON;
+				allocationDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
+				resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(size, D3D12_RESOURCE_FLAG_NONE);
+				break;
+
+			case Xenon::Backend::BufferType::Storage:
+				resourceStates = D3D12_RESOURCE_STATE_COMMON;
+				allocationDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
+				resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(size, D3D12_RESOURCE_FLAG_NONE);
+				break;
+
+			case Xenon::Backend::BufferType::Uniform:
+				resourceStates = D3D12_RESOURCE_STATE_COMMON;
+				allocationDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
+				resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(size, D3D12_RESOURCE_FLAG_NONE);
+				break;
+
+			default:
+				m_Type = BufferType::Staging;
+				resourceStates = D3D12_RESOURCE_STATE_COMMON;
+				allocationDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
+				resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(size, D3D12_RESOURCE_FLAG_NONE);
+				XENON_LOG_ERROR("Invalid or unsupported buffer type! Defaulting to staging.");
+				break;
+			}
+
+
+			XENON_DX12_ASSERT(pDevice->getAllocator()->CreateResource(
+				&allocationDesc,
+				&resourceDescriptor,
+				/*D3D12_RESOURCE_STATE_COPY_SOURCE | D3D12_RESOURCE_STATE_COPY_DEST | */resourceStates,
+				nullptr,
+				&m_pAllocation,
+				IID_NULL,
+				nullptr), "Failed to create the DirectX 12 buffer!");
+		}
+
+		DX12Buffer::DX12Buffer(DX12Device* pDevice, uint64_t size, D3D12_HEAP_TYPE heapType, D3D12_RESOURCE_STATES resourceStates, D3D12_RESOURCE_FLAGS resourceFlags /*= D3D12_RESOURCE_FLAG_NONE*/)
+			: Buffer(pDevice, size, BufferType::BackendSpecific)
+			, m_pDevice(pDevice)
+			, m_Size(size)
+		{
+			CD3DX12_RESOURCE_DESC resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(size, resourceFlags);
 
 			D3D12MA::ALLOCATION_DESC allocationDesc = {};
 			allocationDesc.HeapType = heapType;
@@ -43,64 +105,14 @@ namespace Xenon
 			m_pAllocation->Release();
 		}
 
-		DX12Buffer* DX12Buffer::From(Buffer* pBuffer)
-		{
-			switch (pBuffer->getType())
-			{
-			case Xenon::Backend::BufferType::Index:
-				return pBuffer->as<DX12IndexBuffer>();
-
-			case Xenon::Backend::BufferType::Vertex:
-				return pBuffer->as<DX12VertexBuffer>();
-
-			case Xenon::Backend::BufferType::Staging:
-				return pBuffer->as<DX12StagingBuffer>();
-
-			case Xenon::Backend::BufferType::Storage:
-				return pBuffer->as<DX12StorageBuffer>();
-
-			case Xenon::Backend::BufferType::Uniform:
-				return pBuffer->as<DX12UniformBuffer>();
-
-			default:
-				XENON_LOG_ERROR("Invalid buffer type!");
-				return nullptr;
-			}
-		}
-
-		const DX12Buffer* DX12Buffer::From(const Buffer* pBuffer)
-		{
-			switch (pBuffer->getType())
-			{
-			case Xenon::Backend::BufferType::Index:
-				return pBuffer->as<DX12IndexBuffer>();
-
-			case Xenon::Backend::BufferType::Vertex:
-				return pBuffer->as<DX12VertexBuffer>();
-
-			case Xenon::Backend::BufferType::Staging:
-				return pBuffer->as<DX12StagingBuffer>();
-
-			case Xenon::Backend::BufferType::Storage:
-				return pBuffer->as<DX12StorageBuffer>();
-
-			case Xenon::Backend::BufferType::Uniform:
-				return pBuffer->as<DX12UniformBuffer>();
-
-			default:
-				XENON_LOG_ERROR("Invalid buffer type!");
-				return nullptr;
-			}
-		}
-
-		void DX12Buffer::copyFrom(const DX12Buffer* pBuffer, uint64_t size, uint64_t srcOffset, uint64_t dstOffset)
+		void DX12Buffer::copy(const Buffer* pBuffer, uint64_t size, uint64_t srcOffset /*= 0*/, uint64_t dstOffset /*= 0*/)
 		{
 			// Create the command list.
 			ComPtr<ID3D12GraphicsCommandList> commandList;
 			XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_pDevice->getCommandAllocator(), nullptr, IID_PPV_ARGS(&commandList)), "Failed to create the DirectX 12 copy command list!");
 
 			// Copy the buffer region.
-			commandList->CopyBufferRegion(m_pAllocation->GetResource(), dstOffset, pBuffer->m_pAllocation->GetResource(), srcOffset, size);
+			commandList->CopyBufferRegion(m_pAllocation->GetResource(), dstOffset, pBuffer->as<DX12Buffer>()->m_pAllocation->GetResource(), srcOffset, size);
 
 			// End the command list.
 			XENON_DX12_ASSERT(commandList->Close(), "Failed to stop the current DirectX 12 command list!");
@@ -130,7 +142,7 @@ namespace Xenon
 			CloseHandle(fenceEvent);
 		}
 
-		void DX12Buffer::copyFrom(const std::byte* pData, uint64_t size, uint64_t offset /*= 0*/)
+		void DX12Buffer::write(const std::byte* pData, uint64_t size, uint64_t offset /*= 0*/)
 		{
 			// First, create the copy buffer.
 			auto copyBuffer = DX12Buffer(m_pDevice, size, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
@@ -146,13 +158,23 @@ namespace Xenon
 			copyBuffer.getResource()->Unmap(0, nullptr);
 
 			// Finally copy everything to this.
-			copyFrom(&copyBuffer, size, 0, offset);
+			copy(&copyBuffer, size, 0, offset);
+		}
+
+		const std::byte* DX12Buffer::beginRead()
+		{
+			return map();
+		}
+
+		void DX12Buffer::endRead()
+		{
+			unmap();
 		}
 
 		const std::byte* DX12Buffer::map()
 		{
 			m_pTemporaryBuffer = std::make_unique<DX12Buffer>(m_pDevice, m_Size, D3D12_HEAP_TYPE_READBACK, D3D12_RESOURCE_STATE_COPY_DEST);
-			m_pTemporaryBuffer->copyFrom(this, m_Size, 0, 0);
+			m_pTemporaryBuffer->copy(this, m_Size, 0, 0);
 
 			std::byte* tempBufferMemory = nullptr;
 			m_pTemporaryBuffer->getResource()->Map(0, nullptr, reinterpret_cast<void**>(&tempBufferMemory));

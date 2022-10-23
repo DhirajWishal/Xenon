@@ -3,52 +3,66 @@
 
 #pragma once
 
+#include "../XenonBackend/Buffer.hpp"
+
 #include "VulkanDeviceBoundObject.hpp"
 
 namespace Xenon
 {
 	namespace Backend
 	{
-		class Buffer;
-
 		/**
 		 * Vulkan buffer class.
-		 * This class is a universal buffer which can be created to be any type.
 		 */
-		class VulkanBuffer : public VulkanDeviceBoundObject
+		class VulkanBuffer final : public VulkanDeviceBoundObject, public Buffer
 		{
 		public:
 			/**
 			 * Explicit constructor.
 			 *
 			 * @param pDevice The device pointer.
-			 * @param size The size of the buffer.
-			 * @param usageFlags The buffer usage flags.
-			 * @param memoryUsage The memory usage flags.
+			 * @param size The size of the buffer in bytes.
+			 * @param type The buffer type.
 			 */
-			explicit VulkanBuffer(VulkanDevice* pDevice, uint64_t size, VkBufferUsageFlags usageFlags, VmaMemoryUsage memoryUsage);
+			explicit VulkanBuffer(VulkanDevice* pDevice, uint64_t size, BufferType type);
 
 			/**
 			 * Destructor.
 			 */
-			virtual ~VulkanBuffer() override;
+			~VulkanBuffer() override;
 
 			/**
-			 * Convert a backend buffer pointer to Vulkan buffer pointer.
+			 * Copy data from another buffer to this buffer.
 			 *
-			 * @param pBuffer The buffer pointer.
-			 * @return The casted Vulkan buffer pointer.
+			 * @param pBuffer The buffer to copy the data from.
+			 * @param size The size in bytes to copy.
+			 * @param srcOffset The source buffer's offset. Default is 0.
+			 * @param dstOffset The destination buffer's (this) offset. Default is 0.
 			 */
-			static VulkanBuffer* From(Buffer* pBuffer);
+			void copy(const Buffer* pBuffer, uint64_t size, uint64_t srcOffset = 0, uint64_t dstOffset = 0) override;
 
 			/**
-			 * Convert a backend buffer pointer to Vulkan buffer pointer.
+			 * Write data to the buffer.
 			 *
-			 * @param pBuffer The buffer pointer.
-			 * @return The casted const Vulkan buffer pointer.
+			 * @param pData The data pointer to copy the data from.
+			 * @param size The size of the data to copy in bytes.
+			 * @param offset The buffer's offset to copy to. Default is 0.
 			 */
-			static const VulkanBuffer* From(const Buffer* pBuffer);
+			void write(const std::byte* pData, uint64_t size, uint64_t offset = 0) override;
 
+			/**
+			 * Begin reading data from the GPU.
+			 *
+			 * @return The const data pointer.
+			 */
+			[[nodiscard]] const std::byte* beginRead() override;
+
+			/**
+			 * End the buffer reading.
+			 */
+			void endRead() override;
+
+		private:
 			/**
 			 * Map the buffer memory to the local address space.
 			 *
@@ -61,42 +75,10 @@ namespace Xenon
 			 */
 			void unmap();
 
-		public:
-			/**
-			 * Get the Vulkan buffer.
-			 *
-			 * @return The Vulkan buffer.
-			 */
-			[[nodiscard]] VkBuffer getBuffer() const { return m_Buffer; }
-
-			/**
-			 * Get the VMA allocation.
-			 *
-			 * @return The allocation.
-			 */
-			[[nodiscard]] VmaAllocation getAllocation() const { return m_Allocation; }
-
-			/**
-			 * Get the descriptor buffer info.
-			 *
-			 * @return The buffer info.
-			 */
-			[[nodiscard]] VkDescriptorBufferInfo getDescriptorBufferInfo() const { return m_BufferInfo; }
-
-		protected:
-			/**
-			 * Copy data from another buffer to this.
-			 * This is a utility function for the inherited Buffer class.
-			 *
-			 * @param pBuffer The buffer pointer.
-			 * @param size The number of bytes to copy.
-			 * @param srcOffset The source buffer offset.
-			 * @param dstOffset The destination (this) buffer's offset to copy to.
-			 */
-			void copyFrom(const VulkanBuffer* pBuffer, uint64_t size, uint64_t srcOffset, uint64_t dstOffset);
-
-		protected:
+		private:
 			VkDescriptorBufferInfo m_BufferInfo;
+
+			std::unique_ptr<VulkanBuffer> m_pTemporaryBuffer = nullptr;
 
 			VkBuffer m_Buffer = VK_NULL_HANDLE;
 			VmaAllocation m_Allocation = nullptr;

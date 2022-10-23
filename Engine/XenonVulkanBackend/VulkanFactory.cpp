@@ -5,11 +5,8 @@
 
 #include "VulkanInstance.hpp"
 #include "VulkanDevice.hpp"
-#include "VulkanIndexBuffer.hpp"
-#include "VulkanStagingBuffer.hpp"
-#include "VulkanStorageBuffer.hpp"
-#include "VulkanUniformBuffer.hpp"
-#include "VulkanVertexBuffer.hpp"
+#include "VulkanCommandRecorder.hpp"
+#include "VulkanBuffer.hpp"
 
 namespace Xenon
 {
@@ -25,29 +22,14 @@ namespace Xenon
 			return std::make_unique<VulkanDevice>(pInstance->as<VulkanInstance>(), requiredRenderTargets);
 		}
 
-		std::unique_ptr<Xenon::Backend::IndexBuffer> VulkanFactory::createIndexBuffer(Device* pDevice, uint64_t size, IndexSize indexSize)
+		std::unique_ptr<Xenon::Backend::CommandRecorder> VulkanFactory::createCommandRecorder(Device* pDevice, CommandRecorderUsage usage, uint32_t bufferCount /*= 1*/)
 		{
-			return std::make_unique<VulkanIndexBuffer>(pDevice->as<VulkanDevice>(), size, indexSize);
+			return std::make_unique<VulkanCommandRecorder>(pDevice->as<VulkanDevice>(), usage, bufferCount);
 		}
 
-		std::unique_ptr<Xenon::Backend::VertexBuffer> VulkanFactory::createVertexBuffer(Device* pDevice, uint64_t size, uint64_t stride)
+		std::unique_ptr<Xenon::Backend::Buffer> VulkanFactory::createBuffer(Device* pDevice, uint64_t size, BufferType type)
 		{
-			return std::make_unique<VulkanVertexBuffer>(pDevice->as<VulkanDevice>(), size, stride);
-		}
-
-		std::unique_ptr<Xenon::Backend::StagingBuffer> VulkanFactory::createStagingBuffer(Device* pDevice, uint64_t size)
-		{
-			return std::make_unique<VulkanStagingBuffer>(pDevice->as<VulkanDevice>(), size);
-		}
-
-		std::unique_ptr<Xenon::Backend::StorageBuffer> VulkanFactory::createStorageBuffer(Device* pDevice, uint64_t size)
-		{
-			return std::make_unique<VulkanStorageBuffer>(pDevice->as<VulkanDevice>(), size);
-		}
-
-		std::unique_ptr<Xenon::Backend::UniformBuffer> VulkanFactory::createUniformBuffer(Device* pDevice, uint64_t size)
-		{
-			return std::make_unique<VulkanUniformBuffer>(pDevice->as<VulkanDevice>(), size);
+			return std::make_unique<VulkanBuffer>(pDevice->as<VulkanDevice>(), size, type);
 		}
 	}
 }

@@ -27,18 +27,10 @@ add_library(
 	"DX12CommandAllocator.hpp"
 	"DX12Buffer.cpp"
 	"DX12Buffer.hpp"
-	"DX12VertexBuffer.cpp"
-	"DX12VertexBuffer.hpp"
-	"DX12IndexBuffer.cpp" 
-	"DX12IndexBuffer.hpp" 
-	"DX12StagingBuffer.cpp"
-	"DX12StagingBuffer.hpp"
-	"DX12StorageBuffer.cpp"
-	"DX12StorageBuffer.hpp"
-	"DX12UniformBuffer.cpp"
-	"DX12UniformBuffer.hpp"
 	"DX12Rasterizer.cpp"
 	"DX12Rasterizer.hpp"
+	"DX12CommandRecorder.cpp"
+	"DX12CommandRecorder.hpp"
 )
 
 # Set the include directories.

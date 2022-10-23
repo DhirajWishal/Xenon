@@ -61,6 +61,22 @@ namespace Xenon
 			 */
 			VulkanCommandBuffer& operator=(VulkanCommandBuffer&& other) noexcept;
 
+			/**
+			 * VkCommandBuffer operator.
+			 * This can be used to conveniently get the Vulkan command buffer handle.
+			 *
+			 * @return The Vulkan command buffer.
+			 */
+			operator VkCommandBuffer() const { return m_CommandBuffer; }
+
+			/**
+			 * VkFence operator.
+			 * This can be used to conveniently get the Vulkan fence handle.
+			 *
+			 * @return The Vulkan fence.
+			 */
+			operator VkFence() const { return m_Fence; }
+
 		public:
 			/**
 			 * Get the command buffer.

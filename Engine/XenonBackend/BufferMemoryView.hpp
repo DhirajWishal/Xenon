@@ -10,7 +10,7 @@ namespace Xenon
 {
 	namespace Backend
 	{
-		class HostAccessibleBuffer;
+		class Buffer;
 
 		/**
 		 * Buffer memory view class.
@@ -35,7 +35,7 @@ namespace Xenon
 			 *
 			 * @param pBuffer The host accessible buffer pointer.
 			 */
-			explicit BufferMemoryView(HostAccessibleBuffer* pBuffer);
+			explicit BufferMemoryView(Buffer* pBuffer);
 
 			/**
 			 * Move constructor.
@@ -54,14 +54,14 @@ namespace Xenon
 			 *
 			 * @return The buffer pointer.
 			 */
-			[[nodiscard]] HostAccessibleBuffer* getBuffer() { return m_pSourceBuffer; }
+			[[nodiscard]] Buffer* getBuffer() { return m_pSourceBuffer; }
 
 			/**
 			 * Get the source buffer pointer.
 			 *
 			 * @return The const buffer pointer.
 			 */
-			[[nodiscard]] const HostAccessibleBuffer* getBuffer() const { return m_pSourceBuffer; }
+			[[nodiscard]] const Buffer* getBuffer() const { return m_pSourceBuffer; }
 
 			/**
 			 * Get a byte value at a given index.
@@ -146,7 +146,7 @@ namespace Xenon
 			BufferMemoryView& operator=(BufferMemoryView&& other) noexcept;
 
 		private:
-			HostAccessibleBuffer* m_pSourceBuffer = nullptr;
+			Buffer* m_pSourceBuffer = nullptr;
 
 			std::byte const* m_pBegin = nullptr;
 			std::byte const* m_pEnd = nullptr;

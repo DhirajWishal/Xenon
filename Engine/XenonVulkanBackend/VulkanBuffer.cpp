@@ -4,26 +4,57 @@
 #include "VulkanBuffer.hpp"
 #include "VulkanMacros.hpp"
 
-#include "VulkanCommandPool.hpp"
-
-#include "VulkanIndexBuffer.hpp"
-#include "VulkanStagingBuffer.hpp"
-#include "VulkanStorageBuffer.hpp"
-#include "VulkanUniformBuffer.hpp"
-#include "VulkanVertexBuffer.hpp"
+#include "VulkanCommandRecorder.hpp"
 
 namespace Xenon
 {
 	namespace Backend
 	{
-		VulkanBuffer::VulkanBuffer(VulkanDevice* pDevice, uint64_t size, VkBufferUsageFlags usageFlags, VmaMemoryUsage memoryUsage)
-			: VulkanDeviceBoundObject(pDevice)
+		VulkanBuffer::VulkanBuffer(VulkanDevice* pDevice, uint64_t size, BufferType type)
+			: Buffer(pDevice, size, type)
+			, VulkanDeviceBoundObject(pDevice)
 		{
+			// Setup buffer and memory flags.
 			VmaAllocationCreateFlags vmaFlags = 0;
+			VkBufferUsageFlags usageFlags = 0;
+			VmaMemoryUsage memoryUsage = VMA_MEMORY_USAGE_AUTO;
 
-			// Set the sequential write bit to true if we are not using vertex of index buffer bits.
-			if (!(usageFlags & VK_BUFFER_USAGE_VERTEX_BUFFER_BIT || usageFlags & VK_BUFFER_USAGE_INDEX_BUFFER_BIT))
+			switch (type)
+			{
+			case Xenon::Backend::BufferType::Index:
+				usageFlags = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
 				vmaFlags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
+				memoryUsage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
+				break;
+
+			case Xenon::Backend::BufferType::Vertex:
+				usageFlags = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
+				vmaFlags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
+				memoryUsage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
+				break;
+
+			case Xenon::Backend::BufferType::Staging:
+				usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
+				memoryUsage = VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
+				break;
+
+			case Xenon::Backend::BufferType::Storage:
+				usageFlags = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
+				memoryUsage = VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
+				break;
+
+			case Xenon::Backend::BufferType::Uniform:
+				usageFlags = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
+				memoryUsage = VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
+				break;
+
+			default:
+				m_Type = BufferType::Staging;
+				memoryUsage = VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
+				usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
+				XENON_LOG_ERROR("Invalid or unsupported buffer type! Defaulting to staging.");
+				break;
+			}
 
 			// Create the buffer.
 			VkBufferCreateInfo createInfo = {};
@@ -53,54 +84,62 @@ namespace Xenon
 			vmaDestroyBuffer(m_pDevice->getAllocator(), m_Buffer, m_Allocation);;
 		}
 
-		VulkanBuffer* VulkanBuffer::From(Buffer* pBuffer)
+		void VulkanBuffer::copy(const Buffer* pBuffer, uint64_t size, uint64_t srcOffset /*= 0*/, uint64_t dstOffset /*= 0*/)
 		{
-			switch (pBuffer->getType())
+			const auto pVulkanBuffer = pBuffer->as<VulkanBuffer>();
+
+			auto commandBuffers = VulkanCommandRecorder(m_pDevice, CommandRecorderUsage::Transfer);
+			commandBuffers.begin();
+			// commandBuffers.copyBuffers(pBuffer, srcOffset, this, dstOffset, size);
+			commandBuffers.end();
+			commandBuffers.submit();
+		}
+
+		void VulkanBuffer::write(const std::byte* pData, uint64_t size, uint64_t offset /*= 0*/)
+		{
+			// If the buffer is either index of vertex, copy to a staging buffer before writing.
+			if (m_Type == BufferType::Index || m_Type == BufferType::Vertex)
 			{
-			case Xenon::Backend::BufferType::Index:
-				return pBuffer->as<VulkanIndexBuffer>();
+				auto buffer = VulkanBuffer(m_pDevice, size, BufferType::Staging);
+				buffer.write(pData, size, 0);
 
-			case Xenon::Backend::BufferType::Vertex:
-				return pBuffer->as<VulkanVertexBuffer>();
-
-			case Xenon::Backend::BufferType::Staging:
-				return pBuffer->as<VulkanStagingBuffer>();
-
-			case Xenon::Backend::BufferType::Storage:
-				return pBuffer->as<VulkanStorageBuffer>();
-
-			case Xenon::Backend::BufferType::Uniform:
-				return pBuffer->as<VulkanUniformBuffer>();
-
-			default:
-				XENON_LOG_ERROR("Invalid buffer type!");
-				return nullptr;
+				copy(&buffer, size, offset);
+			}
+			else
+			{
+				std::copy_n(pData, size, map());
+				unmap();
 			}
 		}
 
-		const VulkanBuffer* VulkanBuffer::From(const Buffer* pBuffer)
+		const std::byte* VulkanBuffer::beginRead()
 		{
-			switch (pBuffer->getType())
+			// If the buffer is either index of vertex, copy to a staging buffer before reading.
+			if (m_Type == BufferType::Index || m_Type == BufferType::Vertex)
 			{
-			case Xenon::Backend::BufferType::Index:
-				return pBuffer->as<VulkanIndexBuffer>();
+				// Create the temporary buffer if we haven't already.
+				if (m_pTemporaryBuffer == nullptr)
+				{
+					m_pTemporaryBuffer = std::make_unique<VulkanBuffer>(m_pDevice, getSize(), BufferType::Staging);
+					m_pTemporaryBuffer->copy(this, getSize());
+				}
 
-			case Xenon::Backend::BufferType::Vertex:
-				return pBuffer->as<VulkanVertexBuffer>();
-
-			case Xenon::Backend::BufferType::Staging:
-				return pBuffer->as<VulkanStagingBuffer>();
-
-			case Xenon::Backend::BufferType::Storage:
-				return pBuffer->as<VulkanStorageBuffer>();
-
-			case Xenon::Backend::BufferType::Uniform:
-				return pBuffer->as<VulkanUniformBuffer>();
-
-			default:
-				XENON_LOG_ERROR("Invalid buffer type!");
-				return nullptr;
+				// Map the temporary buffer.
+				return m_pTemporaryBuffer->map();
 			}
+			else
+			{
+				return map();
+			}
+		}
+
+		void VulkanBuffer::endRead()
+		{
+			if (m_Type == BufferType::Index || m_Type == BufferType::Vertex)
+				m_pTemporaryBuffer->unmap();
+
+			else
+				unmap();
 		}
 
 		std::byte* VulkanBuffer::map()
@@ -114,15 +153,6 @@ namespace Xenon
 		void VulkanBuffer::unmap()
 		{
 			vmaUnmapMemory(m_pDevice->getAllocator(), m_Allocation);
-		}
-
-		void VulkanBuffer::copyFrom(const VulkanBuffer* pBuffer, uint64_t size, uint64_t srcOffset, uint64_t dstOffset)
-		{
-			auto commandBuffers = VulkanCommandPool(m_pDevice);
-			commandBuffers.begin();
-			commandBuffers.copyBuffers(pBuffer, srcOffset, this, dstOffset, size);
-			commandBuffers.end();
-			commandBuffers.submitTransfer();
 		}
 	}
 }

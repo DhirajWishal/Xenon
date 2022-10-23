@@ -5,6 +5,7 @@
 #include "Xenon/VertexBuffer.hpp"
 #include "Xenon/StagingBuffer.hpp"
 #include "Xenon/VertexSpecification.hpp"
+#include "Xenon/MeshStorage.hpp"
 
 int main()
 {
@@ -19,6 +20,8 @@ int main()
 	specification.addElement(Xenon::VertexElement::Normal);
 	specification.addElement(Xenon::VertexElement::Color_0, sizeof(uint8_t));
 	specification.addElement(Xenon::VertexElement::TextureCoordinate_0);
+
+	const auto storage = Xenon::MeshStorage::FromFile(instance, "E:\\Flint\\ThirdParty\\glTF-Sample-Models\\2.0\\Cube\\glTF\\Cube.gltf");
 
 	return 0;
 }

@@ -54,7 +54,7 @@ namespace Xenon
 			 * @param format The image's pixel format.
 			 * @param enableMipMapping Whether to enable mip-mapping or not. Default is true.
 			 */
-			explicit Image(Device* pDevice, uint32_t width, uint32_t height, uint32_t depth, uint32_t layers, DataFormat format, ImageType type, bool enableMipMapping = true)
+			explicit Image([[maybe_unused]] Device* pDevice, uint32_t width, uint32_t height, uint32_t depth, uint32_t layers, DataFormat format, ImageType type, bool enableMipMapping = true)
 				: m_Width(width), m_Height(height), m_Depth(depth), m_Format(format) {}
 
 			/**

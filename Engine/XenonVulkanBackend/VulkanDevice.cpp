@@ -130,10 +130,17 @@ namespace Xenon
 
 			// Create the memory allocator.
 			createMemoryAllocator();
+
+			// Create the command pools.
+			createCommandPools();
 		}
 
 		VulkanDevice::~VulkanDevice()
 		{
+			getDeviceTable().vkDestroyCommandPool(m_LogicalDevice, m_ComputeCommandPool, nullptr);
+			getDeviceTable().vkDestroyCommandPool(m_LogicalDevice, m_GraphicsCommandPool, nullptr);
+			getDeviceTable().vkDestroyCommandPool(m_LogicalDevice, m_TransferCommandPool, nullptr);
+
 			vmaDestroyAllocator(m_Allocator);
 			m_DeviceTable.vkDestroyDevice(m_LogicalDevice, nullptr);
 		}
@@ -342,6 +349,27 @@ namespace Xenon
 
 			// Create the allocator.
 			XENON_VK_ASSERT(vmaCreateAllocator(&createInfo, &m_Allocator), "Failed to create the allocator!");
+		}
+
+		void VulkanDevice::createCommandPools()
+		{
+			// Setup the command pool create info structure.
+			VkCommandPoolCreateInfo createInfo = {};
+			createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+			createInfo.pNext = nullptr;
+			createInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+
+			// Create the compute command pool.
+			createInfo.queueFamilyIndex = getComputeQueue().getFamily();
+			XENON_VK_ASSERT(getDeviceTable().vkCreateCommandPool(m_LogicalDevice, &createInfo, nullptr, &m_ComputeCommandPool), "Failed to create the compute command pool!");
+
+			// Create the graphics command pool.
+			createInfo.queueFamilyIndex = getGraphicsQueue().getFamily();
+			XENON_VK_ASSERT(getDeviceTable().vkCreateCommandPool(m_LogicalDevice, &createInfo, nullptr, &m_GraphicsCommandPool), "Failed to create the graphics command pool!");
+
+			// Create the transfer command pool.
+			createInfo.queueFamilyIndex = getTransferQueue().getFamily();
+			XENON_VK_ASSERT(getDeviceTable().vkCreateCommandPool(m_LogicalDevice, &createInfo, nullptr, &m_TransferCommandPool), "Failed to create the transfer command pool!");
 		}
 	}
 }

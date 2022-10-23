@@ -40,7 +40,7 @@ namespace Xenon
 			 * @param pCamera The camera which is used to render the scene.
 			 * @param attachmentTypes The attachment types the render target should support.
 			 */
-			explicit RenderTarget(Device* pDevice, Camera* pCamera, AttachmentType attachmentTypes) : m_pCamera(pCamera), m_AttachmentTypes(attachmentTypes) {}
+			explicit RenderTarget([[maybe_unused]] Device* pDevice, Camera* pCamera, AttachmentType attachmentTypes) : m_pCamera(pCamera), m_AttachmentTypes(attachmentTypes) {}
 
 			/**
 			 * Default virtual destructor.
