@@ -9,6 +9,10 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <tiny_gltf.h>
 
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
 #include <fstream>
 
 constexpr const char* Attributes[] = {
@@ -129,6 +133,24 @@ namespace Xenon
 	{
 		const auto extension = file.extension();
 		auto storage = MeshStorage(instance);
+
+		Assimp::Importer importer = {};
+		const aiScene* pScene = importer.ReadFile(file.string(),
+			aiProcess_CalcTangentSpace |
+			aiProcess_JoinIdenticalVertices |
+			aiProcess_Triangulate |
+			//aiProcess_OptimizeMeshes |
+			//aiProcess_OptimizeGraph |
+			aiProcess_SortByPType |
+			aiProcess_GenUVCoords |
+			aiProcess_FlipUVs);
+
+		// Check if the file was loaded.
+		if (pScene == nullptr)
+		{
+			XENON_LOG_FATAL("Failed to load the asset file {}!", file.string());
+			return storage;
+		}
 
 		// Load the model data.
 		tinygltf::Model model;

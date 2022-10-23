@@ -23,7 +23,7 @@ add_library(
 )
 
 # Set the target links.
-target_link_libraries(XenonEngine XenonVulkanBackend)
+target_link_libraries(XenonEngine XenonVulkanBackend assimp)
 
 # Make sure to specify the C++ standard to C++20.
 set_property(TARGET XenonEngine PROPERTY CXX_STANDARD 20)
@@ -33,6 +33,7 @@ target_include_directories(
 	XenonEngine 
 
 	PRIVATE ${TINYGLTF_INCLUDE_DIR}
+	PRIVATE ${ASSIMP_INCLUDE_DIR}
 )
 
 # If we are on MSVC, we can use the Multi Processor Compilation option.

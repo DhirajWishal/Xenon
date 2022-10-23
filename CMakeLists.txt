@@ -26,6 +26,19 @@ set(DIRECT_X_HEADERS_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/DirectX-
 set(D3DMA_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/D3D12MemoryAllocator/include)
 set(D3DMA_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/D3D12MemoryAllocator/src)
 set(TINYGLTF_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/tinygltf)
+set(ASSIMP_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/assimp/include)
+
+# Set the required variables for assimp.
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build assimp as a static library." FORCE)
+set(ASSIMP_NO_EXPORT OFF CACHE BOOL "Disable the export functionality." FORCE)
+set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "We don't need the tests either." FORCE)
+set(ASSIMP_BUILD_SAMPLES OFF CACHE BOOL "We don't need the samples too." FORCE)
+set(ASSIMP_INSTALL OFF CACHE BOOL "We just need assimp as a submodule." FORCE)
+set(ASSIMP_INSTALL_PDB OFF CACHE BOOL "We don't need to install PDB files." FORCE)
+set(ASSIMP_BUILD_ASSIMP_VIEW OFF CACHE BOOL "We also don't need the assimp view tool." FORCE)
+
+# Add the assimp library as a subdirectory.
+add_subdirectory(ThirdParty/assimp)
 
 # Set global compile definitions.
 add_compile_definitions(
