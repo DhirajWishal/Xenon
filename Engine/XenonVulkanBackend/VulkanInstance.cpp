@@ -215,14 +215,18 @@ namespace Xenon
 
 		VulkanInstance::~VulkanInstance()
 		{
+			getDeletionQueue().insert([instance = m_Instance, debugger = m_DebugMessenger]
+				{
 #ifdef XENON_DEBUG
-			// Destroy the debugger.
-			const auto vkDestroyDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(m_Instance, "vkDestroyDebugUtilsMessengerEXT"));
-			vkDestroyDebugUtilsMessengerEXT(m_Instance, m_DebugMessenger, nullptr);
+					// Destroy the debugger.
+					const auto vkDestroyDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT"));
+					vkDestroyDebugUtilsMessengerEXT(instance, debugger, nullptr);
 
 #endif // XENON_DEBUG
 
-			vkDestroyInstance(m_Instance, nullptr);
+					vkDestroyInstance(instance, nullptr);
+				}
+			);
 		}
 
 		void VulkanInstance::createInstance(const std::string& applicationName, uint32_t applicationVersion)

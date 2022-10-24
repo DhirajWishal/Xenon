@@ -11,9 +11,6 @@ void run(Xenon::BackendType backend)
 	auto instance = Xenon::Instance("Xenon Studio", 0, Xenon::RenderTargetType::All, backend);
 	auto storage = Xenon::Instance::GetJobSystem().insert([&instance] { return Xenon::MeshStorage::FromFile(instance, "E:\\Flint\\ThirdParty\\glTF-Sample-Models\\2.0\\Sponza\\glTF\\Sponza.gltf"); });
 
-	for (int i = 0; i < 20; i++)
-		Xenon::Instance::GetJobSystem().insert([] { std::this_thread::sleep_for(std::chrono::milliseconds(1)); });
-
 	Xenon::Instance::GetJobSystem().wait();
 	storage.wait();
 }

@@ -117,6 +117,7 @@ namespace Xenon
 			// If the user needs ray tracing, we need to enable the following extensions.
 			if (requiredRenderTargets & (RenderTargetType::PathTracer | RenderTargetType::RayTracer))
 			{
+				m_DeviceExtensions.emplace_back(VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME);
 				m_DeviceExtensions.emplace_back(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME);
 				m_DeviceExtensions.emplace_back(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME);
 				// m_DeviceExtensions.emplace_back(VK_KHR_RAY_QUERY_EXTENSION_NAME);
@@ -137,12 +138,19 @@ namespace Xenon
 
 		VulkanDevice::~VulkanDevice()
 		{
-			getDeviceTable().vkDestroyCommandPool(m_LogicalDevice, m_ComputeCommandPool, nullptr);
-			getDeviceTable().vkDestroyCommandPool(m_LogicalDevice, m_GraphicsCommandPool, nullptr);
-			getDeviceTable().vkDestroyCommandPool(m_LogicalDevice, m_TransferCommandPool, nullptr);
+			getInstance()->getDeletionQueue().wait();
+			getInstance()->getDeletionQueue().insert(
+				[deviceTable = m_DeviceTable, device = m_LogicalDevice, computeCommandPool = m_ComputeCommandPool,
+				graphicsCommandPool = m_GraphicsCommandPool, transferCommandPool = m_TransferCommandPool, allocator = m_Allocator]
+				{
+					deviceTable.vkDestroyCommandPool(device, computeCommandPool, nullptr);
+					deviceTable.vkDestroyCommandPool(device, graphicsCommandPool, nullptr);
+					deviceTable.vkDestroyCommandPool(device, transferCommandPool, nullptr);
 
-			vmaDestroyAllocator(m_Allocator);
-			m_DeviceTable.vkDestroyDevice(m_LogicalDevice, nullptr);
+					vmaDestroyAllocator(allocator);
+					deviceTable.vkDestroyDevice(device, nullptr);
+				}
+				);
 		}
 
 		void VulkanDevice::selectPhysicalDevice()

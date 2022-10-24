@@ -34,6 +34,20 @@ namespace Xenon
 
 		public:
 			/**
+			 * Get the instance pointer.
+			 *
+			 * @return The instance pointer.
+			 */
+			[[nodiscard]] DX12Instance* getInstance() { return m_pInstance; }
+
+			/**
+			 * Get the instance pointer.
+			 *
+			 * @return The const instance pointer.
+			 */
+			[[nodiscard]] const DX12Instance* getInstance() const { return m_pInstance; }
+
+			/**
 			 * Get the backend device object.
 			 *
 			 * @return The device pointer.

@@ -37,8 +37,12 @@ namespace Xenon
 		{
 			if (m_pDevice)
 			{
-				m_pDevice->getDeviceTable().vkFreeCommandBuffers(m_pDevice->getLogicalDevice(), m_CommandPool, 1, &m_CommandBuffer);
-				m_pDevice->getDeviceTable().vkDestroyFence(m_pDevice->getLogicalDevice(), m_Fence, nullptr);
+				m_pDevice->getInstance()->getDeletionQueue().insert([pDevice = m_pDevice, commandPool = m_CommandPool, buffer = m_CommandBuffer, fence = m_Fence]
+					{
+						pDevice->getDeviceTable().vkFreeCommandBuffers(pDevice->getLogicalDevice(), commandPool, 1, &buffer);
+						pDevice->getDeviceTable().vkDestroyFence(pDevice->getLogicalDevice(), fence, nullptr);
+					}
+				);
 			}
 		}
 

@@ -27,7 +27,7 @@ namespace Xenon
 
 		DX12Device::~DX12Device()
 		{
-			m_pAllocator->Release();
+			getInstance()->getDeletionQueue().insert([allocator = m_pAllocator] { allocator->Release(); });
 		}
 
 		void DX12Device::createFactory()
