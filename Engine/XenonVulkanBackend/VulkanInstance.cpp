@@ -4,6 +4,11 @@
 #include "VulkanInstance.hpp"
 #include "VulkanMacros.hpp"
 
+#if defined(XENON_PLATFORM_WINDOWS)
+#include <vulkan/vulkan_win32.h>
+
+#endif // defined(XENON_PLATFORM_WINDOWS)
+
 namespace /* anonymous */
 {
 	/**
@@ -74,7 +79,7 @@ namespace /* anonymous */
 #elif defined(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME)
 		extensions.emplace_back(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME);
 
-#elif defined(FLINT_PLATFORM_WINDOWS)
+#elif defined(XENON_PLATFORM_WINDOWS)
 		extensions.emplace_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
 
 #elif defined(VK_KHR_XCB_SURFACE_EXTENSION_NAME)
@@ -121,25 +126,25 @@ namespace /* anonymous */
 		const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
 		void* pUserData)
 	{
-		auto& logFile = reinterpret_cast<Xenon::Backend::VulkanInstance*>(pUserData)->getLogFile();
-
-		// Log if the log file is open.
-		if (logFile.is_open())
+		// Log to the console if we have an error or a warning.
+		if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
 		{
-			// Log to the console if we have an error.
-			if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
-			{
-				XENON_LOG_ERROR("Vulkan Validation Layer : {}", pCallbackData->pMessage);
-			}
-			else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
-			{
-				XENON_LOG_WARNING("Vulkan Validation Layer : {}", pCallbackData->pMessage);
-			}
+			XENON_LOG_ERROR("Vulkan Validation Layer: {}", pCallbackData->pMessage);
+		}
+		else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+		{
+			XENON_LOG_WARNING("Vulkan Validation Layer: {}", pCallbackData->pMessage);
+		}
 
-			// Else log to the file.
-			else
+		// Else log to the file.
+		else
+		{
+			auto& logFile = reinterpret_cast<Xenon::Backend::VulkanInstance*>(pUserData)->getLogFile();
+
+			// Log if the log file is open.
+			if (logFile.is_open())
 			{
-				logFile << "Vulkan Validation Layer : ";
+				logFile << "Vulkan Validation Layer: ";
 
 				if (messageType & VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT)
 					logFile << "GENERAL | ";

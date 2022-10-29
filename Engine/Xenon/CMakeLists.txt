@@ -14,6 +14,7 @@ add_library(
 	STATIC
 
 	"Instance.cpp"
+	"Instance.hpp"
 	"RasterizingRenderer.cpp"
 	"RasterizingRenderer.hpp"
 	"MeshStorage.cpp"
