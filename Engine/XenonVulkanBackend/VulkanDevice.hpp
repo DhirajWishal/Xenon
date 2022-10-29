@@ -35,6 +35,23 @@ namespace Xenon
 
 		public:
 			/**
+			 * Convert the Xenon multi sampling count to the Vulkan multi sampling count bits.
+			 *
+			 * @param count The Xenon multi sampling count.
+			 * @return The Vulkan multi sampling count.
+			 */
+			[[nodiscard]] VkSampleCountFlagBits convertSamplingCount(MultiSamplingCount count) const;
+
+			/**
+			 * Convert the Xenon data format to the Vulkan format.
+			 *
+			 * @param format The data format.
+			 * @return The Vulkan format.
+			 */
+			[[nodiscard]] VkFormat convertFormat(DataFormat format) const;
+
+		public:
+			/**
 			 * Get the instance pointer to which the object is bound to.
 			 *
 			 * @return The instance pointer.

@@ -5,6 +5,7 @@
 
 #include "CommandRecorder.hpp"
 #include "Buffer.hpp"
+#include "Image.hpp"
 
 namespace Xenon
 {
@@ -64,6 +65,15 @@ namespace Xenon
 			 * @return The buffer pointer.
 			 */
 			[[nodiscard]] virtual std::unique_ptr<Buffer> createBuffer(Device* pDevice, uint64_t size, BufferType type) = 0;
+
+			/**
+			 * Create a new image.
+			 *
+			 * @param pDevice The device pointer.
+			 * @param specification The image specification.
+			 * @return The image pointer.
+			 */
+			[[nodiscard]] virtual std::unique_ptr<Image> createImage(Device* pDevice, const ImageSpecification& specification) = 0;
 		};
 	}
 }

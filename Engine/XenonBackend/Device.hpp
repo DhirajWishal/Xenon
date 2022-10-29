@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "Core.hpp"
 #include "Instance.hpp"
 
 namespace Xenon

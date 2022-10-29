@@ -11,6 +11,35 @@ namespace Xenon
 			: Rasterizer(pDevice, pCamera, attachmentTypes, enableTripleBuffering, multiSampleCount)
 			, VulkanDeviceBoundObject(pDevice)
 		{
+			if (attachmentTypes & AttachmentType::Color)
+			{
+				// Create and add the color attachment.
+			}
+
+			if (attachmentTypes & AttachmentType::EntityID)
+			{
+				// Create and add the entity ID attachment.
+			}
+
+			if (attachmentTypes & AttachmentType::Normal)
+			{
+				// Create and add the normal attachment.
+			}
+
+			if (attachmentTypes & AttachmentType::Depth && attachmentTypes & AttachmentType::Stencil)
+			{
+				// Create and add the depth attachment with stencil attachment.
+			}
+
+			else if (attachmentTypes & AttachmentType::Depth)
+			{
+				// Create and add the depth attachment.
+			}
+
+			else if (attachmentTypes & AttachmentType::Stencil)
+			{
+				// Create and add the stencil attachment.
+			}
 		}
 	}
 }

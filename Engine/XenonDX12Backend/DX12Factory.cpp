@@ -7,6 +7,7 @@
 #include "DX12Device.hpp"
 #include "DX12CommandRecorder.hpp"
 #include "DX12Buffer.hpp"
+#include "DX12Image.hpp"
 
 namespace Xenon
 {
@@ -31,6 +32,11 @@ namespace Xenon
 		std::unique_ptr<Xenon::Backend::Buffer> DX12Factory::createBuffer(Device* pDevice, uint64_t size, BufferType type)
 		{
 			return std::make_unique<DX12Buffer>(pDevice->as<DX12Device>(), size, type);
+		}
+
+		std::unique_ptr<Xenon::Backend::Image> DX12Factory::createImage(Device* pDevice, const ImageSpecification& specification)
+		{
+			return std::make_unique<DX12Image>(pDevice->as<DX12Device>(), specification);
 		}
 	}
 }

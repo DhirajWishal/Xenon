@@ -10,29 +10,22 @@ namespace Xenon
 	namespace Backend
 	{
 		/**
-		 * Data format enum.
+		 * Image specification structure.
+		 * This contains all the necessary information to create an image.
 		 */
-		enum class DataFormat : uint8_t
+		struct ImageSpecification final
 		{
-			Undefined
-		};
+			uint32_t m_Width = 0;
+			uint32_t m_Height = 0;
+			uint32_t m_Depth = 1;
+			uint32_t m_Layers = 1;
 
-		/**
-		 * Image type enum.
-		 */
-		enum class ImageType : uint8_t
-		{
-			Storage,
+			ImageType m_Type = ImageType::TwoDimensional;
+			ImageUsage m_Usage = ImageUsage::Graphics;
+			DataFormat m_Format = DataFormat::Undefined;
+			MultiSamplingCount m_MultiSamplingCount = MultiSamplingCount::x1;
 
-			Texture2D,
-			Texture3D,
-			CubeMap,
-
-			ColorAttachment,
-			EntityIDAttachment,
-			NormalAttachment,
-			DepthAttachment,
-			DepthStencilAttachment
+			bool m_EnableMipMaps = true;
 		};
 
 		/**
@@ -46,16 +39,9 @@ namespace Xenon
 			 * Explicit constructor.
 			 *
 			 * @param pDevice The device pointer.
-			 * @param width The width of the image.
-			 * @param height The height of the image.
-			 * @param depth The depth of the image.
-			 * @param layers The number of layers in the image.
-			 * @param type The image type. This is defined by the backend images.
-			 * @param format The image's pixel format.
-			 * @param enableMipMapping Whether to enable mip-mapping or not. Default is true.
+			 * @param specification The image specification.
 			 */
-			explicit Image([[maybe_unused]] Device* pDevice, uint32_t width, uint32_t height, uint32_t depth, uint32_t layers, DataFormat format, ImageType type, bool enableMipMapping = true)
-				: m_Width(width), m_Height(height), m_Depth(depth), m_Format(format) {}
+			explicit Image([[maybe_unused]] Device* pDevice, const ImageSpecification& specification) : m_Specification(specification) {}
 
 			/**
 			 * Default virtual destructor.
@@ -63,12 +49,7 @@ namespace Xenon
 			virtual ~Image() = default;
 
 		private:
-			uint32_t m_Width = 0;
-			uint32_t m_Height = 0;
-			uint32_t m_Depth = 0;
-			uint32_t m_Layers = 0;
-
-			DataFormat m_Format = DataFormat::Undefined;
+			ImageSpecification m_Specification = {};
 		};
 	}
 }

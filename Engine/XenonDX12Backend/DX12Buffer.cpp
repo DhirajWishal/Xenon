@@ -63,7 +63,6 @@ namespace Xenon
 				break;
 			}
 
-
 			XENON_DX12_ASSERT(pDevice->getAllocator()->CreateResource(
 				&allocationDesc,
 				&resourceDescriptor,
@@ -99,7 +98,7 @@ namespace Xenon
 			m_pDevice->getInstance()->getDeletionQueue().insert([allocation = m_pAllocation] { allocation->Release(); });
 		}
 
-		void DX12Buffer::copy(const Buffer* pBuffer, uint64_t size, uint64_t srcOffset /*= 0*/, uint64_t dstOffset /*= 0*/)
+		void DX12Buffer::copy(Buffer* pBuffer, uint64_t size, uint64_t srcOffset /*= 0*/, uint64_t dstOffset /*= 0*/)
 		{
 			// Create the command list.
 			ComPtr<ID3D12GraphicsCommandList> commandList;

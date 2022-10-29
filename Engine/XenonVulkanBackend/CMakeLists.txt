@@ -33,6 +33,8 @@ add_library(
 	"VulkanRasterizer.hpp"
 	"VulkanCommandRecorder.cpp"
 	"VulkanCommandRecorder.hpp"
+	"VulkanImage.cpp"
+	"VulkanImage.hpp"
 )
 
 # Set the include directories.

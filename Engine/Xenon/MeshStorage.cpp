@@ -14,6 +14,56 @@
 namespace /* anonymous */
 {
 	/**
+	 * Get the node's information along with it's child nodes.
+	 *
+	 * @param pScene The scene pointer.
+	 * @param pNode The node pointer.
+	 * @param specification The vertex specification.
+	 * @param vertexCount The variable to store the vertex count.
+	 * @param indexCount The variable to store the vertex count.
+	 */
+	void GetNodeInformation(const aiScene* pScene, const aiNode* pNode, Xenon::VertexSpecification& specification, uint64_t& vertexCount, uint64_t& indexCount)
+	{
+		// Get the node's mesh information.
+		for (uint32_t i = 0; i < pNode->mNumMeshes; i++)
+		{
+			const auto pMesh = pScene->mMeshes[pNode->mMeshes[i]];
+			vertexCount += pMesh->mNumVertices;
+
+			if (pMesh->HasPositions()) specification.addElement(Xenon::VertexElement::Position);
+			if (pMesh->HasNormals()) specification.addElement(Xenon::VertexElement::Normal);
+			if (pMesh->HasTangentsAndBitangents()) specification.addElement(Xenon::VertexElement::Tangent);
+
+			if (pMesh->HasVertexColors(0)) specification.addElement(Xenon::VertexElement::Color_0);
+			if (pMesh->HasVertexColors(1)) specification.addElement(Xenon::VertexElement::Color_1);
+			if (pMesh->HasVertexColors(2)) specification.addElement(Xenon::VertexElement::Color_2);
+			if (pMesh->HasVertexColors(3)) specification.addElement(Xenon::VertexElement::Color_3);
+			if (pMesh->HasVertexColors(4)) specification.addElement(Xenon::VertexElement::Color_4);
+			if (pMesh->HasVertexColors(5)) specification.addElement(Xenon::VertexElement::Color_5);
+			if (pMesh->HasVertexColors(6)) specification.addElement(Xenon::VertexElement::Color_6);
+			if (pMesh->HasVertexColors(7)) specification.addElement(Xenon::VertexElement::Color_7);
+
+			if (pMesh->HasTextureCoords(0)) specification.addElement(Xenon::VertexElement::TextureCoordinate_0);
+			if (pMesh->HasTextureCoords(1)) specification.addElement(Xenon::VertexElement::TextureCoordinate_1);
+			if (pMesh->HasTextureCoords(2)) specification.addElement(Xenon::VertexElement::TextureCoordinate_2);
+			if (pMesh->HasTextureCoords(3)) specification.addElement(Xenon::VertexElement::TextureCoordinate_3);
+			if (pMesh->HasTextureCoords(4)) specification.addElement(Xenon::VertexElement::TextureCoordinate_4);
+			if (pMesh->HasTextureCoords(5)) specification.addElement(Xenon::VertexElement::TextureCoordinate_5);
+			if (pMesh->HasTextureCoords(6)) specification.addElement(Xenon::VertexElement::TextureCoordinate_6);
+			if (pMesh->HasTextureCoords(7)) specification.addElement(Xenon::VertexElement::TextureCoordinate_7);
+			// if (pMesh->HasBones()) specification.addElement(Xenon::VertexElement::Bone);
+
+			// Get the index count.
+			for (uint32_t f = 0; f < pMesh->mNumFaces; f++)
+				indexCount += pMesh->mFaces[f].mNumIndices;
+		}
+
+		// Get the child nodes' information.
+		for (uint32_t i = 0; i < pNode->mNumChildren; i++)
+			GetNodeInformation(pScene, pNode->mChildren[i], specification, vertexCount, indexCount);
+	}
+
+	/**
 	 * Copy the Assimp vector to the destination and increment the pointer by the type size.
 	 *
 	 * @tparam Type The vector type.
@@ -38,7 +88,7 @@ namespace /* anonymous */
 	 * @param specification The vertex specification to load the data.
 	 * @param meshes The mesh storage.
 	 */
-	void LoadNode(const aiScene* pScene, const aiNode* pNode, std::byte*& pDestination, std::vector<uint32_t>& indices, const Xenon::VertexSpecification& specification, std::vector<Xenon::Mesh>& meshes)
+	void LoadNode(const aiScene* pScene, const aiNode* pNode, std::byte* pDestination, std::vector<uint32_t>& indices, const Xenon::VertexSpecification& specification, std::vector<Xenon::Mesh>& meshes)
 	{
 		static auto jobSystem = Xenon::JobSystem(std::thread::hardware_concurrency());
 
@@ -66,8 +116,12 @@ namespace /* anonymous */
 			mesh.m_VertexCount = pMesh->mNumVertices;
 			mesh.m_VertexOffset = vertexOffset;
 			mesh.m_IndexOffset = indexOffset;
+			// mesh.m_PrimitiveType = pMesh->mPrimitiveTypes == aiPrimitiveType::aiPrimitiveType_LINE;
 
-			// Load the vertex data.
+			// auto indexIterator = indices.begin();
+			// jobSystem.insert([pMesh, vertexSize, pDestination, &specification, indexIterator]() mutable
+			// 	{
+					// Load the vertex data.
 			for (uint32_t j = 0; j < pMesh->mNumVertices; j++)
 			{
 				// Load the position.
@@ -134,6 +188,16 @@ namespace /* anonymous */
 				// TODO: Bone stuff.
 			}
 
+			// Add the index data.
+			for (uint32_t f = 0; f < pMesh->mNumFaces; f++)
+			{
+				const auto& face = pMesh->mFaces[f];
+				for (uint32_t index = 0; index < face.mNumIndices; index++)
+					indices.emplace_back(face.mIndices[index]);
+			}
+			// 	}
+			// );
+
 			// Load the index data.
 			const auto previousSize = indices.size();
 			for (uint32_t f = 0; f < pMesh->mNumFaces; f++)
@@ -144,6 +208,8 @@ namespace /* anonymous */
 			}
 
 			mesh.m_IndexCount = indices.size() - previousSize;
+
+			pDestination += mesh.m_VertexCount * vertexSize;
 		}
 
 		// Load the children.
@@ -177,45 +243,26 @@ namespace Xenon
 			return storage;
 		}
 
-		// Setup the vertex specification and get the vertex count.
+		// Setup the vertex specification, vertex count and the index count.
 		uint64_t vertexCount = 0;
-		for (uint32_t i = 0; i < pScene->mNumMeshes; i++)
-		{
-			const auto pMesh = pScene->mMeshes[i];
-			vertexCount += pMesh->mNumVertices;
-
-			if (pMesh->HasPositions()) storage.m_VertexSpecification.addElement(VertexElement::Position);
-			if (pMesh->HasNormals()) storage.m_VertexSpecification.addElement(VertexElement::Normal);
-			if (pMesh->HasTangentsAndBitangents()) storage.m_VertexSpecification.addElement(VertexElement::Tangent);
-
-			if (pMesh->HasVertexColors(0)) storage.m_VertexSpecification.addElement(VertexElement::Color_0);
-			if (pMesh->HasVertexColors(1)) storage.m_VertexSpecification.addElement(VertexElement::Color_1);
-			if (pMesh->HasVertexColors(2)) storage.m_VertexSpecification.addElement(VertexElement::Color_2);
-			if (pMesh->HasVertexColors(3)) storage.m_VertexSpecification.addElement(VertexElement::Color_3);
-			if (pMesh->HasVertexColors(4)) storage.m_VertexSpecification.addElement(VertexElement::Color_4);
-			if (pMesh->HasVertexColors(5)) storage.m_VertexSpecification.addElement(VertexElement::Color_5);
-			if (pMesh->HasVertexColors(6)) storage.m_VertexSpecification.addElement(VertexElement::Color_6);
-			if (pMesh->HasVertexColors(7)) storage.m_VertexSpecification.addElement(VertexElement::Color_7);
-
-			if (pMesh->HasTextureCoords(0)) storage.m_VertexSpecification.addElement(VertexElement::TextureCoordinate_0);
-			if (pMesh->HasTextureCoords(1)) storage.m_VertexSpecification.addElement(VertexElement::TextureCoordinate_1);
-			if (pMesh->HasTextureCoords(2)) storage.m_VertexSpecification.addElement(VertexElement::TextureCoordinate_2);
-			if (pMesh->HasTextureCoords(3)) storage.m_VertexSpecification.addElement(VertexElement::TextureCoordinate_3);
-			if (pMesh->HasTextureCoords(4)) storage.m_VertexSpecification.addElement(VertexElement::TextureCoordinate_4);
-			if (pMesh->HasTextureCoords(5)) storage.m_VertexSpecification.addElement(VertexElement::TextureCoordinate_5);
-			if (pMesh->HasTextureCoords(6)) storage.m_VertexSpecification.addElement(VertexElement::TextureCoordinate_6);
-			if (pMesh->HasTextureCoords(7)) storage.m_VertexSpecification.addElement(VertexElement::TextureCoordinate_7);
-			// if (pMesh->HasBones()) storage.m_VertexSpecification.addElement(VertexElement::Bone);
-		}
+		uint64_t indexCount = 0;
+		GetNodeInformation(pScene, pScene->mRootNode, storage.m_VertexSpecification, vertexCount, indexCount);
 
 		// Setup the staging buffer to load the vertex data to.
 		const auto vertexBufferSize = vertexCount * storage.m_VertexSpecification.getSize();
+
+		{
+			// Test image creation.
+			const auto pImage = instance.getFactory()->createImage(instance.getBackendDevice(), { .m_Width = 1280, .m_Height = 720, .m_Format = Backend::DataFormat::R8G8B8A8_SRGB });
+			return storage;
+		}
 
 		// Load the nodes recursively.
 		auto pLocalBuffer = std::make_unique<std::byte[]>(vertexBufferSize);
 		auto localPointer = pLocalBuffer.get();
 
 		std::vector<uint32_t> localIndexBuffer;
+		localIndexBuffer.reserve(indexCount);
 		LoadNode(pScene, pScene->mRootNode, localPointer, localIndexBuffer, storage.m_VertexSpecification, storage.m_Meshes);
 
 		// Setup the buffers and load the data.

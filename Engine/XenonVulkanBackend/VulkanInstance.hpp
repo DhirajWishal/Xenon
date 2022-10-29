@@ -8,6 +8,7 @@
 #include <volk.h>
 
 #include <vector>
+#include <fstream>
 
 namespace Xenon
 {
@@ -53,6 +54,14 @@ namespace Xenon
 			 */
 			[[nodiscard]] const std::vector<const char*>& getValidationLayers() const { return m_pValidationLayers; }
 
+			/**
+			 * Get the Vulkan's log file.
+			 * This is file is per-instance and is generated at runtime.
+			 *
+			 * @return The log file.
+			 */
+			[[nodiscard]] std::ofstream& getLogFile();
+
 		private:
 			/**
 			 * Create the Vulkan instance.
@@ -63,6 +72,7 @@ namespace Xenon
 			void createInstance(const std::string& applicationName, uint32_t applicationVersion);
 
 		private:
+			std::ofstream m_LogFile;
 			std::vector<const char*> m_pValidationLayers;
 
 			VkInstance m_Instance = VK_NULL_HANDLE;

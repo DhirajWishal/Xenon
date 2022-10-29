@@ -34,6 +34,15 @@ namespace Xenon
 
 		public:
 			/**
+			 * Convert the Xenon format to the Direct X 12 format.
+			 *
+			 * @param format The Xenon format.
+			 * @return The DX12 format.
+			 */
+			[[nodiscard]] DXGI_FORMAT convertFormat(DataFormat format) const;
+
+		public:
+			/**
 			 * Get the instance pointer.
 			 *
 			 * @return The instance pointer.

@@ -22,11 +22,13 @@ namespace Xenon
 			switch (type)
 			{
 			case Xenon::Backend::BufferType::Index:
+				m_pTemporaryBuffer = std::make_unique<VulkanBuffer>(m_pDevice, getSize(), BufferType::Staging);
 				usageFlags = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
 				memoryUsage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
 				break;
 
 			case Xenon::Backend::BufferType::Vertex:
+				m_pTemporaryBuffer = std::make_unique<VulkanBuffer>(m_pDevice, getSize(), BufferType::Staging);
 				usageFlags = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
 				memoryUsage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
 				break;
@@ -51,8 +53,8 @@ namespace Xenon
 
 			default:
 				m_Type = BufferType::Staging;
-				memoryUsage = VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
 				usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
+				memoryUsage = VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
 				XENON_LOG_ERROR("Invalid or unsupported buffer type! Defaulting to staging.");
 				break;
 			}
@@ -89,13 +91,13 @@ namespace Xenon
 			);
 		}
 
-		void VulkanBuffer::copy(const Buffer* pBuffer, uint64_t size, uint64_t srcOffset /*= 0*/, uint64_t dstOffset /*= 0*/)
+		void VulkanBuffer::copy(Buffer* pBuffer, uint64_t size, uint64_t srcOffset /*= 0*/, uint64_t dstOffset /*= 0*/)
 		{
 			const auto pVulkanBuffer = pBuffer->as<VulkanBuffer>();
 
 			auto commandBuffers = VulkanCommandRecorder(m_pDevice, CommandRecorderUsage::Transfer);
 			commandBuffers.begin();
-			// commandBuffers.copyBuffers(pBuffer, srcOffset, this, dstOffset, size);
+			commandBuffers.copyBuffer(pBuffer, srcOffset, this, dstOffset, size);
 			commandBuffers.end();
 			commandBuffers.submit();
 		}
@@ -122,20 +124,12 @@ namespace Xenon
 			// If the buffer is either index of vertex, copy to a staging buffer before reading.
 			if (m_Type == BufferType::Index || m_Type == BufferType::Vertex)
 			{
-				// Create the temporary buffer if we haven't already.
-				if (m_pTemporaryBuffer == nullptr)
-				{
-					m_pTemporaryBuffer = std::make_unique<VulkanBuffer>(m_pDevice, getSize(), BufferType::Staging);
-					m_pTemporaryBuffer->copy(this, getSize());
-				}
-
-				// Map the temporary buffer.
+				// Copy the data and map the temporary buffer.
+				m_pTemporaryBuffer->copy(this, getSize());
 				return m_pTemporaryBuffer->map();
 			}
-			else
-			{
-				return map();
-			}
+
+			return map();
 		}
 
 		void VulkanBuffer::endRead()

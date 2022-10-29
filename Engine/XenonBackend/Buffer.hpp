@@ -55,7 +55,7 @@ namespace Xenon
 			 * @param srcOffset The source buffer's offset. Default is 0.
 			 * @param dstOffset The destination buffer's (this) offset. Default is 0.
 			 */
-			virtual void copy(const Buffer* pBuffer, uint64_t size, uint64_t srcOffset = 0, uint64_t dstOffset = 0) = 0;
+			virtual void copy(Buffer* pBuffer, uint64_t size, uint64_t srcOffset = 0, uint64_t dstOffset = 0) = 0;
 
 			/**
 			 * Write data to the buffer.

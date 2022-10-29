@@ -30,6 +30,35 @@ namespace Xenon
 			getInstance()->getDeletionQueue().insert([allocator = m_pAllocator] { allocator->Release(); });
 		}
 
+		DXGI_FORMAT DX12Device::convertFormat(DataFormat format) const
+		{
+			switch (format)
+			{
+			case Xenon::Backend::DataFormat::Undefined:									return DXGI_FORMAT_UNKNOWN;
+			case Xenon::Backend::DataFormat::R8_SRGB:									return DXGI_FORMAT_R8_SINT;
+			case Xenon::Backend::DataFormat::R8G8_SRGB:									return DXGI_FORMAT_R8G8_SINT;
+			case Xenon::Backend::DataFormat::R8G8B8A8_SRGB:								return DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+			case Xenon::Backend::DataFormat::R8_UNORMAL:								return DXGI_FORMAT_R8_UNORM;
+			case Xenon::Backend::DataFormat::R8G8_UNORMAL:								return DXGI_FORMAT_R8G8_UNORM;
+			case Xenon::Backend::DataFormat::R8G8B8A8_UNORMAL:							return DXGI_FORMAT_R8G8B8A8_UNORM;
+			case Xenon::Backend::DataFormat::B8G8R8A8_UNORMAL:							return DXGI_FORMAT_B8G8R8A8_UNORM;
+			case Xenon::Backend::DataFormat::R16_SFLOAT:								return DXGI_FORMAT_R16_FLOAT;
+			case Xenon::Backend::DataFormat::R16G16_SFLOAT:								return DXGI_FORMAT_R16G16_FLOAT;
+			case Xenon::Backend::DataFormat::R16G16B16A16_SFLOAT:						return DXGI_FORMAT_R16G16B16A16_FLOAT;
+			case Xenon::Backend::DataFormat::R32_SFLOAT:								return DXGI_FORMAT_R32_FLOAT;
+			case Xenon::Backend::DataFormat::R32G32_SFLOAT:								return DXGI_FORMAT_R32G32_FLOAT;
+			case Xenon::Backend::DataFormat::R32G32B32_SFLOAT:							return DXGI_FORMAT_R32G32B32_FLOAT;
+			case Xenon::Backend::DataFormat::R32G32B32A32_SFLOAT:						return DXGI_FORMAT_R32G32B32A32_FLOAT;
+			case Xenon::Backend::DataFormat::D16_SINT:									return DXGI_FORMAT_D16_UNORM;
+			case Xenon::Backend::DataFormat::D32_SFLOAT:								return DXGI_FORMAT_D32_FLOAT;
+			case Xenon::Backend::DataFormat::D24_UNORMAL_S8_UINT:						return DXGI_FORMAT_D24_UNORM_S8_UINT;
+			case Xenon::Backend::DataFormat::D32_SFLOAT_S8_UINT:						return DXGI_FORMAT_D32_FLOAT_S8X24_UINT;
+			default:																	XENON_LOG_ERROR("Invalid or unsupported data format! Defaulting to Undefined.");
+			}
+
+			return DXGI_FORMAT_UNKNOWN;
+		}
+
 		void DX12Device::createFactory()
 		{
 			XENON_DX12_ASSERT(CreateDXGIFactory2(m_pInstance->getFactoryFlags(), IID_PPV_ARGS(&m_Factory)), "Failed to create the DXGI factory!");

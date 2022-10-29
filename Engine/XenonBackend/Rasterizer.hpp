@@ -10,20 +10,6 @@ namespace Xenon
 	namespace Backend
 	{
 		/**
-		 * Multi sampling count enum.
-		 */
-		enum class MultiSamplingCount : uint8_t
-		{
-			x1,
-			x2,
-			x4,
-			x8,
-			x16,
-			x32,
-			x64
-		};
-
-		/**
 		 * Rasterizer class.
 		 * This class can be used to perform rasterization on a scene.
 		 */

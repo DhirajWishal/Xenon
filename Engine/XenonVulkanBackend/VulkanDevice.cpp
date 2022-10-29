@@ -153,6 +153,76 @@ namespace Xenon
 				);
 		}
 
+		VkSampleCountFlagBits VulkanDevice::convertSamplingCount(MultiSamplingCount count) const
+		{
+			switch (count)
+			{
+			case Xenon::Backend::MultiSamplingCount::x1:
+				return VK_SAMPLE_COUNT_1_BIT;
+
+			case Xenon::Backend::MultiSamplingCount::x2:
+				return VK_SAMPLE_COUNT_2_BIT;
+
+			case Xenon::Backend::MultiSamplingCount::x4:
+				return VK_SAMPLE_COUNT_4_BIT;
+
+			case Xenon::Backend::MultiSamplingCount::x8:
+				return VK_SAMPLE_COUNT_8_BIT;
+
+			case Xenon::Backend::MultiSamplingCount::x16:
+				return VK_SAMPLE_COUNT_16_BIT;
+
+			case Xenon::Backend::MultiSamplingCount::x32:
+				return VK_SAMPLE_COUNT_32_BIT;
+
+			case Xenon::Backend::MultiSamplingCount::x64:
+				return VK_SAMPLE_COUNT_64_BIT;
+
+			default:
+				XENON_LOG_ERROR("Invalid multi-sampling count! Defaulting to x1.");
+				break;
+			}
+
+			return VK_SAMPLE_COUNT_1_BIT;
+		}
+
+		VkFormat VulkanDevice::convertFormat(DataFormat format) const
+		{
+			switch (format)
+			{
+			case Xenon::Backend::DataFormat::Undefined:									return VK_FORMAT_UNDEFINED;
+			case Xenon::Backend::DataFormat::R8_SRGB:									return VK_FORMAT_R8_SRGB;
+			case Xenon::Backend::DataFormat::R8G8_SRGB:									return VK_FORMAT_R8G8_SRGB;
+			case Xenon::Backend::DataFormat::R8G8B8_SRGB:								return VK_FORMAT_R8G8B8_SRGB;
+			case Xenon::Backend::DataFormat::R8G8B8A8_SRGB:								return VK_FORMAT_R8G8B8A8_SRGB;
+			case Xenon::Backend::DataFormat::R8_UNORMAL:								return VK_FORMAT_R8_UNORM;
+			case Xenon::Backend::DataFormat::R8G8_UNORMAL:								return VK_FORMAT_R8G8_UNORM;
+			case Xenon::Backend::DataFormat::R8G8B8_UNORMAL:							return VK_FORMAT_R8G8B8_UNORM;
+			case Xenon::Backend::DataFormat::R8G8B8A8_UNORMAL:							return VK_FORMAT_R8G8B8A8_UNORM;
+			case Xenon::Backend::DataFormat::B8G8R8_SRGB:								return VK_FORMAT_B8G8R8_SRGB;
+			case Xenon::Backend::DataFormat::B8G8R8A8_SRGB:								return VK_FORMAT_B8G8R8A8_SRGB;
+			case Xenon::Backend::DataFormat::B8G8R8_UNORMAL:							return VK_FORMAT_B8G8R8_UNORM;
+			case Xenon::Backend::DataFormat::B8G8R8A8_UNORMAL:							return VK_FORMAT_B8G8R8A8_UNORM;
+			case Xenon::Backend::DataFormat::R16_SFLOAT:								return VK_FORMAT_R16_SFLOAT;
+			case Xenon::Backend::DataFormat::R16G16_SFLOAT:								return VK_FORMAT_R16G16_SFLOAT;
+			case Xenon::Backend::DataFormat::R16G16B16_SFLOAT:							return VK_FORMAT_R16G16B16_SFLOAT;
+			case Xenon::Backend::DataFormat::R16G16B16A16_SFLOAT:						return VK_FORMAT_R16G16B16A16_SFLOAT;
+			case Xenon::Backend::DataFormat::R32_SFLOAT:								return VK_FORMAT_R32_SFLOAT;
+			case Xenon::Backend::DataFormat::R32G32_SFLOAT:								return VK_FORMAT_R32G32_SFLOAT;
+			case Xenon::Backend::DataFormat::R32G32B32_SFLOAT:							return VK_FORMAT_R32G32B32_SFLOAT;
+			case Xenon::Backend::DataFormat::R32G32B32A32_SFLOAT:						return VK_FORMAT_R32G32B32A32_SFLOAT;
+			case Xenon::Backend::DataFormat::D16_SINT:									return VK_FORMAT_D16_UNORM;
+			case Xenon::Backend::DataFormat::D32_SFLOAT:								return VK_FORMAT_D32_SFLOAT;
+			case Xenon::Backend::DataFormat::S8_UINT:									return VK_FORMAT_S8_UINT;
+			case Xenon::Backend::DataFormat::D16_UNORMAL_S8_UINT:						return VK_FORMAT_D16_UNORM_S8_UINT;
+			case Xenon::Backend::DataFormat::D24_UNORMAL_S8_UINT:						return VK_FORMAT_D24_UNORM_S8_UINT;
+			case Xenon::Backend::DataFormat::D32_SFLOAT_S8_UINT:						return VK_FORMAT_D32_SFLOAT_S8_UINT;
+			default:																	XENON_LOG_ERROR("Invalid data format! Defaulting to Undefined.");
+			}
+
+			return VK_FORMAT_UNDEFINED;
+		}
+
 		void VulkanDevice::selectPhysicalDevice()
 		{
 			// Enumerate physical devices.

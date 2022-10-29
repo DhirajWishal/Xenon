@@ -10,23 +10,6 @@ namespace Xenon
 	namespace Backend
 	{
 		/**
-		 * Attachment type enum.
-		 */
-		enum class AttachmentType : uint8_t
-		{
-			Color = XENON_BIT_SHIFT(0),					// Used for color output. Shader output: layout(location = 0) out vec4
-			EntityID = XENON_BIT_SHIFT(1),				// Commonly used for mouse picking. Shader output: layout(location = 1) out float
-			Normal = XENON_BIT_SHIFT(2),				// Used for normal output. Shader output: layout(location = 2) out vec3
-
-			Depth = XENON_BIT_SHIFT(6),					// Used for depth information.
-			Stencil = XENON_BIT_SHIFT(7),				// Used for stencil information.
-			DepthWithStencil = Depth | Stencil			// Used for depth information. It also contains a stencil component.
-		};
-
-		XENON_DEFINE_ENUM_AND(AttachmentType);
-		XENON_DEFINE_ENUM_OR(AttachmentType);
-
-		/**
 		 * Xenon render target class.
 		 * Render targets are used to render information to an image. This output image(s) can be used for other purposes.
 		 */

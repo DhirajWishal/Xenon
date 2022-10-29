@@ -29,6 +29,8 @@ add_library(
 	"DX12Rasterizer.hpp"
 	"DX12CommandRecorder.cpp"
 	"DX12CommandRecorder.hpp"
+	"DX12Image.cpp"
+	"DX12Image.hpp"
 )
 
 # Set the include directories.

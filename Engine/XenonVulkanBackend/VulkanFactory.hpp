@@ -63,6 +63,15 @@ namespace Xenon
 			 * @return The buffer pointer.
 			 */
 			[[nodiscard]] std::unique_ptr<Buffer> createBuffer(Device* pDevice, uint64_t size, BufferType type) override;
+
+			/**
+			 * Create a new image.
+			 *
+			 * @param pDevice The device pointer.
+			 * @param specification The image specification.
+			 * @return The image pointer.
+			 */
+			[[nodiscard]] std::unique_ptr<Image> createImage(Device* pDevice, const ImageSpecification& specification) override;
 		};
 	}
 }

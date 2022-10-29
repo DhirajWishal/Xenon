@@ -42,7 +42,7 @@ namespace Xenon
 			explicit DX12Buffer(DX12Device* pDevice, uint64_t size, D3D12_HEAP_TYPE heapType, D3D12_RESOURCE_STATES resourceStates, D3D12_RESOURCE_FLAGS resourceFlags = D3D12_RESOURCE_FLAG_NONE);
 
 			/**
-			 * Default virtual destructor.
+			 * Default destructor.
 			 */
 			~DX12Buffer() override;
 
@@ -54,7 +54,7 @@ namespace Xenon
 			 * @param srcOffset The source buffer's offset. Default is 0.
 			 * @param dstOffset The destination buffer's (this) offset. Default is 0.
 			 */
-			void copy(const Buffer* pBuffer, uint64_t size, uint64_t srcOffset = 0, uint64_t dstOffset = 0) override;
+			void copy(Buffer* pBuffer, uint64_t size, uint64_t srcOffset = 0, uint64_t dstOffset = 0) override;
 
 			/**
 			 * Write data to the buffer.

@@ -7,6 +7,7 @@
 #include "VulkanDevice.hpp"
 #include "VulkanCommandRecorder.hpp"
 #include "VulkanBuffer.hpp"
+#include "VulkanImage.hpp"
 
 namespace Xenon
 {
@@ -30,6 +31,11 @@ namespace Xenon
 		std::unique_ptr<Xenon::Backend::Buffer> VulkanFactory::createBuffer(Device* pDevice, uint64_t size, BufferType type)
 		{
 			return std::make_unique<VulkanBuffer>(pDevice->as<VulkanDevice>(), size, type);
+		}
+
+		std::unique_ptr<Xenon::Backend::Image> VulkanFactory::createImage(Device* pDevice, const ImageSpecification& specification)
+		{
+			return std::make_unique<VulkanImage>(pDevice->as<VulkanDevice>(), specification);
 		}
 	}
 }

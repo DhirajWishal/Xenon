@@ -4,8 +4,6 @@
 #include "VulkanInstance.hpp"
 #include "VulkanMacros.hpp"
 
-#include <sstream>
-
 namespace /* anonymous */
 {
 	/**
@@ -123,33 +121,37 @@ namespace /* anonymous */
 		const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
 		void* pUserData)
 	{
-		std::stringstream messageStream;
-		messageStream << "Vulkan Validation Layer : ";
+		auto& logFile = reinterpret_cast<Xenon::Backend::VulkanInstance*>(pUserData)->getLogFile();
 
-		if (messageType & VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT)
-			messageStream << "GENERAL | ";
-
-		else if (messageType & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT)
-			messageStream << "VALIDATION | ";
-
-		else if (messageType & VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT)
-			messageStream << "PERFORMANCE | ";
-
-		messageStream << pCallbackData->pMessage;
-
-		switch (messageSeverity)
+		// Log if the log file is open.
+		if (logFile.is_open())
 		{
-		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-			XENON_LOG_WARNING(messageStream.str());
-			break;
+			// Log to the console if we have an error.
+			if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
+			{
+				XENON_LOG_ERROR("Vulkan Validation Layer : {}", pCallbackData->pMessage);
+			}
+			else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+			{
+				XENON_LOG_WARNING("Vulkan Validation Layer : {}", pCallbackData->pMessage);
+			}
 
-		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-			XENON_LOG_ERROR(messageStream.str());
-			break;
+			// Else log to the file.
+			else
+			{
+				logFile << "Vulkan Validation Layer : ";
 
-		default:
-			XENON_LOG_INFORMATION(messageStream.str());
-			break;
+				if (messageType & VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT)
+					logFile << "GENERAL | ";
+
+				else if (messageType & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT)
+					logFile << "VALIDATION | ";
+
+				else if (messageType & VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT)
+					logFile << "PERFORMANCE | ";
+
+				logFile << pCallbackData->pMessage << std::endl;
+			}
 		}
 
 		return VK_FALSE;
@@ -158,14 +160,15 @@ namespace /* anonymous */
 	/**
 	 * Create the default debug messenger create info structure.
 	 *
+	 * @param pUserData The user data to pass into the structure.
 	 * @return The created structure.
 	 */
-	VkDebugUtilsMessengerCreateInfoEXT CreateDebugMessengerCreateInfo()
+	VkDebugUtilsMessengerCreateInfoEXT CreateDebugMessengerCreateInfo(void* pUserData)
 	{
 		VkDebugUtilsMessengerCreateInfoEXT createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
 		createInfo.pNext = VK_NULL_HANDLE;
-		createInfo.pUserData = VK_NULL_HANDLE;
+		createInfo.pUserData = pUserData;
 		createInfo.flags = 0;
 		createInfo.pfnUserCallback = DebugCallback;
 		createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
@@ -178,7 +181,7 @@ namespace /* anonymous */
 	 * Static initializer struct.
 	 * These structs are used to initialize data that are to be initialized just once in the application.
 	 */
-	struct StaticInitializer
+	struct StaticInitializer final
 	{
 		/**
 		 * Default constructor.
@@ -205,8 +208,11 @@ namespace Xenon
 			createInstance(applicationName, applicationVersion);
 
 #ifdef XENON_DEBUG
+			// Open the log file.
+			m_LogFile = std::ofstream("VulkanLogs.txt");
+
 			// Create the debugger.
-			const auto debugMessengerCreateInfo = CreateDebugMessengerCreateInfo();
+			const auto debugMessengerCreateInfo = CreateDebugMessengerCreateInfo(this);
 			const auto vkCreateDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(m_Instance, "vkCreateDebugUtilsMessengerEXT"));
 			XENON_VK_ASSERT(vkCreateDebugUtilsMessengerEXT(m_Instance, &debugMessengerCreateInfo, nullptr, &m_DebugMessenger), "Failed to create the debug messenger.");
 
@@ -227,6 +233,11 @@ namespace Xenon
 					vkDestroyInstance(instance, nullptr);
 				}
 			);
+		}
+
+		std::ofstream& VulkanInstance::getLogFile()
+		{
+			return m_LogFile;
 		}
 
 		void VulkanInstance::createInstance(const std::string& applicationName, uint32_t applicationVersion)
@@ -258,7 +269,7 @@ namespace Xenon
 			m_pValidationLayers.emplace_back("VK_LAYER_KHRONOS_validation");
 
 			// Create the debug messenger create info structure.
-			const auto debugCreateInfo = CreateDebugMessengerCreateInfo();
+			const auto debugCreateInfo = CreateDebugMessengerCreateInfo(this);
 
 			// Submit it to the instance.
 			createInfo.enabledLayerCount = static_cast<uint32_t>(m_pValidationLayers.size());
