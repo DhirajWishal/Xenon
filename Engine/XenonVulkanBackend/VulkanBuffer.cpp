@@ -11,8 +11,8 @@ namespace Xenon
 	namespace Backend
 	{
 		VulkanBuffer::VulkanBuffer(VulkanDevice* pDevice, uint64_t size, BufferType type)
-			: Buffer(pDevice, size, type)
-			, VulkanDeviceBoundObject(pDevice)
+			: VulkanDeviceBoundObject(pDevice)
+			, Buffer(pDevice, size, type)
 		{
 			// Setup buffer and memory flags.
 			VmaAllocationCreateFlags vmaFlags = 0;
@@ -22,38 +22,38 @@ namespace Xenon
 			switch (type)
 			{
 			case Xenon::Backend::BufferType::Index:
-				m_pTemporaryBuffer = std::make_unique<VulkanBuffer>(m_pDevice, getSize(), BufferType::Staging);
-				usageFlags = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
+				m_pTemporaryBuffer = std::make_unique<VulkanBuffer>(m_pDevice, getSize(), Xenon::Backend::BufferType::Staging);
+				usageFlags = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
 				memoryUsage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
 				break;
 
 			case Xenon::Backend::BufferType::Vertex:
-				m_pTemporaryBuffer = std::make_unique<VulkanBuffer>(m_pDevice, getSize(), BufferType::Staging);
-				usageFlags = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
+				m_pTemporaryBuffer = std::make_unique<VulkanBuffer>(m_pDevice, getSize(), Xenon::Backend::BufferType::Staging);
+				usageFlags = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
 				memoryUsage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
 				break;
 
 			case Xenon::Backend::BufferType::Staging:
-				usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
+				usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
 				vmaFlags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
 				memoryUsage = VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
 				break;
 
 			case Xenon::Backend::BufferType::Storage:
-				usageFlags = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
+				usageFlags = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
 				vmaFlags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
 				memoryUsage = VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
 				break;
 
 			case Xenon::Backend::BufferType::Uniform:
-				usageFlags = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
+				usageFlags = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
 				vmaFlags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
 				memoryUsage = VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
 				break;
 
 			default:
-				m_Type = BufferType::Staging;
-				usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
+				m_Type = Xenon::Backend::BufferType::Staging;
+				usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
 				memoryUsage = VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
 				XENON_LOG_ERROR("Invalid or unsupported buffer type! Defaulting to staging.");
 				break;
@@ -93,8 +93,6 @@ namespace Xenon
 
 		void VulkanBuffer::copy(Buffer* pBuffer, uint64_t size, uint64_t srcOffset /*= 0*/, uint64_t dstOffset /*= 0*/)
 		{
-			const auto pVulkanBuffer = pBuffer->as<VulkanBuffer>();
-
 			auto commandBuffers = VulkanCommandRecorder(m_pDevice, CommandRecorderUsage::Transfer);
 			commandBuffers.begin();
 			commandBuffers.copyBuffer(pBuffer, srcOffset, this, dstOffset, size);
