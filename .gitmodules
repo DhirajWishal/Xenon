@@ -16,9 +16,6 @@
 [submodule "ThirdParty/D3D12MemoryAllocator"]
 	path = ThirdParty/D3D12MemoryAllocator
 	url = https://github.com/GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator
-[submodule "ThirdParty/assimp"]
-	path = ThirdParty/assimp
-	url = https://github.com/assimp/assimp
 [submodule "ThirdParty/tinygltf"]
 	path = ThirdParty/tinygltf
 	url = https://github.com/syoyo/tinygltf
