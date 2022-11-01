@@ -11,18 +11,55 @@
 namespace Xenon
 {
 	/**
+	 * Primitive mode.
+	 * This defines what the primitive mode is for a single
+	 */
+	enum class PrimitiveMode : uint8_t
+	{
+		Points,
+		Line,
+		LineLoop,
+		LineStrip,
+		Triangles,
+		TriangleStrip,
+		TriangleFan
+	};
+
+	/**
+	 * Index size enum.
+	 */
+	enum class IndexSize : uint8_t
+	{
+		Unknown = 0,
+		Uint8 = sizeof(uint8_t),
+		Uint16 = sizeof(uint16_t),
+		Uint32 = sizeof(uint32_t)
+	};
+
+	/**
+	 * Sub-mesh structure.
+	 * Sub-meshes are the building blocks of a mesh.
+	 */
+	struct SubMesh final
+	{
+		uint64_t m_VertexOffset = 0;
+		uint64_t m_VertexCount = 0;
+
+		uint64_t m_IndexOffset = 0;
+		uint64_t m_IndexCount = 0;		// If this is set to 0, it will draw using the vertices.
+
+		PrimitiveMode m_Mode = PrimitiveMode::Triangles;
+		IndexSize m_IndexSize = IndexSize::Unknown;
+	};
+
+	/**
 	 * Mesh structure.
 	 * This contains information about a single mesh instance.
 	 */
 	struct Mesh final
 	{
 		std::string m_Name;
-
-		uint64_t m_IndexCount = 0;
-		uint64_t m_IndexOffset = 0;
-
-		uint64_t m_VertexCount = 0;
-		uint64_t m_VertexOffset = 0;
+		std::vector<SubMesh> m_SubMeshes;
 	};
 
 	/**
@@ -36,9 +73,9 @@ namespace Xenon
 	{
 	public:
 		/**
-		 * Explicit constructor.
+		 * Default constructor.
 		 */
-		explicit MeshStorage(Instance& instance) {}
+		MeshStorage() = default;
 
 		/**
 		 * Load the meshes from a file and create the mesh storage class.

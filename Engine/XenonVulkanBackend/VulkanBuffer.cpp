@@ -15,8 +15,8 @@ namespace Xenon
 			, Buffer(pDevice, size, type)
 		{
 			// Setup buffer and memory flags.
-			VmaAllocationCreateFlags vmaFlags = 0;
 			VkBufferUsageFlags usageFlags = 0;
+			VmaAllocationCreateFlags vmaFlags = 0;
 			VmaMemoryUsage memoryUsage = VMA_MEMORY_USAGE_AUTO;
 
 			switch (type)
@@ -98,6 +98,7 @@ namespace Xenon
 			commandBuffers.copyBuffer(pBuffer, srcOffset, this, dstOffset, size);
 			commandBuffers.end();
 			commandBuffers.submit();
+			commandBuffers.wait();
 		}
 
 		void VulkanBuffer::write(const std::byte* pData, uint64_t size, uint64_t offset /*= 0*/)

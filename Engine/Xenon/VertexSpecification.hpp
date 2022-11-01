@@ -10,6 +10,23 @@
 namespace Xenon
 {
 	/**
+	 * Element data type.
+	 * This specifies which data type an element uses.
+	 */
+	enum class ElementDataType : uint8_t
+	{
+		Vec2,
+		Vec3,
+		Vec4,
+
+		Mat2,
+		Mat3,
+		Mat4,
+
+		Scalar
+	};
+
+	/**
 	 * Vertex element enum.
 	 * This contains different elements which a single vertex could contain.
 	 */
@@ -183,6 +200,14 @@ namespace Xenon
 
 			return *this;
 		}
+
+		/**
+		 * Get the size of a single element.
+		 *
+		 * @param element The element to get the size of.
+		 * @return The element's size.
+		 */
+		[[nodiscard]] uint8_t getElementSize(VertexElement element) const { return m_ElementSizes[EnumToInt(element)]; }
 
 		/**
 		 * Get the size of the vertex.
