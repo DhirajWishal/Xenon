@@ -86,7 +86,6 @@ namespace Xenon
 		 */
 		[[nodiscard]] static MeshStorage FromFile(Instance& instance, const std::filesystem::path& file);
 
-	private:
 		std::unique_ptr<Backend::Buffer> m_pIndexBuffer = nullptr;
 		std::unique_ptr<Backend::Buffer> m_pVertexBuffer = nullptr;
 

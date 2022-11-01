@@ -321,13 +321,80 @@ namespace /* anonymous */
 			std::copy(buffer.data.begin() + start, buffer.data.begin() + end, indexBegin);
 		}
 	}
+
+	/**
+	 * Load a node from the model.
+	 *
+	 * @param model The model to load from.
+	 * @param node The node to load.
+	 * @param storage The mesh storage.
+	 * @param vertices The vertex storage.
+	 * @param vertexItr The vertex storage iterator.
+	 * @param indices The index storage.
+	 * @param indexItr The index storage iterator.
+	 * @param synchronization The synchronization latch.
+	 */
+	void LoadNode(const tinygltf::Model& model, const tinygltf::Node& node, Xenon::MeshStorage& storage
+		, std::vector<unsigned char>& vertices, std::vector<unsigned char>::iterator& vertexItr
+		, std::vector<unsigned char>& indices, std::vector<unsigned char>::iterator& indexItr
+		, std::latch& synchronization)
+	{
+		static auto workers = Xenon::JobSystem(std::thread::hardware_concurrency() - 1);	// Keep one thread free for other purposes.
+
+		// Get the mesh and initialize everything.
+		const auto& gltfMesh = model.meshes[node.mesh];
+		auto& mesh = storage.m_Meshes.emplace_back();
+		mesh.m_Name = gltfMesh.name;
+		mesh.m_SubMeshes.reserve(gltfMesh.primitives.size());
+
+		// Load the sub-mesh information.
+		for (const auto& gltfPrimitive : gltfMesh.primitives)
+		{
+			// Create the primitive.
+			auto& subMesh = mesh.m_SubMeshes.emplace_back();
+			subMesh.m_VertexOffset = std::distance(vertexItr, vertices.begin());
+			subMesh.m_IndexOffset = std::distance(indexItr, indices.begin());
+
+			// Insert the job.
+			workers.insert([&subMesh, &model, &storage, &gltfPrimitive, vertexItr, indexItr, &synchronization]
+				{
+					LoadSubMesh(subMesh, storage.m_VertexSpecification, model, gltfPrimitive, vertexItr, indexItr);
+					synchronization.count_down();
+				}
+			);
+
+			// Get the next available vertex begin position.
+			for (auto i = Xenon::EnumToInt(Xenon::VertexElement::Position); i < Xenon::EnumToInt(Xenon::VertexElement::Count); i++)
+			{
+				if (storage.m_VertexSpecification.isAvailable(static_cast<Xenon::VertexElement>(i)) && gltfPrimitive.attributes.contains(Attributes[i]))
+				{
+					const auto& accessor = model.accessors[gltfPrimitive.attributes.at(Attributes[i])];
+					const auto& bufferView = model.bufferViews[accessor.bufferView];
+
+					vertexItr += accessor.ByteStride(bufferView) * accessor.count;
+				}
+			}
+
+			// Get the next available index begin position.
+			if (gltfPrimitive.indices >= 0)
+			{
+				const auto& accessor = model.accessors.at(gltfPrimitive.indices);
+				const auto& bufferView = model.bufferViews.at(accessor.bufferView);
+
+				indexItr += accessor.ByteStride(bufferView) * accessor.count;
+			}
+		}
+
+		// Load the children.
+		for (const auto child : node.children)
+			LoadNode(model, model.nodes[child], storage, vertices, vertexItr, indices, indexItr, synchronization);
+	}
 }
 
 namespace Xenon
 {
 	Xenon::MeshStorage MeshStorage::FromFile(Instance& instance, const std::filesystem::path& file)
 	{
-		static auto workers = JobSystem(std::thread::hardware_concurrency() - 1);	// Keep one thread free for other purposes.
 		MeshStorage storage;
 
 		// Load the model data.
@@ -385,51 +452,10 @@ namespace Xenon
 		auto indices = std::vector<unsigned char>(indexBufferSize);
 		auto indexItr = indices.begin();
 
+		// Load the nodes.
+		storage.m_Meshes.reserve(model.meshes.size());
 		auto synchronization = std::latch(workerSubmissions);
-		for (const auto& gltfMesh : model.meshes)
-		{
-			auto& mesh = storage.m_Meshes.emplace_back();
-			mesh.m_Name = gltfMesh.name;
-			mesh.m_SubMeshes.reserve(gltfMesh.primitives.size());
-
-			// Load the sub-mesh information.
-			for (const auto& gltfPrimitive : gltfMesh.primitives)
-			{
-				// Create the primitive.
-				auto& subMesh = mesh.m_SubMeshes.emplace_back();
-				subMesh.m_VertexOffset = std::distance(vertexItr, vertices.begin());
-				subMesh.m_IndexOffset = std::distance(indexItr, indices.begin());
-
-				// Insert the job.
-				workers.insert([&subMesh, &model, &storage, &gltfPrimitive, vertexItr, indexItr, &synchronization]
-					{
-						LoadSubMesh(subMesh, storage.m_VertexSpecification, model, gltfPrimitive, vertexItr, indexItr);
-						synchronization.count_down();
-					}
-				);
-
-				// Get the next available vertex begin position.
-				for (auto i = EnumToInt(VertexElement::Position); i < EnumToInt(VertexElement::Count); i++)
-				{
-					if (storage.m_VertexSpecification.isAvailable(static_cast<VertexElement>(i)) && gltfPrimitive.attributes.contains(Attributes[i]))
-					{
-						const auto& accessor = model.accessors[gltfPrimitive.attributes.at(Attributes[i])];
-						const auto& bufferView = model.bufferViews[accessor.bufferView];
-
-						vertexItr += accessor.ByteStride(bufferView) * accessor.count;
-					}
-				}
-
-				// Get the next available index begin position.
-				if (gltfPrimitive.indices >= 0)
-				{
-					const auto& accessor = model.accessors.at(gltfPrimitive.indices);
-					const auto& bufferView = model.bufferViews.at(accessor.bufferView);
-
-					indexItr += accessor.ByteStride(bufferView) * accessor.count;
-				}
-			}
-		}
+		LoadNode(model, model.nodes.front(), storage, vertices, vertexItr, indices, indexItr, synchronization);
 
 		// Wait till all the sub-meshes are loaded.
 		synchronization.wait();

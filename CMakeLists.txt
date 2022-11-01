@@ -40,6 +40,8 @@ add_compile_definitions(
 	$<$<PLATFORM_ID:Windows>:XENON_PLATFORM_WINDOWS>
 	$<$<PLATFORM_ID:Linux>:XENON_PLATFORM_LINUX>
 	$<$<PLATFORM_ID:Darwin>:XENON_PLATFORM_MAC>
+
+	XENON_GLTF_ASSET_DIR="${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/glTF-Sample-Models/"
 )
 
 # Include the main subdirectories.

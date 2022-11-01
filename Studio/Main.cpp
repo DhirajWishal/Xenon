@@ -9,7 +9,7 @@
 void run(Xenon::BackendType backend)
 {
 	auto instance = Xenon::Instance("Xenon Studio", 0, Xenon::RenderTargetType::All, backend);
-	auto storage = Xenon::Instance::GetJobSystem().insert([&instance] { return Xenon::MeshStorage::FromFile(instance, R"(E:\Flint\ThirdParty\glTF-Sample-Models\2.0\Sponza\glTF\Sponza.gltf)"); });
+	auto storage = Xenon::Instance::GetJobSystem().insert([&instance] { return Xenon::MeshStorage::FromFile(instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"); });
 
 	Xenon::Instance::GetJobSystem().wait();
 	storage.wait();
