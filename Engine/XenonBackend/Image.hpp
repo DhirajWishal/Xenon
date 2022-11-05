@@ -44,11 +44,27 @@ namespace Xenon
 			explicit Image([[maybe_unused]] Device* pDevice, const ImageSpecification& specification) : m_Specification(specification) {}
 
 			/**
+			 * Move constructor.
+			 *
+			 * @param other The other image.
+			 */
+			Image(Image&& other) noexcept : m_Specification(other.m_Specification) {}
+
+			/**
 			 * Default virtual destructor.
 			 */
 			virtual ~Image() = default;
 
-		private:
+		public:
+			/**
+			 * Move assignment operator.
+			 *
+			 * @param other The other image.
+			 * @return The move-assigned image.
+			 */
+			Image& operator=(Image&& other) noexcept { m_Specification = other.m_Specification; return *this; }
+
+		protected:
 			ImageSpecification m_Specification = {};
 		};
 	}

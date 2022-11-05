@@ -8,6 +8,7 @@
 #include "VulkanCommandRecorder.hpp"
 #include "VulkanBuffer.hpp"
 #include "VulkanImage.hpp"
+#include "VulkanRasterizer.hpp"
 
 namespace Xenon
 {
@@ -36,6 +37,11 @@ namespace Xenon
 		std::unique_ptr<Xenon::Backend::Image> VulkanFactory::createImage(Device* pDevice, const ImageSpecification& specification)
 		{
 			return std::make_unique<VulkanImage>(pDevice->as<VulkanDevice>(), specification);
+		}
+
+		std::unique_ptr<Xenon::Backend::Rasterizer> VulkanFactory::createRasterizer(Device* pDevice, Camera* pCamera, AttachmentType attachmentTypes, bool enableTripleBuffering /*= false*/, MultiSamplingCount multiSampleCount /*= MultiSamplingCount::x1*/)
+		{
+			return std::make_unique<Xenon::Backend::VulkanRasterizer>(pDevice->as<VulkanDevice>(), pCamera, attachmentTypes, enableTripleBuffering, multiSampleCount);
 		}
 	}
 }

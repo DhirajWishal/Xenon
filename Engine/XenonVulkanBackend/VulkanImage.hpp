@@ -26,9 +26,25 @@ namespace Xenon
 			explicit VulkanImage(VulkanDevice* pDevice, const ImageSpecification& specification);
 
 			/**
+			 * Move constructor.
+			 *
+			 * @param other The other image.
+			 */
+			VulkanImage(VulkanImage&& other) noexcept;
+
+			/**
 			 * Destructor.
 			 */
 			~VulkanImage() override;
+
+		public:
+			/**
+			 * Move assignment operator.
+			 *
+			 * @param other The other image.
+			 * @return The move-assigned image.
+			 */
+			VulkanImage& operator=(VulkanImage&& other) noexcept;
 
 		private:
 			VkImage m_Image = VK_NULL_HANDLE;

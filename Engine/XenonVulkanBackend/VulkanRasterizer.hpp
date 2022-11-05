@@ -5,7 +5,7 @@
 
 #include "../XenonBackend/Rasterizer.hpp"
 
-#include "VulkanDeviceBoundObject.hpp"
+#include "VulkanImage.hpp"
 
 namespace Xenon
 {
@@ -34,8 +34,15 @@ namespace Xenon
 			~VulkanRasterizer() override = default;
 
 		private:
+			/**
+			 * Setup the image attachments.
+			 */
+			void setupAttachments();
+
+		private:
 			VkRenderPass m_RenderPass = VK_NULL_HANDLE;
 			std::vector<VkFramebuffer> m_Framebuffers;
+			std::vector<VulkanImage> m_ImageAttachments;
 		};
 	}
 }

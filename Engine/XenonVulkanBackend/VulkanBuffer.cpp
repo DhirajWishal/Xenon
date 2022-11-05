@@ -84,11 +84,18 @@ namespace Xenon
 
 		VulkanBuffer::~VulkanBuffer()
 		{
-			m_pDevice->getInstance()->getDeletionQueue().insert([pDevice = m_pDevice, buffer = m_Buffer, allocation = m_Allocation]
-				{
-					vmaDestroyBuffer(pDevice->getAllocator(), buffer, allocation);
-				}
-			);
+			try
+			{
+				m_pDevice->getInstance()->getDeletionQueue().insert([pDevice = m_pDevice, buffer = m_Buffer, allocation = m_Allocation]
+					{
+						vmaDestroyBuffer(pDevice->getAllocator(), buffer, allocation);
+					}
+				);
+			}
+			catch (...)
+			{
+				XENON_VK_ASSERT(VK_ERROR_UNKNOWN, "Failed to push the buffer deletion function to the deletion queue!");
+			}
 		}
 
 		void VulkanBuffer::copy(Buffer* pBuffer, uint64_t size, uint64_t srcOffset /*= 0*/, uint64_t dstOffset /*= 0*/)

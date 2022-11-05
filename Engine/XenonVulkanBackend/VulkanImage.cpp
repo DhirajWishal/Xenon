@@ -73,13 +73,41 @@ namespace Xenon
 			XENON_VK_ASSERT(vmaCreateImage(m_pDevice->getAllocator(), &imageCreateInfo, &allocationCreateInfo, &m_Image, &m_Allocation, nullptr), "Failed to create the image!");
 		}
 
+		VulkanImage::VulkanImage(VulkanImage&& other) noexcept
+			: VulkanDeviceBoundObject(std::exchange(other.m_pDevice, nullptr))
+			, Image(static_cast<Image&&>(other))
+			, m_Image(std::exchange(other.m_Image, VK_NULL_HANDLE))
+			, m_Allocation(std::exchange(other.m_Allocation, nullptr))
+		{
+		}
+
 		VulkanImage::~VulkanImage()
 		{
-			m_pDevice->getInstance()->getDeletionQueue().insert([pDevice = m_pDevice, image = m_Image, allocation = m_Allocation]
+			if (m_pDevice)
+			{
+				try
 				{
-					vmaDestroyImage(pDevice->getAllocator(), image, allocation);
+					m_pDevice->getInstance()->getDeletionQueue().insert([pDevice = m_pDevice, image = m_Image, allocation = m_Allocation]
+						{
+							vmaDestroyImage(pDevice->getAllocator(), image, allocation);
+						}
+					);
 				}
-			);
+				catch (...)
+				{
+					XENON_VK_ASSERT(VK_ERROR_UNKNOWN, "Failed to push the image deletion function to the deletion queue!");
+				}
+			}
+		}
+
+		Xenon::Backend::VulkanImage& VulkanImage::operator=(VulkanImage&& other) noexcept
+		{
+			Image::operator=(std::move(other));
+			m_pDevice = std::exchange(other.m_pDevice, nullptr);
+			m_Image = std::exchange(other.m_Image, VK_NULL_HANDLE);
+			m_Allocation = std::exchange(other.m_Allocation, nullptr);
+
+			return *this;
 		}
 	}
 }

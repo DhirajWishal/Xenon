@@ -37,12 +37,19 @@ namespace Xenon
 		{
 			if (m_pDevice)
 			{
-				m_pDevice->getInstance()->getDeletionQueue().insert([pDevice = m_pDevice, commandPool = m_CommandPool, buffer = m_CommandBuffer, fence = m_Fence]
-					{
-						pDevice->getDeviceTable().vkFreeCommandBuffers(pDevice->getLogicalDevice(), commandPool, 1, &buffer);
-						pDevice->getDeviceTable().vkDestroyFence(pDevice->getLogicalDevice(), fence, nullptr);
-					}
-				);
+				try
+				{
+					m_pDevice->getInstance()->getDeletionQueue().insert([pDevice = m_pDevice, commandPool = m_CommandPool, buffer = m_CommandBuffer, fence = m_Fence]
+						{
+							pDevice->getDeviceTable().vkFreeCommandBuffers(pDevice->getLogicalDevice(), commandPool, 1, &buffer);
+							pDevice->getDeviceTable().vkDestroyFence(pDevice->getLogicalDevice(), fence, nullptr);
+						}
+					);
+				}
+				catch (...)
+				{
+					XENON_VK_ASSERT(VK_ERROR_UNKNOWN, "Failed to push the command buffer deletion function to the deletion queue!");
+				}
 			}
 		}
 

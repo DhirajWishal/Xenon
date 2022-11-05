@@ -95,7 +95,14 @@ namespace Xenon
 
 		DX12Buffer::~DX12Buffer()
 		{
-			m_pDevice->getInstance()->getDeletionQueue().insert([allocation = m_pAllocation] { allocation->Release(); });
+			try
+			{
+				m_pDevice->getInstance()->getDeletionQueue().insert([allocation = m_pAllocation] { allocation->Release(); });
+			}
+			catch (...)
+			{
+				XENON_DX12_ASSERT(-1, "Failed to push the buffer deletion function to the deletion queue!");
+			}
 		}
 
 		void DX12Buffer::copy(Buffer* pBuffer, uint64_t size, uint64_t srcOffset /*= 0*/, uint64_t dstOffset /*= 0*/)

@@ -138,19 +138,26 @@ namespace Xenon
 
 		VulkanDevice::~VulkanDevice()
 		{
-			getInstance()->getDeletionQueue().wait();
-			getInstance()->getDeletionQueue().insert(
-				[deviceTable = m_DeviceTable, device = m_LogicalDevice, computeCommandPool = m_ComputeCommandPool,
-				graphicsCommandPool = m_GraphicsCommandPool, transferCommandPool = m_TransferCommandPool, allocator = m_Allocator]
-				{
-					deviceTable.vkDestroyCommandPool(device, computeCommandPool, nullptr);
-					deviceTable.vkDestroyCommandPool(device, graphicsCommandPool, nullptr);
-					deviceTable.vkDestroyCommandPool(device, transferCommandPool, nullptr);
+			try
+			{
+				getInstance()->getDeletionQueue().wait();
+				getInstance()->getDeletionQueue().insert(
+					[deviceTable = m_DeviceTable, device = m_LogicalDevice, computeCommandPool = m_ComputeCommandPool,
+					graphicsCommandPool = m_GraphicsCommandPool, transferCommandPool = m_TransferCommandPool, allocator = m_Allocator]
+					{
+						deviceTable.vkDestroyCommandPool(device, computeCommandPool, nullptr);
+						deviceTable.vkDestroyCommandPool(device, graphicsCommandPool, nullptr);
+						deviceTable.vkDestroyCommandPool(device, transferCommandPool, nullptr);
 
-					vmaDestroyAllocator(allocator);
-					deviceTable.vkDestroyDevice(device, nullptr);
-				}
-				);
+						vmaDestroyAllocator(allocator);
+						deviceTable.vkDestroyDevice(device, nullptr);
+					}
+					);
+			}
+			catch (...)
+			{
+				XENON_VK_ASSERT(VK_ERROR_UNKNOWN, "Failed to push the device deletion function to the deletion queue!");
+			}
 		}
 
 		VkSampleCountFlagBits VulkanDevice::convertSamplingCount(MultiSamplingCount count) const

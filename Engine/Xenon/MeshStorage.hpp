@@ -86,6 +86,28 @@ namespace Xenon
 		 */
 		[[nodiscard]] static MeshStorage FromFile(Instance& instance, const std::filesystem::path& file);
 
+		/**
+		 * Get the vertex specification.
+		 *
+		 * @return The vertex specification.
+		 */
+		[[nodiscard]] const VertexSpecification& getVertexSpecification() const { return m_VertexSpecification; }
+
+		/**
+		 * Get the meshes.
+		 *
+		 * @return The meshes.
+		 */
+		[[nodiscard]] std::vector<Mesh>& getMeshes() { return m_Meshes; }
+
+		/**
+		 * Get the meshes.
+		 *
+		 * @return The meshes.
+		 */
+		[[nodiscard]] const std::vector<Mesh>& getMeshes() const { return m_Meshes; }
+
+	private:
 		std::unique_ptr<Backend::Buffer> m_pIndexBuffer = nullptr;
 		std::unique_ptr<Backend::Buffer> m_pVertexBuffer = nullptr;
 

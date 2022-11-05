@@ -6,6 +6,7 @@
 #include "CommandRecorder.hpp"
 #include "Buffer.hpp"
 #include "Image.hpp"
+#include "Rasterizer.hpp"
 
 namespace Xenon
 {
@@ -74,6 +75,18 @@ namespace Xenon
 			 * @return The image pointer.
 			 */
 			[[nodiscard]] virtual std::unique_ptr<Image> createImage(Device* pDevice, const ImageSpecification& specification) = 0;
+
+			/**
+			 * Create a new rasterizer.
+			 *
+			 * @param pDevice The device pointer.
+			 * @param pCamera The camera which is used to render the scene.
+			 * @param attachmentTypes The attachment types the render target should support.
+			 * @param enableTripleBuffering Whether to enable triple-buffering. Default is false.
+			 * @param multiSampleCount Multi-sampling count to use. Default is x1.
+			 * @return The rasterizer pointer.
+			 */
+			[[nodiscard]] virtual std::unique_ptr<Rasterizer> createRasterizer(Device* pDevice, Camera* pCamera, AttachmentType attachmentTypes, bool enableTripleBuffering = false, MultiSamplingCount multiSampleCount = MultiSamplingCount::x1) = 0;
 		};
 	}
 }

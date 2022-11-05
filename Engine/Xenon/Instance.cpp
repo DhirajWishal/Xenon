@@ -47,6 +47,8 @@ namespace Xenon
 
 		// Create the device.
 		m_pDevice = m_pFactory->createDevice(m_pInstance.get(), renderTargets);
+
+		auto pRasterizer = m_pFactory->createRasterizer(m_pDevice.get(), nullptr, Backend::AttachmentType::Color | Backend::AttachmentType::Depth | Backend::AttachmentType::Stencil);
 	}
 
 	Instance::~Instance()

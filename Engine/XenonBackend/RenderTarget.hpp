@@ -52,7 +52,7 @@ namespace Xenon
 			 */
 			[[nodiscard]] const Camera* getCamera() const { return m_pCamera; }
 
-		private:
+		protected:
 			Camera* m_pCamera = nullptr;
 
 			AttachmentType m_AttachmentTypes;

@@ -5,6 +5,8 @@
 
 #include "Instance.hpp"
 
+#include "../XenonBackend/Rasterizer.hpp"
+
 namespace Xenon
 {
 	/**
@@ -23,6 +25,7 @@ namespace Xenon
 		explicit RasterizingRenderer(Instance& instance);
 
 	private:
+		std::unique_ptr<Backend::Rasterizer> m_pRasterizer = nullptr;
 		// m_ShadowSystem;
 		// m_Camera;
 		// m_PostProcessing;

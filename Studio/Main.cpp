@@ -8,24 +8,23 @@
 
 void run(Xenon::BackendType backend)
 {
-	auto instance = Xenon::Instance("Xenon Studio", 0, Xenon::RenderTargetType::All, backend);
-	auto storage = Xenon::Instance::GetJobSystem().insert([&instance] { return Xenon::MeshStorage::FromFile(instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"); });
+	if (backend == Xenon::BackendType::DirectX_12)
+		XENON_LOG_INFORMATION("Running Xenon Studio using the DirectX 12 backend.");
 
-	Xenon::Instance::GetJobSystem().wait();
-	storage.wait();
+	else if (backend == Xenon::BackendType::Vulkan)
+		XENON_LOG_INFORMATION("Running Xenon Studio using the Vulkan backend.");
+
+	auto instance = Xenon::Instance("Xenon Studio", 0, Xenon::RenderTargetType::All, backend);
+	auto storage = Xenon::MeshStorage::FromFile(instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf");
 }
 
 int main()
 {
 	XENON_LOG_INFORMATION("Hello from the Xenon Studio!");
 
-	// Run using Direct X 12.
-	XENON_LOG_INFORMATION("Running Xenon Studio using the DirectX 12 backend.");
-	run(Xenon::BackendType::DirectX_12);
-
-	// Run using Vulkan.
-	XENON_LOG_INFORMATION("Running Xenon Studio using the Vulkan backend.");
-	run(Xenon::BackendType::Vulkan);
+	std::vector<std::jthread> backends;
+	backends.emplace_back(run, Xenon::BackendType::DirectX_12);
+	backends.emplace_back(run, Xenon::BackendType::Vulkan);
 
 	return 0;
 }

@@ -8,6 +8,7 @@
 #include "DX12CommandRecorder.hpp"
 #include "DX12Buffer.hpp"
 #include "DX12Image.hpp"
+#include "DX12Rasterizer.hpp"
 
 namespace Xenon
 {
@@ -37,6 +38,11 @@ namespace Xenon
 		std::unique_ptr<Xenon::Backend::Image> DX12Factory::createImage(Device* pDevice, const ImageSpecification& specification)
 		{
 			return std::make_unique<DX12Image>(pDevice->as<DX12Device>(), specification);
+		}
+
+		std::unique_ptr<Xenon::Backend::Rasterizer> DX12Factory::createRasterizer(Device* pDevice, Camera* pCamera, AttachmentType attachmentTypes, bool enableTripleBuffering /*= false*/, MultiSamplingCount multiSampleCount /*= MultiSamplingCount::x1*/)
+		{
+			return std::make_unique<Xenon::Backend::DX12Rasterizer>(pDevice->as<DX12Device>(), pCamera, attachmentTypes, enableTripleBuffering, multiSampleCount);
 		}
 	}
 }

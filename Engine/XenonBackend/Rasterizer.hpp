@@ -49,7 +49,7 @@ namespace Xenon
 			 */
 			[[nodiscard]] MultiSamplingCount getMultiSamplingCount() const { return m_MultiSamplingCount; }
 
-		private:
+		protected:
 			bool m_bEnableTripleBuffering = false;
 			MultiSamplingCount m_MultiSamplingCount = MultiSamplingCount::x1;
 		};

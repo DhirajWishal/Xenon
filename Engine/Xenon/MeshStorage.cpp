@@ -49,7 +49,12 @@ namespace /* anonymous */
 	 * @param specification The specification to configure.
 	 * @return The size of the vertex buffer to store all the vertices.
 	 */
-	uint64_t ResolvePrimitive(const tinygltf::Model& model, const tinygltf::Primitive& primitive, const std::string& attribute, Xenon::VertexElement element, Xenon::VertexSpecification& specification)
+	uint64_t ResolvePrimitive(
+		const tinygltf::Model& model,
+		const tinygltf::Primitive& primitive,
+		const std::string& attribute,
+		Xenon::VertexElement element,
+		Xenon::VertexSpecification& specification)
 	{
 		if (!primitive.attributes.contains(attribute))
 			return 0;
@@ -232,9 +237,12 @@ namespace /* anonymous */
 	 * @param indexBegin The index begin iterator to load the data to.
 	 */
 	void LoadSubMesh(
-		Xenon::SubMesh& subMesh, const Xenon::VertexSpecification& specification
-		, const tinygltf::Model& model, const tinygltf::Primitive& primitive
-		, std::vector<unsigned char>::iterator vertexBegin, std::vector<unsigned char>::iterator indexBegin)
+		Xenon::SubMesh& subMesh,
+		const Xenon::VertexSpecification& specification,
+		const tinygltf::Model& model,
+		const tinygltf::Primitive& primitive,
+		std::vector<unsigned char>::iterator vertexBegin,
+		std::vector<unsigned char>::iterator indexBegin)
 	{
 		// Setup the primitive mode.
 		switch (primitive.mode)
@@ -334,16 +342,21 @@ namespace /* anonymous */
 	 * @param indexItr The index storage iterator.
 	 * @param synchronization The synchronization latch.
 	 */
-	void LoadNode(const tinygltf::Model& model, const tinygltf::Node& node, Xenon::MeshStorage& storage
-		, std::vector<unsigned char>& vertices, std::vector<unsigned char>::iterator& vertexItr
-		, std::vector<unsigned char>& indices, std::vector<unsigned char>::iterator& indexItr
-		, std::latch& synchronization)
+	void LoadNode(
+		const tinygltf::Model& model,
+		const tinygltf::Node& node,
+		Xenon::MeshStorage& storage,
+		std::vector<unsigned char>& vertices,
+		std::vector<unsigned char>::iterator& vertexItr,
+		std::vector<unsigned char>& indices,
+		std::vector<unsigned char>::iterator& indexItr,
+		std::latch& synchronization)
 	{
 		static auto workers = Xenon::JobSystem(std::thread::hardware_concurrency() - 1);	// Keep one thread free for other purposes.
 
 		// Get the mesh and initialize everything.
 		const auto& gltfMesh = model.meshes[node.mesh];
-		auto& mesh = storage.m_Meshes.emplace_back();
+		auto& mesh = storage.getMeshes().emplace_back();
 		mesh.m_Name = gltfMesh.name;
 		mesh.m_SubMeshes.reserve(gltfMesh.primitives.size());
 
@@ -352,13 +365,13 @@ namespace /* anonymous */
 		{
 			// Create the primitive.
 			auto& subMesh = mesh.m_SubMeshes.emplace_back();
-			subMesh.m_VertexOffset = std::distance(vertexItr, vertices.begin());
-			subMesh.m_IndexOffset = std::distance(indexItr, indices.begin());
+			subMesh.m_VertexOffset = std::distance(vertices.begin(), vertexItr);
+			subMesh.m_IndexOffset = std::distance(indices.begin(), indexItr);
 
 			// Insert the job.
 			workers.insert([&subMesh, &model, &storage, &gltfPrimitive, vertexItr, indexItr, &synchronization]
 				{
-					LoadSubMesh(subMesh, storage.m_VertexSpecification, model, gltfPrimitive, vertexItr, indexItr);
+					LoadSubMesh(subMesh, storage.getVertexSpecification(), model, gltfPrimitive, vertexItr, indexItr);
 					synchronization.count_down();
 				}
 			);
@@ -366,7 +379,7 @@ namespace /* anonymous */
 			// Get the next available vertex begin position.
 			for (auto i = Xenon::EnumToInt(Xenon::VertexElement::Position); i < Xenon::EnumToInt(Xenon::VertexElement::Count); i++)
 			{
-				if (storage.m_VertexSpecification.isAvailable(static_cast<Xenon::VertexElement>(i)) && gltfPrimitive.attributes.contains(Attributes[i]))
+				if (storage.getVertexSpecification().isAvailable(static_cast<Xenon::VertexElement>(i)) && gltfPrimitive.attributes.contains(Attributes[i]))
 				{
 					const auto& accessor = model.accessors[gltfPrimitive.attributes.at(Attributes[i])];
 					const auto& bufferView = model.bufferViews[accessor.bufferView];
@@ -452,10 +465,12 @@ namespace Xenon
 		auto indices = std::vector<unsigned char>(indexBufferSize);
 		auto indexItr = indices.begin();
 
-		// Load the nodes.
+		// Load the default scene.
 		storage.m_Meshes.reserve(model.meshes.size());
 		auto synchronization = std::latch(workerSubmissions);
-		LoadNode(model, model.nodes.front(), storage, vertices, vertexItr, indices, indexItr, synchronization);
+
+		const auto& scene = model.scenes[model.defaultScene];
+		LoadNode(model, model.nodes[scene.nodes.front()], storage, vertices, vertexItr, indices, indexItr, synchronization);
 
 		// Wait till all the sub-meshes are loaded.
 		synchronization.wait();
