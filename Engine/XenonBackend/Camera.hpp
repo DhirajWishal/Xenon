@@ -50,6 +50,13 @@ namespace Xenon
 			virtual ~Camera() = default;
 
 			/**
+			 * Update the camera.
+			 *
+			 * @return The time difference between the previous frame and now
+			 */
+			[[nodiscard]] virtual std::chrono::nanoseconds update() = 0;
+
+			/**
 			 * Get the view ports.
 			 * Each view port will result in a single pass using the provided information.
 			 *
