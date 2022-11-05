@@ -61,4 +61,14 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 if (MSVC) 
 	set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT XenonStudio)
 	set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+	# Add a custom target for Visual Studio to build the solution files again.
+	add_custom_target(
+		XenonConfigureCMake
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+		COMMAND ./Bootstrap.bat
+	)
+	 
+	# Add the custom target to a folder so it won't clutter up the solution explorer.
+	set_target_properties(XenonConfigureCMake PROPERTIES FOLDER "VisualStudio")
 endif ()

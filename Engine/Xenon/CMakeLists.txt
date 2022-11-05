@@ -21,6 +21,8 @@ add_library(
 	"MeshStorage.hpp"
 	"StaticModel.hpp"
 	"VertexSpecification.hpp"
+	"MonoCamera.cpp"
+	"MonoCamera.hpp"
 )
 
 # Set the target links.
