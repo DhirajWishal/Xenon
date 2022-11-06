@@ -5,8 +5,6 @@
 
 #include "Buffer.hpp"
 
-#include <vector>
-
 namespace Xenon
 {
 	namespace Backend
@@ -52,7 +50,7 @@ namespace Xenon
 			/**
 			 * Update the camera.
 			 *
-			 * @return The time difference between the previous frame and now
+			 * @return The time difference between the previous frame and now.s
 			 */
 			[[nodiscard]] virtual std::chrono::nanoseconds update() = 0;
 

@@ -21,6 +21,7 @@ add_library(
 	"Logging.cpp"
 	"XObject.cpp"
 	"XObject.hpp"
+	"BitSet.hpp"
 )
 
 # Set the include directories.

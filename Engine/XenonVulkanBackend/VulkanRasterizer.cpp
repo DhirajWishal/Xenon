@@ -29,7 +29,7 @@ namespace Xenon
 			// Create and add the color attachment if required.
 			if (m_AttachmentTypes & AttachmentType::Color)
 			{
-				specification.m_Format = DataFormat::R8G8B8A8_SRGB;
+				specification.m_Format = DataFormat::R8G8B8A8_UNORMAL | DataFormat::R8G8B8A8_SRGB;
 				specification.m_MultiSamplingCount = m_MultiSamplingCount;
 
 				m_ImageAttachments.emplace_back(m_pDevice, specification);
@@ -58,14 +58,14 @@ namespace Xenon
 			// Create and add the depth attachment with stencil attachment if required.
 			if (m_AttachmentTypes & AttachmentType::Depth && m_AttachmentTypes & AttachmentType::Stencil)
 			{
-				specification.m_Format = DataFormat::D32_SFLOAT_S8_UINT;
+				specification.m_Format = DataFormat::D32_SFLOAT_S8_UINT | DataFormat::D24_UNORMAL_S8_UINT | DataFormat::D16_UNORMAL_S8_UINT;
 				m_ImageAttachments.emplace_back(m_pDevice, specification);
 			}
 
 			// Create and add the depth attachment if required.
 			else if (m_AttachmentTypes & AttachmentType::Depth)
 			{
-				specification.m_Format = DataFormat::D32_SFLOAT;
+				specification.m_Format = DataFormat::D32_SFLOAT | DataFormat::D16_SINT;
 				m_ImageAttachments.emplace_back(m_pDevice, specification);
 			}
 

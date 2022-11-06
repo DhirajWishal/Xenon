@@ -7,7 +7,6 @@
 
 #include <volk.h>
 
-#include <vector>
 #include <fstream>
 
 namespace Xenon

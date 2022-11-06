@@ -53,11 +53,10 @@ namespace Xenon
 			imageCreateInfo.pNext = nullptr;
 			imageCreateInfo.flags = specification.m_Type == ImageType::CubeMap ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT : 0;
 			imageCreateInfo.imageType = type;
-			imageCreateInfo.format = m_pDevice->convertFormat(specification.m_Format);
 			imageCreateInfo.extent.width = specification.m_Width;
 			imageCreateInfo.extent.height = specification.m_Height;
 			imageCreateInfo.extent.depth = specification.m_Depth;
-			imageCreateInfo.mipLevels = 1;	// TODO: Come up with a better system.
+			imageCreateInfo.mipLevels = /*specification.m_EnableMipMaps*/ 1;	// TODO: Come up with a better system.
 			imageCreateInfo.arrayLayers = specification.m_Layers;
 			imageCreateInfo.samples = m_pDevice->convertSamplingCount(specification.m_MultiSamplingCount);
 			imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
@@ -66,6 +65,39 @@ namespace Xenon
 			imageCreateInfo.queueFamilyIndexCount = 0;
 			imageCreateInfo.pQueueFamilyIndices = nullptr;
 			imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+			// Resolve the image format.
+			bool formatFound = false;
+			for (const auto candidates = GetCandidateFormats(specification.m_Format); const auto candidate : candidates)
+			{
+				imageCreateInfo.format = m_pDevice->convertFormat(candidate);
+
+				// Get the format properties.
+				VkImageFormatProperties formatProperties = {};
+				const auto result = vkGetPhysicalDeviceImageFormatProperties(
+					m_pDevice->getPhysicalDevice(),
+					imageCreateInfo.format,
+					imageCreateInfo.imageType,
+					imageCreateInfo.tiling,
+					imageCreateInfo.usage,
+					imageCreateInfo.flags,
+					&formatProperties
+				);
+
+				// If the format is supported, we can go with it.
+				if (result == VK_SUCCESS)
+				{
+					formatFound = true;
+					break;
+				}
+			}
+
+			// Check if we found a format.
+			if (!formatFound)
+			{
+				XENON_LOG_FATAL("The provided format (with or without candidates) cannot be used to create the image!");
+				return;
+			}
 
 			VmaAllocationCreateInfo allocationCreateInfo = {};
 			allocationCreateInfo.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;

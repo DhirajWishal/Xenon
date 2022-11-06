@@ -4,8 +4,6 @@
 #include "VulkanQueue.hpp"
 #include "VulkanMacros.hpp"
 
-#include <vector>
-
 namespace Xenon
 {
 	namespace Backend

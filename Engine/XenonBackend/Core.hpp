@@ -5,6 +5,8 @@
 
 #include "../XenonCore/Common.hpp"
 
+#include <vector>
+
 namespace Xenon
 {
 	namespace Backend
@@ -41,45 +43,91 @@ namespace Xenon
 
 		/**
 		 * Data format enum.
+		 *
+		 * Formats can be binary-OR-ed to add multiple candidate formats. In that case the best available format is used by the backend.
 		 */
-		enum class DataFormat : uint8_t
+		enum class DataFormat : uint32_t
 		{
-			Undefined,
+			Undefined = 0,
 
-			R8_SRGB,
-			R8G8_SRGB,
-			R8G8B8_SRGB,
-			R8G8B8A8_SRGB,
+			R8_SRGB = XENON_BIT_SHIFT(0),
+			R8_UNORMAL = XENON_BIT_SHIFT(1),
+			R16_SFLOAT = XENON_BIT_SHIFT(2),
+			R32_SFLOAT = XENON_BIT_SHIFT(3),
 
-			R8_UNORMAL,
-			R8G8_UNORMAL,
-			R8G8B8_UNORMAL,
-			R8G8B8A8_UNORMAL,
+			R8G8_SRGB = XENON_BIT_SHIFT(4),
+			R8G8_UNORMAL = XENON_BIT_SHIFT(5),
+			R16G16_SFLOAT = XENON_BIT_SHIFT(6),
+			R32G32_SFLOAT = XENON_BIT_SHIFT(7),
 
-			B8G8R8_SRGB,
-			B8G8R8A8_SRGB,
+			R8G8B8_SRGB = XENON_BIT_SHIFT(8),
+			R8G8B8_UNORMAL = XENON_BIT_SHIFT(9),
+			R16G16B16_SFLOAT = XENON_BIT_SHIFT(10),
+			R32G32B32_SFLOAT = XENON_BIT_SHIFT(11),
 
-			B8G8R8_UNORMAL,
-			B8G8R8A8_UNORMAL,
+			B8G8R8_SRGB = XENON_BIT_SHIFT(12),
+			B8G8R8_UNORMAL = XENON_BIT_SHIFT(13),
 
-			R16_SFLOAT,
-			R16G16_SFLOAT,
-			R16G16B16_SFLOAT,
-			R16G16B16A16_SFLOAT,
+			R8G8B8A8_SRGB = XENON_BIT_SHIFT(14),
+			R8G8B8A8_UNORMAL = XENON_BIT_SHIFT(15),
+			R16G16B16A16_SFLOAT = XENON_BIT_SHIFT(16),
+			R32G32B32A32_SFLOAT = XENON_BIT_SHIFT(17),
 
-			R32_SFLOAT,
-			R32G32_SFLOAT,
-			R32G32B32_SFLOAT,
-			R32G32B32A32_SFLOAT,
+			B8G8R8A8_SRGB = XENON_BIT_SHIFT(18),
+			B8G8R8A8_UNORMAL = XENON_BIT_SHIFT(19),
 
-			D16_SINT,
-			D32_SFLOAT,
+			D16_SINT = XENON_BIT_SHIFT(20),
+			D32_SFLOAT = XENON_BIT_SHIFT(21),
 
-			S8_UINT,
-			D16_UNORMAL_S8_UINT,
-			D24_UNORMAL_S8_UINT,
-			D32_SFLOAT_S8_UINT,
+			S8_UINT = XENON_BIT_SHIFT(22),
+
+			D16_UNORMAL_S8_UINT = XENON_BIT_SHIFT(23),
+			D24_UNORMAL_S8_UINT = XENON_BIT_SHIFT(24),
+			D32_SFLOAT_S8_UINT = XENON_BIT_SHIFT(25),
 		};
+
+		XENON_DEFINE_ENUM_AND(DataFormat);
+		XENON_DEFINE_ENUM_OR(DataFormat);
+
+		/**
+		 * Get the number of candidate formats in the format.
+		 *
+		 * @param format The format to check.
+		 * @return The number of candidate formats. The count will be 0 if undefined.
+		 */
+		[[nodiscard]] constexpr uint32_t CountCandiateFormats(DataFormat format)
+		{
+			uint32_t count = 0;
+			if (format == DataFormat::Undefined)
+				return count;
+
+			using UnderlyingType = std::underlying_type_t<DataFormat>;
+			for (UnderlyingType i = 0; i < sizeof(UnderlyingType) * 8; i++)
+			{
+				if (EnumToInt(format) & (1 << i))
+					count++;
+			}
+
+			return count;
+		}
+
+		/**
+		 * Get the candidate formats from the format list.
+		 *
+		 * @param format The format with candidates.
+		 * @return The candidate format vector with the most to least important order.
+		 */
+		[[nodiscard]] constexpr std::vector<DataFormat> GetCandidateFormats(DataFormat format)
+		{
+			std::vector<DataFormat> candidates;
+			for (auto i = sizeof(std::underlying_type_t<DataFormat>) * 8; i > 0; i--)
+			{
+				if (EnumToInt(format) & (1 << i))
+					candidates.push_back(static_cast<DataFormat>(1 << i));
+			}
+
+			return candidates;
+		}
 
 		/**
 		 * Image type enum.

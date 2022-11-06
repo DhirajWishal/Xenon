@@ -10,6 +10,8 @@
 
 #endif // XENON_PLATFORM_WINDOWS
 
+#include "MonoCamera.hpp"
+
 namespace Xenon
 {
 	Instance::Instance(const std::string& applicationName, uint32_t applicationVersion, RenderTargetType renderTargets, BackendType backendType /*= BackendType::Any*/)
@@ -48,7 +50,10 @@ namespace Xenon
 		// Create the device.
 		m_pDevice = m_pFactory->createDevice(m_pInstance.get(), renderTargets);
 
-		auto pRasterizer = m_pFactory->createRasterizer(m_pDevice.get(), nullptr, Backend::AttachmentType::Color | Backend::AttachmentType::Depth | Backend::AttachmentType::Stencil);
+		{
+			auto camera = MonoCamera(*this, 1280, 720);
+			auto pRasterizer = m_pFactory->createRasterizer(m_pDevice.get(), &camera, Backend::AttachmentType::Color | Backend::AttachmentType::Depth | Backend::AttachmentType::Stencil);
+		}
 	}
 
 	Instance::~Instance()

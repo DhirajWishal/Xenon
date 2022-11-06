@@ -10,7 +10,6 @@
 #include <tiny_gltf.h>
 
 #include <latch>
-#include <vector>
 #include <fstream>
 
 constexpr const char* Attributes[] = {
