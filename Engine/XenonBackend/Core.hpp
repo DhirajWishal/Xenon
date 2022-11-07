@@ -143,6 +143,8 @@ namespace Xenon
 		/**
 		 * Image usage enum.
 		 * This specifies the possible image usages.
+		 *
+		 * Note that the image usage cannot be color and depth at the same time! If both are specified it is considered as a color image.
 		 */
 		enum class ImageUsage : uint8_t
 		{

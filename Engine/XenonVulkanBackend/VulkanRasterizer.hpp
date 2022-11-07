@@ -31,7 +31,7 @@ namespace Xenon
 			/**
 			 * Destructor.
 			 */
-			~VulkanRasterizer() override = default;
+			~VulkanRasterizer() override;
 
 		private:
 			/**
@@ -39,8 +39,28 @@ namespace Xenon
 			 */
 			void setupAttachments();
 
+			/**
+			 * Create the render pass.
+			 */
+			void createRenderPass();
+
+			/**
+			 * Create the framebuffers.
+			 */
+			void createFramebuffers();
+
+			/**
+			 * Create an image view using the created image, its image aspect flags and the format.
+			 *
+			 * @param image The image to create the view for.
+			 * @param aspectFlags The image aspect flags.
+			 * @param format The image format.
+			 */
+			void createImageView(VkImage image, VkImageAspectFlags aspectFlags, VkFormat format);
+
 		private:
 			VkRenderPass m_RenderPass = VK_NULL_HANDLE;
+			std::vector<VkImageView> m_AttachmentViews;
 			std::vector<VkFramebuffer> m_Framebuffers;
 			std::vector<VulkanImage> m_ImageAttachments;
 		};

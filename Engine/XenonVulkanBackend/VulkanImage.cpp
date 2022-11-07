@@ -21,10 +21,28 @@ namespace Xenon
 				usageFlags |= VK_IMAGE_USAGE_SAMPLED_BIT;
 
 			if (specification.m_Usage & ImageUsage::ColorAttachment)
+			{
 				usageFlags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-			if (specification.m_Usage & ImageUsage::DepthAttachment)
+				m_AttachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+				m_AttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+				m_AttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+				m_AttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+				m_AttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+				m_AttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+			}
+
+			else if (specification.m_Usage & ImageUsage::DepthAttachment)
+			{
 				usageFlags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+
+				m_AttachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+				m_AttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+				m_AttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+				m_AttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+				m_AttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+				m_AttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+			}
 
 			// Resolve the image type.
 			VkImageType type = VK_IMAGE_TYPE_2D;
@@ -87,6 +105,7 @@ namespace Xenon
 				// If the format is supported, we can go with it.
 				if (result == VK_SUCCESS)
 				{
+					m_Specification.m_Format = candidate;
 					formatFound = true;
 					break;
 				}
@@ -103,11 +122,16 @@ namespace Xenon
 			allocationCreateInfo.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
 
 			XENON_VK_ASSERT(vmaCreateImage(m_pDevice->getAllocator(), &imageCreateInfo, &allocationCreateInfo, &m_Image, &m_Allocation, nullptr), "Failed to create the image!");
+
+			m_AttachmentDescription.flags = 0;
+			m_AttachmentDescription.format = imageCreateInfo.format;
+			m_AttachmentDescription.samples = imageCreateInfo.samples;
 		}
 
 		VulkanImage::VulkanImage(VulkanImage&& other) noexcept
 			: VulkanDeviceBoundObject(std::exchange(other.m_pDevice, nullptr))
 			, Image(static_cast<Image&&>(other))
+			, m_AttachmentDescription(std::exchange(other.m_AttachmentDescription, {}))
 			, m_Image(std::exchange(other.m_Image, VK_NULL_HANDLE))
 			, m_Allocation(std::exchange(other.m_Allocation, nullptr))
 		{
@@ -132,10 +156,19 @@ namespace Xenon
 			}
 		}
 
+		VkImageAspectFlags VulkanImage::getAspectFlags() const
+		{
+			if (m_Specification.m_Usage & ImageUsage::DepthAttachment)
+				return VK_IMAGE_ASPECT_DEPTH_BIT;
+
+			return VK_IMAGE_ASPECT_COLOR_BIT;
+		}
+
 		Xenon::Backend::VulkanImage& VulkanImage::operator=(VulkanImage&& other) noexcept
 		{
 			Image::operator=(std::move(other));
 			m_pDevice = std::exchange(other.m_pDevice, nullptr);
+			m_AttachmentDescription = std::exchange(other.m_AttachmentDescription, {});
 			m_Image = std::exchange(other.m_Image, VK_NULL_HANDLE);
 			m_Allocation = std::exchange(other.m_Allocation, nullptr);
 

@@ -37,6 +37,27 @@ namespace Xenon
 			 */
 			~VulkanImage() override;
 
+			/**
+			 * Get the Vulkan image handle.
+			 *
+			 * @return The image.
+			 */
+			[[nodiscard]] VkImage getImage() const { return m_Image; }
+
+			/**
+			 * Get the image aspect flags.
+			 *
+			 * @return The aspect flags.
+			 */
+			[[nodiscard]] VkImageAspectFlags getAspectFlags() const;
+
+			/**
+			 * Get the image's attachment description.
+			 *
+			 * @return The Vulkan attachment description.
+			 */
+			[[nodiscard]] VkAttachmentDescription getAttachmentDescription() const { return m_AttachmentDescription; }
+
 		public:
 			/**
 			 * Move assignment operator.
@@ -47,6 +68,8 @@ namespace Xenon
 			VulkanImage& operator=(VulkanImage&& other) noexcept;
 
 		private:
+			VkAttachmentDescription m_AttachmentDescription = {};
+
 			VkImage m_Image = VK_NULL_HANDLE;
 			VmaAllocation m_Allocation = nullptr;
 		};

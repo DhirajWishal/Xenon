@@ -84,7 +84,7 @@ namespace /* anonymous */
 		}
 
 		// If the extension count is more than 0, that means it supports a few of those required extensions.
-		if (requiredExtensions.size() > 0)
+		if (!requiredExtensions.empty())
 			XENON_LOG_INFORMATION("The physical device {} supports only some of the required extensions.");
 
 		// Set the supported types if required.

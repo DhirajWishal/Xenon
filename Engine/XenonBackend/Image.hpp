@@ -55,6 +55,13 @@ namespace Xenon
 			 */
 			virtual ~Image() = default;
 
+			/**
+			 * Get the iamge specification.
+			 *
+			 * @return The image specification.
+			 */
+			[[nodiscard]] const ImageSpecification& getSpecification() const { return m_Specification; }
+
 		public:
 			/**
 			 * Move assignment operator.
