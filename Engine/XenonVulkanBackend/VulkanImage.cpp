@@ -129,8 +129,8 @@ namespace Xenon
 		}
 
 		VulkanImage::VulkanImage(VulkanImage&& other) noexcept
-			: VulkanDeviceBoundObject(std::exchange(other.m_pDevice, nullptr))
-			, Image(static_cast<Image&&>(other))
+			: VulkanDeviceBoundObject(std::move(other))
+			, Image(std::move(other))
 			, m_AttachmentDescription(std::exchange(other.m_AttachmentDescription, {}))
 			, m_Image(std::exchange(other.m_Image, VK_NULL_HANDLE))
 			, m_Allocation(std::exchange(other.m_Allocation, nullptr))
@@ -167,7 +167,7 @@ namespace Xenon
 		Xenon::Backend::VulkanImage& VulkanImage::operator=(VulkanImage&& other) noexcept
 		{
 			Image::operator=(std::move(other));
-			m_pDevice = std::exchange(other.m_pDevice, nullptr);
+			VulkanDeviceBoundObject::operator=(std::move(other));
 			m_AttachmentDescription = std::exchange(other.m_AttachmentDescription, {});
 			m_Image = std::exchange(other.m_Image, VK_NULL_HANDLE);
 			m_Allocation = std::exchange(other.m_Allocation, nullptr);

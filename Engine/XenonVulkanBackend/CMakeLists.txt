@@ -23,6 +23,7 @@ add_library(
 	"VulkanMacros.hpp"
 	"VulkanDevice.cpp"
 	"VulkanDevice.hpp"
+	"VulkanDeviceBoundObject.hpp"
 	"VulkanQueue.cpp"
 	"VulkanQueue.hpp"
 	"VulkanCommandBuffer.cpp"

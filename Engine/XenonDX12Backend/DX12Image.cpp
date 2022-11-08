@@ -8,9 +8,9 @@ namespace Xenon
 {
 	namespace Backend
 	{
-		DX12Image::DX12Image(DX12Device* pDevice, const ImageSpecification& specification, D3D12_HEAP_TYPE heapType /*= D3D12_HEAP_TYPE_DEFAULT*/, D3D12_RESOURCE_STATES resourceStates /*= D3D12_RESOURCE_STATE_COPY_DEST*/)
-			: Image(pDevice, specification)
-			, m_pDevice(pDevice)
+		DX12Image::DX12Image(DX12Device* pDevice, const ImageSpecification& specification, D3D12_RESOURCE_STATES resourceStates /*= D3D12_RESOURCE_STATE_COPY_DEST*/, D3D12_HEAP_TYPE heapType /*= D3D12_HEAP_TYPE_DEFAULT*/, D3D12_HEAP_FLAGS heapFlags /*= D3D12_HEAP_FLAG_NONE*/)
+			: DX12DeviceBoundObject(pDevice)
+			, Image(pDevice, specification)
 		{
 			// Setup the flags.
 			D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE;
@@ -20,7 +20,7 @@ namespace Xenon
 			if (specification.m_Usage & ImageUsage::ColorAttachment)
 				flags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
 
-			if (specification.m_Usage & ImageUsage::DepthAttachment)
+			else if (specification.m_Usage & ImageUsage::DepthAttachment)
 				flags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
 
 			// Resolve the dimensions.
@@ -47,10 +47,10 @@ namespace Xenon
 			// Setup the rest and create the image.
 			D3D12MA::ALLOCATION_DESC allocationDesc = {};
 			allocationDesc.HeapType = heapType;
+			allocationDesc.ExtraHeapFlags = heapFlags;
 
 			D3D12_RESOURCE_DESC resourceDescriptor = {};
 			resourceDescriptor.MipLevels = 1;	// TODO: Find a better system.
-			resourceDescriptor.Format = m_pDevice->convertFormat(specification.m_Format);
 			resourceDescriptor.Width = specification.m_Width;
 			resourceDescriptor.Height = specification.m_Height;
 			resourceDescriptor.DepthOrArraySize = specification.m_Depth;
@@ -59,14 +59,39 @@ namespace Xenon
 			resourceDescriptor.SampleDesc.Quality = 1;	// TODO: Find a better system.
 			resourceDescriptor.Dimension = dimension;
 
-			XENON_DX12_ASSERT(pDevice->getAllocator()->CreateResource(
-				&allocationDesc,
-				&resourceDescriptor,
-				/*D3D12_RESOURCE_STATE_COPY_SOURCE | D3D12_RESOURCE_STATE_COPY_DEST | */resourceStates,
-				nullptr,
-				&m_pAllocation,
-				IID_NULL,
-				nullptr), "Failed to create the image!");
+			// Try and create the image using the candidates.
+			const auto candidates = GetCandidateFormats(specification.m_Format);
+			for (const auto candidate : candidates)
+			{
+				resourceDescriptor.Format = m_pDevice->convertFormat(candidate);
+
+				// Try and create the image.
+				const auto result = pDevice->getAllocator()->CreateResource(
+					&allocationDesc,
+					&resourceDescriptor,
+					resourceStates,
+					nullptr,
+					&m_pAllocation,
+					IID_NULL,
+					nullptr);
+
+				// If successful we can return from the loop.
+				if (SUCCEEDED(result))
+				{
+					m_Specification.m_Format = candidate;
+					break;
+				}
+			}
+
+			// Validate if we were able to create an image or not.
+			XENON_DX12_ASSERT(m_pAllocation == nullptr ? -1 : S_OK, "Failed to create the image!");
+		}
+
+		DX12Image::DX12Image(DX12Image&& other) noexcept
+			: DX12DeviceBoundObject(std::move(other))
+			, Image(std::move(other))
+			, m_pAllocation(std::exchange(other.m_pAllocation, nullptr))
+		{
 		}
 
 		DX12Image::~DX12Image()
@@ -79,6 +104,15 @@ namespace Xenon
 			{
 				XENON_DX12_ASSERT(-1, "Failed to push the image deletion function to the deletion queue!");
 			}
+		}
+
+		Xenon::Backend::DX12Image& DX12Image::operator=(DX12Image&& other) noexcept
+		{
+			DX12DeviceBoundObject::operator=(std::move(other));
+			Image::operator=(std::move(other));
+			m_pAllocation = std::exchange(other.m_pAllocation, nullptr);
+
+			return *this;
 		}
 	}
 }

@@ -12,7 +12,8 @@ namespace Xenon
 	{
 
 		DX12CommandRecorder::DX12CommandRecorder(DX12Device* pDevice, CommandRecorderUsage usage, uint32_t bufferCount /*= 1*/)
-			: CommandRecorder(pDevice, usage, bufferCount)
+			:DX12DeviceBoundObject(pDevice)
+			, CommandRecorder(pDevice, usage, bufferCount)
 			, m_pDevice(pDevice)
 		{
 			// Create the command lists.

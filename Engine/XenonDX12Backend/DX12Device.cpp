@@ -59,6 +59,14 @@ namespace Xenon
 			return DXGI_FORMAT_UNKNOWN;
 		}
 
+		D3D12_FEATURE_DATA_FORMAT_SUPPORT DX12Device::getFormatSupport(DXGI_FORMAT format, D3D12_FORMAT_SUPPORT1 support1 /*= D3D12_FORMAT_SUPPORT1_NONE*/, D3D12_FORMAT_SUPPORT2 support2 /*= D3D12_FORMAT_SUPPORT2_NONE*/) const
+		{
+			D3D12_FEATURE_DATA_FORMAT_SUPPORT formatSupport = { format, support1, support2 };
+			XENON_DX12_ASSERT(m_Device->CheckFeatureSupport(D3D12_FEATURE_FORMAT_SUPPORT, &formatSupport, sizeof(formatSupport)), "Failed to check for format support!");
+
+			return formatSupport;
+		}
+
 		void DX12Device::createFactory()
 		{
 			XENON_DX12_ASSERT(CreateDXGIFactory2(m_pInstance->getFactoryFlags(), IID_PPV_ARGS(&m_Factory)), "Failed to create the DXGI factory!");

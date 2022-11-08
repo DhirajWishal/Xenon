@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "DX12Device.hpp"
+#include "DX12DeviceBoundObject.hpp"
 
 #include "../XenonBackend/Buffer.hpp"
 
@@ -17,7 +17,7 @@ namespace Xenon
 		 * DirectX 12 buffer class.
 		 * This is the base class for all the DirectX 12 buffers.
 		 */
-		class DX12Buffer final : public Buffer
+		class DX12Buffer final : public DX12DeviceBoundObject, public Buffer
 		{
 		public:
 			/**
@@ -106,8 +106,6 @@ namespace Xenon
 			[[nodiscard]] const ID3D12Resource* getResource() const { return m_pAllocation->GetResource(); }
 
 		private:
-			DX12Device* m_pDevice = nullptr;
-
 			D3D12MA::Allocation* m_pAllocation = nullptr;
 
 			std::unique_ptr<DX12Buffer> m_pTemporaryBuffer = nullptr;

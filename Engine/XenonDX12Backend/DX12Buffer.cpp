@@ -14,8 +14,8 @@ namespace Xenon
 	namespace Backend
 	{
 		DX12Buffer::DX12Buffer(DX12Device* pDevice, uint64_t size, BufferType type)
-			: Buffer(pDevice, size, type)
-			, m_pDevice(pDevice)
+			:DX12DeviceBoundObject(pDevice)
+			, Buffer(pDevice, size, type)
 			, m_Size(size)
 		{
 			D3D12MA::ALLOCATION_DESC allocationDesc = {};
@@ -74,8 +74,8 @@ namespace Xenon
 		}
 
 		DX12Buffer::DX12Buffer(DX12Device* pDevice, uint64_t size, D3D12_HEAP_TYPE heapType, D3D12_RESOURCE_STATES resourceStates, D3D12_RESOURCE_FLAGS resourceFlags /*= D3D12_RESOURCE_FLAG_NONE*/)
-			: Buffer(pDevice, size, BufferType::BackendSpecific)
-			, m_pDevice(pDevice)
+			:DX12DeviceBoundObject(pDevice)
+			, Buffer(pDevice, size, BufferType::BackendSpecific)
 			, m_Size(size)
 		{
 			CD3DX12_RESOURCE_DESC resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(size, resourceFlags);

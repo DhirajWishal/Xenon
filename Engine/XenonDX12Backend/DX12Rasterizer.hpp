@@ -6,6 +6,7 @@
 #include "../XenonBackend/Rasterizer.hpp"
 
 #include "DX12Device.hpp"
+#include "DX12Image.hpp"
 
 namespace Xenon
 {
@@ -14,7 +15,7 @@ namespace Xenon
 		/**
 		 * Direct X 12 rasterizer class.
 		 */
-		class DX12Rasterizer final : public Rasterizer
+		class DX12Rasterizer final : public DX12DeviceBoundObject, public Rasterizer
 		{
 		public:
 			/**
@@ -32,6 +33,15 @@ namespace Xenon
 			 * Destructor.
 			 */
 			~DX12Rasterizer() override = default;
+
+		private:
+			std::vector<DX12Image> m_RenderTargets;
+			ComPtr<ID3D12DescriptorHeap> m_RenderTargetHeap;
+			ComPtr<ID3D12DescriptorHeap> m_RenderTargetShaderViewHeap;
+
+			UINT m_RenderTargetDescriptorSize = 0;
+
+			DX12Device* m_pDevice = nullptr;
 		};
 	}
 }

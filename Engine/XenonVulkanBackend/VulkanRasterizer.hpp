@@ -14,7 +14,7 @@ namespace Xenon
 		/**
 		 * Vulkan rasterizer class.
 		 */
-		class VulkanRasterizer final : public Rasterizer, public VulkanDeviceBoundObject
+		class VulkanRasterizer final : public VulkanDeviceBoundObject, public Rasterizer
 		{
 		public:
 			/**

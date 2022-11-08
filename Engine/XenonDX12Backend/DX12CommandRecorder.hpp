@@ -5,7 +5,7 @@
 
 #include "../XenonBackend/CommandRecorder.hpp"
 
-#include "DX12Device.hpp"
+#include "DX12DeviceBoundObject.hpp"
 
 #ifdef max
 #undef max
@@ -19,7 +19,7 @@ namespace Xenon
 		/**
 		 * DirectX 12 command recorder class.
 		 */
-		class DX12CommandRecorder final : public CommandRecorder
+		class DX12CommandRecorder final : public DX12DeviceBoundObject, public CommandRecorder
 		{
 		public:
 			/**

@@ -22,6 +22,7 @@ add_library(
 	"DX12Includes.hpp"
 	"DX12Device.cpp"
 	"DX12Device.hpp"
+	"DX12DeviceBoundObject.hpp"
 	"DX12Macros.hpp"
 	"DX12Buffer.cpp"
 	"DX12Buffer.hpp"

@@ -9,8 +9,8 @@ namespace Xenon
 	namespace Backend
 	{
 		VulkanRasterizer::VulkanRasterizer(VulkanDevice* pDevice, Camera* pCamera, AttachmentType attachmentTypes, bool enableTripleBuffering /*= false*/, MultiSamplingCount multiSampleCount /*= MultiSamplingCount::x1*/)
-			: Rasterizer(pDevice, pCamera, attachmentTypes, enableTripleBuffering, multiSampleCount)
-			, VulkanDeviceBoundObject(pDevice)
+			: VulkanDeviceBoundObject(pDevice)
+			, Rasterizer(pDevice, pCamera, attachmentTypes, enableTripleBuffering, multiSampleCount)
 		{
 			// Setup the image attachments.
 			setupAttachments();
@@ -195,7 +195,7 @@ namespace Xenon
 			createInfo.height = m_pCamera->getHeight();
 			createInfo.layers = 1;
 
-			const uint32_t bufferCount = m_bEnableTripleBuffering ? 3 : 1;
+			const auto bufferCount = m_bEnableTripleBuffering ? 3 : 1;
 			for (uint32_t i = 0; i < bufferCount; i++)
 			{
 				auto& framebuffer = m_Framebuffers.emplace_back();
