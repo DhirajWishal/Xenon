@@ -3,26 +3,19 @@
 
 # Set the basic project information.
 project(
-	XenonBackend
+	XenonPlatformWindows
 	VERSION 1.0.0
-	DESCRIPTION "The backend library."
+	DESCRIPTION "The platform windows library."
 )
 
 # Set the sources.
 set(
 	SOURCES
 
-	"BackendObject.hpp"
-	"Instance.hpp"
-	"IFactory.hpp"
-	"Device.hpp"
-	"Buffer.hpp"
-	"Camera.hpp"
-	"RenderTarget.hpp"
-	"Rasterizer.hpp"
-	"BufferMemoryView.cpp"
-	"BufferMemoryView.hpp"
-	"Swapchain.hpp"
+	"WindowsFactory.cpp"
+	"WindowsFactory.hpp"
+	"WindowsWindow.cpp"
+	"WindowsWindow.hpp"
 )
 
 # Add the source group.
@@ -30,17 +23,19 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCES})
 
 # Add the library.
 add_library(
-	XenonBackend
+	XenonPlatformWindows
 	STATIC
 
 	${SOURCES}
 )
 
+# Set the target links.
+target_link_libraries(XenonPlatformWindows XenonPlatform)
+
 # Make sure to specify the C++ standard to C++20.
-set_property(TARGET XenonBackend PROPERTY CXX_STANDARD 20)
+set_property(TARGET XenonPlatformWindows PROPERTY CXX_STANDARD 20)
 
 # If we are on MSVC, we can use the Multi Processor Compilation option.
 if (MSVC)
-	target_compile_options(XenonBackend PRIVATE "/MP")	
-	target_link_libraries(XenonBackend XenonPlatformWindows)
+	target_compile_options(XenonPlatformWindows PRIVATE "/MP")	
 endif ()

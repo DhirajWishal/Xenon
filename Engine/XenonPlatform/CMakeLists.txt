@@ -15,11 +15,6 @@ set(
 	"IFactory.cpp"
 	"IFactory.hpp"
 	"Window.hpp"
-
-	"Windows/WindowsFactory.hpp"
-	"Windows/WindowsFactory.cpp"
-	"Windows/WindowsWindow.cpp"
-	"Windows/WindowsWindow.hpp"
 )
 
 # Add the source group.

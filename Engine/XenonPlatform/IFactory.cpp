@@ -4,7 +4,7 @@
 #include "IFactory.hpp"
 
 #if defined(XENON_PLATFORM_WINDOWS)
-#include "Windows/WindowsFactory.hpp"
+#include "../XenonPlatformWindows/WindowsFactory.hpp"
 
 #elif defiend(XENON_PLATFORM_LINUX)
 

@@ -3,7 +3,7 @@
 
 #include "WindowsWindow.hpp"
 
-#include "../../XenonCore/Logging.hpp"
+#include "../XenonCore/Logging.hpp"
 
 namespace /* anonymous */
 {

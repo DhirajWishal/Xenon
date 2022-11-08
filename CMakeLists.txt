@@ -52,6 +52,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonCore)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonVulkanBackend)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonDX12Backend)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonPlatform)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonPlatformWindows)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Studio)
 
 # Set the output directories.
