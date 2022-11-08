@@ -8,10 +8,9 @@ project(
 	DESCRIPTION "The backend library."
 )
 
-# Add the library.
-add_library(
-	XenonBackend
-	STATIC
+# Set the sources.
+set(
+	SOURCES
 
 	"BackendObject.hpp"
 	"Instance.hpp"
@@ -23,10 +22,22 @@ add_library(
 	"Rasterizer.hpp"
 	"BufferMemoryView.cpp"
 	"BufferMemoryView.hpp"
+	"Swapchain.hpp"
+)
+
+# Add the source group.
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCES})
+
+# Add the library.
+add_library(
+	XenonBackend
+	STATIC
+
+	${SOURCES}
 )
 
 # Add the target links.
-target_link_libraries(XenonBackend XenonCore)
+target_link_libraries(XenonBackend XenonPlatform)
 
 # Make sure to specify the C++ standard to C++20.
 set_property(TARGET XenonBackend PROPERTY CXX_STANDARD 20)

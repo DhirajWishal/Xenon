@@ -8,12 +8,9 @@ project(
 	DESCRIPTION "The DirectX 12 backend library."
 )
 
-# Add the library.
-add_library(
-	XenonDX12Backend
-	STATIC
-
-	"${D3DMA_SOURCE_DIR}/D3D12MemAlloc.cpp"	# We need this as described by the API.
+# Set the sources.
+set(
+	SOURCES
 
 	"DX12Instance.cpp"
 	"DX12Instance.hpp"
@@ -32,6 +29,19 @@ add_library(
 	"DX12CommandRecorder.hpp"
 	"DX12Image.cpp"
 	"DX12Image.hpp"
+)
+
+# Add the source group.
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCES})
+source_group(ThirdParty FILES "${D3DMA_SOURCE_DIR}/D3D12MemAlloc.cpp")
+
+# Add the library.
+add_library(
+	XenonDX12Backend
+	STATIC
+
+	"${D3DMA_SOURCE_DIR}/D3D12MemAlloc.cpp"	# We need this as described by the API.
+	${SOURCES}
 )
 
 # Set the include directories.

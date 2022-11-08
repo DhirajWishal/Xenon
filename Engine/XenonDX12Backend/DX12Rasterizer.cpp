@@ -42,6 +42,7 @@ namespace Xenon
 				specification.m_EnableMipMaps = false;
 				specification.m_Usage = ImageUsage::ColorAttachment | ImageUsage::Storage;
 
+				// Check if the required formats are supported.
 				const auto required = D3D12_FORMAT_SUPPORT1_TEXTURE2D | D3D12_FORMAT_SUPPORT1_RENDER_TARGET;
 				auto formatSupport = m_pDevice->getFormatSupport(DXGI_FORMAT_R8G8B8A8_UNORM);
 				if ((formatSupport.Support1 & required) != required)

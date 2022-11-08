@@ -8,11 +8,21 @@ project(
 	DESCRIPTION "Xenon studio."
 )
 
+# Set the sources.
+set(
+	SOURCES
+
+	"Main.cpp"
+)
+
+# Add the source group.
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCES})
+
 # Add the library.
 add_executable(
 	XenonStudio
 
-	"Main.cpp"
+	${SOURCES}
 )
 
 # Set the include directories.

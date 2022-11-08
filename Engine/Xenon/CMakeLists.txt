@@ -8,10 +8,9 @@ project(
 	DESCRIPTION "The main runtime library."
 )
 
-# Add the library.
-add_library(
-	XenonEngine
-	STATIC
+# Set the sources.
+set(
+	SOURCES
 
 	"Instance.cpp"
 	"Instance.hpp"
@@ -23,6 +22,17 @@ add_library(
 	"VertexSpecification.hpp"
 	"MonoCamera.cpp"
 	"MonoCamera.hpp"
+)
+
+# Add the source group.
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCES})
+
+# Add the library.
+add_library(
+	XenonEngine
+	STATIC
+
+	${SOURCES}
 )
 
 # Set the target links.

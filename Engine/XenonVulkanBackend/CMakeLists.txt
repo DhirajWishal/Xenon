@@ -8,10 +8,9 @@ project(
 	DESCRIPTION "The Vulkan backend library."
 )
 
-# Add the library.
-add_library(
-	XenonVulkanBackend
-	STATIC
+# Set the sources.
+set(
+	SOURCES
 
 	"ThirdParty/volk.cpp"
 	"ThirdParty/vk_mem_alloc.cpp"
@@ -36,6 +35,19 @@ add_library(
 	"VulkanCommandRecorder.hpp"
 	"VulkanImage.cpp"
 	"VulkanImage.hpp"
+	"VulkanSwapchain.cpp"
+	"VulkanSwapchain.hpp"
+)
+
+# Add the source group.
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCES})
+
+# Add the library.
+add_library(
+	XenonVulkanBackend
+	STATIC
+
+	${SOURCES}
 )
 
 # Set the include directories.

@@ -3,24 +3,21 @@
 
 # Set the basic project information.
 project(
-	XenonCore
+	XenonPlatform
 	VERSION 1.0.0
-	DESCRIPTION "The core library."
+	DESCRIPTION "The platform library."
 )
 
 # Set the sources.
 set(
 	SOURCES
 
-	"Common.hpp"
-	"JobSystem.cpp"
-	"JobSystem.hpp"
-	"Logging.hpp"
-	"SparseArray.hpp"
-	"Logging.cpp"
-	"XObject.cpp"
-	"XObject.hpp"
-	"BitSet.hpp"
+	"IFactory.cpp"
+	"IFactory.hpp"
+	"Window.hpp"
+
+	"Windows/WindowsWindow.cpp"
+	"Windows/WindowsWindow.hpp"
 )
 
 # Add the source group.
@@ -28,23 +25,19 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCES})
 
 # Add the library.
 add_library(
-	XenonCore
+	XenonPlatform
 	STATIC
 
 	${SOURCES}
 )
 
-# Set the include directories.
-target_include_directories(
-	XenonCore 
-
-	PUBLIC ${SPDLOG_INCLUDE_DIR}
-)
+# Set the target links.
+target_link_libraries(XenonPlatform XenonCore)
 
 # Make sure to specify the C++ standard to C++20.
-set_property(TARGET XenonCore PROPERTY CXX_STANDARD 20)
+set_property(TARGET XenonPlatform PROPERTY CXX_STANDARD 20)
 
 # If we are on MSVC, we can use the Multi Processor Compilation option.
 if (MSVC)
-	target_compile_options(XenonCore PRIVATE "/MP")	
+	target_compile_options(XenonPlatform PRIVATE "/MP")	
 endif ()
