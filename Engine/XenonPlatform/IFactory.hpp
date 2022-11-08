@@ -51,6 +51,16 @@ namespace Xenon
 			 * @return The factory object pointer.
 			 */
 			[[nodiscard]] static std::unique_ptr<IFactory> Create();
+
+			/**
+			 * Create a new window.
+			 *
+			 * @param title The title of the window.
+			 * @param width The width of the window.
+			 * @param height The height of the window.
+			 * @return The window pointer.
+			 */
+			[[nodiscard]] virtual std::unique_ptr<Window> createWindow(const std::string& title, uint32_t width, uint32_t height) = 0;
 		};
 	}
 }

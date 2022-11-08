@@ -3,6 +3,18 @@
 
 #include "IFactory.hpp"
 
+#if defined(XENON_PLATFORM_WINDOWS)
+#include "Windows/WindowsFactory.hpp"
+
+#elif defiend(XENON_PLATFORM_LINUX)
+
+#elif defiend(XENON_PLATFORM_MAC)
+
+#else
+#error "The platform is not supported!"
+
+#endif
+
 namespace Xenon
 {
 	namespace Platform
@@ -19,23 +31,22 @@ namespace Xenon
 			return SupportedPlatforms::MacOS;
 
 #else
-#error "The platform is not supported!"
+			return SupportedPlatforms::Windows;
 
 #endif
 		}
 
 		std::unique_ptr<Xenon::Platform::IFactory> IFactory::Create()
 		{
-			return nullptr;
-
 #if defined(XENON_PLATFORM_WINDOWS)
+			return std::make_unique<Xenon::Platform::WindowsFactory>();
 
 #elif defiend(XENON_PLATFORM_LINUX)
 
 #elif defiend(XENON_PLATFORM_MAC)
 
 #else
-#error "The platform is not supported!"
+			return nullptr;
 
 #endif
 		}

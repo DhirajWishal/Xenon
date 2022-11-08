@@ -5,6 +5,12 @@
 
 #include "../Window.hpp"
 
+#ifndef UNICODE
+#define UNICODE
+#endif 
+
+#include <Windows.h>
+
 namespace Xenon
 {
 	namespace Platform
@@ -27,7 +33,16 @@ namespace Xenon
 			/**
 			 * Default virtual destructor.
 			 */
-			~WindowsWindow() override = default;
+			~WindowsWindow() override;
+
+			/**
+			 * Update the window.
+			 * This will also poll the incoming window updates.
+			 */
+			void update() override;
+
+		private:
+			HWND m_WindowHandle = nullptr;
 		};
 	}
 }

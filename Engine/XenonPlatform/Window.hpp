@@ -31,6 +31,12 @@ namespace Xenon
 			 */
 			virtual ~Window() = default;
 
+			/**
+			 * Update the window.
+			 * This will also poll the incoming window updates.
+			 */
+			virtual void update() = 0;
+
 		protected:
 			std::string m_Title;
 

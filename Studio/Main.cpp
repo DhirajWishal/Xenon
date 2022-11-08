@@ -6,6 +6,8 @@
 #include "Xenon/VertexSpecification.hpp"
 #include "Xenon/MeshStorage.hpp"
 
+#include "XenonPlatform/IFactory.hpp"
+
 void run(Xenon::BackendType backend)
 {
 	if (backend == Xenon::BackendType::DirectX_12)
@@ -21,6 +23,9 @@ void run(Xenon::BackendType backend)
 int main()
 {
 	XENON_LOG_INFORMATION("Hello from the Xenon Studio!");
+
+	auto factory = Xenon::Platform::IFactory::Create();
+	auto window = factory->createWindow("Xenon Studio", 1280, 720);
 
 	std::vector<std::jthread> backends;
 	backends.emplace_back(run, Xenon::BackendType::DirectX_12);
