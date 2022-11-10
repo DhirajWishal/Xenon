@@ -14,8 +14,8 @@ set(
 
 	"Instance.cpp"
 	"Instance.hpp"
-	"RasterizingRenderer.cpp"
-	"RasterizingRenderer.hpp"
+	"Renderer.cpp"
+	"Renderer.hpp"
 	"MeshStorage.cpp"
 	"MeshStorage.hpp"
 	"StaticModel.hpp"

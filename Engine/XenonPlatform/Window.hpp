@@ -54,6 +54,14 @@ namespace Xenon
 			virtual void update() = 0;
 
 			/**
+			 * Check if the window is still open.
+			 *
+			 * @return True if the window is open.
+			 * @return False if the window is closed.
+			 */
+			[[nodiscard]] virtual bool isOpen() const = 0;
+
+			/**
 			 * Get the width of the window.
 			 *
 			 * @return The window's width.

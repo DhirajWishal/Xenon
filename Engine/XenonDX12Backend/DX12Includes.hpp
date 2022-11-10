@@ -8,13 +8,13 @@
 
 #endif
 
-#include <windows.h>
+#include <Windows.h>
 
-#include <directX/d3d12.h>
-#include <directX/d3dx12.h>
+#include <directx/d3d12.h>
+#include <directx/d3dx12.h>
 
 #include <dxgi1_6.h>
-#include <D3Dcompiler.h>
+#include <d3dcompiler.h>
 #include <DirectXMath.h>
 
 #include <string>

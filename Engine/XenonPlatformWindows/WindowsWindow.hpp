@@ -42,14 +42,35 @@ namespace Xenon
 			void update() override;
 
 			/**
+			 * Check if the window is still open.
+			 *
+			 * @return True if the window is open.
+			 * @return False if the window is closed.
+			 */
+			[[nodiscard]] bool isOpen() const override;
+
+			/**
 			 * Get the window handle.
 			 *
 			 * @return The window handle.
 			 */
 			[[nodiscard]] HWND getWindowHandle() const { return m_WindowHandle; }
 
+		public:
+			/**
+			 * Handle the event sent to the WindowProc.
+			 *
+			 * @param uMsg The message.
+			 * @param wParam The wParam.
+			 * @param lParam The lParam.
+			 * @return The result.
+			 */
+			LRESULT handleEvent(UINT uMsg, WPARAM wParam, LPARAM lParam);
+
 		private:
 			HWND m_WindowHandle = nullptr;
+
+			bool m_IsOpen = true;
 		};
 	}
 }

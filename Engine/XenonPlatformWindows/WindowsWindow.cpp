@@ -5,7 +5,7 @@
 
 #include "../XenonCore/Logging.hpp"
 
-constexpr wchar_t g_ClassName[] = L"Xenon Windows Window Class";
+constexpr const auto* g_ClassName = TEXT("Xenon Windows Window Class");
 
 namespace /* anonymous */
 {
@@ -30,20 +30,7 @@ namespace /* anonymous */
 	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nc-winuser-wndproc
 	LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
-		switch (uMsg)
-		{
-		case WM_DESTROY:
-			PostQuitMessage(0);
-			return 0;
-
-		case WM_PAINT:
-			return OnPaintEvent(hwnd);
-
-		default:
-			break;
-		}
-
-		return DefWindowProc(hwnd, uMsg, wParam, lParam);
+		return reinterpret_cast<Xenon::Platform::WindowsWindow*>(GetProp(hwnd, TEXT("WindowsWindow")))->handleEvent(uMsg, wParam, lParam);
 	}
 
 	/**
@@ -99,6 +86,9 @@ namespace Xenon
 				this							// Additional application data
 			);
 
+			// Set the windows window property.
+			SetProp(m_WindowHandle, TEXT("WindowsWindow"), this);
+
 			// Validate if we were able to create the window.
 			if (m_WindowHandle == nullptr)
 			{
@@ -123,6 +113,31 @@ namespace Xenon
 				TranslateMessage(&message);
 				DispatchMessage(&message);
 			}
+		}
+
+		bool WindowsWindow::isOpen() const
+		{
+			return m_IsOpen;
+		}
+
+		LRESULT WindowsWindow::handleEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
+		{
+			switch (uMsg)
+			{
+			case WM_DESTROY:
+			case WM_CLOSE:
+				m_IsOpen = false;
+				PostQuitMessage(0);
+				return 0;
+
+			case WM_PAINT:
+				return OnPaintEvent(m_WindowHandle);
+
+			default:
+				break;
+			}
+
+			return DefWindowProc(m_WindowHandle, uMsg, wParam, lParam);
 		}
 	}
 }
