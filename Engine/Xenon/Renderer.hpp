@@ -4,6 +4,7 @@
 #pragma once
 
 #include "Instance.hpp"
+#include "../XenonBackend/Camera.hpp"
 
 #include "../XenonBackend/Rasterizer.hpp"
 #include "../XenonBackend/Swapchain.hpp"
@@ -12,7 +13,7 @@ namespace Xenon
 {
 	/**
 	 * Renderer class.
-	 * This class performs rasterization on a scene using its camera.
+	 * This class renders a scene using its camera.
 	 */
 	class Renderer final
 	{
@@ -22,11 +23,10 @@ namespace Xenon
 		 * This will automatically initialize the object and setup the window.
 		 *
 		 * @param instance The instance to create the rasterizing renderer with.
+		 * @param pCamera The camera pointer.
 		 * @param title The title of the renderer window.
-		 * @param width The width of the renderer window.
-		 * @param height The height of the renderer window.
 		 */
-		explicit Renderer(Instance& instance, const std::string& title, uint32_t width, uint32_t height);
+		explicit Renderer(Instance& instance, Backend::Camera* pCamera, const std::string& title);
 
 		/**
 		 * Update the renderer.

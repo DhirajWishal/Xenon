@@ -5,8 +5,8 @@
 
 namespace Xenon
 {
-	Renderer::Renderer(Instance& instance, const std::string& title, uint32_t width, uint32_t height)
-		: m_pSwapChain(instance.getFactory()->createSwapchain(instance.getBackendDevice(), title, width, height))
+	Renderer::Renderer(Instance& instance, Backend::Camera* pCamera, const std::string& title)
+		: m_pSwapChain(instance.getFactory()->createSwapchain(instance.getBackendDevice(), title, pCamera->getWidth(), pCamera->getHeight()))
 	{
 	}
 

@@ -6,6 +6,7 @@
 #include "Xenon/VertexSpecification.hpp"
 #include "Xenon/MeshStorage.hpp"
 #include "Xenon/Renderer.hpp"
+#include "Xenon/MonoCamera.hpp"
 
 // https://stackoverflow.com/a/10917945/11228029
 template<typename R>
@@ -23,7 +24,8 @@ void run(Xenon::BackendType backend)
 		XENON_LOG_INFORMATION("Running Xenon Studio using the Vulkan backend.");
 
 	auto instance = Xenon::Instance("Xenon Studio", 0, Xenon::RenderTargetType::All, backend);
-	auto renderer = Xenon::Renderer(instance, backend == Xenon::BackendType::Vulkan ? "Xenon Studio - Vulkan" : "Xenon Studio - DirectX 12", 1280, 720);
+	auto camera = Xenon::MonoCamera(instance, 1280, 720);
+	auto renderer = Xenon::Renderer(instance, &camera, backend == Xenon::BackendType::Vulkan ? "Xenon Studio - Vulkan" : "Xenon Studio - DirectX 12");
 
 	auto storage = Xenon::XObject::GetJobSystem().insert([&instance] { return Xenon::MeshStorage::FromFile(instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"); });
 	while (renderer.update() && !is_ready(storage));

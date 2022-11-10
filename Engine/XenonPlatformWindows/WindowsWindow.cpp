@@ -30,7 +30,12 @@ namespace /* anonymous */
 	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nc-winuser-wndproc
 	LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
-		return reinterpret_cast<Xenon::Platform::WindowsWindow*>(GetProp(hwnd, TEXT("WindowsWindow")))->handleEvent(uMsg, wParam, lParam);
+		auto userPtr = GetProp(hwnd, TEXT("WindowsWindow"));
+		if (userPtr != nullptr)
+			return reinterpret_cast<Xenon::Platform::WindowsWindow*>(userPtr)->handleEvent(uMsg, wParam, lParam);
+
+		else
+			return DefWindowProc(hwnd, uMsg, wParam, lParam);
 	}
 
 	/**
@@ -104,6 +109,8 @@ namespace Xenon
 		{
 			if (DestroyWindow(m_WindowHandle) == 0)
 				XENON_LOG_ERROR("Failed to destroy the window!");
+
+			while (isOpen()) update();
 		}
 
 		void WindowsWindow::update()
