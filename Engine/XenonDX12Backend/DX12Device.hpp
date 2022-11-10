@@ -47,9 +47,9 @@ namespace Xenon
 			 * @param format The format to check for support.
 			 * @param support1 The format support 1. Default is none.
 			 * @param support2 The format support 2. Default is none.
-			 * @return The data format support.
+			 * @return The format support pair. The first one is for the support 1 and second is for support 2.
 			 */
-			[[nodiscard]] D3D12_FEATURE_DATA_FORMAT_SUPPORT getFormatSupport(DXGI_FORMAT format, D3D12_FORMAT_SUPPORT1 support1 = D3D12_FORMAT_SUPPORT1_NONE, D3D12_FORMAT_SUPPORT2 support2 = D3D12_FORMAT_SUPPORT2_NONE) const;
+			[[nodiscard]] std::pair<bool, bool> getFormatSupport(DXGI_FORMAT format, D3D12_FORMAT_SUPPORT1 support1 = D3D12_FORMAT_SUPPORT1_NONE, D3D12_FORMAT_SUPPORT2 support2 = D3D12_FORMAT_SUPPORT2_NONE) const;
 
 		public:
 			/**
@@ -65,6 +65,20 @@ namespace Xenon
 			 * @return The const instance pointer.
 			 */
 			[[nodiscard]] const DX12Instance* getInstance() const { return m_pInstance; }
+
+			/**
+			 * Get the device factory.
+			 *
+			 * @return The factory pointer.
+			 */
+			[[nodiscard]] IDXGIFactory4* getFactory() { return m_Factory.Get(); }
+
+			/**
+			 * Get the device factory.
+			 *
+			 * @return The const factory pointer.
+			 */
+			[[nodiscard]] const IDXGIFactory4* getFactory() const { return m_Factory.Get(); }
 
 			/**
 			 * Get the backend device object.

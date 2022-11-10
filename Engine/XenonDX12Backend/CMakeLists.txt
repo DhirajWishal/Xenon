@@ -29,6 +29,8 @@ set(
 	"DX12CommandRecorder.hpp"
 	"DX12Image.cpp"
 	"DX12Image.hpp"
+	"DX12Swapchain.cpp"
+	"DX12Swapchain.hpp"
 )
 
 # Add the source group.

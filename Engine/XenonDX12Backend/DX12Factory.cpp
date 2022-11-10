@@ -9,6 +9,7 @@
 #include "DX12Buffer.hpp"
 #include "DX12Image.hpp"
 #include "DX12Rasterizer.hpp"
+#include "DX12Swapchain.hpp"
 
 namespace Xenon
 {
@@ -46,7 +47,7 @@ namespace Xenon
 
 		std::unique_ptr<Xenon::Backend::Swapchain> DX12Factory::createSwapchain(Device* pDevice, const std::string& title, uint32_t width, uint32_t height)
 		{
-			return nullptr;
+			return std::make_unique<Xenon::Backend::DX12Swapchain>(pDevice->as<DX12Device>(), title, width, height);
 		}
 	}
 }

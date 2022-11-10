@@ -116,25 +116,25 @@ namespace Xenon
 			m_SwapchainFormat = surfaceFormat.format;
 
 			// Create the swapchain.
-			VkSwapchainCreateInfoKHR creatInfo = {};
-			creatInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-			creatInfo.pNext = nullptr;
-			creatInfo.flags = 0;
-			creatInfo.surface = m_Surface;
-			creatInfo.minImageCount = std::clamp(surfaceCapabilities.minImageCount + 1, surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount);
-			creatInfo.imageFormat = m_SwapchainFormat;
-			creatInfo.imageColorSpace = surfaceFormat.colorSpace;
-			creatInfo.imageExtent = surfaceCapabilities.currentExtent;
-			creatInfo.imageArrayLayers = 1;
-			creatInfo.imageUsage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-			creatInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-			creatInfo.queueFamilyIndexCount = 0;
-			creatInfo.pQueueFamilyIndices = nullptr;
-			creatInfo.preTransform = surfaceCapabilities.currentTransform;
-			creatInfo.compositeAlpha = surfaceComposite;
-			creatInfo.presentMode = presentMode;
-			creatInfo.clipped = VK_TRUE;
-			creatInfo.oldSwapchain = m_Swapchain;
+			VkSwapchainCreateInfoKHR createInfo = {};
+			createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+			createInfo.pNext = nullptr;
+			createInfo.flags = 0;
+			createInfo.surface = m_Surface;
+			createInfo.minImageCount = std::clamp(surfaceCapabilities.minImageCount + 1, surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount);
+			createInfo.imageFormat = m_SwapchainFormat;
+			createInfo.imageColorSpace = surfaceFormat.colorSpace;
+			createInfo.imageExtent = surfaceCapabilities.currentExtent;
+			createInfo.imageArrayLayers = 1;
+			createInfo.imageUsage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+			createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+			createInfo.queueFamilyIndexCount = 0;
+			createInfo.pQueueFamilyIndices = nullptr;
+			createInfo.preTransform = surfaceCapabilities.currentTransform;
+			createInfo.compositeAlpha = surfaceComposite;
+			createInfo.presentMode = presentMode;
+			createInfo.clipped = VK_TRUE;
+			createInfo.oldSwapchain = m_Swapchain;
 
 			// Resolve the queue families if the two queues are different.
 			const std::array<uint32_t, 2> queueFamilyindices = {
@@ -144,13 +144,13 @@ namespace Xenon
 
 			if (queueFamilyindices[0] != queueFamilyindices[1])
 			{
-				creatInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
-				creatInfo.queueFamilyIndexCount = queueFamilyindices.size();
-				creatInfo.pQueueFamilyIndices = queueFamilyindices.data();
+				createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+				createInfo.queueFamilyIndexCount = queueFamilyindices.size();
+				createInfo.pQueueFamilyIndices = queueFamilyindices.data();
 			}
 
 			VkSwapchainKHR newSwapchain = VK_NULL_HANDLE;
-			XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkCreateSwapchainKHR(m_pDevice->getLogicalDevice(), &creatInfo, nullptr, &newSwapchain), "Failed to create the swapchain!");
+			XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkCreateSwapchainKHR(m_pDevice->getLogicalDevice(), &createInfo, nullptr, &newSwapchain), "Failed to create the swapchain!");
 
 			// Destroy the old swapchain if needed.
 			if (m_Swapchain != VK_NULL_HANDLE)
@@ -159,8 +159,8 @@ namespace Xenon
 			m_Swapchain = newSwapchain;
 
 			// Get the image views.
-			m_SwapchainImages.resize(creatInfo.minImageCount);
-			XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkGetSwapchainImagesKHR(m_pDevice->getLogicalDevice(), m_Swapchain, &creatInfo.minImageCount, m_SwapchainImages.data()), "Failed to get the swapchain images!");
+			m_SwapchainImages.resize(createInfo.minImageCount);
+			XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkGetSwapchainImagesKHR(m_pDevice->getLogicalDevice(), m_Swapchain, &createInfo.minImageCount, m_SwapchainImages.data()), "Failed to get the swapchain images!");
 
 			// Finally we can resolve the swapchain image views.
 			setupImageViews();

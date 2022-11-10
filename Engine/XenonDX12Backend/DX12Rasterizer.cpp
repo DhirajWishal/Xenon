@@ -44,21 +44,24 @@ namespace Xenon
 
 				// Check if the required formats are supported.
 				const auto required = D3D12_FORMAT_SUPPORT1_TEXTURE2D | D3D12_FORMAT_SUPPORT1_RENDER_TARGET;
-				auto formatSupport = m_pDevice->getFormatSupport(DXGI_FORMAT_R8G8B8A8_UNORM);
-				if ((formatSupport.Support1 & required) != required)
+				auto formatSupport = m_pDevice->getFormatSupport(DXGI_FORMAT_R8G8B8A8_UNORM, required);
+				if (formatSupport.first)
 				{
-					formatSupport = m_pDevice->getFormatSupport(DXGI_FORMAT_R8G8B8A8_UNORM_SRGB);
-					if ((formatSupport.Support1 & required) != required)
+					specification.m_Format = DataFormat::R8G8B8A8_UNORMAL;
+				}
+				else
+				{
+					formatSupport = m_pDevice->getFormatSupport(DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, required);
+					if (formatSupport.first)
+					{
+						specification.m_Format = DataFormat::R8G8B8A8_SRGB;
+					}
+					else
 					{
 						XENON_LOG_FATAL("The required render target formats are not supported by the Direct X 12 backend! Failed to create the render target.");
 						return;
 					}
 
-					specification.m_Format = DataFormat::R8G8B8A8_SRGB;
-				}
-				else
-				{
-					specification.m_Format = DataFormat::R8G8B8A8_UNORMAL;
 				}
 
 				auto& renderTarget = m_RenderTargets.emplace_back(pDevice, specification, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_HEAP_TYPE_DEFAULT, D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES);
