@@ -5,6 +5,11 @@
 
 #include "VulkanDeviceBoundObject.hpp"
 
+#ifdef max
+#undef max
+
+#endif
+
 namespace Xenon
 {
 	namespace Backend

@@ -9,6 +9,7 @@
 #include <list>
 #include <mutex>
 #include <future>
+#include <cstdint>
 
 namespace Xenon
 {

@@ -22,6 +22,7 @@ set(
 	"Rasterizer.hpp"
 	"BufferMemoryView.cpp"
 	"BufferMemoryView.hpp"
+	"Swapchain.cpp"
 	"Swapchain.hpp"
 )
 

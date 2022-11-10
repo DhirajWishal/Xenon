@@ -9,6 +9,7 @@
 #include "VulkanBuffer.hpp"
 #include "VulkanImage.hpp"
 #include "VulkanRasterizer.hpp"
+#include "VulkanSwapchain.hpp"
 
 namespace Xenon
 {
@@ -42,6 +43,11 @@ namespace Xenon
 		std::unique_ptr<Xenon::Backend::Rasterizer> VulkanFactory::createRasterizer(Device* pDevice, Camera* pCamera, AttachmentType attachmentTypes, bool enableTripleBuffering /*= false*/, MultiSamplingCount multiSampleCount /*= MultiSamplingCount::x1*/)
 		{
 			return std::make_unique<Xenon::Backend::VulkanRasterizer>(pDevice->as<VulkanDevice>(), pCamera, attachmentTypes, enableTripleBuffering, multiSampleCount);
+		}
+
+		std::unique_ptr<Xenon::Backend::Swapchain> VulkanFactory::createSwapchain(Device* pDevice, const std::string& title, uint32_t width, uint32_t height)
+		{
+			return std::make_unique<Xenon::Backend::VulkanSwapchain>(pDevice->as<VulkanDevice>(), title, width, height);
 		}
 	}
 }

@@ -35,7 +35,7 @@ namespace Xenon
 			 * @param usage The command recorder usage.
 			 * @param bufferCount The backend primitive buffer count. Default is 1.
 			 */
-			explicit CommandRecorder([[maybe_unused]] Device* pDevice, CommandRecorderUsage usage, uint32_t bufferCount = 1) : m_Usage(usage), m_BufferCount(bufferCount) {}
+			explicit CommandRecorder([[maybe_unused]] Device* pDevice, CommandRecorderUsage usage, uint32_t bufferCount = 1) : m_BufferCount(bufferCount), m_Usage(usage) {}
 
 			/**
 			 * Default virtual destructor.
@@ -79,7 +79,7 @@ namespace Xenon
 			 *
 			 * @param timeout The time to wait till the commands are executed. Default is uint64_t max.
 			 */
-			virtual void wait(uint64_t timeout = std::numeric_limits<uint64_t>::max()) = 0;
+			virtual void wait(uint64_t timeout = UINT64_MAX) = 0;
 
 		protected:
 			/**
@@ -90,7 +90,7 @@ namespace Xenon
 			[[nodiscard]] uint32_t incrementIndex() { return m_CurrentIndex = ++m_CurrentIndex % m_BufferCount; }
 
 		protected:
-			uint32_t m_BufferCount = 1;
+			uint32_t m_BufferCount;
 			uint32_t m_CurrentIndex = 0;
 			CommandRecorderUsage m_Usage = CommandRecorderUsage::Transfer;
 		};

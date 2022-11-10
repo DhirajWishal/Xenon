@@ -46,11 +46,11 @@ namespace Xenon
 			virtual ~IFactory() = default;
 
 			/**
-			 * Create a new platform-specific factory.
+			 * Get the platform specific factory pointer.
 			 *
-			 * @return The factory object pointer.
+			 * @return The factory pointer.
 			 */
-			[[nodiscard]] static std::unique_ptr<IFactory> Create();
+			[[nodiscard]] static IFactory* Get();
 
 			/**
 			 * Create a new window.

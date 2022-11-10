@@ -74,4 +74,5 @@ if (MSVC)
 	 
 	# Add the custom target to a folder so it won't clutter up the solution explorer.
 	set_target_properties(XenonConfigureCMake PROPERTIES FOLDER "VisualStudio")
+
 endif ()

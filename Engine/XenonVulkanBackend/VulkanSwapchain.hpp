@@ -21,9 +21,11 @@ namespace Xenon
 			 * Explicit constructor.
 			 *
 			 * @param pDevice The device pointer.
-			 * @param pWindow The window pointer.
+			 * @param title The title of the window.
+			 * @param width The window's width.
+			 * @param height The window's height.
 			 */
-			explicit VulkanSwapchain(VulkanDevice* pDevice, Platform::Window* pWindow);
+			explicit VulkanSwapchain(VulkanDevice* pDevice, const std::string& title, uint32_t width, uint32_t height);
 
 			/**
 			 * Destructor.
@@ -31,6 +33,13 @@ namespace Xenon
 			~VulkanSwapchain() override;
 
 		private:
+			/**
+			 * Create the surface.
+			 */
+			void createSurface();
+
+		private:
+			VkSurfaceKHR m_Surface = VK_NULL_HANDLE;
 			VkSwapchainKHR m_Swapchain = VK_NULL_HANDLE;
 		};
 	}

@@ -2,4 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #define VOLK_IMPLEMENTATION 
-#include <volk.h>
+
+// Include the Vulkan instance since there we define some important macros and import volk.
+#include "../VulkanInstance.hpp"

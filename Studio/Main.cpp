@@ -24,7 +24,7 @@ int main()
 {
 	XENON_LOG_INFORMATION("Hello from the Xenon Studio!");
 
-	auto factory = Xenon::Platform::IFactory::Create();
+	auto factory = Xenon::Platform::IFactory::Get();
 	auto window = factory->createWindow("Xenon Studio", 1280, 720);
 
 	std::vector<std::jthread> backends;

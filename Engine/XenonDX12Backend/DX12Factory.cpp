@@ -14,7 +14,6 @@ namespace Xenon
 {
 	namespace Backend
 	{
-
 		std::unique_ptr<Xenon::Backend::Instance> DX12Factory::createInstance(const std::string& applicationName, uint32_t applicationVersion)
 		{
 			return std::make_unique<DX12Instance>(applicationName, applicationVersion);
@@ -43,6 +42,11 @@ namespace Xenon
 		std::unique_ptr<Xenon::Backend::Rasterizer> DX12Factory::createRasterizer(Device* pDevice, Camera* pCamera, AttachmentType attachmentTypes, bool enableTripleBuffering /*= false*/, MultiSamplingCount multiSampleCount /*= MultiSamplingCount::x1*/)
 		{
 			return std::make_unique<Xenon::Backend::DX12Rasterizer>(pDevice->as<DX12Device>(), pCamera, attachmentTypes, enableTripleBuffering, multiSampleCount);
+		}
+
+		std::unique_ptr<Xenon::Backend::Swapchain> DX12Factory::createSwapchain(Device* pDevice, const std::string& title, uint32_t width, uint32_t height)
+		{
+			return nullptr;
 		}
 	}
 }

@@ -41,6 +41,13 @@ namespace Xenon
 			 */
 			void update() override;
 
+			/**
+			 * Get the window handle.
+			 *
+			 * @return The window handle.
+			 */
+			[[nodiscard]] HWND getWindowHandle() const { return m_WindowHandle; }
+
 		private:
 			HWND m_WindowHandle = nullptr;
 		};

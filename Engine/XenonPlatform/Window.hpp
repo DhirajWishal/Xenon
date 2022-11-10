@@ -4,6 +4,7 @@
 #pragma once
 
 #include "../XenonCore/Common.hpp"
+#include "../XenonCore/XObject.hpp"
 
 #include <string>
 
@@ -12,9 +13,24 @@ namespace Xenon
 	namespace Platform
 	{
 		/**
+		 * Window feature enum.
+		 * This defines what features the window should have.
+		 */
+		enum class WindowFeature : uint32_t
+		{
+			None = 0,
+
+			AcceptDragAndDrop = XENON_BIT_SHIFT(0),
+			EnableBorders = XENON_BIT_SHIFT(1),
+		};
+
+		XENON_DEFINE_ENUM_OR(WindowFeature);
+		XENON_DEFINE_ENUM_AND(WindowFeature);
+
+		/**
 		 * Window class.
 		 */
-		class Window
+		class Window : public XObject
 		{
 		public:
 			/**

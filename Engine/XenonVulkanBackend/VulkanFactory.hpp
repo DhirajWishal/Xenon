@@ -84,6 +84,17 @@ namespace Xenon
 			 * @return The rasterizer pointer.
 			 */
 			[[nodiscard]] std::unique_ptr<Rasterizer> createRasterizer(Device* pDevice, Camera* pCamera, AttachmentType attachmentTypes, bool enableTripleBuffering = false, MultiSamplingCount multiSampleCount = MultiSamplingCount::x1) override;
+
+			/**
+			 * Create a new swapchain.
+			 *
+			 * @param pDevice The device pointer.
+			 * @param title The title of the window.
+			 * @param width The window's width.
+			 * @param height The window's height.
+			 * @return The swapchain pointer.
+			 */
+			[[nodiscard]] std::unique_ptr<Swapchain> createSwapchain(Device* pDevice, const std::string& title, uint32_t width, uint32_t height) override;
 		};
 	}
 }

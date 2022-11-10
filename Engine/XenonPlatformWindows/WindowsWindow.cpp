@@ -5,8 +5,28 @@
 
 #include "../XenonCore/Logging.hpp"
 
+constexpr wchar_t g_ClassName[] = L"Xenon Windows Window Class";
+
 namespace /* anonymous */
 {
+	/**
+	 * On paint event.
+	 * This function is used to pain on the window upon requested.
+	 *
+	 * @param hwnd The window handle.
+	 * @return The result.
+	 */
+	LRESULT OnPaintEvent(HWND hwnd)
+	{
+		PAINTSTRUCT ps;
+		HDC hdc = BeginPaint(hwnd, &ps);
+
+		// All painting occurs here, between BeginPaint and EndPaint.
+		FillRect(hdc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 1));
+		EndPaint(hwnd, &ps);
+		return 0;
+	}
+
 	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nc-winuser-wndproc
 	LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
@@ -17,15 +37,10 @@ namespace /* anonymous */
 			return 0;
 
 		case WM_PAINT:
-		{
-			PAINTSTRUCT ps;
-			HDC hdc = BeginPaint(hwnd, &ps);
+			return OnPaintEvent(hwnd);
 
-			// All painting occurs here, between BeginPaint and EndPaint.
-			FillRect(hdc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 1));
-			EndPaint(hwnd, &ps);
-		}
-		return 0;
+		default:
+			break;
 		}
 
 		return DefWindowProc(hwnd, uMsg, wParam, lParam);
@@ -55,13 +70,10 @@ namespace Xenon
 			: Window(title, width, height)
 		{
 			// Register the window class.
-			constexpr wchar_t CLASS_NAME[] = L"Xenon Windows Window Class";
-
 			WNDCLASS wc = { };
-
 			wc.lpfnWndProc = WindowProc;
 			wc.hInstance = nullptr;
-			wc.lpszClassName = CLASS_NAME;
+			wc.lpszClassName = g_ClassName;
 
 			if (FAILED(RegisterClass(&wc)))
 			{
@@ -73,14 +85,14 @@ namespace Xenon
 
 			// Create the window.
 			m_WindowHandle = CreateWindowEx(
-				0,                              // Optional window styles.
-				CLASS_NAME,                     // Window class
+				0,								// Optional window styles. https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
+				g_ClassName,					// Window class
 				wideString.data(),				// Window text
-				WS_OVERLAPPEDWINDOW,            // Window style
-
-				// Size and position
-				CW_USEDEFAULT, CW_USEDEFAULT, width, height,
-
+				WS_OVERLAPPEDWINDOW,			// Window style
+				CW_USEDEFAULT,					// X-Position.
+				CW_USEDEFAULT,					// Y-Position.
+				width,							// Width of the window.
+				height,							// Height of the window.
 				nullptr,						// Parent window    
 				nullptr,						// Menu
 				nullptr,						// Instance handle

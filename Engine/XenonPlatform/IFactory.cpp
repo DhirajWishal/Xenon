@@ -3,6 +3,7 @@
 
 #include "IFactory.hpp"
 
+// TODO: This should me moved out from this project to the backend or engine.
 #if defined(XENON_PLATFORM_WINDOWS)
 #include "../XenonPlatformWindows/WindowsFactory.hpp"
 
@@ -13,7 +14,7 @@
 #else
 #error "The platform is not supported!"
 
-#endif
+#endif // defined(XENON_PLATFORM_WINDOWS)
 
 namespace Xenon
 {
@@ -33,13 +34,14 @@ namespace Xenon
 #else
 			return SupportedPlatforms::Windows;
 
-#endif
+#endif // defined(XENON_PLATFORM_WINDOWS)
 		}
 
-		std::unique_ptr<Xenon::Platform::IFactory> IFactory::Create()
+		Xenon::Platform::IFactory* IFactory::Get()
 		{
 #if defined(XENON_PLATFORM_WINDOWS)
-			return std::make_unique<Xenon::Platform::WindowsFactory>();
+			static Xenon::Platform::WindowsFactory factory;
+			return &factory;
 
 #elif defiend(XENON_PLATFORM_LINUX)
 
@@ -48,7 +50,7 @@ namespace Xenon
 #else
 			return nullptr;
 
-#endif
+#endif // defined(XENON_PLATFORM_WINDOWS)
 		}
 	}
 }

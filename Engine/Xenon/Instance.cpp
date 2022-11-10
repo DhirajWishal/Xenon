@@ -54,6 +54,10 @@ namespace Xenon
 			auto camera = MonoCamera(*this, 1280, 720);
 			auto pRasterizer = m_pFactory->createRasterizer(m_pDevice.get(), &camera, Backend::AttachmentType::Color | Backend::AttachmentType::Depth | Backend::AttachmentType::Stencil);
 		}
+
+		{
+			auto pSwapchain = m_pFactory->createSwapchain(m_pDevice.get(), "Test Window", 1280, 720);
+		}
 	}
 
 	Instance::~Instance()
