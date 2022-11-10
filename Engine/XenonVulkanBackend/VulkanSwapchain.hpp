@@ -38,9 +38,37 @@ namespace Xenon
 			 */
 			void createSurface();
 
+			/**
+			 * Create the swapchain.
+			 */
+			void createSwapchain();
+
+			/**
+			 * Setup the image views.
+			 */
+			void setupImageViews();
+
+			/**
+			 * Clear everything.
+			 * This is needed when resizing.
+			 */
+			void clear();
+
+			/**
+			 * Get the surface capabilities.
+			 *
+			 * @return The surface capabilities.
+			 */
+			[[nodiscard]] VkSurfaceCapabilitiesKHR getSurfaceCapabilities() const;
+
 		private:
+			std::vector<VkImage> m_SwapchainImages;
+			std::vector<VkImageView> m_SwapchainImageViews;
+
 			VkSurfaceKHR m_Surface = VK_NULL_HANDLE;
 			VkSwapchainKHR m_Swapchain = VK_NULL_HANDLE;
+
+			VkFormat m_SwapchainFormat = VK_FORMAT_UNDEFINED;
 		};
 	}
 }

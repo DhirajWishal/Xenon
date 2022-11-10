@@ -53,6 +53,20 @@ namespace Xenon
 			 */
 			virtual void update() = 0;
 
+			/**
+			 * Get the width of the window.
+			 *
+			 * @return The window's width.
+			 */
+			[[nodiscard]] uint32_t getWidth() const { return m_Width; }
+
+			/**
+			 * Get the height of the window.
+			 *
+			 * @return The window's height.
+			 */
+			[[nodiscard]] uint32_t getHeight() const { return m_Height; }
+
 		protected:
 			std::string m_Title;
 

@@ -19,11 +19,14 @@ namespace Xenon
 		{
 			// Create the surface.
 			createSurface();
+
+			// Create the swapchain.
+			createSwapchain();
 		}
 
 		VulkanSwapchain::~VulkanSwapchain()
 		{
-			vkDestroySurfaceKHR(m_pDevice->getInstance()->getInstance(), m_Surface, nullptr);
+			clear();
 		}
 
 		void VulkanSwapchain::createSurface()
@@ -37,7 +40,175 @@ namespace Xenon
 			createInfo.hwnd = static_cast<Platform::WindowsWindow*>(m_pWindow.get())->getWindowHandle();
 
 			XENON_VK_ASSERT(vkCreateWin32SurfaceKHR(m_pDevice->getInstance()->getInstance(), &createInfo, nullptr, &m_Surface), "Failed to create the Windows surface!");
-#endif
+
+#else 
+#error "Surface creation for the current platform is not supported!"
+
+#endif // defined(XENON_PLATFORM_WINDOWS)
+		}
+
+		void VulkanSwapchain::createSwapchain()
+		{
+			// Get the surface capabilities.
+			const auto surfaceCapabilities = getSurfaceCapabilities();
+
+			// Resolve the surface composite.
+			auto surfaceComposite = static_cast<VkCompositeAlphaFlagBitsKHR>(surfaceCapabilities.supportedCompositeAlpha);
+			if (surfaceComposite & VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR)
+				surfaceComposite = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+
+			else if (surfaceComposite & VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR)
+				surfaceComposite = VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR;
+
+			else if (surfaceComposite & VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR)
+				surfaceComposite = VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR;
+			else
+				surfaceComposite = VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR;
+
+			// Get the present modes.
+			uint32_t presentModeCount = 0;
+			XENON_VK_ASSERT(vkGetPhysicalDeviceSurfacePresentModesKHR(m_pDevice->getPhysicalDevice(), m_Surface, &presentModeCount, nullptr), "Failed to get the surface present mode count!");
+
+			if (presentModeCount == 0)
+			{
+				XENON_LOG_FATAL("No suitable present formats found!");
+				return;
+			}
+
+			std::vector<VkPresentModeKHR> presentModes(presentModeCount);
+			XENON_VK_ASSERT(vkGetPhysicalDeviceSurfacePresentModesKHR(m_pDevice->getPhysicalDevice(), m_Surface, &presentModeCount, presentModes.data()), "Failed to get the surface present modes!");
+
+			// Check if we have the present mode we need.
+			VkPresentModeKHR presentMode = presentModes.front();
+			for (const auto availablePresentMode : presentModes)
+			{
+				if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
+				{
+					presentMode = VK_PRESENT_MODE_MAILBOX_KHR;
+					break;
+				}
+			}
+
+			// Get the surface formats.
+			uint32_t formatCount = 0;
+			XENON_VK_ASSERT(vkGetPhysicalDeviceSurfaceFormatsKHR(m_pDevice->getPhysicalDevice(), m_Surface, &formatCount, nullptr), "Failed to get the surface format count!");
+
+			if (formatCount == 0)
+			{
+				XENON_LOG_FATAL("No suitable surface formats found!");
+				return;
+			}
+
+			std::vector<VkSurfaceFormatKHR> surfaceFormats(formatCount);
+			XENON_VK_ASSERT(vkGetPhysicalDeviceSurfaceFormatsKHR(m_pDevice->getPhysicalDevice(), m_Surface, &formatCount, surfaceFormats.data()), "Failed to get the surface formats!");
+
+			// Get the best surface format.
+			VkSurfaceFormatKHR surfaceFormat = surfaceFormats.front();
+			for (const auto& availableFormat : surfaceFormats)
+			{
+				if (availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+				{
+					surfaceFormat = availableFormat;
+					break;
+				}
+			}
+
+			m_SwapchainFormat = surfaceFormat.format;
+
+			// Create the swapchain.
+			VkSwapchainCreateInfoKHR creatInfo = {};
+			creatInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+			creatInfo.pNext = nullptr;
+			creatInfo.flags = 0;
+			creatInfo.surface = m_Surface;
+			creatInfo.minImageCount = std::clamp(surfaceCapabilities.minImageCount + 1, surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount);
+			creatInfo.imageFormat = m_SwapchainFormat;
+			creatInfo.imageColorSpace = surfaceFormat.colorSpace;
+			creatInfo.imageExtent = surfaceCapabilities.currentExtent;
+			creatInfo.imageArrayLayers = 1;
+			creatInfo.imageUsage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+			creatInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+			creatInfo.queueFamilyIndexCount = 0;
+			creatInfo.pQueueFamilyIndices = nullptr;
+			creatInfo.preTransform = surfaceCapabilities.currentTransform;
+			creatInfo.compositeAlpha = surfaceComposite;
+			creatInfo.presentMode = presentMode;
+			creatInfo.clipped = VK_TRUE;
+			creatInfo.oldSwapchain = m_Swapchain;
+
+			// Resolve the queue families if the two queues are different.
+			const std::array<uint32_t, 2> queueFamilyindices = {
+				m_pDevice->getGraphicsQueue().getFamily(),
+				m_pDevice->getTransferQueue().getFamily()
+			};
+
+			if (queueFamilyindices[0] != queueFamilyindices[1])
+			{
+				creatInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+				creatInfo.queueFamilyIndexCount = queueFamilyindices.size();
+				creatInfo.pQueueFamilyIndices = queueFamilyindices.data();
+			}
+
+			VkSwapchainKHR newSwapchain = VK_NULL_HANDLE;
+			XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkCreateSwapchainKHR(m_pDevice->getLogicalDevice(), &creatInfo, nullptr, &newSwapchain), "Failed to create the swapchain!");
+
+			// Destroy the old swapchain if needed.
+			if (m_Swapchain != VK_NULL_HANDLE)
+				clear();
+
+			m_Swapchain = newSwapchain;
+
+			// Get the image views.
+			m_SwapchainImages.resize(creatInfo.minImageCount);
+			XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkGetSwapchainImagesKHR(m_pDevice->getLogicalDevice(), m_Swapchain, &creatInfo.minImageCount, m_SwapchainImages.data()), "Failed to get the swapchain images!");
+
+			// Finally we can resolve the swapchain image views.
+			setupImageViews();
+		}
+
+		void VulkanSwapchain::setupImageViews()
+		{
+			VkImageViewCreateInfo createInfo = {};
+			createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+			createInfo.pNext = VK_NULL_HANDLE;
+			createInfo.flags = 0;
+			createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+			createInfo.format = m_SwapchainFormat;
+			createInfo.components = {};
+			createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			createInfo.subresourceRange.baseMipLevel = 0;
+			createInfo.subresourceRange.levelCount = 1;
+			createInfo.subresourceRange.baseArrayLayer = 0;
+			createInfo.subresourceRange.layerCount = 1;
+
+			m_SwapchainImageViews.resize(m_SwapchainImages.size());
+
+			// Iterate over the image views and create them.
+			VkImageView* pArray = m_SwapchainImageViews.data();
+			for (auto itr = m_SwapchainImages.begin(); itr != m_SwapchainImages.end(); ++itr, ++pArray)
+			{
+				createInfo.image = *itr;
+				XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkCreateImageView(m_pDevice->getLogicalDevice(), &createInfo, nullptr, pArray), "Failed to create the swapchain image view!");
+			}
+		}
+
+		void VulkanSwapchain::clear()
+		{
+			for (const auto view : m_SwapchainImageViews)
+				m_pDevice->getDeviceTable().vkDestroyImageView(m_pDevice->getLogicalDevice(), view, nullptr);
+
+			m_pDevice->getDeviceTable().vkDestroySwapchainKHR(m_pDevice->getLogicalDevice(), m_Swapchain, nullptr);
+			vkDestroySurfaceKHR(m_pDevice->getInstance()->getInstance(), m_Surface, nullptr);
+
+			m_Swapchain = VK_NULL_HANDLE;
+		}
+
+		VkSurfaceCapabilitiesKHR VulkanSwapchain::getSurfaceCapabilities() const
+		{
+			VkSurfaceCapabilitiesKHR capabilities = {};
+			XENON_VK_ASSERT(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_pDevice->getPhysicalDevice(), m_Surface, &capabilities), "Failed to get the surface capabilities!");
+
+			return capabilities;
 		}
 	}
 }
