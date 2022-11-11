@@ -36,6 +36,13 @@ namespace Xenon
 			virtual ~Swapchain() override = default;
 
 			/**
+			 * Present the swapchain to the window.
+			 */
+			virtual void present() = 0;
+
+			// virtual void prepare() = 0;	// Setup the frame to present (and update).
+
+			/**
 			 * Get the swapchain's window pointer.
 			 *
 			 * @return The window pointer.
@@ -48,6 +55,13 @@ namespace Xenon
 			 * @return The const window pointer.
 			 */
 			[[nodiscard]] const Platform::Window* getWindow() const { return m_pWindow.get(); }
+
+		protected:
+			/**
+			 * Recreate the swapchain.
+			 * This is called internally when the window is resized or by any other resizing event.
+			 */
+			virtual void recreate() = 0;
 
 		protected:
 			std::unique_ptr<Platform::Window> m_pWindow = nullptr;

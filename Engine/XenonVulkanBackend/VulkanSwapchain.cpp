@@ -22,11 +22,46 @@ namespace Xenon
 
 			// Create the swapchain.
 			createSwapchain();
+
+			// Create the semaphores.
+			setupSemaphores();
 		}
 
 		VulkanSwapchain::~VulkanSwapchain()
 		{
 			clear();
+
+			for (const auto semaphore : m_RenderFinishedSemaphores)
+				m_pDevice->getDeviceTable().vkDestroySemaphore(m_pDevice->getLogicalDevice(), semaphore, nullptr);
+
+			for (const auto semaphore : m_InFlightSemaphores)
+				m_pDevice->getDeviceTable().vkDestroySemaphore(m_pDevice->getLogicalDevice(), semaphore, nullptr);
+		}
+
+		void VulkanSwapchain::present()
+		{
+			VkPresentInfoKHR presentInfo = {};
+			presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+			presentInfo.pNext = nullptr;
+			presentInfo.waitSemaphoreCount = 1;
+			presentInfo.pWaitSemaphores = &m_RenderFinishedSemaphores[m_ImageIndex];
+			presentInfo.swapchainCount = 1;
+			presentInfo.pSwapchains = &m_Swapchain;
+			presentInfo.pImageIndices = &m_ImageIndex;
+			presentInfo.pResults = VK_NULL_HANDLE;
+
+			// Present it to the surface.
+			const auto result = m_pDevice->getDeviceTable().vkQueuePresentKHR(m_pDevice->getTransferQueue().getQueue(), &presentInfo);
+			if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+				recreate();
+
+			else
+				XENON_VK_ASSERT(result, "Failed to present the swapchain image!");
+		}
+
+		void VulkanSwapchain::recreate()
+		{
+			// TODO: Implement this function.
 		}
 
 		void VulkanSwapchain::createSurface()
@@ -64,6 +99,8 @@ namespace Xenon
 				surfaceComposite = VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR;
 			else
 				surfaceComposite = VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR;
+
+			m_FrameCount = std::clamp(surfaceCapabilities.minImageCount + 1, surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount);
 
 			// Get the present modes.
 			uint32_t presentModeCount = 0;
@@ -121,7 +158,7 @@ namespace Xenon
 			createInfo.pNext = nullptr;
 			createInfo.flags = 0;
 			createInfo.surface = m_Surface;
-			createInfo.minImageCount = std::clamp(surfaceCapabilities.minImageCount + 1, surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount);
+			createInfo.minImageCount = m_FrameCount;
 			createInfo.imageFormat = m_SwapchainFormat;
 			createInfo.imageColorSpace = surfaceFormat.colorSpace;
 			createInfo.imageExtent = surfaceCapabilities.currentExtent;
@@ -159,8 +196,8 @@ namespace Xenon
 			m_Swapchain = newSwapchain;
 
 			// Get the image views.
-			m_SwapchainImages.resize(createInfo.minImageCount);
-			XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkGetSwapchainImagesKHR(m_pDevice->getLogicalDevice(), m_Swapchain, &createInfo.minImageCount, m_SwapchainImages.data()), "Failed to get the swapchain images!");
+			m_SwapchainImages.resize(m_FrameCount);
+			XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkGetSwapchainImagesKHR(m_pDevice->getLogicalDevice(), m_Swapchain, &m_FrameCount, m_SwapchainImages.data()), "Failed to get the swapchain images!");
 
 			// Finally we can resolve the swapchain image views.
 			setupImageViews();
@@ -209,6 +246,25 @@ namespace Xenon
 			XENON_VK_ASSERT(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_pDevice->getPhysicalDevice(), m_Surface, &capabilities), "Failed to get the surface capabilities!");
 
 			return capabilities;
+		}
+
+		void VulkanSwapchain::setupSemaphores()
+		{
+			VkSemaphoreCreateInfo createInfo = {};
+			createInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+			createInfo.pNext = nullptr;
+			createInfo.flags = 0;
+
+			// Reserve to allocate everything once.
+			m_RenderFinishedSemaphores.reserve(m_FrameCount);
+			m_InFlightSemaphores.reserve(m_FrameCount);
+
+			// Iterate over and create the semaphores.
+			for (uint32_t i = 0; i < m_FrameCount; i++)
+			{
+				XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkCreateSemaphore(m_pDevice->getLogicalDevice(), &createInfo, nullptr, &m_RenderFinishedSemaphores.emplace_back()), "Failed to create the render finished semaphore!");
+				XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkCreateSemaphore(m_pDevice->getLogicalDevice(), &createInfo, nullptr, &m_InFlightSemaphores.emplace_back()), "Failed to create the in flight semaphore!");
+			}
 		}
 	}
 }

@@ -10,6 +10,7 @@ namespace Xenon
 	namespace Backend
 	{
 		class Buffer;
+		class Swapchain;
 
 		/**
 		 * Command recorder usage enum.
@@ -71,8 +72,10 @@ namespace Xenon
 
 			/**
 			 * Submit the recorded commands to the GPU.
+			 *
+			 * @param pSwapchain The swapchain pointer. This is needed when rendering images to a window. Default is nullptr.
 			 */
-			virtual void submit() = 0;
+			virtual void submit(Swapchain* pSawpchain = nullptr) = 0;
 
 			/**
 			 * Wait till the commands that were recorded has been executed.

@@ -56,7 +56,7 @@ namespace Xenon
 			m_pCurrentCommandList = m_pCommandLists[incrementIndex()].Get();
 		}
 
-		void DX12CommandRecorder::submit()
+		void DX12CommandRecorder::submit(Swapchain* pSawpchain /*= nullptr*/)
 		{
 			ID3D12CommandList* ppCommandLists[] = { m_pCurrentCommandList };
 			m_pDevice->getCommandQueue()->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);

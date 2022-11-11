@@ -32,6 +32,17 @@ namespace Xenon
 			 */
 			~DX12Swapchain() override = default;
 
+			/**
+			 * Present the swapchain to the window.
+			 */
+			void present() override;
+
+			/**
+			 * Recreate the swapchain.
+			 * This is called internally when the window is resized or by any other resizing event.
+			 */
+			void recreate() override;
+
 		private:
 			/**
 			 * Get the best supported swapchain format.
@@ -41,9 +52,16 @@ namespace Xenon
 			[[nodiscard]] DXGI_FORMAT getBestSwapchainFormat() const;
 
 		private:
+			std::vector<UINT64> m_FenceValues;
 			std::vector<ComPtr<ID3D12Resource>> m_SwapchainImages;
 			ComPtr<ID3D12DescriptorHeap> m_SwapchainImageHeap;
 			ComPtr<IDXGISwapChain3> m_Swapchain;
+
+			ComPtr<ID3D12Fence> m_FrameFence;
+			HANDLE m_FenceEvent = nullptr;
+
+			uint32_t m_FrameCount = 0;
+			uint32_t m_FrameIndex = 0;
 
 			UINT m_SwapchainImageHeapDescriptorSize = 0;
 		};

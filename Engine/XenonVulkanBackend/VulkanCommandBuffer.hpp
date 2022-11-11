@@ -14,6 +14,8 @@ namespace Xenon
 {
 	namespace Backend
 	{
+		class VulkanSwapchain;
+
 		/**
 		 * Vulkan command buffer structure.
 		 * This contains the actual Vulkan command buffer and it's synchronization primitives.
@@ -54,8 +56,9 @@ namespace Xenon
 			 *
 			 * @param pipelineStageFlags The pipeline stage flags.
 			 * @param queue The queue to submit to.
+			 * @param pSwapchain The swapchain to get the semaphores from. Default is nullptr.
 			 */
-			void submit(VkPipelineStageFlags pipelineStageFlags, VkQueue queue);
+			void submit(VkPipelineStageFlags pipelineStageFlags, VkQueue queue, VulkanSwapchain* pSwapchain = nullptr);
 
 		public:
 			/**

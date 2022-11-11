@@ -65,8 +65,10 @@ namespace Xenon
 
 			/**
 			 * Submit the recorded commands to the GPU.
+			 * 
+			 * @param pSwapchain The swapchain pointer. This is needed when rendering images to a window. Default is nullptr.
 			 */
-			void submit() override;
+			void submit(Swapchain* pSawpchain = nullptr) override;
 
 			/**
 			 * Wait till the commands that were recorded has been executed.

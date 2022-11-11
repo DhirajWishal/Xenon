@@ -5,6 +5,7 @@
 #include "VulkanMacros.hpp"
 
 #include "VulkanBuffer.hpp"
+#include "VulkanSwapchain.hpp"
 
 namespace Xenon
 {
@@ -85,7 +86,7 @@ namespace Xenon
 			m_pCurrentBuffer = &m_CommandBuffers[incrementIndex()];
 		}
 
-		void VulkanCommandRecorder::submit()
+		void VulkanCommandRecorder::submit(Swapchain* pSawpchain /*= nullptr*/)
 		{
 			switch (m_Usage)
 			{
@@ -94,7 +95,7 @@ namespace Xenon
 				break;
 
 			case Xenon::Backend::CommandRecorderUsage::Graphics:
-				m_pCurrentBuffer->submit(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, m_pDevice->getGraphicsQueue().getQueue());
+				m_pCurrentBuffer->submit(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, m_pDevice->getGraphicsQueue().getQueue(), pSawpchain->as<VulkanSwapchain>());
 				break;
 
 			case Xenon::Backend::CommandRecorderUsage::Transfer:

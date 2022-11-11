@@ -14,9 +14,11 @@ namespace Xenon
 			: DX12DeviceBoundObject(pDevice)
 			, Swapchain(pDevice, title, width, height)
 		{
+			m_FrameCount = 3;	// TODO: Find a better system.
+
 			// Create the swapchain.
 			DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
-			swapChainDesc.BufferCount = 3;	// TODO: Find a better system.
+			swapChainDesc.BufferCount = m_FrameCount;
 			swapChainDesc.Width = width;
 			swapChainDesc.Height = height;
 			swapChainDesc.Format = getBestSwapchainFormat();
@@ -42,7 +44,7 @@ namespace Xenon
 
 			// Create the swapchain image heap.
 			D3D12_DESCRIPTOR_HEAP_DESC swapchainImageHeapDesc = {};
-			swapchainImageHeapDesc.NumDescriptors = swapChainDesc.BufferCount;
+			swapchainImageHeapDesc.NumDescriptors = m_FrameCount;
 			swapchainImageHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 			swapchainImageHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 			XENON_DX12_ASSERT(pDevice->getDevice()->CreateDescriptorHeap(&swapchainImageHeapDesc, IID_PPV_ARGS(&m_SwapchainImageHeap)), "Failed to create the swapchain image heap!");
@@ -54,13 +56,46 @@ namespace Xenon
 			CD3DX12_CPU_DESCRIPTOR_HANDLE swapchainImageHeapHandle(m_SwapchainImageHeap->GetCPUDescriptorHandleForHeapStart());
 
 			// Create a Swapchain image for each frame.
-			m_SwapchainImages.resize(swapChainDesc.BufferCount);
-			for (UINT i = 0; i < swapChainDesc.BufferCount; i++)
+			m_SwapchainImages.resize(m_FrameCount);
+			for (UINT i = 0; i < m_FrameCount; i++)
 			{
 				XENON_DX12_ASSERT(m_Swapchain->GetBuffer(i, IID_PPV_ARGS(&m_SwapchainImages[i])), "Failed to get the swapchain back buffer!");
 				pDevice->getDevice()->CreateRenderTargetView(m_SwapchainImages[i].Get(), nullptr, swapchainImageHeapHandle);
 				swapchainImageHeapHandle.Offset(1, m_SwapchainImageHeapDescriptorSize);
 			}
+
+			// Create the fence.
+			XENON_DX12_ASSERT(pDevice->getDevice()->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_FrameFence)), "Failed to create the frame fence!");
+			m_FenceValues.resize(m_FrameCount);
+		}
+
+		void DX12Swapchain::present()
+		{
+			// Present the swapchain.
+			XENON_DX12_ASSERT(m_Swapchain->Present(1, 0), "Failed to present the swapchain!");
+
+			// Move to the next frame.
+			// Schedule a Signal command in the queue.
+			const UINT64 currentFenceValue = m_FenceValues[m_FrameIndex];
+			XENON_DX12_ASSERT(m_pDevice->getCommandQueue()->Signal(m_FrameFence.Get(), currentFenceValue), "Failed to signal the command queue!");
+
+			// Update the frame index.
+			m_FrameIndex = m_Swapchain->GetCurrentBackBufferIndex();
+
+			// If the next frame is not ready to be rendered yet, wait until it is ready.
+			if (m_FrameFence->GetCompletedValue() < m_FenceValues[m_FrameIndex])
+			{
+				XENON_DX12_ASSERT(m_FrameFence->SetEventOnCompletion(m_FenceValues[m_FrameIndex], m_FenceEvent), "Failed t set the event on completion to the fence event!");
+				WaitForSingleObjectEx(m_FenceEvent, INFINITE, FALSE);
+			}
+
+			// Set the fence value for the next frame.
+			m_FenceValues[m_FrameIndex] = currentFenceValue + 1;
+		}
+
+		void DX12Swapchain::recreate()
+		{
+			// TODO: Implement this function.
 		}
 
 		DXGI_FORMAT DX12Swapchain::getBestSwapchainFormat() const

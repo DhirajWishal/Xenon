@@ -3,6 +3,7 @@
 
 #include "VulkanCommandBuffer.hpp"
 #include "VulkanMacros.hpp"
+#include "VulkanSwapchain.hpp"
 
 namespace Xenon
 {
@@ -63,7 +64,7 @@ namespace Xenon
 			}
 		}
 
-		void VulkanCommandBuffer::submit(VkPipelineStageFlags pipelineStageFlags, VkQueue queue)
+		void VulkanCommandBuffer::submit(VkPipelineStageFlags pipelineStageFlags, VkQueue queue, VulkanSwapchain* pSwapchain /*= nullptr*/)
 		{
 			// Create the submit info structure.
 			VkSubmitInfo submitInfo = {};
@@ -75,6 +76,16 @@ namespace Xenon
 			submitInfo.pWaitDstStageMask = &pipelineStageFlags;
 			submitInfo.signalSemaphoreCount = 0;
 			submitInfo.pSignalSemaphores = nullptr;
+
+			// Get the semaphores from the swapchain if provided.
+			if (pSwapchain != nullptr)
+			{
+				submitInfo.waitSemaphoreCount = 1;
+				submitInfo.pWaitSemaphores = pSwapchain->getInFlightSemaphorePtr();
+
+				submitInfo.signalSemaphoreCount = 1;
+				submitInfo.pSignalSemaphores = pSwapchain->getRenderFinishedSemaphorePtr();
+			}
 
 			// Submit the queue.
 			XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkQueueSubmit(queue, 1, &submitInfo, m_Fence), "Failed to submit the queue!");
