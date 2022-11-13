@@ -37,6 +37,18 @@ namespace Xenon
 			void begin() override;
 
 			/**
+			 * Change the image layout of an image.
+			 *
+			 * @param image The image to change the layout of.
+			 * @param currentLayout The current layout of the image.
+			 * @param newLayout The new layout to change to.
+			 * @param aspectFlags The image aspect flags.
+			 * @param mipLevels The image mip levels. Default is 1.
+			 * @param layers The image layers. Default is 1.
+			 */
+			void changeImageLayout(VkImage image, VkImageLayout currentLayout, VkImageLayout newLayout, VkImageAspectFlags aspectFlags, uint32_t mipLevels = 1, uint32_t layers = 1);
+
+			/**
 			 * Copy data from one buffer to another.
 			 *
 			 * @param pSource The source buffer to copy the data from.
@@ -46,6 +58,14 @@ namespace Xenon
 			 * @param size The amount of data to copy in bytes.
 			 */
 			void copy(Buffer* pSource, uint64_t srcOffset, Buffer* pDestination, uint64_t dstOffset, uint64_t size) override;
+
+			/**
+			 * Copy a source image to the swapchain.
+			 *
+			 * @param pSource The source image pointer.
+			 * @param pDestination The destination swapchain.
+			 */
+			void copy(Image* pSource, Swapchain* pDestination) override;
 
 			/**
 			 * Bind a rasterizer to the command recorder.
@@ -68,7 +88,7 @@ namespace Xenon
 
 			/**
 			 * Submit the recorded commands to the GPU.
-			 * 
+			 *
 			 * @param pSwapchain The swapchain pointer. This is needed when rendering images to a window. Default is nullptr.
 			 */
 			void submit(Swapchain* pSawpchain = nullptr) override;

@@ -34,6 +34,14 @@ namespace Xenon
 			~VulkanRasterizer() override;
 
 			/**
+			 * Get the image attachment of the relevant attachment type.
+			 *
+			 * @param type The attachment type.
+			 * @return The attachment image.
+			 */
+			[[nodiscard]] Image* getImageAttachment(AttachmentType type) override;
+
+			/**
 			 * Get the render pass.
 			 *
 			 * @return The render pass.

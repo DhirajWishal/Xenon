@@ -5,6 +5,7 @@
 
 #include "Instance.hpp"
 
+#include "../XenonBackend/Image.hpp"
 #include "../XenonBackend/CommandRecorder.hpp"
 
 namespace Xenon
@@ -33,6 +34,13 @@ namespace Xenon
 		 * @param pCommandRecorder The command recorder pointer to bind the commands to.
 		 */
 		virtual void bind(Layer* pPreviousLayer, Backend::CommandRecorder* pCommandRecorder) = 0;
+
+		/**
+		 * Get the color attachment from the layer.
+		 *
+		 * @return The image pointer.
+		 */
+		[[nodiscard]] virtual Backend::Image* getColorAttachment() = 0;
 
 	protected:
 		Instance& m_Instance;

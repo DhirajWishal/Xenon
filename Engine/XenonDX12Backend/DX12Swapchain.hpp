@@ -50,6 +50,20 @@ namespace Xenon
 			 */
 			void recreate() override;
 
+			/**
+			 * Get the current swapchain image resource.
+			 *
+			 * @return The image resource.
+			 */
+			[[nodiscard]] ID3D12Resource* getCurrentSwapchainImageResource() { return m_SwapchainImages[m_ImageIndex].Get(); }
+
+			/**
+			 * Get the current swapchain image resource.
+			 *
+			 * @return The image resource.
+			 */
+			[[nodiscard]] const ID3D12Resource* getCurrentSwapchainImageResource() const { return m_SwapchainImages[m_ImageIndex].Get(); }
+
 		private:
 			/**
 			 * Get the best supported swapchain format.

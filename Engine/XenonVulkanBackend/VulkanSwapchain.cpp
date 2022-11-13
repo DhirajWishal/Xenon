@@ -71,6 +71,9 @@ namespace Xenon
 
 			else
 				XENON_VK_ASSERT(result, "Failed to present the swapchain image!");
+
+			// Increment the frame index.
+			incrementFrame();
 		}
 
 		void VulkanSwapchain::recreate()
@@ -115,6 +118,8 @@ namespace Xenon
 				surfaceComposite = VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR;
 
 			m_FrameCount = std::clamp(surfaceCapabilities.minImageCount + 1, surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount);
+			m_RenderWidth = surfaceCapabilities.currentExtent.width;
+			m_RenderHeight = surfaceCapabilities.currentExtent.height;
 
 			// Get the present modes.
 			uint32_t presentModeCount = 0;

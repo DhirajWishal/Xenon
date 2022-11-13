@@ -11,36 +11,36 @@ namespace Xenon
 		, m_pCommandRecorder(instance.getFactory()->createCommandRecorder(instance.getBackendDevice(), Backend::CommandRecorderUsage::Graphics, 3))
 		, m_pCamera(pCamera)
 	{
+		m_Latch.count_down();
 	}
 
 	Renderer::~Renderer()
 	{
 		m_bShouldRun = false;
 		m_WorkerSynchronization.notify_one();
+
+		m_Worker.join();
 	}
 
 	bool Renderer::update()
 	{
 		m_WorkerSynchronization.notify_one();
-		return m_pSwapChain->getWindow()->isOpen();
-	}
 
-	void Renderer::wait()
-	{
-		auto locker = std::unique_lock(m_SynchronizationMutex);
-		m_ParentSynchronization.wait(locker);
+		m_pSwapChain->getWindow()->update();
+		return m_pSwapChain->getWindow()->isOpen();
 	}
 
 	void Renderer::worker()
 	{
+		m_Latch.wait();
 		auto locker = std::unique_lock(m_SynchronizationMutex);
 
 		do
 		{
-			// Wait till the user wants us to progress.
+			// Wait till notified.
 			m_WorkerSynchronization.wait(locker);
 
-			// Return if we have to.
+			// Return if requested.
 			if (m_bShouldRun == false)
 				break;
 
@@ -60,9 +60,7 @@ namespace Xenon
 
 			// Copy the previous layer's color buffer to the swapchain if we have a layer.
 			if (pPreviousLayer)
-			{
-				//m_pCommandRecorder->copy();
-			}
+				m_pCommandRecorder->copy(pPreviousLayer->getColorAttachment(), m_pSwapChain.get());
 
 			// End the command recorder.
 			m_pCommandRecorder->end();
@@ -73,14 +71,8 @@ namespace Xenon
 			// Present the swapchain.
 			m_pSwapChain->present();
 
-			// Update the window.
-			m_pSwapChain->getWindow()->update();
-
 			// Select the next command buffer.
 			m_pCommandRecorder->next();
-
-			// Notify the parent that the update has been completed.
-			m_ParentSynchronization.notify_one();
 		} while (true);
 	}
 }

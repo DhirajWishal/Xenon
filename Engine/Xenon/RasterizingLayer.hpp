@@ -32,6 +32,13 @@ namespace Xenon
 			bool enableTripleBuffering = false,
 			Backend::MultiSamplingCount multiSampleCount = Backend::MultiSamplingCount::x1);
 
+		/**
+		 * Get the color attachment from the layer.
+		 *
+		 * @return The image pointer.
+		 */
+		[[nodiscard]] Backend::Image* getColorAttachment() override;
+
 	protected:
 		std::unique_ptr<Backend::Rasterizer> m_pRasterizer = nullptr;
 	};

@@ -55,28 +55,51 @@ namespace Xenon
 			 *
 			 * @return The semaphore pointer.
 			 */
-			[[nodiscard]] VkSemaphore* getInFlightSemaphorePtr() { return &m_InFlightSemaphores[m_ImageIndex]; }
+			[[nodiscard]] VkSemaphore* getInFlightSemaphorePtr() { return &m_InFlightSemaphores[m_FrameIndex]; }
 
 			/**
 			 * Get the in-flight semaphore pointer.
 			 *
 			 * @return The const semaphore pointer.
 			 */
-			[[nodiscard]] const VkSemaphore* getInFlightSemaphorePtr() const { return &m_InFlightSemaphores[m_ImageIndex]; }
+			[[nodiscard]] const VkSemaphore* getInFlightSemaphorePtr() const { return &m_InFlightSemaphores[m_FrameIndex]; }
 
 			/**
 			 * Get the render-finished semaphore pointer.
 			 *
 			 * @return The semaphore pointer.
 			 */
-			[[nodiscard]] VkSemaphore* getRenderFinishedSemaphorePtr() { return &m_RenderFinishedSemaphores[m_ImageIndex]; }
+			[[nodiscard]] VkSemaphore* getRenderFinishedSemaphorePtr() { return &m_RenderFinishedSemaphores[m_FrameIndex]; }
 
 			/**
 			 * Get the render-finished semaphore pointer.
 			 *
 			 * @return The const semaphore pointer.
 			 */
-			[[nodiscard]] const VkSemaphore* getRenderFinishedSemaphorePtr() const { return &m_RenderFinishedSemaphores[m_ImageIndex]; }
+			[[nodiscard]] const VkSemaphore* getRenderFinishedSemaphorePtr() const { return &m_RenderFinishedSemaphores[m_FrameIndex]; }
+
+			/**
+			 * Get the current swapchain image.
+			 *
+			 * @return The current swapchain image.
+			 */
+			[[nodiscard]] VkImage getCurrentImage() const { return m_SwapchainImages[m_ImageIndex]; }
+
+			/**
+			 * Get the render width.
+			 * Render width is the actual image size of the swapchain.
+			 *
+			 * @return The width.
+			 */
+			[[nodiscard]] uint32_t getRenderWidth() const { return m_RenderWidth; }
+
+			/**
+			 * Get the render height.
+			 * Render height is the actual image size of the swapchain.
+			 *
+			 * @return The height.
+			 */
+			[[nodiscard]] uint32_t getRenderHeight() const { return m_RenderHeight; }
 
 		private:
 			/**
@@ -121,6 +144,9 @@ namespace Xenon
 
 			VkSurfaceKHR m_Surface = VK_NULL_HANDLE;
 			VkSwapchainKHR m_Swapchain = VK_NULL_HANDLE;
+
+			uint32_t m_RenderWidth = 0;
+			uint32_t m_RenderHeight = 0;
 
 			VkFormat m_SwapchainFormat = VK_FORMAT_UNDEFINED;
 		};

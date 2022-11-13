@@ -4,6 +4,7 @@
 #pragma once
 
 #include "Camera.hpp"
+#include "Image.hpp"
 
 namespace Xenon
 {
@@ -26,9 +27,12 @@ namespace Xenon
 			explicit RenderTarget([[maybe_unused]] Device* pDevice, Camera* pCamera, AttachmentType attachmentTypes) : m_pCamera(pCamera), m_AttachmentTypes(attachmentTypes) {}
 
 			/**
-			 * Default virtual destructor.
+			 * Get the image attachment of the relevant attachment type.
+			 *
+			 * @param type The attachment type.
+			 * @return The attachment image.
 			 */
-			virtual ~RenderTarget() = default;
+			[[nodiscard]] virtual Image* getImageAttachment(AttachmentType type) = 0;
 
 		public:
 			/**

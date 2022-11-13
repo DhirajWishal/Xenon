@@ -5,6 +5,7 @@
 #include "DX12Macros.hpp"
 
 #include "DX12Buffer.hpp"
+#include "DX12Swapchain.hpp"
 #include "DX12Rasterizer.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
@@ -46,7 +47,12 @@ namespace Xenon
 
 		void DX12CommandRecorder::copy(Buffer* pSource, uint64_t srcOffset, Buffer* pDestination, uint64_t dstOffset, uint64_t size)
 		{
-			m_pCurrentCommandList->CopyBufferRegion(pDestination->as<DX12Buffer>()->getResource(), static_cast<UINT64>(dstOffset), pSource->as<DX12Buffer>()->getResource(), static_cast<UINT64>(srcOffset), static_cast<UINT64>(size));
+			m_pCurrentCommandList->CopyBufferRegion(pDestination->as<DX12Buffer>()->getResource(), dstOffset, pSource->as<DX12Buffer>()->getResource(), srcOffset, size);
+		}
+
+		void DX12CommandRecorder::copy(Image* pSource, Swapchain* pDestination)
+		{
+			m_pCurrentCommandList->CopyResource(pDestination->as<DX12Swapchain>()->getCurrentSwapchainImageResource(), pSource->as<DX12Image>()->getResource());
 		}
 
 		void DX12CommandRecorder::bind(Rasterizer* pRasterizer, const std::vector<Rasterizer::ClearValueType>& clearValues)
@@ -55,8 +61,6 @@ namespace Xenon
 			CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(dxRasterizer->getRenderTargetHeap()->GetCPUDescriptorHandleForHeapStart(), dxRasterizer->getFrameIndex(), dxRasterizer->getRenderTargetDescriptorSize());
 
 			m_pCurrentCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
-
-			const std::array<float, 4> clearColor = { 0.0f, 0.2f, 0.4f, 1.0f };
 			m_pCurrentCommandList->ClearRenderTargetView(rtvHandle, glm::value_ptr(std::get<glm::vec4>(clearValues.front())), 0, nullptr);
 
 			m_IsRenderTargetBound = true;
@@ -64,7 +68,6 @@ namespace Xenon
 
 		void DX12CommandRecorder::end()
 		{
-			if (m_IsRenderTargetBound);	// TODO
 			XENON_DX12_ASSERT(m_pCurrentCommandList->Close(), "Failed to stop the current command list!");
 		}
 

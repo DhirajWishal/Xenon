@@ -42,11 +42,6 @@ namespace Xenon
 			explicit Rasterizer(Device* pDevice, Camera* pCamera, AttachmentType attachmentTypes, bool enableTripleBuffering = false, MultiSamplingCount multiSampleCount = MultiSamplingCount::x1)
 				: RenderTarget(pDevice, pCamera, attachmentTypes), m_bEnableTripleBuffering(enableTripleBuffering), m_MultiSamplingCount(multiSampleCount) {}
 
-			/**
-			 * Default virtual destructor.
-			 */
-			virtual ~Rasterizer() = default;
-
 		public:
 			/**
 			 * Check if triple buffering is enabled.

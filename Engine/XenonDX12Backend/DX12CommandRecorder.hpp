@@ -53,6 +53,14 @@ namespace Xenon
 			void copy(Buffer* pSource, uint64_t srcOffset, Buffer* pDestination, uint64_t dstOffset, uint64_t size) override;
 
 			/**
+			 * Copy a source image to the swapchain.
+			 *
+			 * @param pSource The source image pointer.
+			 * @param pDestination The destination swapchain.
+			 */
+			void copy(Image* pSource, Swapchain* pDestination) override;
+
+			/**
 			 * Bind a rasterizer to the command recorder.
 			 *
 			 * @param pRasterizer The rasterizer pointer.

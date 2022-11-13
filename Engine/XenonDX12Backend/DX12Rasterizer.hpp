@@ -35,6 +35,14 @@ namespace Xenon
 			~DX12Rasterizer() override = default;
 
 			/**
+			 * Get the image attachment of the relevant attachment type.
+			 *
+			 * @param type The attachment type.
+			 * @return The attachment image.
+			 */
+			[[nodiscard]] Image* getImageAttachment(AttachmentType type) override;
+
+			/**
 			 * Get the frame index.
 			 *
 			 * @return The frame index.

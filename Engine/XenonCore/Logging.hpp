@@ -41,4 +41,4 @@ namespace Xenon
 
 #endif // XENON_DEBUG
 
-#define XENON_ASSERT(condition, ...)		if(!(condition))  XENON_LOG_FATAL(__VA_ARGS__)
+#define XENON_ASSERT(condition, ...)		if(!(condition)) XENON_LOG_FATAL(__VA_ARGS__)

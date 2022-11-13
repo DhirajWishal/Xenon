@@ -11,6 +11,7 @@
 #include "../XenonBackend/CommandRecorder.hpp"
 
 #include <algorithm>
+#include <latch>
 
 namespace Xenon
 {
@@ -55,18 +56,13 @@ namespace Xenon
 		template<class LayerType, class... Arguments>
 		LayerType* createLayer(Arguments&&... arguments)
 		{
+			// auto lock = std::scoped_lock(m_SynchronizationMutex);
 			auto pLayer = std::make_unique<LayerType>(std::forward<Arguments>(arguments)...);
 			auto pRawPointer = pLayer.get();
 			m_pLayers.emplace_back(std::move(pLayer));
 
 			return pRawPointer;
 		}
-
-		/**
-		 * Wait till the frame update has finished.
-		 * This might be needed since the frame update is done asynchronously.
-		 */
-		void wait();
 
 	public:
 		/**
@@ -92,9 +88,9 @@ namespace Xenon
 
 	private:
 		std::jthread m_Worker;
-		std::condition_variable m_WorkerSynchronization;
-		std::condition_variable m_ParentSynchronization;
+		std::latch m_Latch = std::latch(1);
 		std::atomic_bool m_bShouldRun = true;
+		std::condition_variable m_WorkerSynchronization;
 		std::mutex m_SynchronizationMutex;
 
 		std::vector<std::unique_ptr<Layer>> m_pLayers;

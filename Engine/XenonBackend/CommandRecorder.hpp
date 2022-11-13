@@ -11,9 +11,6 @@ namespace Xenon
 {
 	namespace Backend
 	{
-		class Buffer;
-		class Swapchain;
-
 		/**
 		 * Command recorder usage enum.
 		 */
@@ -55,6 +52,14 @@ namespace Xenon
 			 * @param size The amount of data to copy in bytes.
 			 */
 			virtual void copy(Buffer* pSource, uint64_t srcOffset, Buffer* pDestination, uint64_t dstOffset, uint64_t size) = 0;
+
+			/**
+			 * Copy a source image to the swapchain.
+			 *
+			 * @param pSource The source image pointer.
+			 * @param pDestination The destination swapchain.
+			 */
+			virtual void copy(Image* pSource, Swapchain* pDestination) = 0;
 
 			/**
 			 * Bind a rasterizer to the command recorder.

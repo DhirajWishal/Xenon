@@ -77,7 +77,8 @@ namespace Xenon
 		void DX12Swapchain::present()
 		{
 			// Present the swapchain.
-			XENON_DX12_ASSERT(m_Swapchain->Present(1, 0), "Failed to present the swapchain!");
+			const auto result = m_Swapchain->Present(1, 0);
+			XENON_DX12_ASSERT(result, "Failed to present the swapchain!");
 
 			// Move to the next frame.
 			// Schedule a Signal command in the queue.

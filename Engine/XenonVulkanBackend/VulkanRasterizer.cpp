@@ -35,6 +35,49 @@ namespace Xenon
 			m_pDevice->getDeviceTable().vkDestroyRenderPass(m_pDevice->getLogicalDevice(), m_RenderPass, nullptr);
 		}
 
+		Xenon::Backend::Image* VulkanRasterizer::getImageAttachment(AttachmentType type)
+		{
+			if (m_AttachmentTypes & type)
+			{
+				uint8_t index = 0;
+				if (m_AttachmentTypes & AttachmentType::Color)
+				{
+					if (type != AttachmentType::Color)
+						index++;
+				}
+
+				if (m_AttachmentTypes & AttachmentType::EntityID)
+				{
+					if (type != AttachmentType::EntityID)
+						index++;
+				}
+
+				if (m_AttachmentTypes & AttachmentType::Normal)
+				{
+					if (type != AttachmentType::Normal)
+						index++;
+				}
+
+				if (m_AttachmentTypes & AttachmentType::Depth)
+				{
+					if (type != AttachmentType::Depth)
+						index++;
+				}
+
+				if (m_AttachmentTypes & AttachmentType::Stencil)
+				{
+					if (type != AttachmentType::Stencil)
+						index++;
+				}
+
+				// Return the attachment pointer.
+				return &m_ImageAttachments[index];
+			}
+
+			XENON_LOG_FATAL("The requested attachment type is not present in the rasterizer!");
+			return nullptr;
+		}
+
 		void VulkanRasterizer::setupAttachments()
 		{
 			ImageSpecification specification;

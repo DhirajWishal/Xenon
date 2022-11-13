@@ -66,7 +66,7 @@ namespace Xenon
 			XENON_DX12_ASSERT(pDevice->getAllocator()->CreateResource(
 				&allocationDesc,
 				&resourceDescriptor,
-				/*D3D12_RESOURCE_STATE_COPY_SOURCE | D3D12_RESOURCE_STATE_COPY_DEST | */resourceStates,
+				resourceStates,
 				nullptr,
 				&m_pAllocation,
 				IID_NULL,
@@ -86,7 +86,7 @@ namespace Xenon
 			XENON_DX12_ASSERT(pDevice->getAllocator()->CreateResource(
 				&allocationDesc,
 				&resourceDescriptor,
-				/*D3D12_RESOURCE_STATE_COPY_SOURCE | D3D12_RESOURCE_STATE_COPY_DEST | */resourceStates,
+				resourceStates,
 				nullptr,
 				&m_pAllocation,
 				IID_NULL,

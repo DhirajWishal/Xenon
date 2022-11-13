@@ -58,6 +58,20 @@ namespace Xenon
 			 */
 			[[nodiscard]] VkAttachmentDescription getAttachmentDescription() const { return m_AttachmentDescription; }
 
+			/**
+			 * Get the current image layout.
+			 *
+			 * @return The image layout.
+			 */
+			[[nodiscard]] VkImageLayout getImageLayout() const { return m_CurrentLayout; }
+
+			/**
+			 * Set the current image layout.
+			 *
+			 * @param layout The layout to set.
+			 */
+			void setImageLayout(VkImageLayout layout) { m_CurrentLayout = layout; }
+
 		public:
 			/**
 			 * Move assignment operator.
@@ -72,6 +86,8 @@ namespace Xenon
 
 			VkImage m_Image = VK_NULL_HANDLE;
 			VmaAllocation m_Allocation = nullptr;
+
+			VkImageLayout m_CurrentLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		};
 	}
 }

@@ -56,7 +56,7 @@ namespace Xenon
 			virtual ~Image() = default;
 
 			/**
-			 * Get the iamge specification.
+			 * Get the image specification.
 			 *
 			 * @return The image specification.
 			 */

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "DX12Instance.hpp"
-#include "../XenonCore/Logging.hpp"
+#include "DX12Macros.hpp"
 
 namespace Xenon
 {
@@ -23,6 +23,14 @@ namespace Xenon
 			{
 				XENON_LOG_ERROR("Failed to create the debug interface.");
 			}
+
+			// Enable GPU-based validation.
+			ComPtr<ID3D12Debug> spDebugController0;
+			ComPtr<ID3D12Debug1> spDebugController1;
+
+			XENON_DX12_ASSERT(D3D12GetDebugInterface(IID_PPV_ARGS(&spDebugController0)), "Failed to get the debug interface!");
+			XENON_DX12_ASSERT(spDebugController0->QueryInterface(IID_PPV_ARGS(&spDebugController1)), "Failed to query the debug interface!");
+			spDebugController1->SetEnableGPUBasedValidation(true);
 
 #endif // XENON_DEBUG
 		}

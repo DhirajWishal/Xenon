@@ -30,6 +30,7 @@ namespace Xenon
 				m_AttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 				m_AttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 				m_AttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+				m_CurrentLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 			}
 
 			else if (specification.m_Usage & ImageUsage::DepthAttachment)
@@ -42,6 +43,7 @@ namespace Xenon
 				m_AttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 				m_AttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 				m_AttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+				m_CurrentLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
 			}
 
 			// Resolve the image type.
