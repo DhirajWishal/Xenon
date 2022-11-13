@@ -26,6 +26,9 @@ set(
 	"Layer.hpp"
 	"RasterizingLayer.cpp"
 	"RasterizingLayer.hpp"
+
+	"Layers/ClearScreenLayer.cpp"
+	"Layers/ClearScreenLayer.hpp"
 )
 
 # Add the source group.
@@ -45,12 +48,11 @@ target_link_libraries(XenonEngine XenonVulkanBackend)
 # Make sure to specify the C++ standard to C++20.
 set_property(TARGET XenonEngine PROPERTY CXX_STANDARD 20)
 
-# SEt the include directories.
+# Set the include directories.
 target_include_directories(
 	XenonEngine 
 
 	PRIVATE ${TINYGLTF_INCLUDE_DIR}
-	PUBLIC ${GLM_INCLUDE_DIR}
 )
 
 # If we are on MSVC, we can use the Multi Processor Compilation option.

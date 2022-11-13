@@ -27,7 +27,6 @@ namespace Xenon
 		 */
 		explicit RasterizingLayer(
 			Instance& instance,
-			uint8_t priority,
 			Backend::Camera* pCamera,
 			Backend::AttachmentType attachmentTypes,
 			bool enableTripleBuffering = false,

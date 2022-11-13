@@ -57,10 +57,7 @@ namespace Xenon
 		{
 			auto pLayer = std::make_unique<LayerType>(std::forward<Arguments>(arguments)...);
 			auto pRawPointer = pLayer.get();
-
-			const auto priority = pLayer->getPriority();
-			auto itr = std::ranges::lower_bound(m_pLayers, priority, [](auto& lhs, auto& rhs) { return lhs->getPriority() < rhs; });
-			m_pLayers.emplace(itr, std::move(pLayer));
+			m_pLayers.emplace_back(std::move(pLayer));
 
 			return pRawPointer;
 		}

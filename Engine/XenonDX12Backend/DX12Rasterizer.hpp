@@ -34,6 +34,34 @@ namespace Xenon
 			 */
 			~DX12Rasterizer() override = default;
 
+			/**
+			 * Get the frame index.
+			 *
+			 * @return The frame index.
+			 */
+			[[nodiscard]] uint32_t getFrameIndex() const { return m_FrameIndex; }
+
+			/**
+			 * Get the render target heap pointer.
+			 *
+			 * @return The pointer.
+			 */
+			[[nodiscard]] ID3D12DescriptorHeap* getRenderTargetHeap() { return m_RenderTargetHeap.Get(); }
+
+			/**
+			 * Get the render target heap pointer.
+			 *
+			 * @return The pointer.
+			 */
+			[[nodiscard]] const ID3D12DescriptorHeap* getRenderTargetHeap() const { return m_RenderTargetHeap.Get(); }
+
+			/**
+			 * Get the render target descriptor size.
+			 *
+			 * @return The size.
+			 */
+			[[nodiscard]] UINT getRenderTargetDescriptorSize() const { return m_RenderTargetDescriptorSize; }
+
 		private:
 			std::vector<DX12Image> m_RenderTargets;
 			ComPtr<ID3D12DescriptorHeap> m_RenderTargetHeap;
@@ -42,6 +70,8 @@ namespace Xenon
 			UINT m_RenderTargetDescriptorSize = 0;
 
 			DX12Device* m_pDevice = nullptr;
+
+			uint32_t m_FrameIndex = 0;
 		};
 	}
 }

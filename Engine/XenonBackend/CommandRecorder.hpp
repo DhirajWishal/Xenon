@@ -3,7 +3,9 @@
 
 #pragma once
 
-#include "Device.hpp"
+#include "Buffer.hpp"
+#include "Swapchain.hpp"
+#include "Rasterizer.hpp"
 
 namespace Xenon
 {
@@ -39,11 +41,6 @@ namespace Xenon
 			explicit CommandRecorder([[maybe_unused]] Device* pDevice, CommandRecorderUsage usage, uint32_t bufferCount = 1) : m_BufferCount(bufferCount), m_Usage(usage) {}
 
 			/**
-			 * Default virtual destructor.
-			 */
-			virtual ~CommandRecorder() = default;
-
-			/**
 			 * Set the command recorder state to recording.
 			 */
 			virtual void begin() = 0;
@@ -57,7 +54,15 @@ namespace Xenon
 			 * @param dstOffse The destination buffer offset.
 			 * @param size The amount of data to copy in bytes.
 			 */
-			virtual void copyBuffer(Buffer* pSource, uint64_t srcOffset, Buffer* pDestination, uint64_t dstOffset, uint64_t size) = 0;
+			virtual void copy(Buffer* pSource, uint64_t srcOffset, Buffer* pDestination, uint64_t dstOffset, uint64_t size) = 0;
+
+			/**
+			 * Bind a rasterizer to the command recorder.
+			 *
+			 * @param pRasterizer The rasterizer pointer.
+			 * @param clearValues The rasterizer's clear values.
+			 */
+			virtual void bind(Rasterizer* pRasterizer, const std::vector<Rasterizer::ClearValueType>& clearValues) = 0;
 
 			/**
 			 * End the command recorder recording.
@@ -96,6 +101,8 @@ namespace Xenon
 			uint32_t m_BufferCount;
 			uint32_t m_CurrentIndex = 0;
 			CommandRecorderUsage m_Usage = CommandRecorderUsage::Transfer;
+
+			bool m_IsRenderTargetBound = false;
 		};
 	}
 }

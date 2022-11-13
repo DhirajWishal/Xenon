@@ -6,6 +6,76 @@
 
 #include "VulkanBuffer.hpp"
 #include "VulkanSwapchain.hpp"
+#include "VulkanRasterizer.hpp"
+
+namespace /* anonymous */
+{
+	/**
+	 * Get the Vulkan clear values.
+	 *
+	 * @param attachmenTYpes The attachment types used by the rasterizer.
+	 * @param clearValues The clear values to clear the rasterizer.
+	 * @return The Vulkan clear values.
+	 */
+	std::vector<VkClearValue> GetClearValues(Xenon::Backend::AttachmentType attachmentTypes, const std::vector<Xenon::Backend::Rasterizer::ClearValueType>& clearValues)
+	{
+		auto itr = clearValues.begin();
+
+		std::vector<VkClearValue> vkClearValues;
+		if (attachmentTypes & Xenon::Backend::AttachmentType::Color)
+		{
+			const auto clearColor = std::get<glm::vec4>(*itr);
+
+			VkClearValue& clearValue = vkClearValues.emplace_back();
+			clearValue.color.float32[0] = clearColor.x;
+			clearValue.color.float32[1] = clearColor.y;
+			clearValue.color.float32[2] = clearColor.z;
+			clearValue.color.float32[3] = clearColor.w;
+
+			++itr;
+		}
+
+		if (attachmentTypes & Xenon::Backend::AttachmentType::EntityID)
+		{
+			const auto clearColor = std::get<glm::vec3>(*itr);
+
+			VkClearValue& clearValue = vkClearValues.emplace_back();
+			clearValue.color.float32[0] = clearColor.x;
+			clearValue.color.float32[1] = clearColor.y;
+			clearValue.color.float32[2] = clearColor.z;
+			clearValue.color.float32[3] = 0.0f;
+
+			++itr;
+		}
+
+		if (attachmentTypes & Xenon::Backend::AttachmentType::Normal)
+		{
+			const auto clearColor = std::get<float>(*itr);
+
+			VkClearValue& clearValue = vkClearValues.emplace_back();
+			clearValue.color.float32[0] = clearColor;
+			clearValue.color.float32[1] = 0.0f;
+			clearValue.color.float32[2] = 0.0f;
+			clearValue.color.float32[3] = 0.0f;
+
+			++itr;
+		}
+
+		if (attachmentTypes & Xenon::Backend::AttachmentType::Depth)
+		{
+			vkClearValues.emplace_back().depthStencil.depth = std::get<float>(*itr);
+			++itr;
+		}
+
+		if (attachmentTypes & Xenon::Backend::AttachmentType::Stencil)
+		{
+			vkClearValues.emplace_back().depthStencil.stencil = std::get<uint32_t>(*itr);
+			++itr;
+		}
+
+		return vkClearValues;
+	}
+}
 
 namespace Xenon
 {
@@ -66,18 +136,52 @@ namespace Xenon
 			m_pDevice->getDeviceTable().vkBeginCommandBuffer(*m_pCurrentBuffer, &beginInfo);
 		}
 
-		void VulkanCommandRecorder::copyBuffer(Buffer* pSource, uint64_t srcOffset, Buffer* pDestination, uint64_t dstOffset, uint64_t size)
+		void VulkanCommandRecorder::copy(Buffer* pSource, uint64_t srcOffset, Buffer* pDestination, uint64_t dstOffset, uint64_t size)
 		{
-			VkBufferCopy copy = {};
-			copy.size = size;
-			copy.srcOffset = srcOffset;
-			copy.dstOffset = dstOffset;
+			VkBufferCopy bufferCopy = {};
+			bufferCopy.size = size;
+			bufferCopy.srcOffset = srcOffset;
+			bufferCopy.dstOffset = dstOffset;
 
-			m_pDevice->getDeviceTable().vkCmdCopyBuffer(*m_pCurrentBuffer, pSource->as<VulkanBuffer>()->getBuffer(), pDestination->as<VulkanBuffer>()->getBuffer(), 1, &copy);
+			m_pDevice->getDeviceTable().vkCmdCopyBuffer(*m_pCurrentBuffer, pSource->as<VulkanBuffer>()->getBuffer(), pDestination->as<VulkanBuffer>()->getBuffer(), 1, &bufferCopy);
+		}
+
+		void VulkanCommandRecorder::bind(Rasterizer* pRasterizer, const std::vector<Rasterizer::ClearValueType>& clearValues)
+		{
+			// Unbind the previous render pass if we need to.
+			if (m_IsRenderTargetBound)
+				m_pDevice->getDeviceTable().vkCmdEndRenderPass(*m_pCurrentBuffer);
+
+			// Cast the Vulkan rasterizer and get the clear values.
+			auto pVkRenderPass = pRasterizer->as<VulkanRasterizer>();
+			const auto vkClearValues = GetClearValues(pVkRenderPass->getAttachmentTypes(), clearValues);
+
+			// Begin the render pass.
+			VkRenderPassBeginInfo beginInfo = {};
+			beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+			beginInfo.pNext = nullptr;
+			beginInfo.renderPass = pVkRenderPass->getRenderPass();
+			beginInfo.framebuffer = pVkRenderPass->getFramebuffer();
+			beginInfo.renderArea.extent.width = pVkRenderPass->getCamera()->getWidth();
+			beginInfo.renderArea.extent.height = pVkRenderPass->getCamera()->getHeight();
+			beginInfo.renderArea.offset.x = 0.0f;
+			beginInfo.renderArea.offset.y = 0.0f;
+			beginInfo.clearValueCount = static_cast<uint32_t>(vkClearValues.size());
+			beginInfo.pClearValues = vkClearValues.data();
+
+			m_pDevice->getDeviceTable().vkCmdBeginRenderPass(*m_pCurrentBuffer, &beginInfo, VK_SUBPASS_CONTENTS_INLINE);
+			m_IsRenderTargetBound = true;
 		}
 
 		void VulkanCommandRecorder::end()
 		{
+			// Unbind the previous render pass if we need to.
+			if (m_IsRenderTargetBound)
+			{
+				m_IsRenderTargetBound = false;
+				m_pDevice->getDeviceTable().vkCmdEndRenderPass(*m_pCurrentBuffer);
+			}
+
 			m_pDevice->getDeviceTable().vkEndCommandBuffer(*m_pCurrentBuffer);
 		}
 

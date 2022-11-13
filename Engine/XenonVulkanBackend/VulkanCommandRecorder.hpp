@@ -45,7 +45,15 @@ namespace Xenon
 			 * @param dstOffse The destination buffer offset.
 			 * @param size The amount of data to copy in bytes.
 			 */
-			void copyBuffer(Buffer* pSource, uint64_t srcOffset, Buffer* pDestination, uint64_t dstOffset, uint64_t size) override;
+			void copy(Buffer* pSource, uint64_t srcOffset, Buffer* pDestination, uint64_t dstOffset, uint64_t size) override;
+
+			/**
+			 * Bind a rasterizer to the command recorder.
+			 *
+			 * @param pRasterizer The rasterizer pointer.
+			 * @param clearValues The rasterizer's clear values.
+			 */
+			void bind(Rasterizer* pRasterizer, const std::vector<Rasterizer::ClearValueType>& clearValues) override;
 
 			/**
 			 * End the command recorder recording.

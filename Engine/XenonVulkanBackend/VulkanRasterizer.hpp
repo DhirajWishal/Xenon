@@ -33,6 +33,20 @@ namespace Xenon
 			 */
 			~VulkanRasterizer() override;
 
+			/**
+			 * Get the render pass.
+			 *
+			 * @return The render pass.
+			 */
+			[[nodiscard]] VkRenderPass getRenderPass() const { return m_RenderPass; }
+
+			/**
+			 * Get the framebuffer.
+			 *
+			 * @return The framebuffer.
+			 */
+			[[nodiscard]] VkFramebuffer getFramebuffer() const { return m_Framebuffers[m_FrameIndex]; }
+
 		private:
 			/**
 			 * Setup the image attachments.
@@ -63,6 +77,8 @@ namespace Xenon
 			std::vector<VkImageView> m_AttachmentViews;
 			std::vector<VkFramebuffer> m_Framebuffers;
 			std::vector<VulkanImage> m_ImageAttachments;
+
+			uint32_t m_FrameIndex = 0;
 		};
 	}
 }

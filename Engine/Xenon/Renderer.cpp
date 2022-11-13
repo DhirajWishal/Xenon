@@ -58,6 +58,12 @@ namespace Xenon
 				pPreviousLayer = pLayer.get();
 			}
 
+			// Copy the previous layer's color buffer to the swapchain if we have a layer.
+			if (pPreviousLayer)
+			{
+				//m_pCommandRecorder->copy();
+			}
+
 			// End the command recorder.
 			m_pCommandRecorder->end();
 

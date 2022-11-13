@@ -9,10 +9,11 @@
 
 namespace Xenon
 {
+	class Renderer;
+
 	/**
 	 * Layer class.
 	 * A renderer is made up of multiple layers (processing nodes). Each layer has a designated task, like to render a scene, a UI or for any other post processing step (like FXAA or shadow maps).
-	 * The layers are sorted according to their priority (least to the most; 0 - 255).
 	 */
 	class Layer : public XObject
 	{
@@ -21,9 +22,8 @@ namespace Xenon
 		 * Explicit constructor.
 		 *
 		 * @param instance The instance reference.
-		 * @param priority The priority of the layer.
 		 */
-		explicit Layer(Instance& instance, uint8_t priority) : m_Instance(instance), m_Priority(priority) {}
+		explicit Layer(Instance& instance) : m_Instance(instance) {}
 
 		/**
 		 * Bind the layer to the command recorder.
@@ -34,15 +34,7 @@ namespace Xenon
 		 */
 		virtual void bind(Layer* pPreviousLayer, Backend::CommandRecorder* pCommandRecorder) = 0;
 
-		/**
-		 * Get the priority of the layer.
-		 *
-		 * @return The priority.
-		 */
-		[[nodiscard]] uint8_t getPriority() const { return m_Priority; }
-
 	protected:
 		Instance& m_Instance;
-		const uint8_t m_Priority;
 	};
 }

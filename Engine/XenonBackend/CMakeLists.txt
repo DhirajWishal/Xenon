@@ -24,6 +24,9 @@ set(
 	"BufferMemoryView.hpp"
 	"Swapchain.cpp"
 	"Swapchain.hpp"
+	"Core.hpp"
+	"Image.hpp"
+	"CommandRecorder.hpp"
 )
 
 # Add the source group.
@@ -39,6 +42,13 @@ add_library(
 
 # Make sure to specify the C++ standard to C++20.
 set_property(TARGET XenonBackend PROPERTY CXX_STANDARD 20)
+
+# Set the include directories.
+target_include_directories(
+	XenonBackend 
+
+	PUBLIC ${GLM_INCLUDE_DIR}
+)
 
 # If we are on MSVC, we can use the Multi Processor Compilation option.
 if (MSVC)

@@ -102,7 +102,7 @@ namespace Xenon
 		{
 			auto commandBuffers = VulkanCommandRecorder(m_pDevice, CommandRecorderUsage::Transfer);
 			commandBuffers.begin();
-			commandBuffers.copyBuffer(pBuffer, srcOffset, this, dstOffset, size);
+			commandBuffers.copy(pBuffer, srcOffset, this, dstOffset, size);
 			commandBuffers.end();
 			commandBuffers.submit();
 			commandBuffers.wait();

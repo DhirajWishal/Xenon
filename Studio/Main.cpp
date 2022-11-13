@@ -8,6 +8,8 @@
 #include "Xenon/Renderer.hpp"
 #include "Xenon/MonoCamera.hpp"
 
+#include "Xenon/Layers/ClearScreenLayer.hpp"
+
 // https://stackoverflow.com/a/10917945/11228029
 template<typename R>
 bool is_ready(std::future<R> const& f)
@@ -26,6 +28,7 @@ void run(Xenon::BackendType backend)
 	auto instance = Xenon::Instance("Xenon Studio", 0, Xenon::RenderTargetType::All, backend);
 	auto camera = Xenon::MonoCamera(instance, 1280, 720);
 	auto renderer = Xenon::Renderer(instance, &camera, backend == Xenon::BackendType::Vulkan ? "Xenon Studio - Vulkan" : "Xenon Studio - DirectX 12");
+	renderer.createLayer<Xenon::ClearScreenLayer>(instance, &camera, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
 
 	auto storage = Xenon::XObject::GetJobSystem().insert([&instance] { return Xenon::MeshStorage::FromFile(instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"); });
 	while (renderer.update() && !is_ready(storage));

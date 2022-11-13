@@ -5,6 +5,12 @@
 
 #include "RenderTarget.hpp"
 
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
+
+#include <variant>
+
 namespace Xenon
 {
 	namespace Backend
@@ -15,6 +21,14 @@ namespace Xenon
 		 */
 		class Rasterizer : public RenderTarget
 		{
+		public:
+			using ClearValueType = std::variant<
+				glm::vec4,								// Color attachment clear value.
+				glm::vec3,								// Normal map clear value.
+				float,									// Depth or Entity ID clear value.
+				uint32_t								// Stencil clear value.
+			>;
+
 		public:
 			/**
 			 * Explicit constructor.
