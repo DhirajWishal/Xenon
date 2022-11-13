@@ -3,11 +3,14 @@
 
 #pragma once
 
-#include "Instance.hpp"
+#include "Layer.hpp"
+
 #include "../XenonBackend/Camera.hpp"
 
 #include "../XenonBackend/Swapchain.hpp"
 #include "../XenonBackend/CommandRecorder.hpp"
+
+#include <algorithm>
 
 namespace Xenon
 {
@@ -41,6 +44,48 @@ namespace Xenon
 		 */
 		[[nodiscard]] bool update();
 
+		/**
+		 * Create a new layer and attach it to the renderer.
+		 *
+		 * @tparam LayerType The layer type to create.
+		 * @tparam Arguments The layer's constructor argument types.
+		 * @param arguments The constructor arguments to forward to the constructor when creating the layer.
+		 * @return The created layer's pointer.
+		 */
+		template<class LayerType, class... Arguments>
+		LayerType* createLayer(Arguments&&... arguments)
+		{
+			auto pLayer = std::make_unique<LayerType>(std::forward<Arguments>(arguments)...);
+			auto pRawPointer = pLayer.get();
+
+			const auto priority = pLayer->getPriority();
+			auto itr = std::ranges::lower_bound(m_pLayers, priority, [](auto& lhs, auto& rhs) { return lhs->getPriority() < rhs; });
+			m_pLayers.emplace(itr, std::move(pLayer));
+
+			return pRawPointer;
+		}
+
+		/**
+		 * Wait till the frame update has finished.
+		 * This might be needed since the frame update is done asynchronously.
+		 */
+		void wait();
+
+	public:
+		/**
+		 * Get the attached camera pointer.
+		 *
+		 * @return The camera pointer.
+		 */
+		[[nodiscard]] Backend::Camera* getCamera() { return m_pCamera; }
+
+		/**
+		 * Get the attached camera pointer.
+		 *
+		 * @return The camera pointer.
+		 */
+		[[nodiscard]] const Backend::Camera* getCamera() const { return m_pCamera; }
+
 	private:
 		/**
 		 * Worker function.
@@ -50,9 +95,12 @@ namespace Xenon
 
 	private:
 		std::jthread m_Worker;
-		std::condition_variable m_Synchronization;
+		std::condition_variable m_WorkerSynchronization;
+		std::condition_variable m_ParentSynchronization;
 		std::atomic_bool m_bShouldRun = true;
 		std::mutex m_SynchronizationMutex;
+
+		std::vector<std::unique_ptr<Layer>> m_pLayers;
 
 		std::unique_ptr<Backend::Swapchain> m_pSwapChain = nullptr;
 		std::unique_ptr<Backend::CommandRecorder> m_pCommandRecorder = nullptr;

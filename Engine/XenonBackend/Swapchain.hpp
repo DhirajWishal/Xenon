@@ -36,11 +36,16 @@ namespace Xenon
 			virtual ~Swapchain() override = default;
 
 			/**
+			 * Prepare the swapchain to present.
+			 *
+			 * @return The swapchain image index.
+			 */
+			[[nodiscard]] virtual uint32_t prepare() = 0;
+
+			/**
 			 * Present the swapchain to the window.
 			 */
 			virtual void present() = 0;
-
-			// virtual void prepare() = 0;	// Setup the frame to present (and update).
 
 			/**
 			 * Get the swapchain's window pointer.
@@ -63,8 +68,18 @@ namespace Xenon
 			 */
 			virtual void recreate() = 0;
 
+			/**
+			 * Increment the frame index.
+			 * This is done after presenting the swapchain.
+			 */
+			void incrementFrame();
+
 		protected:
 			std::unique_ptr<Platform::Window> m_pWindow = nullptr;
+
+			uint32_t m_ImageIndex = 0;
+			uint32_t m_FrameIndex = 0;
+			uint32_t m_FrameCount = 0;
 		};
 	}
 }

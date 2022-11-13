@@ -22,6 +22,10 @@ set(
 	"VertexSpecification.hpp"
 	"MonoCamera.cpp"
 	"MonoCamera.hpp"
+	"Layer.cpp"
+	"Layer.hpp"
+	"RasterizingLayer.cpp"
+	"RasterizingLayer.hpp"
 )
 
 # Add the source group.

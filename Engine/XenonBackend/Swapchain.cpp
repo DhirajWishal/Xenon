@@ -13,5 +13,10 @@ namespace Xenon
 			: m_pWindow(Platform::IFactory::Get()->createWindow(title, width, height))
 		{
 		}
+
+		void Swapchain::incrementFrame()
+		{
+			m_FrameIndex = ++m_FrameIndex % m_FrameCount;
+		}
 	}
 }

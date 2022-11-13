@@ -33,6 +33,13 @@ namespace Xenon
 			~DX12Swapchain() override = default;
 
 			/**
+			 * Prepare the swapchain to present.
+			 *
+			 * @return The swapchain image index.
+			 */
+			[[nodiscard]] uint32_t prepare() override;
+
+			/**
 			 * Present the swapchain to the window.
 			 */
 			void present() override;
@@ -59,9 +66,6 @@ namespace Xenon
 
 			ComPtr<ID3D12Fence> m_FrameFence;
 			HANDLE m_FenceEvent = nullptr;
-
-			uint32_t m_FrameCount = 0;
-			uint32_t m_FrameIndex = 0;
 
 			UINT m_SwapchainImageHeapDescriptorSize = 0;
 		};

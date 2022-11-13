@@ -16,13 +16,19 @@ namespace Xenon
 	Renderer::~Renderer()
 	{
 		m_bShouldRun = false;
-		m_Synchronization.notify_one();
+		m_WorkerSynchronization.notify_one();
 	}
 
 	bool Renderer::update()
 	{
-		m_Synchronization.notify_one();
+		m_WorkerSynchronization.notify_one();
 		return m_pSwapChain->getWindow()->isOpen();
+	}
+
+	void Renderer::wait()
+	{
+		auto locker = std::unique_lock(m_SynchronizationMutex);
+		m_ParentSynchronization.wait(locker);
 	}
 
 	void Renderer::worker()
@@ -32,14 +38,25 @@ namespace Xenon
 		do
 		{
 			// Wait till the user wants us to progress.
-			m_Synchronization.wait(locker, [this] { return !m_bShouldRun; });
+			m_WorkerSynchronization.wait(locker);
 
 			// Return if we have to.
 			if (m_bShouldRun == false)
 				break;
 
+			// Prepare the swapchain for a new frame.
+			[[maybe_unused]] const auto imageIndex = m_pSwapChain->prepare();
+
 			// Begin the command recorder.
 			m_pCommandRecorder->begin();
+
+			// Bind the layers.
+			Layer* pPreviousLayer = nullptr;
+			for (const auto& pLayer : m_pLayers)
+			{
+				pLayer->bind(pPreviousLayer, m_pCommandRecorder.get());
+				pPreviousLayer = pLayer.get();
+			}
 
 			// End the command recorder.
 			m_pCommandRecorder->end();
@@ -53,6 +70,11 @@ namespace Xenon
 			// Update the window.
 			m_pSwapChain->getWindow()->update();
 
+			// Select the next command buffer.
+			m_pCommandRecorder->next();
+
+			// Notify the parent that the update has been completed.
+			m_ParentSynchronization.notify_one();
 		} while (true);
 	}
 }

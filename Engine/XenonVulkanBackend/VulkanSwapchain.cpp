@@ -38,6 +38,20 @@ namespace Xenon
 				m_pDevice->getDeviceTable().vkDestroySemaphore(m_pDevice->getLogicalDevice(), semaphore, nullptr);
 		}
 
+		uint32_t VulkanSwapchain::prepare()
+		{
+			const auto result = m_pDevice->getDeviceTable().vkAcquireNextImageKHR(m_pDevice->getLogicalDevice(), m_Swapchain, UINT64_MAX, m_InFlightSemaphores[m_FrameIndex], VK_NULL_HANDLE, &m_ImageIndex);
+			if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+			{
+				recreate();
+				return prepare();
+			}
+
+			XENON_VK_ASSERT(result, "Failed to acquire the next swap chain image!");
+
+			return m_ImageIndex;
+		}
+
 		void VulkanSwapchain::present()
 		{
 			VkPresentInfoKHR presentInfo = {};

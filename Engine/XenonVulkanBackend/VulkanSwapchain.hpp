@@ -33,6 +33,13 @@ namespace Xenon
 			~VulkanSwapchain() override;
 
 			/**
+			 * Prepare the swapchain to present.
+			 *
+			 * @return The swapchain image index.
+			 */
+			[[nodiscard]] uint32_t prepare() override;
+
+			/**
 			 * Present the swapchain to the window.
 			 */
 			void present() override;
@@ -116,9 +123,6 @@ namespace Xenon
 			VkSwapchainKHR m_Swapchain = VK_NULL_HANDLE;
 
 			VkFormat m_SwapchainFormat = VK_FORMAT_UNDEFINED;
-
-			uint32_t m_ImageIndex = 0;
-			uint32_t m_FrameCount = 0;
 		};
 	}
 }

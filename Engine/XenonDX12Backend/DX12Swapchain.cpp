@@ -69,6 +69,11 @@ namespace Xenon
 			m_FenceValues.resize(m_FrameCount);
 		}
 
+		uint32_t DX12Swapchain::prepare()
+		{
+			return m_ImageIndex;
+		}
+
 		void DX12Swapchain::present()
 		{
 			// Present the swapchain.
@@ -76,21 +81,24 @@ namespace Xenon
 
 			// Move to the next frame.
 			// Schedule a Signal command in the queue.
-			const UINT64 currentFenceValue = m_FenceValues[m_FrameIndex];
+			const UINT64 currentFenceValue = m_FenceValues[m_ImageIndex];
 			XENON_DX12_ASSERT(m_pDevice->getCommandQueue()->Signal(m_FrameFence.Get(), currentFenceValue), "Failed to signal the command queue!");
 
 			// Update the frame index.
-			m_FrameIndex = m_Swapchain->GetCurrentBackBufferIndex();
+			m_ImageIndex = m_Swapchain->GetCurrentBackBufferIndex();
 
 			// If the next frame is not ready to be rendered yet, wait until it is ready.
-			if (m_FrameFence->GetCompletedValue() < m_FenceValues[m_FrameIndex])
+			if (m_FrameFence->GetCompletedValue() < m_FenceValues[m_ImageIndex])
 			{
-				XENON_DX12_ASSERT(m_FrameFence->SetEventOnCompletion(m_FenceValues[m_FrameIndex], m_FenceEvent), "Failed t set the event on completion to the fence event!");
+				XENON_DX12_ASSERT(m_FrameFence->SetEventOnCompletion(m_FenceValues[m_ImageIndex], m_FenceEvent), "Failed t set the event on completion to the fence event!");
 				WaitForSingleObjectEx(m_FenceEvent, INFINITE, FALSE);
 			}
 
 			// Set the fence value for the next frame.
-			m_FenceValues[m_FrameIndex] = currentFenceValue + 1;
+			m_FenceValues[m_ImageIndex] = currentFenceValue + 1;
+
+			// Increment the frame index.
+			incrementFrame();
 		}
 
 		void DX12Swapchain::recreate()
