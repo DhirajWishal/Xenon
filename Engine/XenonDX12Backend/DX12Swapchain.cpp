@@ -26,7 +26,9 @@ namespace Xenon
 			swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 			swapChainDesc.SampleDesc.Count = 1;
 
-			const auto windowHandle = static_cast<Platform::WindowsWindow*>(m_pWindow.get())->getWindowHandle();
+			const auto pWindowsWindow = static_cast<Platform::WindowsWindow*>(m_pWindow.get());
+			const auto windowHandle = pWindowsWindow->getWindowHandle();
+
 			ComPtr<IDXGISwapChain1> swapChain;
 			XENON_DX12_ASSERT(pDevice->getFactory()->CreateSwapChainForHwnd(
 				pDevice->getCommandQueue(),
@@ -40,7 +42,7 @@ namespace Xenon
 			// This sample does not support full screen transitions.
 			XENON_DX12_ASSERT(pDevice->getFactory()->MakeWindowAssociation(windowHandle, DXGI_MWA_NO_ALT_ENTER), "Failed to make the window association!");
 
-			XENON_DX12_ASSERT(swapChain.As(&m_Swapchain), "Failed to assign the swapchain!");
+			XENON_DX12_ASSERT(swapChain.As(&m_SwapChain), "Failed to assign the swapchain!");
 
 			// Create the swapchain image heap.
 			D3D12_DESCRIPTOR_HEAP_DESC swapchainImageHeapDesc = {};
@@ -59,7 +61,7 @@ namespace Xenon
 			m_SwapchainImages.resize(m_FrameCount);
 			for (UINT i = 0; i < m_FrameCount; i++)
 			{
-				XENON_DX12_ASSERT(m_Swapchain->GetBuffer(i, IID_PPV_ARGS(&m_SwapchainImages[i])), "Failed to get the swapchain back buffer!");
+				XENON_DX12_ASSERT(m_SwapChain->GetBuffer(i, IID_PPV_ARGS(&m_SwapchainImages[i])), "Failed to get the swapchain back buffer!");
 				pDevice->getDevice()->CreateRenderTargetView(m_SwapchainImages[i].Get(), nullptr, swapchainImageHeapHandle);
 				swapchainImageHeapHandle.Offset(1, m_SwapchainImageHeapDescriptorSize);
 			}
@@ -77,8 +79,10 @@ namespace Xenon
 		void DX12Swapchain::present()
 		{
 			// Present the swapchain.
-			const auto result = m_Swapchain->Present(1, 0);
+			DXGI_PRESENT_PARAMETERS parameters = { 0 };
+			const auto result = m_SwapChain->Present1(1, 0, &parameters);
 			XENON_DX12_ASSERT(result, "Failed to present the swapchain!");
+			const auto reason = m_pDevice->getDevice()->GetDeviceRemovedReason();
 
 			// Move to the next frame.
 			// Schedule a Signal command in the queue.
@@ -86,7 +90,7 @@ namespace Xenon
 			XENON_DX12_ASSERT(m_pDevice->getCommandQueue()->Signal(m_FrameFence.Get(), currentFenceValue), "Failed to signal the command queue!");
 
 			// Update the frame index.
-			m_ImageIndex = m_Swapchain->GetCurrentBackBufferIndex();
+			m_ImageIndex = m_SwapChain->GetCurrentBackBufferIndex();
 
 			// If the next frame is not ready to be rendered yet, wait until it is ready.
 			if (m_FrameFence->GetCompletedValue() < m_FenceValues[m_ImageIndex])

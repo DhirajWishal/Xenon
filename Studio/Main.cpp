@@ -31,7 +31,7 @@ void run(Xenon::BackendType backend)
 	renderer.createLayer<Xenon::ClearScreenLayer>(instance, &camera, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
 
 	auto storage = Xenon::XObject::GetJobSystem().insert([&instance] { return Xenon::MeshStorage::FromFile(instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"); });
-	while (renderer.update() && !is_ready(storage));
+	while (renderer.update());
 
 	[[maybe_unused]] auto meshStorage = storage.get();
 }
@@ -41,7 +41,7 @@ int main()
 	XENON_LOG_INFORMATION("Hello from the Xenon Studio!");
 
 	std::vector<std::jthread> backends;
-	backends.emplace_back(run, Xenon::BackendType::DirectX_12);
+	// backends.emplace_back(run, Xenon::BackendType::DirectX_12);
 	backends.emplace_back(run, Xenon::BackendType::Vulkan);
 
 	return 0;

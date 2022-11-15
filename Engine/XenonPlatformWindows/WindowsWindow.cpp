@@ -63,6 +63,7 @@ namespace Xenon
 		{
 			// Register the window class.
 			WNDCLASS wc = { };
+			wc.style = CS_HREDRAW | CS_VREDRAW;
 			wc.lpfnWndProc = WindowProc;
 			wc.hInstance = nullptr;
 			wc.lpszClassName = g_ClassName;
@@ -115,7 +116,7 @@ namespace Xenon
 
 		void WindowsWindow::update()
 		{
-			if (MSG message = {}; GetMessage(&message, m_WindowHandle, 0, 0))
+			if (MSG message = {}; PeekMessage(&message, m_WindowHandle, NULL, NULL, PM_REMOVE))
 			{
 				TranslateMessage(&message);
 				DispatchMessage(&message);
@@ -138,6 +139,9 @@ namespace Xenon
 				return 0;
 
 			case WM_PAINT:
+				if (m_OnPaintCallback)
+					m_OnPaintCallback();
+
 				return OnPaintEvent(m_WindowHandle);
 
 			default:

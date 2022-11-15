@@ -5,4 +5,4 @@
 
 #include "../XenonCore/Logging.hpp"
 
-#define XENON_DX12_ASSERT(exp, ...) XENON_ASSERT(SUCCEEDED(exp), "Direct X 12: " __VA_ARGS__)
+#define XENON_DX12_ASSERT(exp, ...)  XENON_ASSERT(SUCCEEDED(exp), "Direct X 12: " __VA_ARGS__)

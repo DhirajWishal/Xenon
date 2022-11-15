@@ -78,7 +78,10 @@ namespace Xenon
 
 		void VulkanSwapchain::recreate()
 		{
-			// TODO: Implement this function.
+			clear();
+
+			createSurface();
+			createSwapchain();
 		}
 
 		void VulkanSwapchain::createSurface()
@@ -190,7 +193,7 @@ namespace Xenon
 			createInfo.compositeAlpha = surfaceComposite;
 			createInfo.presentMode = presentMode;
 			createInfo.clipped = VK_TRUE;
-			createInfo.oldSwapchain = m_Swapchain;
+			createInfo.oldSwapchain = VK_NULL_HANDLE;
 
 			// Resolve the queue families if the two queues are different.
 			const std::array<uint32_t, 2> queueFamilyindices = {
@@ -205,14 +208,7 @@ namespace Xenon
 				createInfo.pQueueFamilyIndices = queueFamilyindices.data();
 			}
 
-			VkSwapchainKHR newSwapchain = VK_NULL_HANDLE;
-			XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkCreateSwapchainKHR(m_pDevice->getLogicalDevice(), &createInfo, nullptr, &newSwapchain), "Failed to create the swapchain!");
-
-			// Destroy the old swapchain if needed.
-			if (m_Swapchain != VK_NULL_HANDLE)
-				clear();
-
-			m_Swapchain = newSwapchain;
+			XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkCreateSwapchainKHR(m_pDevice->getLogicalDevice(), &createInfo, nullptr, &m_Swapchain), "Failed to create the swapchain!");
 
 			// Get the image views.
 			m_SwapchainImages.resize(m_FrameCount);

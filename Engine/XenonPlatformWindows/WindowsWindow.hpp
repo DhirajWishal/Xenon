@@ -11,6 +11,8 @@
 
 #include <Windows.h>
 
+#include <functional>
+
 namespace Xenon
 {
 	namespace Platform
@@ -56,6 +58,16 @@ namespace Xenon
 			 */
 			[[nodiscard]] HWND getWindowHandle() const { return m_WindowHandle; }
 
+			/**
+			 * Set the on paint callback function.
+			 * This function is called by the event handler when the window needs to be painted.
+			 *
+			 * @tparam Function The function type.
+			 * @param function The function to set.
+			 */
+			template<class Function>
+			void setOnPaintCallbackFunction(Function&& function) { m_OnPaintCallback = std::forward<Function>(function); }
+
 		public:
 			/**
 			 * Handle the event sent to the WindowProc.
@@ -68,6 +80,8 @@ namespace Xenon
 			LRESULT handleEvent(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 		private:
+			std::function<void()> m_OnPaintCallback = nullptr;
+
 			HWND m_WindowHandle = nullptr;
 
 			bool m_IsOpen = true;

@@ -76,7 +76,7 @@ namespace Xenon
 			std::vector<UINT64> m_FenceValues;
 			std::vector<ComPtr<ID3D12Resource>> m_SwapchainImages;
 			ComPtr<ID3D12DescriptorHeap> m_SwapchainImageHeap;
-			ComPtr<IDXGISwapChain3> m_Swapchain;
+			ComPtr<IDXGISwapChain3> m_SwapChain;
 
 			ComPtr<ID3D12Fence> m_FrameFence;
 			HANDLE m_FenceEvent = nullptr;
