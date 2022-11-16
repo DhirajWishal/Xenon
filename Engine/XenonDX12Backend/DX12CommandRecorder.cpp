@@ -24,25 +24,39 @@ namespace Xenon
 			m_pCommandLists.reserve(bufferCount);
 			for (uint32_t i = 0; i < bufferCount; i++)
 			{
+				// Create the command allocator.
+				ComPtr<ID3D12CommandAllocator> allocator;
+				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&allocator)), "Failed to create the global command allocator!");
+
 				// Create the command list.
 				ComPtr<ID3D12GraphicsCommandList> commandList;
-				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_pDevice->getCommandAllocator(), nullptr, IID_PPV_ARGS(&commandList)), "Failed to create the command list!");
+				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, allocator.Get(), nullptr, IID_PPV_ARGS(&commandList)), "Failed to create the command list!");
+
+				// Create the fence.
+				ComPtr<ID3D12Fence> fence;
+				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence)), "Failed to create the fence!");
 
 				// Close the 
 				XENON_DX12_ASSERT(commandList->Close(), "Failed to stop the current command list!");
 
-				// Insert the created command list.
+				// Insert the created objects.
+				m_pCommandAllocators.emplace_back(std::move(allocator));
 				m_pCommandLists.emplace_back(std::move(commandList));
+				m_pCommandListFences.emplace_back(std::move(fence));
 			}
 
-			// Select the current command list.
+			// Select the current command allocator and list.
+			m_pCurrentCommandAllocator = m_pCommandAllocators[m_CurrentIndex].Get();
 			m_pCurrentCommandList = m_pCommandLists[m_CurrentIndex].Get();
+			m_pCurrentCommandListFence = m_pCommandListFences[m_CurrentIndex].Get();
 		}
 
 		void DX12CommandRecorder::begin()
 		{
-			XENON_DX12_ASSERT(m_pDevice->getCommandAllocator()->Reset(), "Failed to reset the command list allocator!");
-			XENON_DX12_ASSERT(m_pCurrentCommandList->Reset(m_pDevice->getCommandAllocator(), nullptr), "Failed to reset the command list!");
+			wait();
+
+			XENON_DX12_ASSERT(m_pCurrentCommandAllocator->Reset(), "Failed to reset the command list allocator!");
+			XENON_DX12_ASSERT(m_pCurrentCommandList->Reset(m_pCurrentCommandAllocator, nullptr), "Failed to reset the command list!");
 		}
 
 		void DX12CommandRecorder::copy(Buffer* pSource, uint64_t srcOffset, Buffer* pDestination, uint64_t dstOffset, uint64_t size)
@@ -73,35 +87,31 @@ namespace Xenon
 
 		void DX12CommandRecorder::next()
 		{
-			m_pCurrentCommandList = m_pCommandLists[incrementIndex()].Get();
+			const auto index = incrementIndex();
+			m_pCurrentCommandAllocator = m_pCommandAllocators[index].Get();
+			m_pCurrentCommandList = m_pCommandLists[index].Get();
+			m_pCurrentCommandListFence = m_pCommandListFences[index].Get();
 		}
 
 		void DX12CommandRecorder::submit(Swapchain* pSawpchain /*= nullptr*/)
 		{
 			ID3D12CommandList* ppCommandLists[] = { m_pCurrentCommandList };
 			m_pDevice->getCommandQueue()->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+			XENON_DX12_ASSERT(m_pDevice->getCommandQueue()->Signal(m_pCurrentCommandListFence, 1), "Failed to signal the fence!");
 		}
 
 		void DX12CommandRecorder::wait(uint64_t timeout /*= std::numeric_limits<uint64_t>::max()*/)
 		{
-			ComPtr<ID3D12Fence> fence;
-			XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence)), "Failed to create the fence!");
-			XENON_DX12_ASSERT(m_pDevice->getCommandQueue()->Signal(fence.Get(), 1), "Failed to signal the fence!");
+			const auto nextFence = m_pCurrentCommandListFence->GetCompletedValue() + 1;
+			XENON_DX12_ASSERT(m_pDevice->getCommandQueue()->Signal(m_pCurrentCommandListFence, nextFence), "Failed to signal the fence!");
 
-			// Setup synchronization.
-			auto fenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
-
-			// Validate the event.
-			if (fenceEvent == nullptr)
+			if (m_pCurrentCommandListFence->GetCompletedValue() < nextFence)
 			{
-				XENON_LOG_ERROR("Failed to wait till the command list execution!");
-				return;
+				const auto eventHandle = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
+				XENON_DX12_ASSERT(m_pCurrentCommandListFence->SetEventOnCompletion(nextFence, eventHandle), "Failed to set the event completion handle!");
+				WaitForSingleObject(eventHandle, INFINITE);
+				CloseHandle(eventHandle);
 			}
-
-			// Set the event and wait.
-			XENON_DX12_ASSERT(fence->SetEventOnCompletion(1, fenceEvent), "Failed to set the fence event on completion event!");
-			WaitForSingleObjectEx(fenceEvent, timeout, FALSE);
-			CloseHandle(fenceEvent);
 		}
 	}
 }

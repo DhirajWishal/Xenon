@@ -40,35 +40,20 @@ namespace Xenon
 			if (m_AttachmentTypes & type)
 			{
 				uint8_t index = 0;
-				if (m_AttachmentTypes & AttachmentType::Color)
-				{
-					if (type != AttachmentType::Color)
-						index++;
-				}
+				if (m_AttachmentTypes & AttachmentType::Color && type != AttachmentType::Color)
+					index++;
 
-				if (m_AttachmentTypes & AttachmentType::EntityID)
-				{
-					if (type != AttachmentType::EntityID)
-						index++;
-				}
+				if (m_AttachmentTypes & AttachmentType::EntityID && type != AttachmentType::EntityID)
+					index++;
 
-				if (m_AttachmentTypes & AttachmentType::Normal)
-				{
-					if (type != AttachmentType::Normal)
-						index++;
-				}
+				if (m_AttachmentTypes & AttachmentType::Normal && type != AttachmentType::Normal)
+					index++;
 
-				if (m_AttachmentTypes & AttachmentType::Depth)
-				{
-					if (type != AttachmentType::Depth)
-						index++;
-				}
+				if (m_AttachmentTypes & AttachmentType::Depth && type != AttachmentType::Depth)
+					index++;
 
-				if (m_AttachmentTypes & AttachmentType::Stencil)
-				{
-					if (type != AttachmentType::Stencil)
-						index++;
-				}
+				if (m_AttachmentTypes & AttachmentType::Stencil && type != AttachmentType::Stencil)
+					index++;
 
 				// Return the attachment pointer.
 				return &m_ImageAttachments[index];
@@ -96,7 +81,7 @@ namespace Xenon
 				specification.m_MultiSamplingCount = m_MultiSamplingCount;
 
 				const auto& image = m_ImageAttachments.emplace_back(m_pDevice, specification);
-				createImageView(image.getImage(), VK_IMAGE_ASPECT_COLOR_BIT, m_pDevice->convertFormat(image.getSpecification().m_Format));
+				createImageView(image.getImage(), VK_IMAGE_ASPECT_COLOR_BIT, m_pDevice->convertFormat(image.getDataFormat()));
 			}
 
 			// The rest of the attachments don't need multi-sampling.
@@ -108,7 +93,7 @@ namespace Xenon
 				specification.m_Format = DataFormat::R32_SFLOAT;
 
 				const auto& image = m_ImageAttachments.emplace_back(m_pDevice, specification);
-				createImageView(image.getImage(), image.getAspectFlags(), m_pDevice->convertFormat(image.getSpecification().m_Format));
+				createImageView(image.getImage(), image.getAspectFlags(), m_pDevice->convertFormat(image.getDataFormat()));
 			}
 
 			// Create and add the normal attachment if required.
@@ -117,7 +102,7 @@ namespace Xenon
 				specification.m_Format = DataFormat::R32G32B32_SFLOAT;
 
 				const auto& image = m_ImageAttachments.emplace_back(m_pDevice, specification);
-				createImageView(image.getImage(), image.getAspectFlags(), m_pDevice->convertFormat(image.getSpecification().m_Format));
+				createImageView(image.getImage(), image.getAspectFlags(), m_pDevice->convertFormat(image.getDataFormat()));
 			}
 
 			// Create and add the depth attachment with stencil attachment if required.
@@ -127,7 +112,7 @@ namespace Xenon
 				specification.m_Format = DataFormat::D32_SFLOAT_S8_UINT | DataFormat::D24_UNORMAL_S8_UINT | DataFormat::D16_UNORMAL_S8_UINT;
 
 				const auto& image = m_ImageAttachments.emplace_back(m_pDevice, specification);
-				createImageView(image.getImage(), image.getAspectFlags(), m_pDevice->convertFormat(image.getSpecification().m_Format));
+				createImageView(image.getImage(), image.getAspectFlags(), m_pDevice->convertFormat(image.getDataFormat()));
 			}
 
 			// Create and add the depth attachment if required.
@@ -137,7 +122,7 @@ namespace Xenon
 				specification.m_Format = DataFormat::D32_SFLOAT | DataFormat::D16_SINT;
 
 				const auto& image = m_ImageAttachments.emplace_back(m_pDevice, specification);
-				createImageView(image.getImage(), image.getAspectFlags(), m_pDevice->convertFormat(image.getSpecification().m_Format));
+				createImageView(image.getImage(), image.getAspectFlags(), m_pDevice->convertFormat(image.getDataFormat()));
 			}
 
 			// Create and add the stencil attachment if required.
@@ -147,7 +132,7 @@ namespace Xenon
 				specification.m_Format = DataFormat::S8_UINT;
 
 				const auto& image = m_ImageAttachments.emplace_back(m_pDevice, specification);
-				createImageView(image.getImage(), image.getAspectFlags(), m_pDevice->convertFormat(image.getSpecification().m_Format));
+				createImageView(image.getImage(), image.getAspectFlags(), m_pDevice->convertFormat(image.getDataFormat()));
 			}
 		}
 
@@ -164,13 +149,13 @@ namespace Xenon
 				attachmentDescriptions.emplace_back(attachment.getAttachmentDescription());
 
 				// Setup the attachment references.
-				if (attachment.getSpecification().m_Usage & ImageUsage::ColorAttachment)
+				if (attachment.getUsage() & ImageUsage::ColorAttachment)
 				{
 					attachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 					colorAttachments.emplace_back(attachmentReference);
 				}
 
-				else if (attachment.getSpecification().m_Usage & ImageUsage::DepthAttachment)
+				else if (attachment.getUsage() & ImageUsage::DepthAttachment)
 				{
 					attachmentReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 					depthAttachments.emplace_back(attachmentReference);

@@ -321,8 +321,8 @@ namespace Xenon
 			blit.srcSubresource.layerCount = 1;
 			blit.srcSubresource.mipLevel = 0;
 			blit.srcOffsets[0].z = blit.srcOffsets[0].y = blit.srcOffsets[0].x = 0;
-			blit.srcOffsets[1].x = static_cast<int32_t>(pVkImage->getSpecification().m_Width);
-			blit.srcOffsets[1].y = static_cast<int32_t>(pVkImage->getSpecification().m_Height);
+			blit.srcOffsets[1].x = static_cast<int32_t>(pVkImage->getWidth());
+			blit.srcOffsets[1].y = static_cast<int32_t>(pVkImage->getHeight());
 			blit.srcOffsets[1].z = 1;
 			blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 			blit.dstSubresource.baseArrayLayer = 0;

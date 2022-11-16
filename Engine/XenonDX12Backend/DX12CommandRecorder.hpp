@@ -81,7 +81,7 @@ namespace Xenon
 
 			/**
 			 * Submit the recorded commands to the GPU.
-			 * 
+			 *
 			 * @param pSwapchain The swapchain pointer. This is needed when rendering images to a window. Default is nullptr.
 			 */
 			void submit(Swapchain* pSawpchain = nullptr) override;
@@ -95,8 +95,13 @@ namespace Xenon
 
 		private:
 			DX12Device* m_pDevice = nullptr;
+			std::vector<ComPtr<ID3D12CommandAllocator>> m_pCommandAllocators;
 			std::vector<ComPtr<ID3D12GraphicsCommandList>> m_pCommandLists;
+			std::vector<ComPtr<ID3D12Fence>> m_pCommandListFences;
+
+			ID3D12CommandAllocator* m_pCurrentCommandAllocator = nullptr;
 			ID3D12GraphicsCommandList* m_pCurrentCommandList = nullptr;
+			ID3D12Fence* m_pCurrentCommandListFence = nullptr;
 		};
 	}
 }

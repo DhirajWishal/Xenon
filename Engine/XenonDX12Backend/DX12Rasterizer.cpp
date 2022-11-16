@@ -66,7 +66,6 @@ namespace Xenon
 
 				auto& renderTarget = m_RenderTargets.emplace_back(pDevice, specification, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_HEAP_TYPE_DEFAULT, D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES);
 
-				// XENON_DX12_ASSERT(m_swapChain->GetBuffer(n, IID_PPV_ARGS(&m_renderTargets[i])));
 				m_pDevice->getDevice()->CreateRenderTargetView(renderTarget.getResource(), nullptr, rtvHandle);
 				rtvHandle.Offset(1, m_RenderTargetDescriptorSize);
 			}
@@ -77,35 +76,20 @@ namespace Xenon
 			if (m_AttachmentTypes & type)
 			{
 				uint8_t index = 0;
-				if (m_AttachmentTypes & AttachmentType::Color)
-				{
-					if (type != AttachmentType::Color)
-						index++;
-				}
+				if (m_AttachmentTypes & AttachmentType::Color && type != AttachmentType::Color)
+					index++;
 
-				if (m_AttachmentTypes & AttachmentType::EntityID)
-				{
-					if (type != AttachmentType::EntityID)
-						index++;
-				}
+				if (m_AttachmentTypes & AttachmentType::EntityID && type != AttachmentType::EntityID)
+					index++;
 
-				if (m_AttachmentTypes & AttachmentType::Normal)
-				{
-					if (type != AttachmentType::Normal)
-						index++;
-				}
+				if (m_AttachmentTypes & AttachmentType::Normal && type != AttachmentType::Normal)
+					index++;
 
-				if (m_AttachmentTypes & AttachmentType::Depth)
-				{
-					if (type != AttachmentType::Depth)
-						index++;
-				}
+				if (m_AttachmentTypes & AttachmentType::Depth && type != AttachmentType::Depth)
+					index++;
 
-				if (m_AttachmentTypes & AttachmentType::Stencil)
-				{
-					if (type != AttachmentType::Stencil)
-						index++;
-				}
+				if (m_AttachmentTypes & AttachmentType::Stencil && type != AttachmentType::Stencil)
+					index++;
 
 				// Return the attachment pointer.
 				return &m_RenderTargets[index];

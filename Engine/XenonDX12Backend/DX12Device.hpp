@@ -95,6 +95,20 @@ namespace Xenon
 			[[nodiscard]] const ID3D12Device* getDevice() const { return m_Device.Get(); }
 
 			/**
+			 * Get the device adapter.
+			 *
+			 * @return The adapter pointer.
+			 */
+			[[nodiscard]] IDXGIAdapter* getAdapter() { return m_Adapter.Get(); }
+
+			/**
+			 * Get the device adapter.
+			 *
+			 * @return The adapter pointer.
+			 */
+			[[nodiscard]] const IDXGIAdapter* getAdapter() const { return m_Adapter.Get(); }
+
+			/**
 			 * Get the memory allocator.
 			 *
 			 * @return The allocator.

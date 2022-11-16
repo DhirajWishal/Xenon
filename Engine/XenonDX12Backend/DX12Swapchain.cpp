@@ -80,9 +80,7 @@ namespace Xenon
 		{
 			// Present the swapchain.
 			DXGI_PRESENT_PARAMETERS parameters = { 0 };
-			const auto result = m_SwapChain->Present1(1, 0, &parameters);
-			XENON_DX12_ASSERT(result, "Failed to present the swapchain!");
-			const auto reason = m_pDevice->getDevice()->GetDeviceRemovedReason();
+			XENON_DX12_ASSERT(m_SwapChain->Present1(1, 0, &parameters), "Failed to present the swapchain!");
 
 			// Move to the next frame.
 			// Schedule a Signal command in the queue.

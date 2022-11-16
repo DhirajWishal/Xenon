@@ -62,6 +62,34 @@ namespace Xenon
 			 */
 			[[nodiscard]] const ImageSpecification& getSpecification() const { return m_Specification; }
 
+			/**
+			 * Get the width of the image.
+			 *
+			 * @return The image's width.
+			 */
+			[[nodiscard]] uint32_t getWidth() const { return m_Specification.m_Width; }
+
+			/**
+			 * Get the height of the image.
+			 *
+			 * @return The image's height.
+			 */
+			[[nodiscard]] uint32_t getHeight() const { return m_Specification.m_Height; }
+
+			/**
+			 * Get the image's data format.
+			 *
+			 * @return The format.
+			 */
+			[[nodiscard]] DataFormat getDataFormat() const { return m_Specification.m_Format; }
+
+			/**
+			 * Get the image usage.
+			 *
+			 * @return The image usage.
+			 */
+			[[nodiscard]] ImageUsage getUsage() const { return m_Specification.m_Usage; }
+
 		public:
 			/**
 			 * Move assignment operator.
