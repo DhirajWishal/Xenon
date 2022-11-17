@@ -411,7 +411,7 @@ namespace Xenon
 			}
 		}
 
-		void VulkanCommandRecorder::wait(uint64_t timeout /*= std::numeric_limits<uint64_t>::max()*/)
+		void VulkanCommandRecorder::wait(uint64_t timeout /*= UINT64_MAX*/)
 		{
 			m_pCurrentBuffer->wait(timeout);
 		}

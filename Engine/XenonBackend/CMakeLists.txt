@@ -27,6 +27,7 @@ set(
 	"Core.hpp"
 	"Image.hpp"
 	"CommandRecorder.hpp"
+	"ShaderSource.hpp"
 )
 
 # Add the source group.

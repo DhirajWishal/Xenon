@@ -96,9 +96,9 @@ namespace Xenon
 			/**
 			 * Wait till the commands that were recorded has been executed.
 			 *
-			 * @param timeout The time to wait till the commands are executed. Default is uint64_t max.
+			 * @param timeout The time to wait till the commands are executed in milliseconds. Default is uint64_t max.
 			 */
-			void wait(uint64_t timeout = std::numeric_limits<uint64_t>::max()) override;
+			void wait(uint64_t timeout = UINT64_MAX) override;
 
 		private:
 			std::vector<VulkanCommandBuffer> m_CommandBuffers;

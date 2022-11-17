@@ -36,7 +36,7 @@ namespace Xenon
 				ComPtr<ID3D12Fence> fence;
 				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence)), "Failed to create the fence!");
 
-				// Close the 
+				// Close the command list.
 				XENON_DX12_ASSERT(commandList->Close(), "Failed to stop the current command list!");
 
 				// Insert the created objects.
@@ -45,7 +45,7 @@ namespace Xenon
 				m_pCommandListFences.emplace_back(std::move(fence));
 			}
 
-			// Select the current command allocator and list.
+			// Select the current objects.
 			m_pCurrentCommandAllocator = m_pCommandAllocators[m_CurrentIndex].Get();
 			m_pCurrentCommandList = m_pCommandLists[m_CurrentIndex].Get();
 			m_pCurrentCommandListFence = m_pCommandListFences[m_CurrentIndex].Get();
@@ -71,7 +71,7 @@ namespace Xenon
 
 		void DX12CommandRecorder::bind(Rasterizer* pRasterizer, const std::vector<Rasterizer::ClearValueType>& clearValues)
 		{
-			auto dxRasterizer = pRasterizer->as<DX12Rasterizer>();
+			const auto dxRasterizer = pRasterizer->as<DX12Rasterizer>();
 			CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(dxRasterizer->getRenderTargetHeap()->GetCPUDescriptorHandleForHeapStart(), dxRasterizer->getFrameIndex(), dxRasterizer->getRenderTargetDescriptorSize());
 
 			m_pCurrentCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
@@ -95,12 +95,12 @@ namespace Xenon
 
 		void DX12CommandRecorder::submit(Swapchain* pSawpchain /*= nullptr*/)
 		{
-			ID3D12CommandList* ppCommandLists[] = { m_pCurrentCommandList };
-			m_pDevice->getCommandQueue()->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+			std::array<ID3D12CommandList*, 1> pCommandLists = { m_pCurrentCommandList };
+			m_pDevice->getCommandQueue()->ExecuteCommandLists(pCommandLists.size(), pCommandLists.data());
 			XENON_DX12_ASSERT(m_pDevice->getCommandQueue()->Signal(m_pCurrentCommandListFence, 1), "Failed to signal the fence!");
 		}
 
-		void DX12CommandRecorder::wait(uint64_t timeout /*= std::numeric_limits<uint64_t>::max()*/)
+		void DX12CommandRecorder::wait(uint64_t timeout /*= UINT64_MAX*/)
 		{
 			const auto nextFence = m_pCurrentCommandListFence->GetCompletedValue() + 1;
 			XENON_DX12_ASSERT(m_pDevice->getCommandQueue()->Signal(m_pCurrentCommandListFence, nextFence), "Failed to signal the fence!");
@@ -108,8 +108,16 @@ namespace Xenon
 			if (m_pCurrentCommandListFence->GetCompletedValue() < nextFence)
 			{
 				const auto eventHandle = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
+
+				// Validate the created event handle.
+				if (eventHandle == nullptr)
+				{
+					XENON_LOG_ERROR("DirectX 12: The created fence event is nullptr!");
+					return;
+				}
+
 				XENON_DX12_ASSERT(m_pCurrentCommandListFence->SetEventOnCompletion(nextFence, eventHandle), "Failed to set the event completion handle!");
-				WaitForSingleObject(eventHandle, INFINITE);
+				WaitForSingleObject(eventHandle, static_cast<DWORD>(timeout));
 				CloseHandle(eventHandle);
 			}
 		}

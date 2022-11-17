@@ -90,7 +90,7 @@ namespace Xenon
 			/**
 			 * Wait till the commands that were recorded has been executed.
 			 *
-			 * @param timeout The time to wait till the commands are executed. Default is uint64_t max.
+			 * @param timeout The time to wait till the commands are executed in milliseconds. Default is uint64_t max.
 			 */
 			virtual void wait(uint64_t timeout = UINT64_MAX) = 0;
 
