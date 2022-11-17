@@ -11,8 +11,6 @@
 
 #include <vk_mem_alloc.h>
 
-#include <array>
-
 namespace Xenon
 {
 	namespace Backend
@@ -223,7 +221,6 @@ namespace Xenon
 			VolkDeviceTable m_DeviceTable;
 
 			std::vector<Mutex<VulkanQueue>> m_Queues;
-			std::array<uint8_t, 3> m_QueueIndex;
 
 			std::vector<const char*> m_DeviceExtensions;
 
@@ -237,6 +234,10 @@ namespace Xenon
 			Mutex<VkCommandPool> m_TransferCommandPool = VK_NULL_HANDLE;
 
 			VmaAllocator m_Allocator = nullptr;
+
+			uint8_t m_ComputeQueueIndex = 0;
+			uint8_t m_GraphicsQueueIndex = 0;
+			uint8_t m_TransferQueueIndex = 0;
 		};
 	}
 }

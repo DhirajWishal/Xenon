@@ -232,32 +232,32 @@ namespace Xenon
 
 		Mutex<Xenon::Backend::VulkanQueue>& VulkanDevice::getComputeQueue()
 		{
-			return m_Queues[m_QueueIndex[EnumToInt(QueueType::Compute)]];
+			return m_Queues[m_ComputeQueueIndex];
 		}
 
 		const Mutex<Xenon::Backend::VulkanQueue>& VulkanDevice::getComputeQueue() const
 		{
-			return m_Queues[m_QueueIndex[EnumToInt(QueueType::Compute)]];
+			return m_Queues[m_ComputeQueueIndex];
 		}
 
 		Mutex<Xenon::Backend::VulkanQueue>& VulkanDevice::getGraphicsQueue()
 		{
-			return m_Queues[m_QueueIndex[EnumToInt(QueueType::Graphics)]];
+			return m_Queues[m_GraphicsQueueIndex];
 		}
 
 		const Mutex<Xenon::Backend::VulkanQueue>& VulkanDevice::getGraphicsQueue() const
 		{
-			return m_Queues[m_QueueIndex[EnumToInt(QueueType::Graphics)]];
+			return m_Queues[m_GraphicsQueueIndex];
 		}
 
 		Mutex<Xenon::Backend::VulkanQueue>& VulkanDevice::getTransferQueue()
 		{
-			return m_Queues[m_QueueIndex[EnumToInt(QueueType::Transfer)]];
+			return m_Queues[m_TransferQueueIndex];
 		}
 
 		const Mutex<Xenon::Backend::VulkanQueue>& VulkanDevice::getTransferQueue() const
 		{
-			return m_Queues[m_QueueIndex[EnumToInt(QueueType::Transfer)]];
+			return m_Queues[m_TransferQueueIndex];
 		}
 
 		void VulkanDevice::selectPhysicalDevice()
@@ -351,22 +351,21 @@ namespace Xenon
 			const auto graphicsFamily = VulkanQueue::FindFamily(m_PhysicalDevice, VK_QUEUE_GRAPHICS_BIT);
 			const auto transferFamily = VulkanQueue::FindFamily(m_PhysicalDevice, VK_QUEUE_TRANSFER_BIT);
 
-			m_QueueIndex.fill(0);
 			if (computeFamily != static_cast<uint32_t>(-1))
 			{
-				m_QueueIndex[EnumToInt(QueueType::Compute)] = static_cast<uint8_t>(m_Queues.size());
+				m_ComputeQueueIndex = static_cast<uint8_t>(m_Queues.size());
 				m_Queues.emplace_back().getUnsafe().setFamily(computeFamily);
 			}
 
 			if (graphicsFamily != static_cast<uint32_t>(-1) && graphicsFamily != computeFamily)
 			{
-				m_QueueIndex[EnumToInt(QueueType::Graphics)] = static_cast<uint8_t>(m_Queues.size());
+				m_GraphicsQueueIndex = static_cast<uint8_t>(m_Queues.size());
 				m_Queues.emplace_back().getUnsafe().setFamily(graphicsFamily);
 			}
 
 			if (transferFamily != static_cast<uint32_t>(-1) && transferFamily != computeFamily && transferFamily != graphicsFamily)
 			{
-				m_QueueIndex[EnumToInt(QueueType::Transfer)] = static_cast<uint8_t>(m_Queues.size());
+				m_TransferQueueIndex = static_cast<uint8_t>(m_Queues.size());
 				m_Queues.emplace_back().getUnsafe().setFamily(transferFamily);
 			}
 		}

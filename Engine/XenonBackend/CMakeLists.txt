@@ -27,6 +27,7 @@ set(
 	"Core.hpp"
 	"Image.hpp"
 	"CommandRecorder.hpp"
+	"ShaderSource.cpp"
 	"ShaderSource.hpp"
 )
 
