@@ -40,6 +40,16 @@ namespace Xenon
 
 		uint32_t VulkanSwapchain::prepare()
 		{
+			// If the application is minimized, return the previous image index.
+			if (!isRenderable())
+			{
+				const auto capabilities = getSurfaceCapabilities();
+				if (capabilities.currentExtent.width == 0 || capabilities.currentExtent.height == 0)
+					return m_ImageIndex;
+
+				recreate();
+			}
+
 			const auto result = m_pDevice->getDeviceTable().vkAcquireNextImageKHR(m_pDevice->getLogicalDevice(), m_Swapchain, UINT64_MAX, m_InFlightSemaphores[m_FrameIndex], VK_NULL_HANDLE, &m_ImageIndex);
 			if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
 			{
@@ -54,28 +64,32 @@ namespace Xenon
 
 		void VulkanSwapchain::present()
 		{
-			VkPresentInfoKHR presentInfo = {};
-			presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-			presentInfo.pNext = nullptr;
-			presentInfo.waitSemaphoreCount = 1;
-			presentInfo.pWaitSemaphores = &m_RenderFinishedSemaphores[m_FrameIndex];
-			presentInfo.swapchainCount = 1;
-			presentInfo.pSwapchains = &m_Swapchain;
-			presentInfo.pImageIndices = &m_ImageIndex;
-			presentInfo.pResults = VK_NULL_HANDLE;
+			// Present if the application isn't minimized.
+			if (isRenderable())
+			{
+				VkPresentInfoKHR presentInfo = {};
+				presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+				presentInfo.pNext = nullptr;
+				presentInfo.waitSemaphoreCount = 1;
+				presentInfo.pWaitSemaphores = &m_RenderFinishedSemaphores[m_FrameIndex];
+				presentInfo.swapchainCount = 1;
+				presentInfo.pSwapchains = &m_Swapchain;
+				presentInfo.pImageIndices = &m_ImageIndex;
+				presentInfo.pResults = VK_NULL_HANDLE;
 
-			// Present it to the surface.
-			const auto result = m_pDevice->getTransferQueue().access([this](const VulkanQueue& queue, const VkPresentInfoKHR& presentInfo)
-				{
-					return m_pDevice->getDeviceTable().vkQueuePresentKHR(queue.getQueue(), &presentInfo);
-				}
-			, presentInfo);
+				// Present it to the surface.
+				const auto result = m_pDevice->getTransferQueue().access([this](const VulkanQueue& queue, const VkPresentInfoKHR& presentInfo)
+					{
+						return m_pDevice->getDeviceTable().vkQueuePresentKHR(queue.getQueue(), &presentInfo);
+					}
+				, presentInfo);
 
-			if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
-				recreate();
+				if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+					recreate();
 
-			else
-				XENON_VK_ASSERT(result, "Failed to present the swapchain image!");
+				else
+					XENON_VK_ASSERT(result, "Failed to present the swapchain image!");
+			}
 
 			// Increment the frame index.
 			incrementFrame();
@@ -128,6 +142,10 @@ namespace Xenon
 			m_FrameCount = std::clamp(surfaceCapabilities.minImageCount + 1, surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount);
 			m_RenderWidth = surfaceCapabilities.currentExtent.width;
 			m_RenderHeight = surfaceCapabilities.currentExtent.height;
+
+			// Return if the window is minimized.
+			if (!isRenderable())
+				return;
 
 			// Get the present modes.
 			uint32_t presentModeCount = 0;
@@ -259,6 +277,7 @@ namespace Xenon
 			m_pDevice->getDeviceTable().vkDestroySwapchainKHR(m_pDevice->getLogicalDevice(), m_Swapchain, nullptr);
 			vkDestroySurfaceKHR(m_pDevice->getInstance()->getInstance(), m_Surface, nullptr);
 
+			m_SwapchainImageViews.clear();
 			m_Swapchain = VK_NULL_HANDLE;
 		}
 

@@ -101,6 +101,15 @@ namespace Xenon
 			 */
 			[[nodiscard]] uint32_t getRenderHeight() const { return m_RenderHeight; }
 
+			/**
+			 * Check if the swapchain is renderable.
+			 * This becomes false when the render width or height becomes zero.
+			 *
+			 * @return True if the swapchain is renderable.
+			 * @return False if the swapchain is not renderable.
+			 */
+			[[nodiscard]] bool isRenderable() const { return m_RenderWidth > 0 && m_RenderHeight > 0; }
+
 		private:
 			/**
 			 * Create the surface.

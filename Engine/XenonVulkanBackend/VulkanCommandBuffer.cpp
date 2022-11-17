@@ -42,7 +42,15 @@ namespace Xenon
 				{
 					m_pDevice->getInstance()->getDeletionQueue().insert([pDevice = m_pDevice, commandPool = m_CommandPool, buffer = m_CommandBuffer, fence = m_Fence]
 						{
-							pDevice->getDeviceTable().vkFreeCommandBuffers(pDevice->getLogicalDevice(), commandPool, 1, &buffer);
+							if (pDevice->getComputeCommandPool().getUnsafe() == commandPool)
+								pDevice->getComputeCommandPool().access([pDevice, buffer](VkCommandPool pool) { pDevice->getDeviceTable().vkFreeCommandBuffers(pDevice->getLogicalDevice(), pool, 1, &buffer); });
+
+							else if (pDevice->getGraphicsCommandPool().getUnsafe() == commandPool)
+								pDevice->getGraphicsCommandPool().access([pDevice, buffer](VkCommandPool pool) { pDevice->getDeviceTable().vkFreeCommandBuffers(pDevice->getLogicalDevice(), pool, 1, &buffer); });
+							
+							else if (pDevice->getTransferCommandPool().getUnsafe() == commandPool)
+								pDevice->getTransferCommandPool().access([pDevice, buffer](VkCommandPool pool) { pDevice->getDeviceTable().vkFreeCommandBuffers(pDevice->getLogicalDevice(), pool, 1, &buffer); });
+
 							pDevice->getDeviceTable().vkDestroyFence(pDevice->getLogicalDevice(), fence, nullptr);
 						}
 					);
@@ -78,7 +86,7 @@ namespace Xenon
 			submitInfo.pSignalSemaphores = nullptr;
 
 			// Get the semaphores from the swapchain if provided.
-			if (pSwapchain != nullptr)
+			if (pSwapchain != nullptr && pSwapchain->isRenderable())
 			{
 				submitInfo.waitSemaphoreCount = 1;
 				submitInfo.pWaitSemaphores = pSwapchain->getInFlightSemaphorePtr();

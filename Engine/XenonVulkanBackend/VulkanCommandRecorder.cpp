@@ -314,6 +314,10 @@ namespace Xenon
 			auto pVkImage = pSource->as<VulkanImage>();
 			auto pVkSwapchain = pDestination->as<VulkanSwapchain>();
 
+			// Return if we're minimized.
+			if (!pVkSwapchain->isRenderable())
+				return;
+
 			const auto currentSwapchainImage = pVkSwapchain->getCurrentImage();
 
 			VkImageBlit blit = {};
