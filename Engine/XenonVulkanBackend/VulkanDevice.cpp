@@ -230,6 +230,36 @@ namespace Xenon
 			return VK_FORMAT_UNDEFINED;
 		}
 
+		Mutex<Xenon::Backend::VulkanQueue>& VulkanDevice::getComputeQueue()
+		{
+			return m_Queues[m_QueueIndex[EnumToInt(QueueType::Compute)]];
+		}
+
+		const Mutex<Xenon::Backend::VulkanQueue>& VulkanDevice::getComputeQueue() const
+		{
+			return m_Queues[m_QueueIndex[EnumToInt(QueueType::Compute)]];
+		}
+
+		Mutex<Xenon::Backend::VulkanQueue>& VulkanDevice::getGraphicsQueue()
+		{
+			return m_Queues[m_QueueIndex[EnumToInt(QueueType::Graphics)]];
+		}
+
+		const Mutex<Xenon::Backend::VulkanQueue>& VulkanDevice::getGraphicsQueue() const
+		{
+			return m_Queues[m_QueueIndex[EnumToInt(QueueType::Graphics)]];
+		}
+
+		Mutex<Xenon::Backend::VulkanQueue>& VulkanDevice::getTransferQueue()
+		{
+			return m_Queues[m_QueueIndex[EnumToInt(QueueType::Transfer)]];
+		}
+
+		const Mutex<Xenon::Backend::VulkanQueue>& VulkanDevice::getTransferQueue() const
+		{
+			return m_Queues[m_QueueIndex[EnumToInt(QueueType::Transfer)]];
+		}
+
 		void VulkanDevice::selectPhysicalDevice()
 		{
 			// Enumerate physical devices.
@@ -317,20 +347,34 @@ namespace Xenon
 			CheckDeviceExtensionSupport(m_PhysicalDevice, m_DeviceExtensions, &m_SupportedRenderTargetTypes);
 
 			// Setup the queue families.
-			m_ComputeQueue.getUnsafe().setupFamily(m_PhysicalDevice, VK_QUEUE_COMPUTE_BIT);
-			m_GraphicsQueue.getUnsafe().setupFamily(m_PhysicalDevice, VK_QUEUE_GRAPHICS_BIT);
-			m_TransferQueue.getUnsafe().setupFamily(m_PhysicalDevice, VK_QUEUE_TRANSFER_BIT);
+			const auto computeFamily = VulkanQueue::FindFamily(m_PhysicalDevice, VK_QUEUE_COMPUTE_BIT);
+			const auto graphicsFamily = VulkanQueue::FindFamily(m_PhysicalDevice, VK_QUEUE_GRAPHICS_BIT);
+			const auto transferFamily = VulkanQueue::FindFamily(m_PhysicalDevice, VK_QUEUE_TRANSFER_BIT);
+
+			m_QueueIndex.fill(0);
+			if (computeFamily != static_cast<uint32_t>(-1))
+			{
+				m_QueueIndex[EnumToInt(QueueType::Compute)] = static_cast<uint8_t>(m_Queues.size());
+				m_Queues.emplace_back().getUnsafe().setFamily(computeFamily);
+			}
+
+			if (graphicsFamily != static_cast<uint32_t>(-1) && graphicsFamily != computeFamily)
+			{
+				m_QueueIndex[EnumToInt(QueueType::Graphics)] = static_cast<uint8_t>(m_Queues.size());
+				m_Queues.emplace_back().getUnsafe().setFamily(graphicsFamily);
+			}
+
+			if (transferFamily != static_cast<uint32_t>(-1) && transferFamily != computeFamily && transferFamily != graphicsFamily)
+			{
+				m_QueueIndex[EnumToInt(QueueType::Transfer)] = static_cast<uint8_t>(m_Queues.size());
+				m_Queues.emplace_back().getUnsafe().setFamily(transferFamily);
+			}
 		}
 
 		void VulkanDevice::createLogicalDevice()
 		{
 			// Setup device queues.
 			constexpr float priority = 1.0f;
-			std::set<uint32_t> uniqueQueueFamilies = {
-				m_GraphicsQueue.getUnsafe().getFamily(),
-				m_ComputeQueue.getUnsafe().getFamily(),
-				m_TransferQueue.getUnsafe().getFamily()
-			};
 
 			VkDeviceQueueCreateInfo queueCreateInfo = {};
 			queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -341,9 +385,9 @@ namespace Xenon
 			queueCreateInfo.pQueuePriorities = &priority;
 
 			std::vector< VkDeviceQueueCreateInfo> queueCreateInfos;
-			for (const auto& family : uniqueQueueFamilies)
+			for (const auto& queue : m_Queues)
 			{
-				queueCreateInfo.queueFamilyIndex = family;
+				queueCreateInfo.queueFamilyIndex = queue.getUnsafe().getFamily();
 				queueCreateInfos.emplace_back(queueCreateInfo);
 			}
 
@@ -381,15 +425,12 @@ namespace Xenon
 			volkLoadDeviceTable(&m_DeviceTable, m_LogicalDevice);
 
 			// Get the queues.
-			VkQueue queue = VK_NULL_HANDLE;
-			m_DeviceTable.vkGetDeviceQueue(m_LogicalDevice, m_GraphicsQueue.getUnsafe().getFamily(), 0, &queue);
-			m_GraphicsQueue.getUnsafe().setQueue(queue);
-
-			m_DeviceTable.vkGetDeviceQueue(m_LogicalDevice, m_ComputeQueue.getUnsafe().getFamily(), 0, &queue);
-			m_ComputeQueue.getUnsafe().setQueue(queue);
-
-			m_DeviceTable.vkGetDeviceQueue(m_LogicalDevice, m_TransferQueue.getUnsafe().getFamily(), 0, &queue);
-			m_TransferQueue.getUnsafe().setQueue(queue);
+			for (auto& queue : m_Queues)
+			{
+				VkQueue vkQueue = VK_NULL_HANDLE;
+				m_DeviceTable.vkGetDeviceQueue(m_LogicalDevice, queue.getUnsafe().getFamily(), 0, &vkQueue);
+				queue.getUnsafe().setQueue(vkQueue);
+			}
 		}
 
 		void VulkanDevice::createMemoryAllocator()

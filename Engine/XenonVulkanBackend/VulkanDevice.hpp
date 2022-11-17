@@ -11,6 +11,8 @@
 
 #include <vk_mem_alloc.h>
 
+#include <array>
+
 namespace Xenon
 {
 	namespace Backend
@@ -20,6 +22,16 @@ namespace Xenon
 		 */
 		class VulkanDevice final : public Device
 		{
+			/**
+			 * Queue type enum.
+			 */
+			enum class QueueType : uint8_t
+			{
+				Compute,
+				Graphics,
+				Transfer
+			};
+
 		public:
 			/**
 			 * Explicit constructor.
@@ -106,42 +118,42 @@ namespace Xenon
 			 *
 			 * @return The compute queue.
 			 */
-			[[nodiscard]] Mutex<VulkanQueue>& getComputeQueue() { return m_ComputeQueue; }
+			[[nodiscard]] Mutex<VulkanQueue>& getComputeQueue();
 
 			/**
 			 * Get the compute queue from the device.
 			 *
 			 * @return The compute queue.
 			 */
-			[[nodiscard]] const Mutex<VulkanQueue>& getComputeQueue() const { return m_ComputeQueue; }
+			[[nodiscard]] const Mutex<VulkanQueue>& getComputeQueue() const;
 
 			/**
 			 * Get the graphics queue from the device.
 			 *
 			 * @return The graphics queue.
 			 */
-			[[nodiscard]] Mutex<VulkanQueue>& getGraphicsQueue() { return m_GraphicsQueue; }
+			[[nodiscard]] Mutex<VulkanQueue>& getGraphicsQueue();
 
 			/**
 			 * Get the graphics queue from the device.
 			 *
 			 * @return The graphics queue.
 			 */
-			[[nodiscard]] const Mutex<VulkanQueue>& getGraphicsQueue() const { return m_GraphicsQueue; }
+			[[nodiscard]] const Mutex<VulkanQueue>& getGraphicsQueue() const;
 
 			/**
 			 * Get the transfer queue from the device.
 			 *
 			 * @return The transfer queue.
 			 */
-			[[nodiscard]] Mutex<VulkanQueue>& getTransferQueue() { return m_TransferQueue; }
+			[[nodiscard]] Mutex<VulkanQueue>& getTransferQueue();
 
 			/**
 			 * Get the transfer queue from the device.
 			 *
 			 * @return The transfer queue.
 			 */
-			[[nodiscard]] const Mutex<VulkanQueue>& getTransferQueue() const { return m_TransferQueue; }
+			[[nodiscard]] const Mutex<VulkanQueue>& getTransferQueue() const;
 
 			/**
 			 * Get the compute command pool.
@@ -210,9 +222,8 @@ namespace Xenon
 			VkPhysicalDeviceProperties m_PhysicalDeviceProperties = {};
 			VolkDeviceTable m_DeviceTable;
 
-			Mutex<VulkanQueue> m_ComputeQueue;
-			Mutex<VulkanQueue> m_GraphicsQueue;
-			Mutex<VulkanQueue> m_TransferQueue;
+			std::vector<Mutex<VulkanQueue>> m_Queues;
+			std::array<uint8_t, 3> m_QueueIndex;
 
 			std::vector<const char*> m_DeviceExtensions;
 

@@ -8,7 +8,7 @@ namespace Xenon
 {
 	namespace Backend
 	{
-		void VulkanQueue::setupFamily(VkPhysicalDevice physicalDevice, VkQueueFlagBits flag)
+		uint32_t VulkanQueue::FindFamily(VkPhysicalDevice physicalDevice, VkQueueFlagBits flag)
 		{
 			// Get the queue family count.
 			uint32_t queueFamilyCount = 0;
@@ -18,7 +18,7 @@ namespace Xenon
 			if (queueFamilyCount == 0)
 			{
 				XENON_LOG_FATAL("Failed to get the queue family property count!");
-				return;
+				return -1;
 			}
 
 			// Get the queue family properties.
@@ -34,11 +34,16 @@ namespace Xenon
 
 				// Check if the queue flag contains what we want.
 				if (family.queueFlags & flag)
-				{
-					m_Family = i;
-					break;
-				}
+					return i;
 			}
+
+			XENON_LOG_FATAL("No suitable queue family found!");
+			return -1;
+		}
+
+		void VulkanQueue::setFamily(uint32_t family)
+		{
+			m_Family = family;
 		}
 
 		void VulkanQueue::setQueue(VkQueue queue)

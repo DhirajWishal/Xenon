@@ -37,6 +37,28 @@ namespace Xenon
 		Mutex(Type&& data) : m_Data(std::move(data)) {}
 
 		/**
+		 * Copy constructor.
+		 *
+		 * @param other The other mutex.
+		 */
+		Mutex(const Mutex& other)
+		{
+			auto lock = std::scoped_lock(m_Mutex);
+			m_Data = other.m_Data;
+		}
+
+		/**
+		 * Move constructor.
+		 *
+		 * @param other The other mutex.
+		 */
+		Mutex(Mutex&& other) noexcept
+		{
+			auto lock = std::scoped_lock(m_Mutex);
+			m_Data = std::move(other.m_Data);
+		}
+
+		/**
 		 * Set the data.
 		 *
 		 * @param data The data to set.

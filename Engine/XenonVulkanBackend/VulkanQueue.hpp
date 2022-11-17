@@ -26,12 +26,20 @@ namespace Xenon
 			~VulkanQueue() = default;
 
 			/**
-			 * Setup the queue's family.
+			 * Find the best queue family.
 			 *
 			 * @param physicalDevice The physical device to which the queue is bound to.
 			 * @param flag The queue flag.
+			 * @return The queue family.
 			 */
-			void setupFamily(VkPhysicalDevice physicalDevice, VkQueueFlagBits flag);
+			[[nodiscard]] static uint32_t FindFamily(VkPhysicalDevice physicalDevice, VkQueueFlagBits flag);
+
+			/**
+			 * Set the queue's family.
+			 *
+			 * @param family The queue family.
+			 */
+			void setFamily(uint32_t family);
 
 			/**
 			 * Set the queue.
