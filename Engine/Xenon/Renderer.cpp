@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "Renderer.hpp"
+#include "../XenonCore/Logging.hpp"
 
 namespace Xenon
 {
@@ -16,14 +17,20 @@ namespace Xenon
 
 	Renderer::~Renderer()
 	{
+		XENON_LOG_TRACE("Terminating the renderer.");
+
 		m_bShouldRun = false;
 		m_WorkerSynchronization.notify_one();
 
+		XENON_LOG_TRACE("Waiting till the worker joins...");
 		m_Worker.join();
+		XENON_LOG_TRACE("The worker joined!");
 	}
 
 	bool Renderer::update()
 	{
+		XENON_LOG_TRACE("Updating the renderer.");
+
 		m_pSwapChain->getWindow()->update();
 		m_WorkerSynchronization.notify_one();
 		return m_pSwapChain->getWindow()->isOpen();

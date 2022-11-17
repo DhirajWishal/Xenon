@@ -14,7 +14,7 @@ namespace Xenon
 		/**
 		 * Vulkan swapchain class.
 		 */
-		class VulkanSwapchain final : public VulkanDeviceBoundObject, public Swapchain
+		class VulkanSwapchain final : public Swapchain, public VulkanDeviceBoundObject
 		{
 		public:
 			/**

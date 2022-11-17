@@ -29,6 +29,8 @@ set(
 	"CommandRecorder.hpp"
 	"ShaderSource.cpp"
 	"ShaderSource.hpp"
+	"Pipeline.hpp"
+	"RasterizingPipeline.hpp"
 )
 
 # Add the source group.

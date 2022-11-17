@@ -14,7 +14,7 @@ namespace Xenon
 		/**
 		 * Vulkan buffer class.
 		 */
-		class VulkanBuffer final : public VulkanDeviceBoundObject, public Buffer
+		class VulkanBuffer final : public Buffer, public VulkanDeviceBoundObject
 		{
 		public:
 			/**

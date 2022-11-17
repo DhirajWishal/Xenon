@@ -14,7 +14,7 @@ namespace Xenon
 		/**
 		 * Vulkan command recorder class.
 		 */
-		class VulkanCommandRecorder final : public VulkanDeviceBoundObject, public CommandRecorder
+		class VulkanCommandRecorder final : public CommandRecorder, public VulkanDeviceBoundObject
 		{
 		public:
 			/**

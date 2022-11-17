@@ -17,7 +17,7 @@ namespace Xenon
 		 * DirectX 12 buffer class.
 		 * This is the base class for all the DirectX 12 buffers.
 		 */
-		class DX12Buffer final : public DX12DeviceBoundObject, public Buffer
+		class DX12Buffer final : public Buffer, public DX12DeviceBoundObject
 		{
 		public:
 			/**

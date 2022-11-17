@@ -14,7 +14,7 @@ namespace Xenon
 		/**
 		 * Vulkan image class.
 		 */
-		class VulkanImage final : public VulkanDeviceBoundObject, public Image
+		class VulkanImage final : public Image, public VulkanDeviceBoundObject
 		{
 		public:
 			/**

@@ -11,8 +11,8 @@ namespace Xenon
 	namespace Backend
 	{
 		DX12Swapchain::DX12Swapchain(DX12Device* pDevice, const std::string& title, uint32_t width, uint32_t height)
-			: DX12DeviceBoundObject(pDevice)
-			, Swapchain(pDevice, title, width, height)
+			: Swapchain(pDevice, title, width, height)
+			, DX12DeviceBoundObject(pDevice)
 		{
 			m_FrameCount = 3;	// TODO: Find a better system.
 

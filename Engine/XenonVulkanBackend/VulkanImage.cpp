@@ -9,8 +9,8 @@ namespace Xenon
 	namespace Backend
 	{
 		VulkanImage::VulkanImage(VulkanDevice* pDevice, const ImageSpecification& specification)
-			: VulkanDeviceBoundObject(pDevice)
-			, Image(pDevice, specification)
+			: Image(pDevice, specification)
+			, VulkanDeviceBoundObject(pDevice)
 		{
 			// Resolve the image usage.
 			VkImageUsageFlags usageFlags = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
@@ -131,8 +131,8 @@ namespace Xenon
 		}
 
 		VulkanImage::VulkanImage(VulkanImage&& other) noexcept
-			: VulkanDeviceBoundObject(std::move(other))
-			, Image(std::move(other))
+			: Image(std::move(other))
+			, VulkanDeviceBoundObject(std::move(other))
 			, m_AttachmentDescription(std::exchange(other.m_AttachmentDescription, {}))
 			, m_Image(std::exchange(other.m_Image, VK_NULL_HANDLE))
 			, m_Allocation(std::exchange(other.m_Allocation, nullptr))

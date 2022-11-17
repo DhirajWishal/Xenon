@@ -9,8 +9,8 @@ namespace Xenon
 	namespace Backend
 	{
 		VulkanRasterizer::VulkanRasterizer(VulkanDevice* pDevice, Camera* pCamera, AttachmentType attachmentTypes, bool enableTripleBuffering /*= false*/, MultiSamplingCount multiSampleCount /*= MultiSamplingCount::x1*/)
-			: VulkanDeviceBoundObject(pDevice)
-			, Rasterizer(pDevice, pCamera, attachmentTypes, enableTripleBuffering, multiSampleCount)
+			: Rasterizer(pDevice, pCamera, attachmentTypes, enableTripleBuffering, multiSampleCount)
+			, VulkanDeviceBoundObject(pDevice)
 		{
 			// Setup the image attachments.
 			setupAttachments();

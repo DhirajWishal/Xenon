@@ -11,8 +11,8 @@ namespace Xenon
 	namespace Backend
 	{
 		VulkanBuffer::VulkanBuffer(VulkanDevice* pDevice, uint64_t size, BufferType type)
-			: VulkanDeviceBoundObject(pDevice)
-			, Buffer(pDevice, size, type)
+			: Buffer(pDevice, size, type)
+			, VulkanDeviceBoundObject(pDevice)
 		{
 			// Setup buffer and memory flags.
 			VkBufferUsageFlags usageFlags = 0;

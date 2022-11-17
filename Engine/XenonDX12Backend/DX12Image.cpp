@@ -9,8 +9,8 @@ namespace Xenon
 	namespace Backend
 	{
 		DX12Image::DX12Image(DX12Device* pDevice, const ImageSpecification& specification, D3D12_RESOURCE_STATES resourceStates /*= D3D12_RESOURCE_STATE_COPY_DEST*/, D3D12_HEAP_TYPE heapType /*= D3D12_HEAP_TYPE_DEFAULT*/, D3D12_HEAP_FLAGS heapFlags /*= D3D12_HEAP_FLAG_NONE*/)
-			: DX12DeviceBoundObject(pDevice)
-			, Image(pDevice, specification)
+			: Image(pDevice, specification)
+			, DX12DeviceBoundObject(pDevice)
 		{
 			// Setup the flags.
 			D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE;
@@ -88,8 +88,8 @@ namespace Xenon
 		}
 
 		DX12Image::DX12Image(DX12Image&& other) noexcept
-			: DX12DeviceBoundObject(std::move(other))
-			, Image(std::move(other))
+			: Image(std::move(other))
+			, DX12DeviceBoundObject(std::move(other))
 			, m_pAllocation(std::exchange(other.m_pAllocation, nullptr))
 		{
 		}
@@ -108,8 +108,8 @@ namespace Xenon
 
 		Xenon::Backend::DX12Image& DX12Image::operator=(DX12Image&& other) noexcept
 		{
-			DX12DeviceBoundObject::operator=(std::move(other));
 			Image::operator=(std::move(other));
+			DX12DeviceBoundObject::operator=(std::move(other));
 			m_pAllocation = std::exchange(other.m_pAllocation, nullptr);
 
 			return *this;

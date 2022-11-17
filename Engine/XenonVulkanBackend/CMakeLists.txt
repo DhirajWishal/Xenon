@@ -37,6 +37,10 @@ set(
 	"VulkanImage.hpp"
 	"VulkanSwapchain.cpp"
 	"VulkanSwapchain.hpp"
+	"VulkanRasterizingPipeline.cpp"
+	"VulkanRasterizingPipeline.hpp"
+	"VulkanShader.cpp"
+	"VulkanShader.hpp"
 )
 
 # Add the source group.

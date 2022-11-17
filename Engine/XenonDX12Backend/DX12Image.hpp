@@ -14,7 +14,7 @@ namespace Xenon
 		/**
 		 * Direct X 12 image class.
 		 */
-		class DX12Image final : public DX12DeviceBoundObject, public Image
+		class DX12Image final : public Image, public DX12DeviceBoundObject
 		{
 		public:
 			/**

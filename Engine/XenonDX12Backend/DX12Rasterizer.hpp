@@ -15,7 +15,7 @@ namespace Xenon
 		/**
 		 * Direct X 12 rasterizer class.
 		 */
-		class DX12Rasterizer final : public DX12DeviceBoundObject, public Rasterizer
+		class DX12Rasterizer final : public Rasterizer, public DX12DeviceBoundObject
 		{
 		public:
 			/**

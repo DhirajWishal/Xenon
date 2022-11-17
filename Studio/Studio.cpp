@@ -3,6 +3,7 @@
 
 #include "Studio.hpp"
 
+#include "XenonCore/Logging.hpp"
 #include "Xenon/Layers/ClearScreenLayer.hpp"
 #include "Xenon/MeshStorage.hpp"
 #include "XenonBackend/ShaderSource.hpp"
@@ -49,5 +50,6 @@ void Studio::run()
 	auto shader = Xenon::XObject::GetJobSystem().insert([] { return Xenon::Backend::ShaderSource::FromFile(""); });
 	while (m_Renderer.update());
 
+	XENON_LOG_INFORMATION("Exiting the {}", GetRendererTitle(m_Instance.getBackendType()));
 	[[maybe_unused]] auto meshStorage = storage.get();
 }

@@ -124,8 +124,8 @@ namespace Xenon
 	namespace Backend
 	{
 		VulkanCommandRecorder::VulkanCommandRecorder(VulkanDevice* pDevice, CommandRecorderUsage usage, uint32_t bufferCount /*= 1*/)
-			: VulkanDeviceBoundObject(pDevice)
-			, CommandRecorder(pDevice, usage, bufferCount)
+			: CommandRecorder(pDevice, usage, bufferCount)
+			, VulkanDeviceBoundObject(pDevice)
 		{
 			// Allocate the command buffers.
 			auto function = [this, bufferCount](VkCommandPool commandPool)

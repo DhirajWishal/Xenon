@@ -14,8 +14,8 @@ namespace Xenon
 	namespace Backend
 	{
 		VulkanSwapchain::VulkanSwapchain(VulkanDevice* pDevice, const std::string& title, uint32_t width, uint32_t height)
-			: VulkanDeviceBoundObject(pDevice)
-			, Swapchain(pDevice, title, width, height)
+			: Swapchain(pDevice, title, width, height)
+			, VulkanDeviceBoundObject(pDevice)
 		{
 			// Create the surface.
 			createSurface();

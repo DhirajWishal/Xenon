@@ -19,7 +19,7 @@ namespace Xenon
 		/**
 		 * DirectX 12 command recorder class.
 		 */
-		class DX12CommandRecorder final : public DX12DeviceBoundObject, public CommandRecorder
+		class DX12CommandRecorder final : public CommandRecorder, public DX12DeviceBoundObject
 		{
 		public:
 			/**

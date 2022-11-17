@@ -9,8 +9,8 @@ namespace Xenon
 	namespace Backend
 	{
 		DX12Rasterizer::DX12Rasterizer(DX12Device* pDevice, Camera* pCamera, AttachmentType attachmentTypes, bool enableTripleBuffering /*= false*/, MultiSamplingCount multiSampleCount /*= MultiSamplingCount::x1*/)
-			: DX12DeviceBoundObject(pDevice)
-			, Rasterizer(pDevice, pCamera, attachmentTypes, enableTripleBuffering, multiSampleCount)
+			: Rasterizer(pDevice, pCamera, attachmentTypes, enableTripleBuffering, multiSampleCount)
+			, DX12DeviceBoundObject(pDevice)
 			, m_pDevice(pDevice)
 		{
 			const auto frameCount = m_bEnableTripleBuffering ? 3 : 1;

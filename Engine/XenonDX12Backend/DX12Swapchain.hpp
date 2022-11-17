@@ -14,7 +14,7 @@ namespace Xenon
 		/**
 		 * DirectX 12 swapchain class.
 		 */
-		class DX12Swapchain final : public DX12DeviceBoundObject, public Swapchain
+		class DX12Swapchain final : public Swapchain, public DX12DeviceBoundObject
 		{
 		public:
 			/**
