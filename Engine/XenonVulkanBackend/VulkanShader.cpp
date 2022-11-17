@@ -4,6 +4,8 @@
 #include "VulkanShader.hpp"
 #include "VulkanMacros.hpp"
 
+#include <spirv_reflect.h>
+
 namespace Xenon
 {
 	namespace Backend
