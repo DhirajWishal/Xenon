@@ -58,14 +58,19 @@ namespace Xenon
 			presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 			presentInfo.pNext = nullptr;
 			presentInfo.waitSemaphoreCount = 1;
-			presentInfo.pWaitSemaphores = &m_RenderFinishedSemaphores[m_ImageIndex];
+			presentInfo.pWaitSemaphores = &m_RenderFinishedSemaphores[m_FrameIndex];
 			presentInfo.swapchainCount = 1;
 			presentInfo.pSwapchains = &m_Swapchain;
 			presentInfo.pImageIndices = &m_ImageIndex;
 			presentInfo.pResults = VK_NULL_HANDLE;
 
 			// Present it to the surface.
-			const auto result = m_pDevice->getDeviceTable().vkQueuePresentKHR(m_pDevice->getTransferQueue().getQueue(), &presentInfo);
+			const auto result = m_pDevice->getTransferQueue().access([this](const VulkanQueue& queue, const VkPresentInfoKHR& presentInfo)
+				{
+					return m_pDevice->getDeviceTable().vkQueuePresentKHR(queue.getQueue(), &presentInfo);
+				}
+			, presentInfo);
+
 			if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
 				recreate();
 
@@ -197,8 +202,8 @@ namespace Xenon
 
 			// Resolve the queue families if the two queues are different.
 			const std::array<uint32_t, 2> queueFamilyindices = {
-				m_pDevice->getGraphicsQueue().getFamily(),
-				m_pDevice->getTransferQueue().getFamily()
+				m_pDevice->getGraphicsQueue().getUnsafe().getFamily(),
+				m_pDevice->getTransferQueue().getUnsafe().getFamily()
 			};
 
 			if (queueFamilyindices[0] != queueFamilyindices[1])
@@ -246,6 +251,8 @@ namespace Xenon
 
 		void VulkanSwapchain::clear()
 		{
+			m_pDevice->getDeviceTable().vkDeviceWaitIdle(m_pDevice->getLogicalDevice());
+
 			for (const auto view : m_SwapchainImageViews)
 				m_pDevice->getDeviceTable().vkDestroyImageView(m_pDevice->getLogicalDevice(), view, nullptr);
 

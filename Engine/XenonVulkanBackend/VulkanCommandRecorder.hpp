@@ -91,7 +91,7 @@ namespace Xenon
 			 *
 			 * @param pSwapchain The swapchain pointer. This is needed when rendering images to a window. Default is nullptr.
 			 */
-			void submit(Swapchain* pSawpchain = nullptr) override;
+			void submit(Swapchain* pSwapchain = nullptr) override;
 
 			/**
 			 * Wait till the commands that were recorded has been executed.

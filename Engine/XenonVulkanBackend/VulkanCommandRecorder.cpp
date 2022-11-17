@@ -127,44 +127,45 @@ namespace Xenon
 			: VulkanDeviceBoundObject(pDevice)
 			, CommandRecorder(pDevice, usage, bufferCount)
 		{
-			// Get the command pool from the device.
-			VkCommandPool commandPool = VK_NULL_HANDLE;
+			// Allocate the command buffers.
+			auto function = [this, bufferCount](VkCommandPool commandPool)
+			{
+				VkCommandBufferAllocateInfo allocateInfo = {};
+				allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+				allocateInfo.pNext = nullptr;
+				allocateInfo.commandPool = commandPool;
+				allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+				allocateInfo.commandBufferCount = bufferCount;
+
+				std::vector<VkCommandBuffer> commandBuffers(bufferCount);
+				XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkAllocateCommandBuffers(m_pDevice->getLogicalDevice(), &allocateInfo, commandBuffers.data()), "Failed to allocate command buffers!");
+
+				// Create the command buffers.
+				for (uint32_t i = 0; i < bufferCount; i++)
+					m_CommandBuffers.emplace_back(m_pDevice, commandBuffers[i], commandPool);
+
+				// Select the default buffer.
+				m_pCurrentBuffer = &m_CommandBuffers[m_CurrentIndex];
+			};
+
+			// Get the command pool from the device and create the buffers.
 			switch (usage)
 			{
 			case Xenon::Backend::CommandRecorderUsage::Compute:
-				commandPool = pDevice->getComputeCommandPool();
+				pDevice->getComputeCommandPool().access(std::move(function));
 				break;
 
 			case Xenon::Backend::CommandRecorderUsage::Graphics:
-				commandPool = pDevice->getGraphicsCommandPool();
+				pDevice->getGraphicsCommandPool().access(std::move(function));
 				break;
 
 			case Xenon::Backend::CommandRecorderUsage::Transfer:
-				commandPool = pDevice->getTransferCommandPool();
+				pDevice->getTransferCommandPool().access(std::move(function));
 				break;
 
 			default:
 				XENON_LOG_FATAL("Invalid command recorder usage!");
-				return;
 			}
-
-			// Allocate the command buffers.
-			VkCommandBufferAllocateInfo allocateInfo = {};
-			allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-			allocateInfo.pNext = nullptr;
-			allocateInfo.commandPool = commandPool;
-			allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-			allocateInfo.commandBufferCount = bufferCount;
-
-			std::vector<VkCommandBuffer> commandBuffers(bufferCount);
-			XENON_VK_ASSERT(pDevice->getDeviceTable().vkAllocateCommandBuffers(pDevice->getLogicalDevice(), &allocateInfo, commandBuffers.data()), "Failed to allocate command buffers!");
-
-			// Create the command buffers.
-			for (uint32_t i = 0; i < bufferCount; i++)
-				m_CommandBuffers.emplace_back(pDevice, commandBuffers[i], commandPool);
-
-			// Select the default buffer.
-			m_pCurrentBuffer = &m_CommandBuffers[m_CurrentIndex];
 		}
 
 		void VulkanCommandRecorder::begin()
@@ -389,20 +390,24 @@ namespace Xenon
 			m_pCurrentBuffer = &m_CommandBuffers[incrementIndex()];
 		}
 
-		void VulkanCommandRecorder::submit(Swapchain* pSawpchain /*= nullptr*/)
+		void VulkanCommandRecorder::submit(Swapchain* pSwapchain /*= nullptr*/)
 		{
 			switch (m_Usage)
 			{
 			case Xenon::Backend::CommandRecorderUsage::Compute:
-				m_pCurrentBuffer->submit(VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, m_pDevice->getComputeQueue().getQueue());
+				m_pDevice->getComputeQueue().access([this](const VulkanQueue& queue) { m_pCurrentBuffer->submit(VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, queue.getQueue()); });
 				break;
 
 			case Xenon::Backend::CommandRecorderUsage::Graphics:
-				m_pCurrentBuffer->submit(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, m_pDevice->getGraphicsQueue().getQueue(), pSawpchain->as<VulkanSwapchain>());
+				m_pDevice->getGraphicsQueue().access([this](const VulkanQueue& queue, Swapchain* pSwapchain)
+					{
+						m_pCurrentBuffer->submit(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, queue.getQueue(), pSwapchain->as<VulkanSwapchain>());
+					}
+				, pSwapchain);
 				break;
 
 			case Xenon::Backend::CommandRecorderUsage::Transfer:
-				m_pCurrentBuffer->submit(VK_PIPELINE_STAGE_TRANSFER_BIT, m_pDevice->getTransferQueue().getQueue());
+				m_pDevice->getTransferQueue().access([this](const VulkanQueue& queue) { m_pCurrentBuffer->submit(VK_PIPELINE_STAGE_TRANSFER_BIT, queue.getQueue()); });
 				break;
 
 			default:

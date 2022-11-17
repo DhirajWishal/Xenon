@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "../XenonCore/Mutex.hpp"
 #include "../XenonBackend/Device.hpp"
 
 #include "VulkanInstance.hpp"
@@ -105,42 +106,84 @@ namespace Xenon
 			 *
 			 * @return The compute queue.
 			 */
-			[[nodiscard]] const VulkanQueue& getComputeQueue() const { return m_ComputeQueue; }
+			[[nodiscard]] Mutex<VulkanQueue>& getComputeQueue() { return m_ComputeQueue; }
+
+			/**
+			 * Get the compute queue from the device.
+			 *
+			 * @return The compute queue.
+			 */
+			[[nodiscard]] const Mutex<VulkanQueue>& getComputeQueue() const { return m_ComputeQueue; }
 
 			/**
 			 * Get the graphics queue from the device.
 			 *
 			 * @return The graphics queue.
 			 */
-			[[nodiscard]] const VulkanQueue& getGraphicsQueue() const { return m_GraphicsQueue; }
+			[[nodiscard]] Mutex<VulkanQueue>& getGraphicsQueue() { return m_GraphicsQueue; }
+
+			/**
+			 * Get the graphics queue from the device.
+			 *
+			 * @return The graphics queue.
+			 */
+			[[nodiscard]] const Mutex<VulkanQueue>& getGraphicsQueue() const { return m_GraphicsQueue; }
 
 			/**
 			 * Get the transfer queue from the device.
 			 *
 			 * @return The transfer queue.
 			 */
-			[[nodiscard]] const VulkanQueue& getTransferQueue() const { return m_TransferQueue; }
+			[[nodiscard]] Mutex<VulkanQueue>& getTransferQueue() { return m_TransferQueue; }
+
+			/**
+			 * Get the transfer queue from the device.
+			 *
+			 * @return The transfer queue.
+			 */
+			[[nodiscard]] const Mutex<VulkanQueue>& getTransferQueue() const { return m_TransferQueue; }
 
 			/**
 			 * Get the compute command pool.
 			 *
 			 * @return The compute command pool.
 			 */
-			[[nodiscard]] VkCommandPool getComputeCommandPool() const { return m_ComputeCommandPool; }
+			[[nodiscard]] Mutex<VkCommandPool>& getComputeCommandPool() { return m_ComputeCommandPool; }
+
+			/**
+			 * Get the compute command pool.
+			 *
+			 * @return The compute command pool.
+			 */
+			[[nodiscard]] const Mutex<VkCommandPool>& getComputeCommandPool() const { return m_ComputeCommandPool; }
 
 			/**
 			 * Get the graphics command pool.
 			 *
 			 * @return The graphics command pool.
 			 */
-			[[nodiscard]] VkCommandPool getGraphicsCommandPool() const { return m_GraphicsCommandPool; }
+			[[nodiscard]] Mutex<VkCommandPool>& getGraphicsCommandPool() { return m_GraphicsCommandPool; }
+
+			/**
+			 * Get the graphics command pool.
+			 *
+			 * @return The graphics command pool.
+			 */
+			[[nodiscard]] const Mutex<VkCommandPool>& getGraphicsCommandPool() const { return m_GraphicsCommandPool; }
 
 			/**
 			 * Get the transfer command pool.
 			 *
 			 * @return The transfer command pool.
 			 */
-			[[nodiscard]] VkCommandPool getTransferCommandPool() const { return m_TransferCommandPool; }
+			[[nodiscard]] Mutex<VkCommandPool>& getTransferCommandPool() { return m_TransferCommandPool; }
+
+			/**
+			 * Get the transfer command pool.
+			 *
+			 * @return The transfer command pool.
+			 */
+			[[nodiscard]] const Mutex<VkCommandPool>& getTransferCommandPool() const { return m_TransferCommandPool; }
 
 		private:
 			/**
@@ -167,9 +210,9 @@ namespace Xenon
 			VkPhysicalDeviceProperties m_PhysicalDeviceProperties = {};
 			VolkDeviceTable m_DeviceTable;
 
-			VulkanQueue m_ComputeQueue;
-			VulkanQueue m_GraphicsQueue;
-			VulkanQueue m_TransferQueue;
+			Mutex<VulkanQueue> m_ComputeQueue;
+			Mutex<VulkanQueue> m_GraphicsQueue;
+			Mutex<VulkanQueue> m_TransferQueue;
 
 			std::vector<const char*> m_DeviceExtensions;
 
@@ -178,9 +221,9 @@ namespace Xenon
 			VkDevice m_LogicalDevice = VK_NULL_HANDLE;
 			VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;
 
-			VkCommandPool m_ComputeCommandPool = VK_NULL_HANDLE;
-			VkCommandPool m_GraphicsCommandPool = VK_NULL_HANDLE;
-			VkCommandPool m_TransferCommandPool = VK_NULL_HANDLE;
+			Mutex<VkCommandPool> m_ComputeCommandPool = VK_NULL_HANDLE;
+			Mutex<VkCommandPool> m_GraphicsCommandPool = VK_NULL_HANDLE;
+			Mutex<VkCommandPool> m_TransferCommandPool = VK_NULL_HANDLE;
 
 			VmaAllocator m_Allocator = nullptr;
 		};

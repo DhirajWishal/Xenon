@@ -142,15 +142,15 @@ namespace Xenon
 			{
 				getInstance()->getDeletionQueue().wait();
 				getInstance()->getDeletionQueue().insert(
-					[deviceTable = m_DeviceTable, device = m_LogicalDevice, computeCommandPool = m_ComputeCommandPool,
-					graphicsCommandPool = m_GraphicsCommandPool, transferCommandPool = m_TransferCommandPool, allocator = m_Allocator]
+					[deviceTable = m_DeviceTable, device = m_LogicalDevice, computeCommandPool = m_ComputeCommandPool.getUnsafe(),
+					graphicsCommandPool = m_GraphicsCommandPool.getUnsafe(), transferCommandPool = m_TransferCommandPool.getUnsafe(), allocator = m_Allocator]
 					{
 						deviceTable.vkDestroyCommandPool(device, computeCommandPool, nullptr);
-						deviceTable.vkDestroyCommandPool(device, graphicsCommandPool, nullptr);
-						deviceTable.vkDestroyCommandPool(device, transferCommandPool, nullptr);
+					deviceTable.vkDestroyCommandPool(device, graphicsCommandPool, nullptr);
+					deviceTable.vkDestroyCommandPool(device, transferCommandPool, nullptr);
 
-						vmaDestroyAllocator(allocator);
-						deviceTable.vkDestroyDevice(device, nullptr);
+					vmaDestroyAllocator(allocator);
+					deviceTable.vkDestroyDevice(device, nullptr);
 					}
 					);
 			}
@@ -317,9 +317,9 @@ namespace Xenon
 			CheckDeviceExtensionSupport(m_PhysicalDevice, m_DeviceExtensions, &m_SupportedRenderTargetTypes);
 
 			// Setup the queue families.
-			m_ComputeQueue.setupFamily(m_PhysicalDevice, VK_QUEUE_COMPUTE_BIT);
-			m_GraphicsQueue.setupFamily(m_PhysicalDevice, VK_QUEUE_GRAPHICS_BIT);
-			m_TransferQueue.setupFamily(m_PhysicalDevice, VK_QUEUE_TRANSFER_BIT);
+			m_ComputeQueue.getUnsafe().setupFamily(m_PhysicalDevice, VK_QUEUE_COMPUTE_BIT);
+			m_GraphicsQueue.getUnsafe().setupFamily(m_PhysicalDevice, VK_QUEUE_GRAPHICS_BIT);
+			m_TransferQueue.getUnsafe().setupFamily(m_PhysicalDevice, VK_QUEUE_TRANSFER_BIT);
 		}
 
 		void VulkanDevice::createLogicalDevice()
@@ -327,9 +327,9 @@ namespace Xenon
 			// Setup device queues.
 			constexpr float priority = 1.0f;
 			std::set<uint32_t> uniqueQueueFamilies = {
-				m_GraphicsQueue.getFamily(),
-				m_ComputeQueue.getFamily(),
-				m_TransferQueue.getFamily()
+				m_GraphicsQueue.getUnsafe().getFamily(),
+				m_ComputeQueue.getUnsafe().getFamily(),
+				m_TransferQueue.getUnsafe().getFamily()
 			};
 
 			VkDeviceQueueCreateInfo queueCreateInfo = {};
@@ -382,14 +382,14 @@ namespace Xenon
 
 			// Get the queues.
 			VkQueue queue = VK_NULL_HANDLE;
-			m_DeviceTable.vkGetDeviceQueue(m_LogicalDevice, m_GraphicsQueue.getFamily(), 0, &queue);
-			m_GraphicsQueue.setQueue(queue);
+			m_DeviceTable.vkGetDeviceQueue(m_LogicalDevice, m_GraphicsQueue.getUnsafe().getFamily(), 0, &queue);
+			m_GraphicsQueue.getUnsafe().setQueue(queue);
 
-			m_DeviceTable.vkGetDeviceQueue(m_LogicalDevice, m_ComputeQueue.getFamily(), 0, &queue);
-			m_ComputeQueue.setQueue(queue);
+			m_DeviceTable.vkGetDeviceQueue(m_LogicalDevice, m_ComputeQueue.getUnsafe().getFamily(), 0, &queue);
+			m_ComputeQueue.getUnsafe().setQueue(queue);
 
-			m_DeviceTable.vkGetDeviceQueue(m_LogicalDevice, m_TransferQueue.getFamily(), 0, &queue);
-			m_TransferQueue.setQueue(queue);
+			m_DeviceTable.vkGetDeviceQueue(m_LogicalDevice, m_TransferQueue.getUnsafe().getFamily(), 0, &queue);
+			m_TransferQueue.getUnsafe().setQueue(queue);
 		}
 
 		void VulkanDevice::createMemoryAllocator()
@@ -445,16 +445,20 @@ namespace Xenon
 			createInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
 			// Create the compute command pool.
-			createInfo.queueFamilyIndex = getComputeQueue().getFamily();
-			XENON_VK_ASSERT(getDeviceTable().vkCreateCommandPool(m_LogicalDevice, &createInfo, nullptr, &m_ComputeCommandPool), "Failed to create the compute command pool!");
+			createInfo.queueFamilyIndex = getComputeQueue().getUnsafe().getFamily();
+			VkCommandPool commandPool = VK_NULL_HANDLE;
+			XENON_VK_ASSERT(getDeviceTable().vkCreateCommandPool(m_LogicalDevice, &createInfo, nullptr, &commandPool), "Failed to create the compute command pool!");
+			m_ComputeCommandPool = commandPool;
 
 			// Create the graphics command pool.
-			createInfo.queueFamilyIndex = getGraphicsQueue().getFamily();
-			XENON_VK_ASSERT(getDeviceTable().vkCreateCommandPool(m_LogicalDevice, &createInfo, nullptr, &m_GraphicsCommandPool), "Failed to create the graphics command pool!");
+			createInfo.queueFamilyIndex = getGraphicsQueue().getUnsafe().getFamily();
+			XENON_VK_ASSERT(getDeviceTable().vkCreateCommandPool(m_LogicalDevice, &createInfo, nullptr, &commandPool), "Failed to create the graphics command pool!");
+			m_GraphicsCommandPool = commandPool;
 
 			// Create the transfer command pool.
-			createInfo.queueFamilyIndex = getTransferQueue().getFamily();
-			XENON_VK_ASSERT(getDeviceTable().vkCreateCommandPool(m_LogicalDevice, &createInfo, nullptr, &m_TransferCommandPool), "Failed to create the transfer command pool!");
+			createInfo.queueFamilyIndex = getTransferQueue().getUnsafe().getFamily();
+			XENON_VK_ASSERT(getDeviceTable().vkCreateCommandPool(m_LogicalDevice, &createInfo, nullptr, &commandPool), "Failed to create the transfer command pool!");
+			m_TransferCommandPool = commandPool;
 		}
 	}
 }
