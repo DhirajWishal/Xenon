@@ -110,7 +110,7 @@ namespace /* anonymous */
 		uint32_t m_Stride = 0;
 
 		Xenon::VertexElement m_Element = Xenon::VertexElement::Position;
-		Xenon::ElementDataType m_DataType = Xenon::ElementDataType::Vec3;
+		Xenon::Backend::AttributeDataType m_DataType = Xenon::Backend::AttributeDataType::Vec3;
 		Xenon::PrimitiveMode m_PrimitiveMode = Xenon::PrimitiveMode::Triangles;
 	};
 
@@ -144,44 +144,44 @@ namespace /* anonymous */
 		switch (accessor.type)
 		{
 		case TINYGLTF_TYPE_VEC2:
-			view.m_DataType = Xenon::ElementDataType::Vec2;
+			view.m_DataType = Xenon::Backend::AttributeDataType::Vec2;
 			break;
 
 		case TINYGLTF_TYPE_VEC3:
-			view.m_DataType = Xenon::ElementDataType::Vec3;
+			view.m_DataType = Xenon::Backend::AttributeDataType::Vec3;
 			break;
 
 		case TINYGLTF_TYPE_VEC4:
-			view.m_DataType = Xenon::ElementDataType::Vec4;
+			view.m_DataType = Xenon::Backend::AttributeDataType::Vec4;
 			break;
 
 		case TINYGLTF_TYPE_MAT2:
-			view.m_DataType = Xenon::ElementDataType::Mat2;
+			view.m_DataType = Xenon::Backend::AttributeDataType::Mat2;
 			break;
 
 		case TINYGLTF_TYPE_MAT3:
-			view.m_DataType = Xenon::ElementDataType::Mat3;
+			view.m_DataType = Xenon::Backend::AttributeDataType::Mat3;
 			break;
 
 		case TINYGLTF_TYPE_MAT4:
-			view.m_DataType = Xenon::ElementDataType::Mat4;
+			view.m_DataType = Xenon::Backend::AttributeDataType::Mat4;
 			break;
 
 		case TINYGLTF_TYPE_SCALAR:
-			view.m_DataType = Xenon::ElementDataType::Scalar;
+			view.m_DataType = Xenon::Backend::AttributeDataType::Scalar;
 			break;
 
 		case TINYGLTF_TYPE_VECTOR:
-			view.m_DataType = Xenon::ElementDataType::Vec3;
+			view.m_DataType = Xenon::Backend::AttributeDataType::Vec3;
 			break;
 
 		case TINYGLTF_TYPE_MATRIX:
-			view.m_DataType = Xenon::ElementDataType::Mat4;
+			view.m_DataType = Xenon::Backend::AttributeDataType::Mat4;
 			break;
 
 		default:
 			XENON_LOG_ERROR("Invalid or unsupported vertex data type in the provided model file. Defaulting to vector 3.");
-			view.m_DataType = Xenon::ElementDataType::Vec3;
+			view.m_DataType = Xenon::Backend::AttributeDataType::Vec3;
 			break;
 		}
 

@@ -20,16 +20,6 @@ namespace Xenon
 		 */
 		class VulkanDevice final : public Device
 		{
-			/**
-			 * Queue type enum.
-			 */
-			enum class QueueType : uint8_t
-			{
-				Compute,
-				Graphics,
-				Transfer
-			};
-
 		public:
 			/**
 			 * Explicit constructor.

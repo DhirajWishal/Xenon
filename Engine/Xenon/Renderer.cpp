@@ -29,8 +29,6 @@ namespace Xenon
 
 	bool Renderer::update()
 	{
-		XENON_LOG_TRACE("Updating the renderer.");
-
 		m_pSwapChain->getWindow()->update();
 		m_WorkerSynchronization.notify_one();
 		return m_pSwapChain->getWindow()->isOpen();

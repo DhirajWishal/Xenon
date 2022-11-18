@@ -35,12 +35,14 @@ set(
 
 # Add the source group.
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCES})
+source_group(ThirdParty FILES "${SPIRV_REFLECT_INCLUDE_DIR}/spirv_reflect.cpp")
 
 # Add the library.
 add_library(
 	XenonBackend
 	STATIC
 
+	"${SPIRV_REFLECT_INCLUDE_DIR}/spirv_reflect.cpp"	# We need this as described by the API.
 	${SOURCES}
 )
 
@@ -52,6 +54,7 @@ target_include_directories(
 	XenonBackend 
 
 	PUBLIC ${GLM_INCLUDE_DIR}
+	PRIVATE ${SPIRV_REFLECT_INCLUDE_DIR}
 )
 
 # If we are on MSVC, we can use the Multi Processor Compilation option.

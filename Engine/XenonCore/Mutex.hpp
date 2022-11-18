@@ -111,6 +111,7 @@ namespace Xenon
 		/**
 		 * Get the data reference.
 		 * Note that this operation is unsafe.
+		 * Use this if you are sure that there wont be any race conditions.
 		 *
 		 * @return The data reference.
 		 */
@@ -119,6 +120,7 @@ namespace Xenon
 		/**
 		 * Get the data reference.
 		 * Note that this operation is unsafe.
+		 * Use this if you are sure that there wont be any race conditions.
 		 *
 		 * @return The data reference.
 		 */
@@ -133,7 +135,6 @@ namespace Xenon
 		 */
 		Mutex& operator=(const Mutex& data)
 		{
-			m_Mutex = data.m_Mutex;
 			auto lock = std::scoped_lock(m_Mutex);
 			m_Data = data.m_Data;
 			return *this;

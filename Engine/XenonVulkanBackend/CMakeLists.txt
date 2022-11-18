@@ -45,14 +45,12 @@ set(
 
 # Add the source group.
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCES})
-source_group(ThirdParty FILES "${SPIRV_REFLECT_INCLUDE_DIR}/spirv_reflect.cpp")
 
 # Add the library.
 add_library(
 	XenonVulkanBackend
 	STATIC
 
-	"${SPIRV_REFLECT_INCLUDE_DIR}/spirv_reflect.cpp"	# We need this as described by the API.
 	${SOURCES}
 )
 
@@ -63,7 +61,6 @@ target_include_directories(
 	PRIVATE ${VULKAN_HEADERS_INCLUDE_DIR}
 	PRIVATE ${VOLK_INCLUDE_DIR}
 	PRIVATE ${VMA_INCLUDE_DIR}
-	PRIVATE ${SPIRV_REFLECT_INCLUDE_DIR}
 )
 
 # Make sure to specify the C++ standard to C++20.

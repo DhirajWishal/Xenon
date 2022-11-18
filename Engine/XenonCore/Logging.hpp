@@ -35,7 +35,7 @@ namespace Xenon
 	template<class Message, class... Arguments>
 	void TraceLog(std::source_location&& location, Message&& message, Arguments&&... arguments)
 	{
-		spdlog::info("[Trace @\"{}\":{}] {}", location.file_name(), location.line(), std::move(message), std::forward<Arguments>(arguments)...);
+		spdlog::info("[Trace \"{}\":{}] {}", location.file_name(), location.line(), std::move(message), std::forward<Arguments>(arguments)...);
 	}
 }
 

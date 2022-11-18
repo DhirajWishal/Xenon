@@ -4,29 +4,13 @@
 #pragma once
 
 #include "../XenonCore/Common.hpp"
+#include "../XenonBackend/ShaderSource.hpp"
 
 #include <array>
 
 namespace Xenon
 {
-	/**
-	 * Element data type.
-	 * This specifies which data type an element uses.
-	 */
-	enum class ElementDataType : uint8_t
-	{
-		Vec2,
-		Vec3,
-		Vec4,
-
-		Mat2,
-		Mat3,
-		Mat4,
-
-		Scalar
-	};
-
-	/**
+		/**
 	 * Vertex element enum.
 	 * This contains different elements which a single vertex could contain.
 	 */
