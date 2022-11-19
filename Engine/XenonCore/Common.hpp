@@ -4,15 +4,16 @@
 #pragma once
 
 #include <typeindex>
+#include <string_view>
 
-#define XENON_BIT_SHIFT(x)	(1 << x)
+#define XENON_BIT_SHIFT(x)							(1 << x)
 
-#define XENON_DISABLE_COPY(object)					\
-	object(const object&) = delete;					\
+#define XENON_DISABLE_COPY(object)															\
+	object(const object&) = delete;															\
 	object& operator=(const object&) = delete
 
-#define XENON_DISABLE_MOVE(object)					\
-	object(object&&) = delete;						\
+#define XENON_DISABLE_MOVE(object)															\
+	object(object&&) = delete;																\
 	object& operator=(object&&) = delete 
 
 namespace Xenon
@@ -57,14 +58,14 @@ namespace Xenon
 	constexpr std::underlying_type_t<Type> EnumToInt(Type value) { return static_cast<std::underlying_type_t<Type>>(value); }
 }
 
-#define XENON_DEFINE_ENUM_AND(name)														\
-	constexpr bool operator&(const name lhs, const name rhs)							\
-	{																					\
-		return ::Xenon::EnumToInt(lhs) & ::Xenon::EnumToInt(rhs);						\
+#define XENON_DEFINE_ENUM_AND(name)															\
+	constexpr bool operator&(const name lhs, const name rhs)								\
+	{																						\
+		return ::Xenon::EnumToInt(lhs) & ::Xenon::EnumToInt(rhs);							\
 	}
 
-#define XENON_DEFINE_ENUM_OR(name)														\
-	constexpr name operator|(const name lhs, const name rhs)							\
-	{																					\
-		return static_cast<name>(::Xenon::EnumToInt(lhs) | ::Xenon::EnumToInt(rhs));	\
+#define XENON_DEFINE_ENUM_OR(name)															\
+	constexpr name operator|(const name lhs, const name rhs)								\
+	{																						\
+		return static_cast<name>(::Xenon::EnumToInt(lhs) | ::Xenon::EnumToInt(rhs));		\
 	}

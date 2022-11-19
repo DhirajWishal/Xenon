@@ -48,6 +48,9 @@ target_link_libraries(XenonEngine XenonVulkanBackend)
 # Make sure to specify the C++ standard to C++20.
 set_property(TARGET XenonEngine PROPERTY CXX_STANDARD 20)
 
+# Add the engine dependencies.
+add_dependencies(XenonEngine XenonShaderBank)
+
 # Set the include directories.
 target_include_directories(
 	XenonEngine 

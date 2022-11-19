@@ -36,13 +36,23 @@ namespace Xenon
 		};
 
 		/**
+		 * Descriptor set type enum.
+		 */
+		enum class DescriptorSetType : uint8_t
+		{
+			UserDefined = 0,	// This descriptor type contains any other user defined data, like the model matrix.
+			Material = 1,		// This descriptor type contains all the material-specific information.
+			Camera = 2,			// This descriptor type only has one binding (0) which passes the camera data.
+		};
+
+		/**
 		 * Shader resource structure.
 		 */
 		struct ShaderResource final
 		{
 			uint32_t m_Binding = 0;
-			uint32_t m_Set = 0;
 
+			DescriptorSetType m_Set = DescriptorSetType::Camera;
 			ResourceType m_Type = ResourceType::Sampler;
 		};
 

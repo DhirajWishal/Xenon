@@ -27,7 +27,15 @@ namespace Xenon
 
 		DX12Device::~DX12Device()
 		{
-			getInstance()->getDeletionQueue().insert([allocator = m_pAllocator] { allocator->Release(); });
+			try
+			{
+				getInstance()->getDeletionQueue().wait();
+				getInstance()->getDeletionQueue().insert([allocator = m_pAllocator] { allocator->Release(); });
+			}
+			catch (...)
+			{
+				XENON_DX12_ASSERT(-1, "Failed to push the device deletion function to the deletion queue!");
+			}
 		}
 
 		DXGI_FORMAT DX12Device::convertFormat(DataFormat format) const
@@ -78,14 +86,14 @@ namespace Xenon
 		void DX12Device::createDevice()
 		{
 			// Setup the test feature levels if a device was not found.
-			constexpr D3D_FEATURE_LEVEL testFeatureLevels[] = {
+			constexpr std::array<D3D_FEATURE_LEVEL, 3> testFeatureLevels = {
 				D3D_FEATURE_LEVEL_12_2,
 				D3D_FEATURE_LEVEL_12_1,
 				D3D_FEATURE_LEVEL_12_0
 			};
 
 			// Iterate over the features and check if the best feature is available.
-			for (uint8_t i = 0; (i < _countof(testFeatureLevels)) && !m_Device; i++)
+			for (uint8_t i = 0; i < testFeatureLevels.size() && !m_Device; i++)
 			{
 				const auto featureLevel = testFeatureLevels[i];
 

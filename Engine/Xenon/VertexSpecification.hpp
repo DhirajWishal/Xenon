@@ -10,7 +10,7 @@
 
 namespace Xenon
 {
-		/**
+	/**
 	 * Vertex element enum.
 	 * This contains different elements which a single vertex could contain.
 	 */

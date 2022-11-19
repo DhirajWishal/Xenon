@@ -13,7 +13,14 @@ namespace Xenon
 			: RasterizingPipeline(pDevice, std::move(pCacheHandler), pRasterizer, specification)
 			, VulkanDeviceBoundObject(pDevice)
 		{
-
+			VkPipelineLayoutCreateInfo createInfo = {};
+			createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+			createInfo.pNext = nullptr;
+			createInfo.flags = 0;
+			createInfo.setLayoutCount;
+			createInfo.pSetLayouts;
+			createInfo.pushConstantRangeCount;
+			createInfo.pPushConstantRanges;
 		}
 
 		VulkanRasterizingPipeline::~VulkanRasterizingPipeline()

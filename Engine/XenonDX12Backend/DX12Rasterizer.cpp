@@ -61,11 +61,9 @@ namespace Xenon
 						XENON_LOG_FATAL("The required render target formats are not supported by the Direct X 12 backend! Failed to create the render target.");
 						return;
 					}
-
 				}
 
 				auto& renderTarget = m_RenderTargets.emplace_back(pDevice, specification, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_HEAP_TYPE_DEFAULT, D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES);
-
 				m_pDevice->getDevice()->CreateRenderTargetView(renderTarget.getResource(), nullptr, rtvHandle);
 				rtvHandle.Offset(1, m_RenderTargetDescriptorSize);
 			}

@@ -71,9 +71,12 @@ namespace /* anonymous */
 	}
 
 	/**
-	 * Get the backend attribute data type from the dimensions.
+	 * Get the backend attribute vector data type from the dimensions.
+	 *
+	 * @param dimensions The vector's dimensions.
+	 * @return The attribute data type.
 	 */
-	Xenon::Backend::AttributeDataType ResolveDataType(uint32_t dimensions)
+	Xenon::Backend::AttributeDataType ResolveVectorDataType(uint32_t dimensions)
 	{
 		switch (dimensions)
 		{
@@ -85,15 +88,6 @@ namespace /* anonymous */
 
 		case 4:
 			return Xenon::Backend::AttributeDataType::Vec4;
-
-			// case 4:
-			// 	return Xenon::Backend::AttributeDataType::Mat2;
-
-		case 9:
-			return Xenon::Backend::AttributeDataType::Mat3;
-
-		case 16:
-			return Xenon::Backend::AttributeDataType::Mat4;
 
 		default:
 			break;
@@ -131,7 +125,7 @@ namespace Xenon
 
 					auto& input = m_InputAttributes.emplace_back();
 					input.m_Location = pResource->location;
-					input.m_DataType = ResolveDataType(pResource->array.dims_count);
+					input.m_DataType = ResolveVectorDataType(pResource->numeric.vector.component_count);
 				}
 			}
 
@@ -151,7 +145,7 @@ namespace Xenon
 
 					auto& output = m_OutputAttributes.emplace_back();
 					output.m_Location = pResource->location;
-					output.m_DataType = ResolveDataType(pResource->array.dims_count);
+					output.m_DataType = ResolveVectorDataType(pResource->numeric.vector.component_count);
 				}
 			}
 
@@ -168,7 +162,7 @@ namespace Xenon
 				{
 					auto& resource = m_Resources.emplace_back();
 					resource.m_Binding = pResource->binding;
-					resource.m_Set = pResource->set;
+					resource.m_Set = static_cast<DescriptorSetType>(pResource->set);
 					resource.m_Type = GetResourceType(pResource->descriptor_type);
 				}
 			}

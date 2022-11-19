@@ -29,6 +29,9 @@ set(TINYGLTF_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/tinygltf)
 set(GLM_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/glm)
 set(SPIRV_REFLECT_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/SPIRV-Reflect)
 
+# Include the shader bank and it's information.
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonShaderBank)
+
 # Set global compile definitions.
 add_compile_definitions(
 	$<$<CONFIG:Debug>:XENON_DEBUG>
@@ -44,6 +47,7 @@ add_compile_definitions(
 	$<$<PLATFORM_ID:Darwin>:XENON_PLATFORM_MAC>
 
 	XENON_GLTF_ASSET_DIR="${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/glTF-Sample-Models/"
+	XENON_SHADER_DIR="${XENON_SHADER_BANK_OUTPUT_DIR}"
 )
 
 # Include the main subdirectories.
@@ -70,7 +74,7 @@ if (MSVC)
 	add_custom_target(
 		XenonConfigureCMake
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-		COMMAND ./Bootstrap.bat
+		COMMAND ./Scripts/Bootstrap.bat
 	)
 	 
 	# Add the custom target to a folder so it won't clutter up the solution explorer.

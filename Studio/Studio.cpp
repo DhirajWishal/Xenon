@@ -53,7 +53,7 @@ void Studio::run()
 	m_Renderer.createLayer<Xenon::ClearScreenLayer>(m_Instance, &m_Camera, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
 
 	auto storage = Xenon::XObject::GetJobSystem().insert([this] { return Xenon::MeshStorage::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"); });
-	auto shader = Xenon::XObject::GetJobSystem().insert([] { return Xenon::Backend::ShaderSource::FromFile(R"(E:\Flint\out\build\x64-Debug\Sandbox\Shaders\Debugging\Shader.vert.spv)"); });
+	auto shader = Xenon::XObject::GetJobSystem().insert([] { return Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Debugging/Shader.vert.spv"); });
 
 	bool shaderHandled = false;
 	while (m_Renderer.update())
