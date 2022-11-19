@@ -31,6 +31,13 @@ namespace Xenon
 			 */
 			~VulkanImageView() override;
 
+			/**
+			 * Get the image view.
+			 *
+			 * @return The image view.
+			 */
+			[[nodiscard]] VkImageView getView() const { return m_View; }
+
 		private:
 			VkImageView m_View = VK_NULL_HANDLE;
 		};

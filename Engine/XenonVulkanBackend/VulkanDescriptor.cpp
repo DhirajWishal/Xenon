@@ -5,7 +5,8 @@
 #include "VulkanMacros.hpp"
 
 #include "VulkanBuffer.hpp"
-#include "VulkanImage.hpp"
+#include "VulkanImageView.hpp"
+#include "VulkanImageSampler.hpp"
 
 namespace Xenon
 {
@@ -60,13 +61,10 @@ namespace Xenon
 
 		void VulkanDescriptor::attach(uint32_t binding, Image* pImage, ImageView* pView, ImageSampler* pSampler, ImageUsage usage)
 		{
-			auto pVkImage = pImage->as<VulkanImage>();
-
-			// TODO
 			VkDescriptorImageInfo imageInfo = {};
-			imageInfo.sampler = VK_NULL_HANDLE;
-			imageInfo.imageView = VK_NULL_HANDLE;
-			imageInfo.imageLayout = pVkImage->getImageLayout();	// FIXME
+			imageInfo.sampler = pSampler->as<VulkanImageSampler>()->getSampler();
+			imageInfo.imageView = pView->as<VulkanImageView>()->getView();
+			imageInfo.imageLayout = pImage->as<VulkanImage>()->getImageLayout();	// FIXME
 
 			VkWriteDescriptorSet writeDescriptorSet = {};
 			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;

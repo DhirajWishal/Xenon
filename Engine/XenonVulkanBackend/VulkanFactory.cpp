@@ -11,6 +11,7 @@
 #include "VulkanSwapchain.hpp"
 #include "VulkanDescriptor.hpp"
 #include "VulkanImageView.hpp"
+#include "VulkanImageSampler.hpp"
 
 namespace Xenon
 {
@@ -59,6 +60,11 @@ namespace Xenon
 		std::unique_ptr<Xenon::Backend::ImageView> VulkanFactory::createImageView(Device* pDevice, Image* pImage, const ImageViewSpecification& specification)
 		{
 			return std::make_unique<Xenon::Backend::VulkanImageView>(pDevice->as<VulkanDevice>(), pImage->as<VulkanImage>(), specification);
+		}
+
+		std::unique_ptr<Xenon::Backend::ImageSampler> VulkanFactory::createImageSampler(Device* pDevice, const ImageSamplerSpecification& specification)
+		{
+			return std::make_unique<Xenon::Backend::VulkanImageSampler>(pDevice->as<VulkanDevice>(), specification);
 		}
 	}
 }

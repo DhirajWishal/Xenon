@@ -112,9 +112,18 @@ namespace Xenon
 			 * @param pDevice The device pointer.
 			 * @param pImage The image pointer.
 			 * @param specification The view specification.
-			 * @return The image view object.
+			 * @return The image view pointer.
 			 */
 			[[nodiscard]] std::unique_ptr<ImageView> createImageView(Device* pDevice, Image* pImage, const ImageViewSpecification& specification) override;
+
+			/**
+			 * Create a new image sampler.
+			 *
+			 * @param pDevice The device pointer.
+			 * @param specification The sampler specification.
+			 * @return The image sampler pointer.
+			 */
+			[[nodiscard]] std::unique_ptr<ImageSampler> createImageSampler(Device* pDevice, const ImageSamplerSpecification& specification) override;
 		};
 	}
 }

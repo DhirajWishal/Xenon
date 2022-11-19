@@ -59,5 +59,10 @@ namespace Xenon
 		{
 			return nullptr;	// TODO
 		}
+
+		std::unique_ptr<Xenon::Backend::ImageSampler> DX12Factory::createImageSampler(Device* pDevice, const ImageSamplerSpecification& specification)
+		{
+			return nullptr;	// TODO
+		}
 	}
 }

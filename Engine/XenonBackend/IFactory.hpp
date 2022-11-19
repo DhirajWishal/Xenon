@@ -9,6 +9,7 @@
 #include "Swapchain.hpp"
 #include "Descriptor.hpp"
 #include "ImageView.hpp"
+#include "ImageSampler.hpp"
 
 namespace Xenon
 {
@@ -117,9 +118,18 @@ namespace Xenon
 			 * @param pDevice The device pointer.
 			 * @param pImage The image pointer.
 			 * @param specification The view specification.
-			 * @return The image view object.
+			 * @return The image view pointer.
 			 */
 			[[nodiscard]] virtual std::unique_ptr<ImageView> createImageView(Device* pDevice, Image* pImage, const ImageViewSpecification& specification) = 0;
+
+			/**
+			 * Create a new image sampler.
+			 *
+			 * @param pDevice The device pointer.
+			 * @param specification The sampler specification.
+			 * @return The image sampler pointer.
+			 */
+			[[nodiscard]] virtual std::unique_ptr<ImageSampler> createImageSampler(Device* pDevice, const ImageSamplerSpecification& specification) = 0;
 		};
 	}
 }

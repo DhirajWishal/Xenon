@@ -56,6 +56,13 @@ namespace Xenon
 			 */
 			explicit ImageView([[maybe_unused]] Device* pDevice, [[maybe_unused]] Image* pImage, const ImageViewSpecification& specification) : m_Specification(specification) {}
 
+			/**
+			 * Get the image view specification.
+			 *
+			 * @return The image view specification.
+			 */
+			[[nodiscard]] const ImageViewSpecification& getSpecification() const { return m_Specification; }
+
 		private:
 			ImageViewSpecification m_Specification = {};
 		};
