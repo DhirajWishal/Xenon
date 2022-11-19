@@ -25,7 +25,7 @@ namespace Xenon
 	 * @return The type index.
 	 */
 	template<class Type>
-	constexpr std::type_index GetTypeIndex() { return std::type_index(typeid(Type)); }
+	[[nodiscard]] constexpr std::type_index GetTypeIndex() { return std::type_index(typeid(Type)); }
 
 	/**
 	 * Check if an enum contains multiple values.
@@ -38,7 +38,7 @@ namespace Xenon
 	 * @return False if all the enums are not in the value.
 	 */
 	template<class Enum, class...Enums>
-	constexpr bool EnumContains(Enum value, Enums... enums)
+	[[nodiscard]] constexpr bool EnumContains(Enum value, Enums... enums)
 	{
 		bool contains = false;
 		const auto function = [value, &contains](Enum e) { contains |= value & e; };
@@ -55,7 +55,17 @@ namespace Xenon
 	 * @return The integer value.
 	 */
 	template<class Type>
-	constexpr std::underlying_type_t<Type> EnumToInt(Type value) { return static_cast<std::underlying_type_t<Type>>(value); }
+	[[nodiscard]] constexpr std::underlying_type_t<Type> EnumToInt(Type value) { return static_cast<std::underlying_type_t<Type>>(value); }
+
+	/**
+	 * Generate hash for a set of bytes.
+	 *
+	 * @param pBytes The bytes to hash.
+	 * @param size The number of bytes to hash.
+	 * @param seed The hash seed. Default is 0.
+	 * @return The 64-bit hash value.
+	 */
+	[[nodiscard]] uint64_t GenerateHash(const std::byte* pBytes, uint64_t size, uint64_t seed = 0);
 }
 
 #define XENON_DEFINE_ENUM_AND(name)															\

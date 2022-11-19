@@ -162,7 +162,7 @@ namespace Xenon
 				{
 					auto& resource = m_Resources.emplace_back();
 					resource.m_Binding = pResource->binding;
-					resource.m_Set = static_cast<DescriptorSetType>(pResource->set);
+					resource.m_Set = static_cast<DescriptorType>(pResource->set);
 					resource.m_Type = GetResourceType(pResource->descriptor_type);
 				}
 			}

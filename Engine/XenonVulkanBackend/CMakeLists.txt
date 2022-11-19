@@ -41,6 +41,8 @@ set(
 	"VulkanRasterizingPipeline.hpp"
 	"VulkanShader.cpp"
 	"VulkanShader.hpp"
+	"VulkanDescriptor.cpp"
+	"VulkanDescriptor.hpp"
 )
 
 # Add the source group.
@@ -65,6 +67,13 @@ target_include_directories(
 
 # Make sure to specify the C++ standard to C++20.
 set_property(TARGET XenonVulkanBackend PROPERTY CXX_STANDARD 20)
+
+# Add target-specific definitions.
+target_compile_definitions(
+	XenonVulkanBackend
+
+	PRIVATE XENON_VK_MAX_DESCRIPTOR_SETS_COUNT=16
+)
 
 # If we are on MSVC, we can use the Multi Processor Compilation option.
 if (MSVC)

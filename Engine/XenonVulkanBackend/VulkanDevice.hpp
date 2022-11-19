@@ -11,6 +11,8 @@
 
 #include <vk_mem_alloc.h>
 
+#include <unordered_map>
+
 namespace Xenon
 {
 	namespace Backend
@@ -20,6 +22,17 @@ namespace Xenon
 		 */
 		class VulkanDevice final : public Device
 		{
+			/**
+			 * Vulkan descriptor storage structure.
+			 * This contains all the necessary information required by descriptor sets.
+			 */
+			struct VulkanDescriptorStorage final
+			{
+				std::vector<DescriptorBindingInfo> m_BindingInfo;
+				std::vector<std::pair<VkDescriptorPool, uint32_t>> m_Pools;	// [Descriptor pool, active descriptor set count]
+				VkDescriptorSetLayout m_Layout = VK_NULL_HANDLE;
+			};
+
 		public:
 			/**
 			 * Explicit constructor.
@@ -50,6 +63,14 @@ namespace Xenon
 			 * @return The Vulkan format.
 			 */
 			[[nodiscard]] VkFormat convertFormat(DataFormat format) const;
+
+			/**
+			 * Convert the Xenon resource type to the Vulkan descriptor type.
+			 *
+			 * @param type The resource type.
+			 * @return The descriptor type.
+			 */
+			[[nodiscard]] VkDescriptorType convertResourceType(ResourceType type) const;
 
 		public:
 			/**
@@ -185,6 +206,24 @@ namespace Xenon
 			 */
 			[[nodiscard]] const Mutex<VkCommandPool>& getTransferCommandPool() const { return m_TransferCommandPool; }
 
+			/**
+			 * Create a new descriptor set.
+			 *
+			 * @param bindingInfo The descriptor binding info.
+			 * @return The descriptor pool and its set.
+			 * @return The descriptor pool and its set.
+			 */
+			[[nodiscard]] std::pair<VkDescriptorPool, VkDescriptorSet> createDescriptorSet(const std::vector<DescriptorBindingInfo>& bindingInfo);
+
+			/**
+			 * Free the descriptor set.
+			 *
+			 * @param pool The descriptor pool which owns the descriptor set.
+			 * @param descriptorSet The descriptor set.
+			 * @param bindingInfo The descriptor binding info.
+			 */
+			void freeDescriptorSet(VkDescriptorPool pool, VkDescriptorSet descriptorSet, const std::vector<DescriptorBindingInfo>& bindingInfo);
+
 		private:
 			/**
 			 * Select the required physical device.
@@ -222,6 +261,8 @@ namespace Xenon
 			Mutex<VkCommandPool> m_ComputeCommandPool = VK_NULL_HANDLE;
 			Mutex<VkCommandPool> m_GraphicsCommandPool = VK_NULL_HANDLE;
 			Mutex<VkCommandPool> m_TransferCommandPool = VK_NULL_HANDLE;
+
+			std::unordered_map<uint64_t, VulkanDescriptorStorage> m_DescriptorSetStorages;
 
 			VmaAllocator m_Allocator = nullptr;
 

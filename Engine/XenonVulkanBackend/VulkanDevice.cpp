@@ -100,6 +100,28 @@ namespace /* anonymous */
 
 		return true;
 	}
+
+	/**
+	 * Get all the shader stage flags defined in the type.
+	 *
+	 * @param type The type of the shader.
+	 * @return The shader stage flags.
+	 */
+	VkShaderStageFlags GetStageFlags(Xenon::Backend::ShaderType type)
+	{
+		VkShaderStageFlags flags = 0;
+		if (type & Xenon::Backend::ShaderType::Vertex) flags |= VK_SHADER_STAGE_VERTEX_BIT;
+		if (type & Xenon::Backend::ShaderType::Fragment) flags |= VK_SHADER_STAGE_FRAGMENT_BIT;
+		if (type & Xenon::Backend::ShaderType::RayGen) flags |= VK_SHADER_STAGE_RAYGEN_BIT_KHR;
+		if (type & Xenon::Backend::ShaderType::Intersection) flags |= VK_SHADER_STAGE_INTERSECTION_BIT_KHR;
+		if (type & Xenon::Backend::ShaderType::AnyHit) flags |= VK_SHADER_STAGE_ANY_HIT_BIT_KHR;
+		if (type & Xenon::Backend::ShaderType::ClosestHit) flags |= VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
+		if (type & Xenon::Backend::ShaderType::Miss) flags |= VK_SHADER_STAGE_MISS_BIT_KHR;
+		if (type & Xenon::Backend::ShaderType::Callable) flags |= VK_SHADER_STAGE_CALLABLE_BIT_KHR;
+		if (type & Xenon::Backend::ShaderType::Compute) flags |= VK_SHADER_STAGE_COMPUTE_BIT;
+
+		return flags;
+	}
 }
 
 namespace Xenon
@@ -230,6 +252,28 @@ namespace Xenon
 			return VK_FORMAT_UNDEFINED;
 		}
 
+		VkDescriptorType VulkanDevice::convertResourceType(ResourceType type) const
+		{
+			switch (type)
+			{
+			case Xenon::Backend::ResourceType::Sampler:							return VK_DESCRIPTOR_TYPE_SAMPLER;
+			case Xenon::Backend::ResourceType::CombinedImageSampler:			return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			case Xenon::Backend::ResourceType::SampledImage:					return VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+			case Xenon::Backend::ResourceType::StorageImage:					return VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+			case Xenon::Backend::ResourceType::UniformTexelBuffer:				return VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
+			case Xenon::Backend::ResourceType::StorageTexelBuffer:				return VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER;
+			case Xenon::Backend::ResourceType::UniformBuffer:					return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			case Xenon::Backend::ResourceType::StorageBuffer:					return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+			case Xenon::Backend::ResourceType::DynamicUniformBuffer:			return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+			case Xenon::Backend::ResourceType::DynamicStorageBuffer:			return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+			case Xenon::Backend::ResourceType::InputAttachment:					return VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+			case Xenon::Backend::ResourceType::AccelerationStructure:			return VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
+			default:															spdlog::error("Invalid resource type!");
+			}
+
+			return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		}
+
 		Mutex<Xenon::Backend::VulkanQueue>& VulkanDevice::getComputeQueue()
 		{
 			return m_Queues[m_ComputeQueueIndex];
@@ -258,6 +302,141 @@ namespace Xenon
 		const Mutex<Xenon::Backend::VulkanQueue>& VulkanDevice::getTransferQueue() const
 		{
 			return m_Queues[m_TransferQueueIndex];
+		}
+
+		std::pair<VkDescriptorPool, VkDescriptorSet> VulkanDevice::createDescriptorSet(const std::vector<DescriptorBindingInfo>& bindingInfo)
+		{
+			const auto bindingHash = GenerateHash(reinterpret_cast<const std::byte*>(bindingInfo.data()), bindingInfo.size() * sizeof(DescriptorBindingInfo));
+
+			// Create a new one if the layout for the hash does not exist.
+			if (!m_DescriptorSetStorages.contains(bindingHash))
+			{
+				// Get the basic information from the binding info.
+				std::vector<VkDescriptorSetLayoutBinding> bindings;
+				std::vector<VkDescriptorPoolSize> poolSizes;
+				bindings.reserve(bindingInfo.size());
+				poolSizes.reserve(bindingInfo.size());
+
+				for (uint32_t index = 0; index < bindingInfo.size(); index++)
+				{
+					const auto& binding = bindingInfo[index];
+
+					auto& vkBinding = bindings.emplace_back();
+					vkBinding.binding = index;
+					vkBinding.descriptorCount = 1;
+					vkBinding.descriptorType = convertResourceType(binding.m_Type);
+					vkBinding.pImmutableSamplers = nullptr;
+					vkBinding.stageFlags = GetStageFlags(binding.m_ApplicableShaders);
+
+					auto& vkPoolSize = poolSizes.emplace_back();
+					vkPoolSize.descriptorCount = 1;
+					vkPoolSize.type = vkBinding.descriptorType;
+				}
+
+				// Create the descriptor set layout.
+				VkDescriptorSetLayoutCreateInfo layoutCreateInfo = {};
+				layoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+				layoutCreateInfo.pNext = nullptr;
+				layoutCreateInfo.flags = 0;
+				layoutCreateInfo.bindingCount = static_cast<uint32_t>(bindings.size());
+				layoutCreateInfo.pBindings = bindings.data();
+
+				VkDescriptorSetLayout layout = VK_NULL_HANDLE;
+				XENON_VK_ASSERT(getDeviceTable().vkCreateDescriptorSetLayout(getLogicalDevice(), &layoutCreateInfo, nullptr, &layout), "Failed to create the descriptor set layout!");
+
+				// Create the first descriptor pool.
+				VkDescriptorPoolCreateInfo poolCreateInfo = {};
+				poolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+				poolCreateInfo.pNext = nullptr;
+				poolCreateInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+				poolCreateInfo.maxSets = XENON_VK_MAX_DESCRIPTOR_SETS_COUNT;
+				poolCreateInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+				poolCreateInfo.pPoolSizes = poolSizes.data();
+
+				VkDescriptorPool pool = VK_NULL_HANDLE;
+				XENON_VK_ASSERT(getDeviceTable().vkCreateDescriptorPool(getLogicalDevice(), &poolCreateInfo, nullptr, &pool), "Failed to create the descriptor pool!");
+
+				// Set the information to the storage.
+				auto& storage = m_DescriptorSetStorages[bindingHash];
+				storage.m_BindingInfo = bindingInfo;
+				storage.m_Layout = layout;
+				storage.m_Pools.emplace_back(pool, 0);
+			}
+
+			auto& storage = m_DescriptorSetStorages[bindingHash];
+
+			// Find a suitable descriptor set.
+			VkDescriptorPool pool = VK_NULL_HANDLE;
+			for (auto& [descriptorPool, count] : storage.m_Pools)
+			{
+				if (count < XENON_VK_MAX_DESCRIPTOR_SETS_COUNT)
+				{
+					pool = descriptorPool;
+					count++;
+					break;
+				}
+			}
+
+			// If we were not able to select a pool, create a new one.
+			if (pool == VK_NULL_HANDLE)
+			{
+				std::vector<VkDescriptorPoolSize> poolSizes;
+				poolSizes.reserve(bindingInfo.size());
+
+				for (const auto& binding : bindingInfo)
+				{
+					auto& vkPoolSize = poolSizes.emplace_back();
+					vkPoolSize.descriptorCount = 1;
+					vkPoolSize.type = convertResourceType(binding.m_Type);
+				}
+
+				VkDescriptorPoolCreateInfo poolCreateInfo = {};
+				poolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+				poolCreateInfo.pNext = nullptr;
+				poolCreateInfo.flags = 0;
+				poolCreateInfo.maxSets = XENON_VK_MAX_DESCRIPTOR_SETS_COUNT;
+				poolCreateInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+				poolCreateInfo.pPoolSizes = poolSizes.data();
+
+				XENON_VK_ASSERT(getDeviceTable().vkCreateDescriptorPool(getLogicalDevice(), &poolCreateInfo, nullptr, &pool), "Failed to create the descriptor pool!");
+				storage.m_Pools.emplace_back(pool, 0);
+			}
+
+			// Allocate the descriptor set.
+			VkDescriptorSetAllocateInfo allocateInfo = {};
+			allocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+			allocateInfo.pNext = nullptr;
+			allocateInfo.descriptorPool = pool;
+			allocateInfo.descriptorSetCount = 1;
+			allocateInfo.pSetLayouts = &storage.m_Layout;
+
+			VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
+			XENON_VK_ASSERT(getDeviceTable().vkAllocateDescriptorSets(getLogicalDevice(), &allocateInfo, &descriptorSet), "Failed to allocate the descriptor set!");
+
+			return std::make_pair(pool, descriptorSet);
+		}
+
+		void VulkanDevice::freeDescriptorSet(VkDescriptorPool pool, VkDescriptorSet descriptorSet, const std::vector<DescriptorBindingInfo>& bindingInfo)
+		{
+			const auto bindingHash = GenerateHash(reinterpret_cast<const std::byte*>(bindingInfo.data()), bindingInfo.size() * sizeof(DescriptorBindingInfo));
+			auto& storage = m_DescriptorSetStorages[bindingHash];
+
+			XENON_VK_ASSERT(getDeviceTable().vkFreeDescriptorSets(getLogicalDevice(), pool, 1, &descriptorSet), "Failed to free the descriptor set!");
+
+			// Update the pool list.
+			for (uint32_t i = 0; i < storage.m_Pools.size(); i++)
+			{
+				auto& [descriptorPool, count] = storage.m_Pools[i];
+				count--;
+
+				// Deallocate the pool and remove it from the list.
+				if (count == 0)
+				{
+					getDeviceTable().vkDestroyDescriptorPool(getLogicalDevice(), pool, nullptr);
+					storage.m_Pools.erase(storage.m_Pools.begin() + i);
+					return;
+				}
+			}
 		}
 
 		void VulkanDevice::selectPhysicalDevice()

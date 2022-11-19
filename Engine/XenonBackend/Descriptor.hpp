@@ -1,0 +1,51 @@
+// Copyright 2022 Dhiraj Wishal
+// SPDX-License-Identifier: Apache-2.0
+
+#pragma once
+
+#include "Buffer.hpp"
+#include "Image.hpp"
+
+namespace Xenon
+{
+	namespace Backend
+	{
+		/**
+		 * Descriptor class.
+		 * Descriptors define how to attach resources to shaders.
+		 */
+		class Descriptor : public BackendObject
+		{
+		public:
+			/**
+			 * Explicit constructor.
+			 *
+			 * @param pDevice The device pointer.
+			 * @param bindingInfo The descriptor's binding information. Make sure that the binding information are in the binding order (the first one is binging 0, second is 1 and so on).
+			 * @param type The descriptor type.
+			 */
+			explicit Descriptor([[maybe_unused]] Device* pDevice, const std::vector<DescriptorBindingInfo>& bindingInfo, DescriptorType type) : m_BindingInformation(bindingInfo), m_Type(type) {}
+
+			/**
+			 * Attach a buffer to the descriptor.
+			 *
+			 * @param binding The binding of the buffer.
+			 * @param pBuffer The buffer to attach.
+			 */
+			virtual void attach(uint32_t binding, Buffer* pBuffer) = 0;
+
+			/**
+			 * Attach an image to the descriptor.
+			 *
+			 * @param binding The binding of the image.
+			 * @param pImage The image to attach.
+			 * @param usage How the image is used in the binding.
+			 */
+			virtual void attach(uint32_t binding, Image* pImage, ImageUsage usage) = 0;
+
+		protected:
+			std::vector<DescriptorBindingInfo> m_BindingInformation;
+			DescriptorType m_Type = DescriptorType::UserDefined;
+		};
+	}
+}

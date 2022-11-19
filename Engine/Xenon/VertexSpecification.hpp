@@ -4,7 +4,7 @@
 #pragma once
 
 #include "../XenonCore/Common.hpp"
-#include "../XenonBackend/ShaderSource.hpp"
+#include "../XenonBackend/Core.hpp"
 
 #include <array>
 

@@ -62,13 +62,19 @@ namespace Xenon
 			 */
 			void endRead() override;
 
-		public:
 			/**
 			 * Get the buffer handle.
 			 *
 			 * @return The buffer handle.
 			 */
 			[[nodiscard]] VkBuffer getBuffer() const { return m_Buffer; }
+
+			/**
+			 * Get the descriptor buffer info structure.
+			 *
+			 * @return The buffer info structure.
+			 */
+			[[nodiscard]] const VkDescriptorBufferInfo& getDescriptorBufferInfo() const { return m_BufferInfo; }
 
 		private:
 			/**

@@ -3,48 +3,14 @@
 
 #pragma once
 
+#include "Core.hpp"
+
 #include <filesystem>
-#include <vector>
 
 namespace Xenon
 {
 	namespace Backend
 	{
-		/**
-		 * Resource type enum.
-		 */
-		enum class ResourceType : uint8_t
-		{
-			Sampler,
-			CombinedImageSampler,
-
-			SampledImage,
-			StorageImage,
-
-			UniformTexelBuffer,
-			StorageTexelBuffer,
-
-			UniformBuffer,
-			StorageBuffer,
-
-			DynamicUniformBuffer,
-			DynamicStorageBuffer,
-
-			InputAttachment,
-
-			AccelerationStructure
-		};
-
-		/**
-		 * Descriptor set type enum.
-		 */
-		enum class DescriptorSetType : uint8_t
-		{
-			UserDefined = 0,	// This descriptor type contains any other user defined data, like the model matrix.
-			Material = 1,		// This descriptor type contains all the material-specific information.
-			Camera = 2,			// This descriptor type only has one binding (0) which passes the camera data.
-		};
-
 		/**
 		 * Shader resource structure.
 		 */
@@ -52,25 +18,8 @@ namespace Xenon
 		{
 			uint32_t m_Binding = 0;
 
-			DescriptorSetType m_Set = DescriptorSetType::Camera;
+			DescriptorType m_Set = DescriptorType::Camera;
 			ResourceType m_Type = ResourceType::Sampler;
-		};
-
-		/**
-		 * Attribute data type.
-		 * This specifies which data type an attribute uses.
-		 */
-		enum class AttributeDataType : uint8_t
-		{
-			Vec2,
-			Vec3,
-			Vec4,
-
-			Mat2,
-			Mat3,
-			Mat4,
-
-			Scalar
 		};
 
 		/**

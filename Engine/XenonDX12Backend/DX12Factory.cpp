@@ -49,5 +49,10 @@ namespace Xenon
 		{
 			return std::make_unique<Xenon::Backend::DX12Swapchain>(pDevice->as<DX12Device>(), title, width, height);
 		}
+
+		std::unique_ptr<Xenon::Backend::Descriptor> DX12Factory::createDescriptor(Device* pDevice, const std::vector<DescriptorBindingInfo>& bindingInfo, DescriptorType type)
+		{
+			return nullptr;
+		}
 	}
 }

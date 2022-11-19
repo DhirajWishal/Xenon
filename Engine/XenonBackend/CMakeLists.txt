@@ -31,6 +31,7 @@ set(
 	"ShaderSource.hpp"
 	"Pipeline.hpp"
 	"RasterizingPipeline.hpp"
+	"Descriptor.hpp"
 )
 
 # Add the source group.

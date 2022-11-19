@@ -12,6 +12,7 @@ project(
 set(
 	SOURCES
 
+	"Common.cpp"
 	"Common.hpp"
 	"JobSystem.cpp"
 	"JobSystem.hpp"
@@ -39,6 +40,7 @@ target_include_directories(
 	XenonCore 
 
 	PUBLIC ${SPDLOG_INCLUDE_DIR}
+	PRIVATE ${XXHASH_INCLUDE_DIR}
 )
 
 # Make sure to specify the C++ standard to C++20.

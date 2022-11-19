@@ -10,6 +10,7 @@
 #include "VulkanImage.hpp"
 #include "VulkanRasterizer.hpp"
 #include "VulkanSwapchain.hpp"
+#include "VulkanDescriptor.hpp"
 
 namespace Xenon
 {
@@ -48,6 +49,11 @@ namespace Xenon
 		std::unique_ptr<Xenon::Backend::Swapchain> VulkanFactory::createSwapchain(Device* pDevice, const std::string& title, uint32_t width, uint32_t height)
 		{
 			return std::make_unique<Xenon::Backend::VulkanSwapchain>(pDevice->as<VulkanDevice>(), title, width, height);
+		}
+
+		std::unique_ptr<Xenon::Backend::Descriptor> VulkanFactory::createDescriptor(Device* pDevice, const std::vector<DescriptorBindingInfo>& bindingInfo, DescriptorType type)
+		{
+			return std::make_unique<Xenon::Backend::VulkanDescriptor>(pDevice->as<VulkanDevice>(), bindingInfo, type);
 		}
 	}
 }

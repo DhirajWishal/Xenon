@@ -156,5 +156,87 @@ namespace Xenon
 
 		XENON_DEFINE_ENUM_AND(ImageUsage);
 		XENON_DEFINE_ENUM_OR(ImageUsage);
+
+		/**
+		 * Attribute data type.
+		 * This specifies which data type an attribute uses.
+		 */
+		enum class AttributeDataType : uint8_t
+		{
+			Vec2,
+			Vec3,
+			Vec4,
+
+			Mat2,
+			Mat3,
+			Mat4,
+
+			Scalar
+		};
+
+		/**
+		 * Resource type enum.
+		 */
+		enum class ResourceType : uint8_t
+		{
+			Sampler,
+			CombinedImageSampler,
+
+			SampledImage,
+			StorageImage,
+
+			UniformTexelBuffer,
+			StorageTexelBuffer,
+
+			UniformBuffer,
+			StorageBuffer,
+
+			DynamicUniformBuffer,
+			DynamicStorageBuffer,
+
+			InputAttachment,
+
+			AccelerationStructure
+		};
+
+		/**
+		 * Descriptor type enum.
+		 */
+		enum class DescriptorType : uint8_t
+		{
+			UserDefined,	// This descriptor type contains any other user defined data, like the model matrix.
+			Material,		// This descriptor type contains all the material-specific information.
+			Camera			// This descriptor type only has one binding (0) which passes the camera data.
+		};
+
+		/**
+		 * Shader type enum.
+		 */
+		enum class ShaderType : uint16_t
+		{
+			Vertex = XENON_BIT_SHIFT(0),
+			Fragment = XENON_BIT_SHIFT(1),	// Also known as the pixel shader in DirectX
+
+			RayGen = XENON_BIT_SHIFT(2),
+			Intersection = XENON_BIT_SHIFT(3),
+			AnyHit = XENON_BIT_SHIFT(4),
+			ClosestHit = XENON_BIT_SHIFT(5),
+			Miss = XENON_BIT_SHIFT(6),
+			Callable = XENON_BIT_SHIFT(7),
+
+			Compute = XENON_BIT_SHIFT(8)
+		};
+
+		XENON_DEFINE_ENUM_AND(ShaderType);
+		XENON_DEFINE_ENUM_OR(ShaderType);
+
+		/**
+		 * Descriptor binding information structure.
+		 */
+		struct DescriptorBindingInfo final
+		{
+			ShaderType m_ApplicableShaders = ShaderType::Vertex;	// Bitwise-OR all the applicable shaders.
+			ResourceType m_Type = ResourceType::Sampler;
+		};
 	}
 }
