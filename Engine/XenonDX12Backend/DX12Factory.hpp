@@ -105,6 +105,16 @@ namespace Xenon
 			 * @return The descriptor pointer.
 			 */
 			[[nodiscard]] std::unique_ptr<Descriptor> createDescriptor(Device* pDevice, const std::vector<DescriptorBindingInfo>& bindingInfo, DescriptorType type) override;
+
+			/**
+			 * Create a new image view.
+			 *
+			 * @param pDevice The device pointer.
+			 * @param pImage The image pointer.
+			 * @param specification The view specification.
+			 * @return The image view object.
+			 */
+			[[nodiscard]] std::unique_ptr<ImageView> createImageView(Device* pDevice, Image* pImage, const ImageViewSpecification& specification) override;
 		};
 	}
 }

@@ -43,6 +43,8 @@ set(
 	"VulkanShader.hpp"
 	"VulkanDescriptor.cpp"
 	"VulkanDescriptor.hpp"
+	"VulkanImageView.cpp"
+	"VulkanImageView.hpp"
 )
 
 # Add the source group.

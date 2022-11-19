@@ -58,7 +58,7 @@ namespace Xenon
 			m_pDevice->getDeviceTable().vkUpdateDescriptorSets(m_pDevice->getLogicalDevice(), 1, &writeDescriptorSet, 0, nullptr);
 		}
 
-		void VulkanDescriptor::attach(uint32_t binding, Image* pImage, ImageUsage usage)
+		void VulkanDescriptor::attach(uint32_t binding, Image* pImage, ImageView* pView, ImageSampler* pSampler, ImageUsage usage)
 		{
 			auto pVkImage = pImage->as<VulkanImage>();
 
@@ -66,7 +66,7 @@ namespace Xenon
 			VkDescriptorImageInfo imageInfo = {};
 			imageInfo.sampler = VK_NULL_HANDLE;
 			imageInfo.imageView = VK_NULL_HANDLE;
-			imageInfo.imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			imageInfo.imageLayout = pVkImage->getImageLayout();	// FIXME
 
 			VkWriteDescriptorSet writeDescriptorSet = {};
 			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;

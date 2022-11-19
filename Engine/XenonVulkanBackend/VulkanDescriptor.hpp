@@ -44,9 +44,11 @@ namespace Xenon
 			 *
 			 * @param binding The binding of the image.
 			 * @param pImage The image to attach.
+			 * @param pView The image view.
+			 * @param pSampler The image sampler.
 			 * @param usage How the image is used in the binding.
 			 */
-			void attach(uint32_t binding, Image* pImage, ImageUsage usage) override;
+			void attach(uint32_t binding, Image* pImage, ImageView* pView, ImageSampler* pSampler, ImageUsage usage) override;
 
 		private:
 			VkDescriptorPool m_Pool = VK_NULL_HANDLE;

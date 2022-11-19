@@ -7,10 +7,10 @@
 #include "VulkanDevice.hpp"
 #include "VulkanCommandRecorder.hpp"
 #include "VulkanBuffer.hpp"
-#include "VulkanImage.hpp"
 #include "VulkanRasterizer.hpp"
 #include "VulkanSwapchain.hpp"
 #include "VulkanDescriptor.hpp"
+#include "VulkanImageView.hpp"
 
 namespace Xenon
 {
@@ -54,6 +54,11 @@ namespace Xenon
 		std::unique_ptr<Xenon::Backend::Descriptor> VulkanFactory::createDescriptor(Device* pDevice, const std::vector<DescriptorBindingInfo>& bindingInfo, DescriptorType type)
 		{
 			return std::make_unique<Xenon::Backend::VulkanDescriptor>(pDevice->as<VulkanDevice>(), bindingInfo, type);
+		}
+
+		std::unique_ptr<Xenon::Backend::ImageView> VulkanFactory::createImageView(Device* pDevice, Image* pImage, const ImageViewSpecification& specification)
+		{
+			return std::make_unique<Xenon::Backend::VulkanImageView>(pDevice->as<VulkanDevice>(), pImage->as<VulkanImage>(), specification);
 		}
 	}
 }

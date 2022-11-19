@@ -4,7 +4,8 @@
 #pragma once
 
 #include "Buffer.hpp"
-#include "Image.hpp"
+#include "ImageView.hpp"
+#include "ImageSampler.hpp"
 
 namespace Xenon
 {
@@ -39,9 +40,25 @@ namespace Xenon
 			 *
 			 * @param binding The binding of the image.
 			 * @param pImage The image to attach.
+			 * @param pView The image view.
+			 * @param pSampler The image sampler.
 			 * @param usage How the image is used in the binding.
 			 */
-			virtual void attach(uint32_t binding, Image* pImage, ImageUsage usage) = 0;
+			virtual void attach(uint32_t binding, Image* pImage, ImageView* pView, ImageSampler* pSampler, ImageUsage usage) = 0;
+
+			/**
+			 * Get the descriptor set's binding information.
+			 *
+			 * @return The binding information vector.
+			 */
+			[[nodiscard]] const std::vector<DescriptorBindingInfo>& getBindingInfo() const { return m_BindingInformation; }
+
+			/**
+			 * Get the descriptor set type.
+			 *
+			 * @return The descriptor set type.
+			 */
+			[[nodiscard]] DescriptorType getType() const { return m_Type; }
 
 		protected:
 			std::vector<DescriptorBindingInfo> m_BindingInformation;

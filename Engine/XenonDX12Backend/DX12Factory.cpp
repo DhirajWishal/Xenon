@@ -52,7 +52,12 @@ namespace Xenon
 
 		std::unique_ptr<Xenon::Backend::Descriptor> DX12Factory::createDescriptor(Device* pDevice, const std::vector<DescriptorBindingInfo>& bindingInfo, DescriptorType type)
 		{
-			return nullptr;
+			return nullptr;	// TODO
+		}
+
+		std::unique_ptr<Xenon::Backend::ImageView> DX12Factory::createImageView(Device* pDevice, Image* pImage, const ImageViewSpecification& specification)
+		{
+			return nullptr;	// TODO
 		}
 	}
 }

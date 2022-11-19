@@ -32,6 +32,8 @@ set(
 	"Pipeline.hpp"
 	"RasterizingPipeline.hpp"
 	"Descriptor.hpp"
+	"ImageView.hpp"
+	"ImageSampler.hpp"
 )
 
 # Add the source group.

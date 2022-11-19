@@ -5,10 +5,10 @@
 
 #include "CommandRecorder.hpp"
 #include "Buffer.hpp"
-#include "Image.hpp"
 #include "Rasterizer.hpp"
 #include "Swapchain.hpp"
 #include "Descriptor.hpp"
+#include "ImageView.hpp"
 
 namespace Xenon
 {
@@ -110,6 +110,16 @@ namespace Xenon
 			 * @return The descriptor pointer.
 			 */
 			[[nodiscard]] virtual std::unique_ptr<Descriptor> createDescriptor(Device* pDevice, const std::vector<DescriptorBindingInfo>& bindingInfo, DescriptorType type) = 0;
+
+			/**
+			 * Create a new image view.
+			 *
+			 * @param pDevice The device pointer.
+			 * @param pImage The image pointer.
+			 * @param specification The view specification.
+			 * @return The image view object.
+			 */
+			[[nodiscard]] virtual std::unique_ptr<ImageView> createImageView(Device* pDevice, Image* pImage, const ImageViewSpecification& specification) = 0;
 		};
 	}
 }
