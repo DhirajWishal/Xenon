@@ -2,14 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "DX12Factory.hpp"
+#include "../XenonCore/Logging.hpp"
 
 #include "DX12Instance.hpp"
 #include "DX12Device.hpp"
 #include "DX12CommandRecorder.hpp"
 #include "DX12Buffer.hpp"
-#include "DX12Image.hpp"
+#include "DX12ImageView.hpp"
 #include "DX12Rasterizer.hpp"
 #include "DX12Swapchain.hpp"
+#include "DX12ImageSampler.hpp"
 
 namespace Xenon
 {
@@ -42,27 +44,28 @@ namespace Xenon
 
 		std::unique_ptr<Xenon::Backend::Rasterizer> DX12Factory::createRasterizer(Device* pDevice, Camera* pCamera, AttachmentType attachmentTypes, bool enableTripleBuffering /*= false*/, MultiSamplingCount multiSampleCount /*= MultiSamplingCount::x1*/)
 		{
-			return std::make_unique<Xenon::Backend::DX12Rasterizer>(pDevice->as<DX12Device>(), pCamera, attachmentTypes, enableTripleBuffering, multiSampleCount);
+			return std::make_unique<DX12Rasterizer>(pDevice->as<DX12Device>(), pCamera, attachmentTypes, enableTripleBuffering, multiSampleCount);
 		}
 
 		std::unique_ptr<Xenon::Backend::Swapchain> DX12Factory::createSwapchain(Device* pDevice, const std::string& title, uint32_t width, uint32_t height)
 		{
-			return std::make_unique<Xenon::Backend::DX12Swapchain>(pDevice->as<DX12Device>(), title, width, height);
+			return std::make_unique<DX12Swapchain>(pDevice->as<DX12Device>(), title, width, height);
 		}
 
 		std::unique_ptr<Xenon::Backend::Descriptor> DX12Factory::createDescriptor(Device* pDevice, const std::vector<DescriptorBindingInfo>& bindingInfo, DescriptorType type)
 		{
-			return nullptr;	// TODO
+			XENON_TODO_NOW("(Dhiraj) Implement this function.");
+			return nullptr;
 		}
 
 		std::unique_ptr<Xenon::Backend::ImageView> DX12Factory::createImageView(Device* pDevice, Image* pImage, const ImageViewSpecification& specification)
 		{
-			return nullptr;	// TODO
+			return std::make_unique<DX12ImageView>(pDevice->as<DX12Device>(), pImage->as<DX12Image>(), specification);
 		}
 
 		std::unique_ptr<Xenon::Backend::ImageSampler> DX12Factory::createImageSampler(Device* pDevice, const ImageSamplerSpecification& specification)
 		{
-			return nullptr;	// TODO
+			return std::make_unique<DX12ImageSampler>(pDevice->as<DX12Device>(), specification);
 		}
 	}
 }

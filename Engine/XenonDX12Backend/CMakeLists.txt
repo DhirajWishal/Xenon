@@ -31,6 +31,12 @@ set(
 	"DX12Image.hpp"
 	"DX12Swapchain.cpp"
 	"DX12Swapchain.hpp"
+	"DX12Descriptor.cpp"
+	"DX12Descriptor.hpp"
+	"DX12ImageView.cpp"
+	"DX12ImageView.hpp"
+	"DX12ImageSampler.cpp"
+	"DX12ImageSampler.hpp"
 )
 
 # Add the source group.

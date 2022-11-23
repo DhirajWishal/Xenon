@@ -139,6 +139,14 @@ namespace Xenon
 			createInfo.mipmapMode = GetMipMapMode(specification.m_MipMapMode);
 			createInfo.unnormalizedCoordinates = XENON_VK_BOOL(specification.m_bEnableUnnormalizedCoordinates);
 
+			// Get the supported max anisotropy from the physical device if needed.
+			if (createInfo.maxAnisotropy == 0.0f && specification.m_bEnableAnisotropy)
+			{
+				VkPhysicalDeviceProperties vProperties = {};
+				vkGetPhysicalDeviceProperties(pDevice->getPhysicalDevice(), &vProperties);
+				createInfo.maxAnisotropy = vProperties.limits.maxSamplerAnisotropy;
+			}
+
 			XENON_VK_ASSERT(pDevice->getDeviceTable().vkCreateSampler(pDevice->getLogicalDevice(), &createInfo, nullptr, &m_Sampler), "Failed to create the image sampler!");
 		}
 

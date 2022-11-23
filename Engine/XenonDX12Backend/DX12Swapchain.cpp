@@ -14,7 +14,7 @@ namespace Xenon
 			: Swapchain(pDevice, title, width, height)
 			, DX12DeviceBoundObject(pDevice)
 		{
-			m_FrameCount = 3;	// TODO: Find a better system.
+			m_FrameCount = 3;	XENON_TODO(0, 0, 0, "(Dhiraj) Find a better system.");
 
 			// Create the swapchain.
 			DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
@@ -106,7 +106,7 @@ namespace Xenon
 
 		void DX12Swapchain::recreate()
 		{
-			// TODO: Implement this function.
+			XENON_TODO_NOW("(Dhiraj) Implement this function.");
 		}
 
 		DXGI_FORMAT DX12Swapchain::getBestSwapchainFormat() const

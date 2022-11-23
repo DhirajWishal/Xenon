@@ -50,13 +50,13 @@ namespace Xenon
 			allocationDesc.ExtraHeapFlags = heapFlags;
 
 			D3D12_RESOURCE_DESC resourceDescriptor = {};
-			resourceDescriptor.MipLevels = 1;	// TODO: Find a better system.
+			resourceDescriptor.MipLevels = 1;	XENON_TODO_NOW("(Dhiraj) Find a better system.");
 			resourceDescriptor.Width = specification.m_Width;
 			resourceDescriptor.Height = specification.m_Height;
-			resourceDescriptor.DepthOrArraySize = specification.m_Depth;
+			resourceDescriptor.DepthOrArraySize = static_cast<UINT16>(specification.m_Depth);
 			resourceDescriptor.Flags = flags;
 			resourceDescriptor.SampleDesc.Count = EnumToInt(specification.m_MultiSamplingCount);
-			resourceDescriptor.SampleDesc.Quality = 1;	// TODO: Find a better system.
+			resourceDescriptor.SampleDesc.Quality = 1;	XENON_TODO_NOW("(Dhiraj) Find a better system.");
 			resourceDescriptor.Dimension = dimension;
 
 			// Try and create the image using the candidates.

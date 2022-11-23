@@ -17,6 +17,9 @@ project(
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(PREDEFINED_TARGETS_FOLDER "PredefinedTargets")
 
+# Set the caches.
+set(XENON_LOG_LEVEL 5 CACHE INTERNAL "This defines what to log. Checkout the wiki page for more information.")
+
 # Add the third party includes.
 set(SPDLOG_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/spdlog/include)
 set(VULKAN_HEADERS_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/Vulkan-Headers/include)
@@ -49,6 +52,7 @@ add_compile_definitions(
 
 	XENON_GLTF_ASSET_DIR="${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/glTF-Sample-Models/"
 	XENON_SHADER_DIR="${XENON_SHADER_BANK_OUTPUT_DIR}"
+	XENON_LOG_LEVEL=${XENON_LOG_LEVEL}
 )
 
 # Include the main subdirectories.

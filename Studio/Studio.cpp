@@ -53,6 +53,8 @@ Studio::Studio(Xenon::BackendType type /*= Xenon::BackendType::Any*/)
 	info.m_Type = Xenon::Backend::ResourceType::UniformBuffer;
 
 	auto pDescriptor = m_Instance.getFactory()->createDescriptor(m_Instance.getBackendDevice(), bindingInfo, Xenon::Backend::DescriptorType::UserDefined);
+
+	XENON_TODO_NOW("(Dhiraj) Testing TODO statement.");
 }
 
 void Studio::run()

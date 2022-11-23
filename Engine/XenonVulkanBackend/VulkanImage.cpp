@@ -76,7 +76,7 @@ namespace Xenon
 			imageCreateInfo.extent.width = specification.m_Width;
 			imageCreateInfo.extent.height = specification.m_Height;
 			imageCreateInfo.extent.depth = specification.m_Depth;
-			imageCreateInfo.mipLevels = /*specification.m_EnableMipMaps*/ 1;	// TODO: Come up with a better system.
+			imageCreateInfo.mipLevels = /*specification.m_EnableMipMaps*/ 1;	XENON_TODO_NOW("(Dhiraj) Come up with a better system.");
 			imageCreateInfo.arrayLayers = specification.m_Layers;
 			imageCreateInfo.samples = m_pDevice->convertSamplingCount(specification.m_MultiSamplingCount);
 			imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;

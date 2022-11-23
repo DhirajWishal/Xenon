@@ -12,8 +12,11 @@ namespace Xenon
 	/**
 	 * Xenon no-op function.
 	 * This function compiles down to nothing and the compiler can optimize it out when needed.
+	 *
+	 * @tparam Arguments The argument types that can be passed to the function.
 	 */
-	constexpr void NoOp() {}
+	template<class... Arguments>
+	constexpr void NoOp(Arguments&&...) {}
 
 	/**
 	 * Print a string of bytes to the console.
@@ -27,22 +30,15 @@ namespace Xenon
 	 * Log a trace to the console.
 	 *
 	 * @tparam Message The message type.
-	 * @tparam Arguments The argument types.
 	 * @param location The source location.
 	 * @param message The message to log.
-	 * @param arguments The arguments to be passed.
 	 */
-	template<class Message, class... Arguments>
-	void TraceLog(std::source_location&& location, Message&& message, Arguments&&... arguments)
+	template<class Message>
+	void TraceLog(std::source_location&& location, Message&& message)
 	{
-		spdlog::info("[Trace \"{}\":{}] {}", location.file_name(), location.line(), std::move(message), std::forward<Arguments>(arguments)...);
+		spdlog::info("[Trace \"{}\":{}] {}", location.file_name(), location.line(), std::move(message));
 	}
 }
-
-#define XENON_LOG_LEVEL_ALL 5
-#define XENON_LOG_LEVEL_NONE 0
-
-#define XENON_LOG_LEVEL XENON_LOG_LEVEL_ALL
 
 /**
  * Xenon log level defines the types of logging that can be done by the engine.
@@ -69,7 +65,7 @@ namespace Xenon
 #					define XENON_LOG_INFORMATION(...)			::spdlog::info(__VA_ARGS__)
 
 #					if XENON_LOG_LEVEL > 4
-#						define XENON_LOG_TRACE(msg,...)			::Xenon::TraceLog(std::source_location::current(), msg, __VA_ARGS__)
+#						define XENON_LOG_TRACE(msg,...)			::Xenon::TraceLog(std::source_location::current(), fmt::format(msg, __VA_ARGS__))
 
 #					endif
 #				endif
@@ -82,7 +78,7 @@ namespace Xenon
 #	define XENON_LOG_FATAL(...)									::Xenon::NoOp()
 #endif
 
-#ifndef  XENON_LOG_ERROR
+#ifndef XENON_LOG_ERROR
 #	define XENON_LOG_ERROR(...)									::Xenon::NoOp()
 #endif
 
@@ -95,7 +91,7 @@ namespace Xenon
 #endif
 
 #ifndef XENON_LOG_TRACE
-#	define XENON_LOG_TRACE(...)							::Xenon::NoOp()
+#	define XENON_LOG_TRACE(...)									::Xenon::NoOp()
 #endif
 
 #ifdef XENON_DEBUG
@@ -106,4 +102,15 @@ namespace Xenon
 
 #endif // XENON_DEBUG
 
-#define XENON_ASSERT(condition, ...)							if(!(condition)) XENON_LOG_FATAL(__VA_ARGS__)
+#define XENON_ASSERT(condition, ...)							if (!(condition)) XENON_LOG_FATAL(__VA_ARGS__)
+
+#define XENON_TODO(_day, _month, _year, ...)																											\
+	if (std::chrono::year(_year)/_month/_day >= std::chrono::year_month_day(std::chrono::floor<std::chrono::days>(std::chrono::system_clock::now())))	\
+		XENON_LOG_TRACE("TODO: " __VA_ARGS__)
+
+#define XENON_FIXME(_day, _month, _year, ...)																											\
+	if (std::chrono::year(_year)/_month/_day >= std::chrono::year_month_day(std::chrono::floor<std::chrono::days>(std::chrono::system_clock::now())))	\
+		XENON_LOG_TRACE("FIXME: " __VA_ARGS__)
+
+#define XENON_TODO_NOW(...)										XENON_LOG_TRACE("TODO: " __VA_ARGS__)
+#define XENON_FIXME_NOW(...)									XENON_LOG_TRACE("FIXME: " __VA_ARGS__)

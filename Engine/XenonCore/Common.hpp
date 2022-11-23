@@ -25,7 +25,7 @@ namespace Xenon
 	 * @return The type index.
 	 */
 	template<class Type>
-	[[nodiscard]] constexpr std::type_index GetTypeIndex() { return std::type_index(typeid(Type)); }
+	[[nodiscard]] constexpr std::type_index GetTypeIndex() noexcept { return std::type_index(typeid(Type)); }
 
 	/**
 	 * Check if an enum contains multiple values.
@@ -38,7 +38,7 @@ namespace Xenon
 	 * @return False if all the enums are not in the value.
 	 */
 	template<class Enum, class...Enums>
-	[[nodiscard]] constexpr bool EnumContains(Enum value, Enums... enums)
+	[[nodiscard]] constexpr bool EnumContains(Enum value, Enums... enums) noexcept
 	{
 		bool contains = false;
 		const auto function = [value, &contains](Enum e) { contains |= value & e; };
@@ -55,7 +55,7 @@ namespace Xenon
 	 * @return The integer value.
 	 */
 	template<class Type>
-	[[nodiscard]] constexpr std::underlying_type_t<Type> EnumToInt(Type value) { return static_cast<std::underlying_type_t<Type>>(value); }
+	[[nodiscard]] constexpr std::underlying_type_t<Type> EnumToInt(Type value) noexcept { return static_cast<std::underlying_type_t<Type>>(value); }
 
 	/**
 	 * Generate hash for a set of bytes.
@@ -65,7 +65,19 @@ namespace Xenon
 	 * @param seed The hash seed. Default is 0.
 	 * @return The 64-bit hash value.
 	 */
-	[[nodiscard]] uint64_t GenerateHash(const std::byte* pBytes, uint64_t size, uint64_t seed = 0);
+	[[nodiscard]] uint64_t GenerateHash(const std::byte* pBytes, uint64_t size, uint64_t seed = 0) noexcept;
+
+	/**
+	 * Utility function to easily generate the hash for an object.
+	 * Note that this will generate the hash for the object memory, not it's content (if using pointers).
+	 *
+	 * @tparam Type The data type.
+	 * @param data The data to generate the hash of.
+	 * @param seed The hash seed. Default is 0.
+	 * @return The 64-bit hash value.
+	 */
+	template<class Type>
+	[[nodiscard]] uint64_t GenerateHashFor(const Type& data, uint64_t seed = 0) noexcept { return GenerateHash(reinterpret_cast<const std::byte*>(&data), sizeof(Type), seed); }
 }
 
 #define XENON_DEFINE_ENUM_AND(name)															\

@@ -8,7 +8,7 @@
 
 namespace Xenon
 {
-	uint64_t GenerateHash(const std::byte* pBytes, uint64_t size, uint64_t seed /*= 0*/)
+	uint64_t GenerateHash(const std::byte* pBytes, uint64_t size, uint64_t seed /*= 0*/) noexcept
 	{
 		return XXH64(pBytes, size, seed);
 	}
