@@ -110,7 +110,7 @@ namespace Xenon
 
 			std::unique_ptr<DX12Buffer> m_pTemporaryBuffer = nullptr;
 
-			uint64_t m_Size = 0;
+			D3D12_RESOURCE_STATES m_CurrentState = D3D12_RESOURCE_STATE_COMMON;
 		};
 	}
 }

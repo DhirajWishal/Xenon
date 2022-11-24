@@ -26,7 +26,7 @@ namespace Xenon
 			UINT viewCount = 0;
 			for (const auto& info : bindingInfo)
 			{
-				if (info.m_Type == ResourceType::CombinedImageSampler || info.m_Type == ResourceType::Sampler)
+				if (info.m_Type == ResourceType::Sampler || info.m_Type == ResourceType::CombinedImageSampler)
 					samplerCount++;
 
 				viewCount++;
@@ -67,11 +67,34 @@ namespace Xenon
 
 		void DX12Descriptor::attach(uint32_t binding, Buffer* pBuffer)
 		{
-			D3D12_CONSTANT_BUFFER_VIEW_DESC desc = {};
-			desc.BufferLocation = pBuffer->as<DX12Buffer>()->getResource()->GetGPUVirtualAddress();
-			desc.SizeInBytes = static_cast<UINT>(pBuffer->getSize());
+			const auto type = m_BindingInformation[binding].m_Type;
+			auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(m_CbvSrvUavDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), binding, m_CbvSrvUavDescriptorHeapSize);
 
-			m_pDevice->getDevice()->CreateConstantBufferView(&desc, CD3DX12_CPU_DESCRIPTOR_HANDLE(m_CbvSrvUavDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), binding, m_CbvSrvUavDescriptorHeapSize));
+			if (type == ResourceType::UniformBuffer || type == ResourceType::DynamicUniformBuffer)
+			{
+				D3D12_CONSTANT_BUFFER_VIEW_DESC desc = {};
+				desc.BufferLocation = pBuffer->as<DX12Buffer>()->getResource()->GetGPUVirtualAddress();
+				desc.SizeInBytes = static_cast<UINT>(pBuffer->getSize());
+
+				m_pDevice->getDevice()->CreateConstantBufferView(&desc, handle);
+			}
+			else if (type == ResourceType::StorageBuffer || type == ResourceType::DynamicStorageBuffer)
+			{
+				D3D12_UNORDERED_ACCESS_VIEW_DESC desc = {};
+				desc.Format = DXGI_FORMAT_UNKNOWN;
+				desc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
+				desc.Buffer.FirstElement = 0;
+				desc.Buffer.NumElements = 1;
+				desc.Buffer.StructureByteStride = static_cast<UINT>(pBuffer->getSize());
+				desc.Buffer.CounterOffsetInBytes = 0;
+				desc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
+
+				m_pDevice->getDevice()->CreateUnorderedAccessView(pBuffer->as<DX12Buffer>()->getResource(), nullptr, &desc, handle);
+			}
+			else
+			{
+				XENON_LOG_ERROR("Invalid buffer resource type!");
+			}
 		}
 
 		void DX12Descriptor::attach(uint32_t binding, Image* pImage, ImageView* pView, ImageSampler* pSampler, ImageUsage usage)

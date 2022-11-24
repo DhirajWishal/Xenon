@@ -16,47 +16,48 @@ namespace Xenon
 		DX12Buffer::DX12Buffer(DX12Device* pDevice, uint64_t size, BufferType type)
 			: Buffer(pDevice, size, type)
 			, DX12DeviceBoundObject(pDevice)
-			, m_Size(size)
 		{
 			D3D12MA::ALLOCATION_DESC allocationDesc = {};
 			CD3DX12_RESOURCE_DESC resourceDescriptor = {};
-			D3D12_RESOURCE_STATES resourceStates = {};
 
 			switch (type)
 			{
 			case Xenon::Backend::BufferType::Index:
-				resourceStates = D3D12_RESOURCE_STATE_INDEX_BUFFER;
+				m_CurrentState = D3D12_RESOURCE_STATE_INDEX_BUFFER;
 				allocationDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
 				resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(size, D3D12_RESOURCE_FLAG_NONE);
 				break;
 
 			case Xenon::Backend::BufferType::Vertex:
-				resourceStates = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+				m_CurrentState = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
 				allocationDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
 				resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(size, D3D12_RESOURCE_FLAG_NONE);
 				break;
 
 			case Xenon::Backend::BufferType::Staging:
-				resourceStates = D3D12_RESOURCE_STATE_COMMON;
+				m_CurrentState = D3D12_RESOURCE_STATE_COMMON;
 				allocationDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
 				resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(size, D3D12_RESOURCE_FLAG_NONE);
 				break;
 
 			case Xenon::Backend::BufferType::Storage:
-				resourceStates = D3D12_RESOURCE_STATE_COMMON;
+				m_CurrentState = D3D12_RESOURCE_STATE_COMMON;
 				allocationDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
 				resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(size, D3D12_RESOURCE_FLAG_NONE);
 				break;
 
 			case Xenon::Backend::BufferType::Uniform:
-				resourceStates = D3D12_RESOURCE_STATE_COMMON;
+			{
+				m_CurrentState = D3D12_RESOURCE_STATE_COMMON;
 				allocationDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
-				resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(size, D3D12_RESOURCE_FLAG_NONE);
-				break;
+				m_Size = static_cast<uint64_t>(std::ceil(static_cast<float>(size) / D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT) * D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
+				resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(m_Size, D3D12_RESOURCE_FLAG_NONE);
+			}
+			break;
 
 			default:
 				m_Type = BufferType::Staging;
-				resourceStates = D3D12_RESOURCE_STATE_COMMON;
+				m_CurrentState = D3D12_RESOURCE_STATE_COMMON;
 				allocationDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
 				resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(size, D3D12_RESOURCE_FLAG_NONE);
 				XENON_LOG_ERROR("Invalid or unsupported buffer type! Defaulting to staging.");
@@ -66,7 +67,7 @@ namespace Xenon
 			XENON_DX12_ASSERT(pDevice->getAllocator()->CreateResource(
 				&allocationDesc,
 				&resourceDescriptor,
-				resourceStates,
+				m_CurrentState,
 				nullptr,
 				&m_pAllocation,
 				IID_NULL,
@@ -76,7 +77,7 @@ namespace Xenon
 		DX12Buffer::DX12Buffer(DX12Device* pDevice, uint64_t size, D3D12_HEAP_TYPE heapType, D3D12_RESOURCE_STATES resourceStates, D3D12_RESOURCE_FLAGS resourceFlags /*= D3D12_RESOURCE_FLAG_NONE*/)
 			: Buffer(pDevice, size, BufferType::BackendSpecific)
 			, DX12DeviceBoundObject(pDevice)
-			, m_Size(size)
+			, m_CurrentState(resourceStates)
 		{
 			CD3DX12_RESOURCE_DESC resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(size, resourceFlags);
 
@@ -86,7 +87,7 @@ namespace Xenon
 			XENON_DX12_ASSERT(pDevice->getAllocator()->CreateResource(
 				&allocationDesc,
 				&resourceDescriptor,
-				resourceStates,
+				m_CurrentState,
 				nullptr,
 				&m_pAllocation,
 				IID_NULL,
@@ -107,19 +108,45 @@ namespace Xenon
 
 		void DX12Buffer::copy(Buffer* pBuffer, uint64_t size, uint64_t srcOffset /*= 0*/, uint64_t dstOffset /*= 0*/)
 		{
+			auto pSourceBuffer = pBuffer->as<DX12Buffer>();
+
 			// Create the command list.
 			ComPtr<ID3D12GraphicsCommandList> commandList;
 			XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_pDevice->getCommandAllocator(), nullptr, IID_PPV_ARGS(&commandList)), "Failed to create the copy command list!");
 
+			// Set the proper resource states.
+			// Destination (this)
+			auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(m_pAllocation->GetResource(), m_CurrentState, D3D12_RESOURCE_STATE_COPY_DEST);
+			commandList->ResourceBarrier(1, &barrier);
+
+			// Source
+			if (pSourceBuffer->m_CurrentState != D3D12_RESOURCE_STATE_GENERIC_READ)
+			{
+				barrier = CD3DX12_RESOURCE_BARRIER::Transition(pSourceBuffer->getResource(), pSourceBuffer->m_CurrentState, D3D12_RESOURCE_STATE_COPY_SOURCE);
+				commandList->ResourceBarrier(1, &barrier);
+			}
+
 			// Copy the buffer region.
-			commandList->CopyBufferRegion(m_pAllocation->GetResource(), dstOffset, pBuffer->as<DX12Buffer>()->m_pAllocation->GetResource(), srcOffset, size);
+			commandList->CopyBufferRegion(m_pAllocation->GetResource(), dstOffset, pSourceBuffer->getResource(), srcOffset, size);
+
+			// Change the state back to previous.
+			// Destination (this)
+			barrier = CD3DX12_RESOURCE_BARRIER::Transition(m_pAllocation->GetResource(), D3D12_RESOURCE_STATE_COPY_DEST, m_CurrentState);
+			commandList->ResourceBarrier(1, &barrier);
+
+			// Source
+			if (pSourceBuffer->m_CurrentState != D3D12_RESOURCE_STATE_GENERIC_READ)
+			{
+				barrier = CD3DX12_RESOURCE_BARRIER::Transition(pSourceBuffer->getResource(), D3D12_RESOURCE_STATE_COPY_SOURCE, pSourceBuffer->m_CurrentState);
+				commandList->ResourceBarrier(1, &barrier);
+			}
 
 			// End the command list.
 			XENON_DX12_ASSERT(commandList->Close(), "Failed to stop the current command list!");
 
 			// Submit the command list to be executed.
-			ID3D12CommandList* ppCommandLists[] = { commandList.Get() };
-			m_pDevice->getCommandQueue()->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+			std::array<ID3D12CommandList*, 1> ppCommandLists = { commandList.Get() };
+			m_pDevice->getCommandQueue()->ExecuteCommandLists(ppCommandLists.size(), ppCommandLists.data());
 
 			// Wait till the command is done executing.
 			ComPtr<ID3D12Fence> fence;
