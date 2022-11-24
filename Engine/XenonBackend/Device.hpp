@@ -40,11 +40,6 @@ namespace Xenon
 			 */
 			explicit Device([[maybe_unused]] Instance* pInstance, RenderTargetType requiredRenderTargets) : m_SupportedRenderTargetTypes(requiredRenderTargets) {}
 
-			/**
-			 * Default virtual destructor.
-			 */
-			virtual ~Device() = default;
-
 		public:
 			/**
 			 * Get the supported render target types.

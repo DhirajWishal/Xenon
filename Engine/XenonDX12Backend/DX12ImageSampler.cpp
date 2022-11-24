@@ -15,7 +15,7 @@ namespace /* anonymous */
 	 */
 	D3D12_FILTER GetFilter(Xenon::Backend::ImageFilter minification, Xenon::Backend::ImageFilter magnification)
 	{
-		D3D12_FILTER filter;
+		D3D12_FILTER filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
 
 		if (minification == Xenon::Backend::ImageFilter::Nearest && magnification == Xenon::Backend::ImageFilter::Nearest)
 			filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
@@ -30,7 +30,7 @@ namespace /* anonymous */
 			filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
 
 		else
-			XENON_LOG_ERROR("Unsupported combination of minification and magnification image filters!");
+			XENON_LOG_ERROR("Unsupported combination of minification and magnification image filters! Defaulting to Nearest (minification), Nearest (magnification).");
 
 		return filter;
 	}
@@ -70,7 +70,7 @@ namespace /* anonymous */
 	 * Get the D3D12 comparison function from the Xenon compare operator.
 	 *
 	 * @param op The compare operator.
-	 * @return The comparison function.
+	 * @return The DX12 comparison function.
 	 */
 	D3D12_COMPARISON_FUNC GetComparisonFunction(Xenon::Backend::CompareOperator op)
 	{

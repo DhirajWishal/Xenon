@@ -43,11 +43,6 @@ namespace Xenon
 			explicit Camera(uint32_t width, uint32_t height) : m_Width(width), m_Height(height) {}
 
 			/**
-			 * Default virtual destructor.
-			 */
-			virtual ~Camera() = default;
-
-			/**
 			 * Update the camera.
 			 *
 			 * @return The time difference between the previous frame and now.s

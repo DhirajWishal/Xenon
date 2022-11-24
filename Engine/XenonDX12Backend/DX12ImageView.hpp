@@ -26,8 +26,37 @@ namespace Xenon
 			 */
 			explicit DX12ImageView(DX12Device* pDevice, DX12Image* pImage, const ImageViewSpecification& specification);
 
+			/**
+			 * Get the shader resource view description.
+			 *
+			 * @return The view description.
+			 */
+			[[nodiscard]] const D3D12_SHADER_RESOURCE_VIEW_DESC& getSRVDescription() const { return m_ShaderResouceView; }
+
+			/**
+			 * Get the shader resource view description pointer.
+			 *
+			 * @return The const view description pointer.
+			 */
+			[[nodiscard]] const D3D12_SHADER_RESOURCE_VIEW_DESC* getSRVDescriptionPtr() const { return &m_ShaderResouceView; }
+
+			/**
+			 * Get the unordered access view description.
+			 *
+			 * @return The view description.
+			 */
+			[[nodiscard]] const D3D12_UNORDERED_ACCESS_VIEW_DESC& getUAVDescription() const { return m_UnorderedAccessView; }
+
+			/**
+			 * Get the unordered access view description pointer.
+			 *
+			 * @return The const view description pointer.
+			 */
+			[[nodiscard]] const D3D12_UNORDERED_ACCESS_VIEW_DESC* getUAVDescriptionPtr() const { return &m_UnorderedAccessView; }
+
 		private:
-			ComPtr<ID3D12DescriptorHeap> m_DescriptorHeap;
+			D3D12_SHADER_RESOURCE_VIEW_DESC m_ShaderResouceView = {};
+			D3D12_UNORDERED_ACCESS_VIEW_DESC m_UnorderedAccessView = {};
 		};
 	}
 }

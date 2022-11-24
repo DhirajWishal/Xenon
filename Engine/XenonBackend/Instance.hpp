@@ -27,11 +27,6 @@ namespace Xenon
 			 */
 			explicit Instance([[maybe_unused]] const std::string& applicationName, [[maybe_unused]] uint32_t applicationVersion) : m_DeletionQueue(1) {}
 
-			/**
-			 * Default virtual destructor.
-			 */
-			virtual ~Instance() = default;
-
 		public:
 			/**
 			 * Get the deletion queue.

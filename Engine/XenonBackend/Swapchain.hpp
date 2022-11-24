@@ -31,11 +31,6 @@ namespace Xenon
 			explicit Swapchain([[maybe_unused]] Device* pDevice, const std::string& title, uint32_t width, uint32_t height);
 
 			/**
-			 * Default virtual destructor.
-			 */
-			virtual ~Swapchain() override = default;
-
-			/**
 			 * Prepare the swapchain to present.
 			 *
 			 * @return The swapchain image index.

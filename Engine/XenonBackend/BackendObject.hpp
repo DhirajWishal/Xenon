@@ -35,11 +35,6 @@ namespace Xenon
 			XENON_DISABLE_COPY(BackendObject);
 
 			/**
-			 * Default virtual destructor.
-			 */
-			virtual ~BackendObject() = default;
-
-			/**
 			 * Get this object casted to another type.
 			 * Make sure that the casting type is inherited from this class.
 			 *

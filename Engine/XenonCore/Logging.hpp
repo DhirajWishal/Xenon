@@ -16,7 +16,7 @@ namespace Xenon
 	 * @tparam Arguments The argument types that can be passed to the function.
 	 */
 	template<class... Arguments>
-	constexpr void NoOp(Arguments&&...) {}
+	constexpr void NoOp(Arguments&&...) noexcept {}
 
 	/**
 	 * Print a string of bytes to the console.

@@ -43,11 +43,6 @@ namespace Xenon
 			explicit Buffer([[maybe_unused]] Device* pDevice, uint64_t size, BufferType type) : m_Size(size), m_Type(type) {}
 
 			/**
-			 * Default virtual destructor.
-			 */
-			virtual ~Buffer() = default;
-
-			/**
 			 * Copy data from another buffer to this buffer.
 			 *
 			 * @param pBuffer The buffer to copy the data from.

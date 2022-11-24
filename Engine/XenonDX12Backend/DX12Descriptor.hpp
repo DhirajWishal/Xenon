@@ -25,6 +25,32 @@ namespace Xenon
 			 * @param type The descriptor type.
 			 */
 			explicit DX12Descriptor(DX12Device* pDevice, const std::vector<DescriptorBindingInfo>& bindingInfo, DescriptorType type);
+
+			/**
+			 * Attach a buffer to the descriptor.
+			 *
+			 * @param binding The binding of the buffer.
+			 * @param pBuffer The buffer to attach.
+			 */
+			void attach(uint32_t binding, Buffer* pBuffer) override;
+
+			/**
+			 * Attach an image to the descriptor.
+			 *
+			 * @param binding The binding of the image.
+			 * @param pImage The image to attach.
+			 * @param pView The image view.
+			 * @param pSampler The image sampler.
+			 * @param usage How the image is used in the binding.
+			 */
+			void attach(uint32_t binding, Image* pImage, ImageView* pView, ImageSampler* pSampler, ImageUsage usage) override;
+
+		public:
+			ComPtr<ID3D12DescriptorHeap> m_CbvSrvUavDescriptorHeap;
+			ComPtr<ID3D12DescriptorHeap> m_SamplerDescriptorHeap;
+
+			UINT m_CbvSrvUavDescriptorHeapSize = 0;
+			UINT m_SamplerDescriptorHeapSize = 0;
 		};
 	}
 }

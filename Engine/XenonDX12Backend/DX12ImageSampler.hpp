@@ -25,6 +25,20 @@ namespace Xenon
 			 */
 			explicit DX12ImageSampler(DX12Device* pDevice, const ImageSamplerSpecification& specification);
 
+			/**
+			 * Get the sampler description.
+			 *
+			 * @return The sampler description.
+			 */
+			[[nodiscard]] const D3D12_SAMPLER_DESC& getSamplerDescription() const { return m_Descriptor; }
+
+			/**
+			 * Get the sampler description pointer.
+			 *
+			 * @return The const sampler description pointer.
+			 */
+			[[nodiscard]] const D3D12_SAMPLER_DESC* getSamplerDescriptionPtr() const { return &m_Descriptor; }
+
 		private:
 			D3D12_SAMPLER_DESC m_Descriptor;
 		};

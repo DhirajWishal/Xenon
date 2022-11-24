@@ -11,6 +11,57 @@ namespace Xenon
 {
 	namespace Backend
 	{
+		enum class BufferResource : uint8_t
+		{
+			Camera,
+			Model
+		};
+
+		enum class ImageResource : uint8_t
+		{
+			Diffuse,
+			Albedo,
+			Detail,
+			Gradient,
+			Transparency,
+			Bump,
+			Normal,
+			RadiosityNormal,
+			Displacement,
+			Height,
+			VectorDisplacement,
+			Wrinkle,
+			Parallax,
+			DuDv,
+			Flow,
+			Curvature,
+			Specular,
+			Gloss,
+			Roughness,
+			Reflectivity,
+			Metallic,
+			Anisotrophic,
+			BRDF,
+			Fresnel,
+			CubeMap,
+			DiffuselyCubeMap,
+			SphericalEnvMap,
+			LightMap,
+			AmbientOcclusion,
+			CavityMap,
+			Emissive,
+			Thickness,
+
+			UserDefined_0,
+			UserDefined_1,
+			UserDefined_2,
+			UserDefined_3,
+			UserDefined_4,
+			UserDefined_5,
+			UserDefined_6,
+			UserDefined_7
+		};
+
 		/**
 		 * Descriptor class.
 		 * Descriptors define how to attach resources to shaders.

@@ -63,10 +63,8 @@ target_include_directories(
 # Make sure to specify the C++ standard to C++20.
 set_property(TARGET XenonDX12Backend PROPERTY CXX_STANDARD 20)
 
-# If we are on MSVC, we can use the Multi Processor Compilation option.
-if (MSVC)
-	target_compile_options(XenonDX12Backend PRIVATE "/MP")	
-endif ()
+# Use the Multi Processor Compilation option.
+target_compile_options(XenonDX12Backend PRIVATE "/MP")	
 
 # Set the target links.
 target_link_libraries(
@@ -79,4 +77,10 @@ target_link_libraries(
 )
 
 # Set compile definitions.
-target_compile_definitions(XenonDX12Backend PRIVATE "UNICODE" "_UNICODE")
+target_compile_definitions(
+	XenonDX12Backend 
+
+	PRIVATE "UNICODE" 
+	PRIVATE "_UNICODE"
+	PRIVATE XENON_DX12_MAX_DESCRIPTOR_COUNT=16
+)

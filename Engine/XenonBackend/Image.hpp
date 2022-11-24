@@ -51,11 +51,6 @@ namespace Xenon
 			Image(Image&& other) noexcept : m_Specification(other.m_Specification) {}
 
 			/**
-			 * Default virtual destructor.
-			 */
-			virtual ~Image() = default;
-
-			/**
 			 * Get the image specification.
 			 *
 			 * @return The image specification.

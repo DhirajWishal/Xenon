@@ -12,6 +12,7 @@
 #include "DX12Rasterizer.hpp"
 #include "DX12Swapchain.hpp"
 #include "DX12ImageSampler.hpp"
+#include "DX12Descriptor.hpp"
 
 namespace Xenon
 {
@@ -54,8 +55,7 @@ namespace Xenon
 
 		std::unique_ptr<Xenon::Backend::Descriptor> DX12Factory::createDescriptor(Device* pDevice, const std::vector<DescriptorBindingInfo>& bindingInfo, DescriptorType type)
 		{
-			XENON_TODO_NOW("(Dhiraj) Implement this function.");
-			return nullptr;
+			return std::make_unique<DX12Descriptor>(pDevice->as<DX12Device>(), bindingInfo, type);
 		}
 
 		std::unique_ptr<Xenon::Backend::ImageView> DX12Factory::createImageView(Device* pDevice, Image* pImage, const ImageViewSpecification& specification)

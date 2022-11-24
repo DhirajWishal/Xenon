@@ -71,15 +71,59 @@ namespace Xenon
 			: ImageView(pDevice, pImage, specification)
 			, DX12DeviceBoundObject(pDevice)
 		{
-			D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-			srvDesc.Shader4ComponentMapping = GetShader4ComponentMapping(specification.m_ComponentR, specification.m_ComponentG, specification.m_ComponentB, specification.m_ComponentA);
-			srvDesc.Format = pDevice->convertFormat(pImage->getDataFormat());
-			srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-			srvDesc.Texture2D.MostDetailedMip = specification.m_LevelCount;
-			srvDesc.Texture2D.MipLevels = specification.m_BaseMipLevel;
-			srvDesc.Texture2D.PlaneSlice = specification.m_BaseArrayLayer;
+			m_ShaderResouceView.Shader4ComponentMapping = GetShader4ComponentMapping(specification.m_ComponentR, specification.m_ComponentG, specification.m_ComponentB, specification.m_ComponentA);
+			m_ShaderResouceView.Format = pDevice->convertFormat(pImage->getDataFormat());
 
-			pDevice->getDevice()->CreateShaderResourceView(pImage->getResource(), &srvDesc, m_DescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+			m_UnorderedAccessView.Format = pDevice->convertFormat(pImage->getDataFormat());
+
+			switch (pImage->getSpecification().m_Type)
+			{
+			case Xenon::Backend::ImageType::OneDimensional:
+				m_ShaderResouceView.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE1D;
+				m_ShaderResouceView.Texture1D.MostDetailedMip = specification.m_LevelCount;
+				m_ShaderResouceView.Texture1D.MipLevels = specification.m_BaseMipLevel;
+
+				m_UnorderedAccessView.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE1D;
+				m_UnorderedAccessView.Texture2D.MipSlice = specification.m_BaseMipLevel;
+				m_UnorderedAccessView.Texture2D.PlaneSlice = specification.m_BaseArrayLayer;
+				break;
+
+			case Xenon::Backend::ImageType::TwoDimensional:
+				m_ShaderResouceView.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+				m_ShaderResouceView.Texture2D.MostDetailedMip = specification.m_LevelCount;
+				m_ShaderResouceView.Texture2D.MipLevels = specification.m_BaseMipLevel;
+				m_ShaderResouceView.Texture2D.PlaneSlice = specification.m_BaseArrayLayer;
+
+				m_UnorderedAccessView.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+				m_UnorderedAccessView.Texture2D.MipSlice = specification.m_BaseMipLevel;
+				m_UnorderedAccessView.Texture2D.PlaneSlice = specification.m_BaseArrayLayer;
+				break;
+
+			case Xenon::Backend::ImageType::ThreeDImentional:
+				m_ShaderResouceView.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE3D;
+				m_ShaderResouceView.Texture3D.MostDetailedMip = specification.m_LevelCount;
+				m_ShaderResouceView.Texture3D.MipLevels = specification.m_BaseMipLevel;
+
+				m_UnorderedAccessView.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE3D;
+				m_UnorderedAccessView.Texture3D.MipSlice = specification.m_BaseMipLevel;
+				m_UnorderedAccessView.Texture3D.WSize = specification.m_BaseArrayLayer;
+				m_UnorderedAccessView.Texture3D.FirstWSlice = specification.m_BaseArrayLayer;
+				break;
+
+			case Xenon::Backend::ImageType::CubeMap:
+				m_ShaderResouceView.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
+				m_ShaderResouceView.TextureCube.MostDetailedMip = specification.m_LevelCount;
+				m_ShaderResouceView.TextureCube.MipLevels = specification.m_BaseMipLevel;
+
+				m_UnorderedAccessView.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+				m_UnorderedAccessView.Texture2D.MipSlice = specification.m_BaseMipLevel;
+				m_UnorderedAccessView.Texture2D.PlaneSlice = specification.m_BaseArrayLayer;
+				break;
+
+			default:
+				XENON_LOG_ERROR("Invalid or unsupported image type!");
+				break;
+			}
 		}
 	}
 }

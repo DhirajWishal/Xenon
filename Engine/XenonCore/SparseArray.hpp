@@ -215,7 +215,7 @@ namespace Xenon
 		template<class...Arguments>
 		[[nodiscard]] std::pair<uint64_t, Type*> insert(Arguments&&... arguments)
 		{
-			const auto index = static_cast<uint64_t>(m_SparseArray.size());
+			const auto index = m_SparseArray.size();
 			m_SparseArray.emplace_back(m_DenseArray.size());
 			m_AvailabilityMap.emplace_back(true);
 
