@@ -46,6 +46,8 @@ namespace Xenon
 			void attach(uint32_t binding, Image* pImage, ImageView* pView, ImageSampler* pSampler, ImageUsage usage) override;
 
 		public:
+			std::vector<UINT> m_SamplerIndex;
+
 			ComPtr<ID3D12DescriptorHeap> m_CbvSrvUavDescriptorHeap;
 			ComPtr<ID3D12DescriptorHeap> m_SamplerDescriptorHeap;
 
