@@ -47,13 +47,11 @@ namespace Xenon
 				break;
 
 			case Xenon::Backend::BufferType::Uniform:
-			{
 				m_CurrentState = D3D12_RESOURCE_STATE_COMMON;
 				allocationDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
 				m_Size = static_cast<uint64_t>(std::ceil(static_cast<float>(size) / D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT) * D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
 				resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(m_Size, D3D12_RESOURCE_FLAG_NONE);
-			}
-			break;
+				break;
 
 			default:
 				m_Type = BufferType::Staging;

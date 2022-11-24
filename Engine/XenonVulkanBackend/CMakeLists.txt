@@ -47,6 +47,8 @@ set(
 	"VulkanImageView.hpp"
 	"VulkanImageSampler.cpp"
 	"VulkanImageSampler.hpp"
+	"VulkanDescriptorSetManager.cpp"
+	"VulkanDescriptorSetManager.hpp"
 )
 
 # Add the source group.

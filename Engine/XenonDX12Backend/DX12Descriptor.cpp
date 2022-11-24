@@ -67,14 +67,15 @@ namespace Xenon
 
 		void DX12Descriptor::attach(uint32_t binding, Buffer* pBuffer)
 		{
+			auto pDx12Buffer = pBuffer->as<DX12Buffer>();
 			const auto type = m_BindingInformation[binding].m_Type;
 			auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(m_CbvSrvUavDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), binding, m_CbvSrvUavDescriptorHeapSize);
 
 			if (type == ResourceType::UniformBuffer || type == ResourceType::DynamicUniformBuffer)
 			{
 				D3D12_CONSTANT_BUFFER_VIEW_DESC desc = {};
-				desc.BufferLocation = pBuffer->as<DX12Buffer>()->getResource()->GetGPUVirtualAddress();
-				desc.SizeInBytes = static_cast<UINT>(pBuffer->getSize());
+				desc.BufferLocation = pDx12Buffer->getResource()->GetGPUVirtualAddress();
+				desc.SizeInBytes = static_cast<UINT>(pDx12Buffer->getSize());
 
 				m_pDevice->getDevice()->CreateConstantBufferView(&desc, handle);
 			}
@@ -85,11 +86,11 @@ namespace Xenon
 				desc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
 				desc.Buffer.FirstElement = 0;
 				desc.Buffer.NumElements = 1;
-				desc.Buffer.StructureByteStride = static_cast<UINT>(pBuffer->getSize());
+				desc.Buffer.StructureByteStride = static_cast<UINT>(pDx12Buffer->getSize());
 				desc.Buffer.CounterOffsetInBytes = 0;
 				desc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
 
-				m_pDevice->getDevice()->CreateUnorderedAccessView(pBuffer->as<DX12Buffer>()->getResource(), nullptr, &desc, handle);
+				m_pDevice->getDevice()->CreateUnorderedAccessView(pDx12Buffer->getResource(), nullptr, &desc, handle);
 			}
 			else
 			{

@@ -3,7 +3,7 @@
 
 #include "VulkanDescriptor.hpp"
 #include "VulkanMacros.hpp"
-
+#include "VulkanDescriptorSetManager.hpp"
 #include "VulkanBuffer.hpp"
 #include "VulkanImageView.hpp"
 #include "VulkanImageSampler.hpp"
@@ -17,7 +17,7 @@ namespace Xenon
 			, VulkanDeviceBoundObject(pDevice)
 		{
 			// Create a new descriptor set.
-			const auto [pool, set] = pDevice->createDescriptorSet(bindingInfo);
+			const auto [pool, set] = pDevice->getDescriptorSetManager()->createDescriptorSet(bindingInfo, type);
 
 			m_Pool = pool;
 			m_DescriptorSet = set;
@@ -27,9 +27,9 @@ namespace Xenon
 		{
 			try
 			{
-				m_pDevice->getInstance()->getDeletionQueue().insert([pDevice = m_pDevice, pool = m_Pool, set = m_DescriptorSet, bindingInfo = std::move(m_BindingInformation)]
+				m_pDevice->getInstance()->getDeletionQueue().insert([pDevice = m_pDevice, pool = m_Pool, set = m_DescriptorSet, bindingInfo = std::move(m_BindingInformation), type = m_Type]
 					{
-						pDevice->freeDescriptorSet(pool, set, bindingInfo);
+						pDevice->getDescriptorSetManager()->freeDescriptorSet(pool, set, bindingInfo, type);
 					}
 				);
 			}
@@ -64,7 +64,7 @@ namespace Xenon
 			VkDescriptorImageInfo imageInfo = {};
 			imageInfo.sampler = pSampler->as<VulkanImageSampler>()->getSampler();
 			imageInfo.imageView = pView->as<VulkanImageView>()->getView();
-			imageInfo.imageLayout = pImage->as<VulkanImage>()->getImageLayout();	// FIXME
+			imageInfo.imageLayout = pImage->as<VulkanImage>()->getImageLayout(); XENON_FIXME_NOW("(Dhiraj) Use a better way to set the layouts.");
 
 			VkWriteDescriptorSet writeDescriptorSet = {};
 			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
