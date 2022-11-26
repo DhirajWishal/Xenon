@@ -282,6 +282,30 @@ namespace Xenon
 		};
 
 		/**
+		 * Check if an input element is a vertex element.
+		 *
+		 * @param element The element to check.
+		 * @return True if the element is a vertex element.
+		 * @return False if the element is not a vertex element.
+		 */
+		[[nodiscard]] constexpr bool IsVertexElement(InputElement element) noexcept
+		{
+			return EnumToInt(element) <= EnumToInt(InputElement::VertexJointWeight);
+		}
+
+		/**
+		 * Check if an input element is an instance element.
+		 *
+		 * @param element The element to check.
+		 * @return True if the element is an instance element.
+		 * @return False if the element is not an instance element.
+		 */
+		[[nodiscard]] constexpr bool IsInstanceElement(InputElement element) noexcept
+		{
+			return EnumToInt(element) >= EnumToInt(InputElement::InstancePosition) && EnumToInt(element) <= EnumToInt(InputElement::InstanceID);
+		}
+
+		/**
 		 * Attribute data type.
 		 * This specifies which data type an attribute uses.
 		 */
@@ -332,30 +356,6 @@ namespace Xenon
 			default:
 				return 0;
 			}
-		}
-
-		/**
-		 * Check if an input element is a vertex element.
-		 *
-		 * @param element The element to check.
-		 * @return True if the element is a vertex element.
-		 * @return False if the element is not a vertex element.
-		 */
-		[[nodiscard]] constexpr bool IsVertexElement(InputElement element) noexcept
-		{
-			return EnumToInt(element) <= EnumToInt(InputElement::VertexJointWeight);
-		}
-
-		/**
-		 * Check if an input element is an instance element.
-		 *
-		 * @param element The element to check.
-		 * @return True if the element is an instance element.
-		 * @return False if the element is not an instance element.
-		 */
-		[[nodiscard]] constexpr bool IsInstanceElement(InputElement element) noexcept
-		{
-			return EnumToInt(element) >= EnumToInt(InputElement::InstancePosition) && EnumToInt(element) <= EnumToInt(InputElement::InstanceID);
 		}
 
 		/**
@@ -411,6 +411,69 @@ namespace Xenon
 		}
 
 		/**
+		 * Component data type enum.
+		 * This defines information about a single component data type.
+		 */
+		enum class ComponentDataType : uint8_t
+		{
+			Void,
+
+			Uint8,
+			Uint16,
+			Uint32,
+			Uint64,
+
+			Int8,
+			Int16,
+			Int32,
+			Int64,
+
+			Float
+		};
+
+		/**
+		 * Get the component type size.
+		 *
+		 * @type The component type.
+		 * @return The byte size of the component.
+		 */
+		[[nodiscard]] constexpr uint8_t GetComponentTypeSize(ComponentDataType type) noexcept
+		{
+			switch (type)
+			{
+			case Xenon::Backend::ComponentDataType::Uint8:
+				return sizeof(uint8_t);
+
+			case Xenon::Backend::ComponentDataType::Uint16:
+				return sizeof(uint16_t);
+
+			case Xenon::Backend::ComponentDataType::Uint32:
+				return sizeof(uint32_t);
+
+			case Xenon::Backend::ComponentDataType::Uint64:
+				return sizeof(uint64_t);
+
+			case Xenon::Backend::ComponentDataType::Int8:
+				return sizeof(int8_t);
+
+			case Xenon::Backend::ComponentDataType::Int16:
+				return sizeof(int16_t);
+
+			case Xenon::Backend::ComponentDataType::Int32:
+				return sizeof(int32_t);
+
+			case Xenon::Backend::ComponentDataType::Int64:
+				return sizeof(int64_t);
+
+			case Xenon::Backend::ComponentDataType::Float:
+				return sizeof(float);
+
+			default:
+				return 0;
+			}
+		}
+
+		/**
 		 * Vertex specification class.
 		 * This contains information about a single vertex including it's size, and the actual elements that are been stored.
 		 */
@@ -426,21 +489,37 @@ namespace Xenon
 			 * Add a vertex element to the specification.
 			 *
 			 * @param element The element to add.
-			 * @param componentSize The size of a single component in the element in bytes. Default is sizeof(float).
+			 * @param componentSize The size of a single component in the element in bytes. Default is Float.
 			 * @return The specification reference.
 			 */
-			VertexSpecification& addElement(InputElement element, uint8_t componentSize = sizeof(float))
+			VertexSpecification& addElement(InputElement element, ComponentDataType componentSize = ComponentDataType::Float)
 			{
-				const auto size = componentSize * GetAttributeDataTypeComponentCount(GetInputElementDataType(element));
+				const auto size = GetComponentTypeSize(componentSize) * GetAttributeDataTypeComponentCount(GetInputElementDataType(element));
 
 				// Update the information only if it's needed.
 				if (!isAvailable(element) || m_ElementSizes[EnumToInt(element)] != size)
 				{
 					m_VertexElements |= 1 << EnumToInt(element);
 					m_ElementSizes[EnumToInt(element)] = size;
+					m_ElementComponentType[EnumToInt(element)] = componentSize;
 				}
 
 				return *this;
+			}
+
+			/**
+			 * Get the offset of an element.
+			 *
+			 * @param element The element to get the offset of.
+			 * @return The offset in bytes.
+			 */
+			[[nodiscard]] uint8_t offsetOf(InputElement element) const
+			{
+				uint8_t offset = 0;
+				for (uint8_t i = 0; i < EnumToInt(element); i++)
+					offset += m_ElementSizes[i];
+
+				return offset;
 			}
 
 			/**
@@ -450,6 +529,14 @@ namespace Xenon
 			 * @return The element's size.
 			 */
 			[[nodiscard]] uint8_t getElementSize(InputElement element) const { return m_ElementSizes[EnumToInt(element)]; }
+
+			/**
+			 * Get the element component data type of a given element.
+			 *
+			 * @param element The element type.
+			 * @return The component data type.
+			 */
+			[[nodsicard]] ComponentDataType getElementComponentDataType(InputElement element) const { return m_ElementComponentType[EnumToInt(element)]; }
 
 			/**
 			 * Get the size of the vertex.
@@ -477,6 +564,7 @@ namespace Xenon
 		private:
 			uint32_t m_VertexElements = 0;
 			std::array<uint8_t, EnumToInt(InputElement::VertexElementCount)> m_ElementSizes = { 0 };
+			std::array<ComponentDataType, EnumToInt(InputElement::VertexElementCount)> m_ElementComponentType = {};
 		};
 
 		/**

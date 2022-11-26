@@ -23,6 +23,9 @@ namespace Xenon
 			 */
 			struct PipelineStorage final
 			{
+				std::vector<VkVertexInputBindingDescription> m_InputBindingDescriptions;
+				std::vector<VkVertexInputAttributeDescription> m_InputAttributeDescriptions;
+
 				VkPipeline m_Pipeline = VK_NULL_HANDLE;
 				VkPipelineCache m_PipelineCache = VK_NULL_HANDLE;
 			};
@@ -80,6 +83,14 @@ namespace Xenon
 			 * This information are setup once so that when needed, the pipeline-recreation process won't have to set these up again.
 			 */
 			void setupPipelineInfo();
+
+			/**
+			 * Create the required pipeline.
+			 * This will automatically destroy the previous pipeline if a pipeline is defined within.
+			 *
+			 * @param pipeline The pipeline to create to.
+			 */
+			void createPipeline(PipelineStorage& pipeline) const;
 
 		private:
 			VkPipelineInputAssemblyStateCreateInfo m_InputAssemblyStateCreateInfo = {};

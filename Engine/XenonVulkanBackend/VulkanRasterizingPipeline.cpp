@@ -106,17 +106,17 @@ namespace /* anonymous */
 		// Setup the input bindings if we're on the vertex shader.
 		if (type == Xenon::Backend::ShaderType::Vertex)
 		{
+			bool hasInstanceInputs = false;
 			for (const auto& input : shader.getInputAttributes())
 			{
 				const auto element = static_cast<Xenon::Backend::InputElement>(input.m_Location);
-				if (IsVertexElement(element))
-					continue;
-
 				auto& attribute = inputAttributeDescriptions.emplace_back();
-				attribute.binding = 1;
+				attribute.binding = IsVertexElement(element) ? 0 : 1;
 				attribute.location = input.m_Location;
 
-				switch (element)
+				hasInstanceInputs |= attribute.binding == 1;
+
+				switch (static_cast<Xenon::Backend::InputElement>(input.m_Location))
 				{
 				case Xenon::Backend::InputElement::InstancePosition:
 					attribute.format = VK_FORMAT_R32G32B32_SFLOAT;
@@ -144,7 +144,7 @@ namespace /* anonymous */
 			}
 
 			// Setup the binding if we have instance inputs in the shader.
-			if (!inputAttributeDescriptions.empty())
+			if (hasInstanceInputs)
 			{
 				auto& binding = inputBindingDescriptions.emplace_back();
 				binding.binding = 1;
@@ -415,6 +415,160 @@ namespace /* anonymous */
 
 		return flags;
 	}
+
+	/**
+	 * Get the element format from the component count and the size.
+	 *
+	 * @param componentCount The number of components.
+	 * @param dataType The component data type.
+	 * @return The Vulkan format.
+	 */
+	[[nodiscard]] constexpr VkFormat GetElementFormat(uint8_t componentCount, Xenon::Backend::ComponentDataType dataType) noexcept
+	{
+		if (componentCount == 1)
+		{
+			switch (dataType)
+			{
+			case Xenon::Backend::ComponentDataType::Uint8:
+				return VK_FORMAT_R8_UINT;
+
+			case Xenon::Backend::ComponentDataType::Uint16:
+				return VK_FORMAT_R16_UINT;
+
+			case Xenon::Backend::ComponentDataType::Uint32:
+				return VK_FORMAT_R32_UINT;
+
+			case Xenon::Backend::ComponentDataType::Uint64:
+				return VK_FORMAT_R64_UINT;
+
+			case Xenon::Backend::ComponentDataType::Int8:
+				return VK_FORMAT_R8_SINT;
+
+			case Xenon::Backend::ComponentDataType::Int16:
+				return VK_FORMAT_R16_SINT;
+
+			case Xenon::Backend::ComponentDataType::Int32:
+				return VK_FORMAT_R32_SINT;
+
+			case Xenon::Backend::ComponentDataType::Int64:
+				return VK_FORMAT_R64_SINT;
+
+			case Xenon::Backend::ComponentDataType::Float:
+				return VK_FORMAT_R32_SFLOAT;
+
+			default:
+				break;
+			}
+		}
+		else if (componentCount == 2)
+		{
+			switch (dataType)
+			{
+			case Xenon::Backend::ComponentDataType::Uint8:
+				return VK_FORMAT_R8G8_UINT;
+
+			case Xenon::Backend::ComponentDataType::Uint16:
+				return VK_FORMAT_R16G16_UINT;
+
+			case Xenon::Backend::ComponentDataType::Uint32:
+				return VK_FORMAT_R32G32_UINT;
+
+			case Xenon::Backend::ComponentDataType::Uint64:
+				return VK_FORMAT_R64G64_UINT;
+
+			case Xenon::Backend::ComponentDataType::Int8:
+				return VK_FORMAT_R8G8_SINT;
+
+			case Xenon::Backend::ComponentDataType::Int16:
+				return VK_FORMAT_R16G16_SINT;
+
+			case Xenon::Backend::ComponentDataType::Int32:
+				return VK_FORMAT_R32G32_SINT;
+
+			case Xenon::Backend::ComponentDataType::Int64:
+				return VK_FORMAT_R64G64_SINT;
+
+			case Xenon::Backend::ComponentDataType::Float:
+				return VK_FORMAT_R32G32_SFLOAT;
+
+			default:
+				break;
+			}
+		}
+		else if (componentCount == 3)
+		{
+			switch (dataType)
+			{
+			case Xenon::Backend::ComponentDataType::Uint8:
+				return VK_FORMAT_R8G8B8_UINT;
+
+			case Xenon::Backend::ComponentDataType::Uint16:
+				return VK_FORMAT_R16G16B16_UINT;
+
+			case Xenon::Backend::ComponentDataType::Uint32:
+				return VK_FORMAT_R32G32B32_UINT;
+
+			case Xenon::Backend::ComponentDataType::Uint64:
+				return VK_FORMAT_R64G64B64_UINT;
+
+			case Xenon::Backend::ComponentDataType::Int8:
+				return VK_FORMAT_R8G8B8_SINT;
+
+			case Xenon::Backend::ComponentDataType::Int16:
+				return VK_FORMAT_R16G16B16_SINT;
+
+			case Xenon::Backend::ComponentDataType::Int32:
+				return VK_FORMAT_R32G32B32_SINT;
+
+			case Xenon::Backend::ComponentDataType::Int64:
+				return VK_FORMAT_R64G64B64_SINT;
+
+			case Xenon::Backend::ComponentDataType::Float:
+				return VK_FORMAT_R32G32B32_SFLOAT;
+
+			default:
+				break;
+			}
+		}
+		else if (componentCount == 4)
+		{
+			switch (dataType)
+			{
+			case Xenon::Backend::ComponentDataType::Uint8:
+				return VK_FORMAT_R8G8B8A8_UINT;
+
+			case Xenon::Backend::ComponentDataType::Uint16:
+				return VK_FORMAT_R16G16B16A16_UINT;
+
+			case Xenon::Backend::ComponentDataType::Uint32:
+				return VK_FORMAT_R32G32B32A32_UINT;
+
+			case Xenon::Backend::ComponentDataType::Uint64:
+				return VK_FORMAT_R64G64B64A64_UINT;
+
+			case Xenon::Backend::ComponentDataType::Int8:
+				return VK_FORMAT_R8G8B8A8_SINT;
+
+			case Xenon::Backend::ComponentDataType::Int16:
+				return VK_FORMAT_R16G16B16A16_SINT;
+
+			case Xenon::Backend::ComponentDataType::Int32:
+				return VK_FORMAT_R32G32B32A32_SINT;
+
+			case Xenon::Backend::ComponentDataType::Int64:
+				return VK_FORMAT_R64G64B64A64_SINT;
+
+			case Xenon::Backend::ComponentDataType::Float:
+				return VK_FORMAT_R32G32B32A32_SFLOAT;
+
+			default:
+				break;
+			}
+		}
+
+		XENON_LOG_ERROR("There are no available types for the given component count ({}) and component data type ({})!", componentCount, Xenon::EnumToInt(dataType));
+		return VK_FORMAT_UNDEFINED;
+	}
 }
 
 namespace Xenon
@@ -472,10 +626,47 @@ namespace Xenon
 			if (!m_Pipelines.contains(hash))
 			{
 				auto& pipeline = m_Pipelines[hash];
+
+				// Load the pipeline cache.
 				loadPipelineCache(hash, pipeline);
 
-				// Do the pipeline creation part here.
+				// Setup the inputs.
+				pipeline.m_InputBindingDescriptions = m_VertexInputBindings;
+				pipeline.m_InputAttributeDescriptions = m_VertexInputAttributes;
 
+				uint32_t stride = 0;
+				for (auto& attribute : pipeline.m_InputAttributeDescriptions)
+				{
+					// Continue if we're in instance data.
+					if (attribute.binding == 1)
+						continue;
+
+					const auto element = static_cast<InputElement>(attribute.location);
+					if (vertexSpecification.isAvailable(element))
+					{
+						attribute.offset = vertexSpecification.offsetOf(element);
+						attribute.format = GetElementFormat(
+							GetAttributeDataTypeComponentCount(GetInputElementDataType(element)),
+							vertexSpecification.getElementComponentDataType(element)
+						);
+
+						stride += vertexSpecification.getElementSize(element);
+					}
+				}
+
+				// Setup the input bindings if we have vertex data (stride is not 0).
+				if (stride > 0)
+				{
+					auto& binding = pipeline.m_InputBindingDescriptions.emplace_back();
+					binding.binding = 1;
+					binding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+					binding.stride = stride;
+				}
+
+				// Create the pipeline.
+				createPipeline(pipeline);
+
+				// Save the pipeline cache.
 				savePipelineCache(hash, pipeline);
 			}
 		}
@@ -620,6 +811,67 @@ namespace Xenon
 			m_DynamicStateCreateInfo.flags = 0;
 			m_DynamicStateCreateInfo.dynamicStateCount = static_cast<uint32_t>(m_DynamicStates.size());
 			m_DynamicStateCreateInfo.pDynamicStates = m_DynamicStates.data();
+		}
+
+		void VulkanRasterizingPipeline::createPipeline(PipelineStorage& pipeline) const
+		{
+			if (pipeline.m_Pipeline != VK_NULL_HANDLE)
+				m_pDevice->getDeviceTable().vkDestroyPipeline(m_pDevice->getLogicalDevice(), pipeline.m_Pipeline, nullptr);
+
+			VkPipelineVertexInputStateCreateInfo inputState = {};
+			inputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+			inputState.flags = 0;
+			inputState.pNext = nullptr;
+			inputState.vertexBindingDescriptionCount = static_cast<uint32_t>(pipeline.m_InputBindingDescriptions.size());
+			inputState.pVertexBindingDescriptions = pipeline.m_InputBindingDescriptions.data();
+			inputState.vertexAttributeDescriptionCount = static_cast<uint32_t>(pipeline.m_InputAttributeDescriptions.size());
+			inputState.pVertexAttributeDescriptions = pipeline.m_InputAttributeDescriptions.data();
+
+			VkRect2D rect2D = {};
+			rect2D.extent.width = m_pRasterizer->getCamera()->getWidth();
+			rect2D.extent.height = m_pRasterizer->getCamera()->getHeight();
+			rect2D.offset = { 0, 0 };
+
+			VkViewport viewport = {};
+			viewport.width = static_cast<float>(rect2D.extent.width);
+			viewport.height = static_cast<float>(rect2D.extent.height);
+			viewport.maxDepth = 1.0f;
+			viewport.minDepth = 0.0f;
+			viewport.x = 0.0f;
+			viewport.y = 0.0f;
+
+			VkPipelineViewportStateCreateInfo viewportStateCreateInfo = {};
+			viewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+			viewportStateCreateInfo.pNext = nullptr;
+			viewportStateCreateInfo.flags = 0;
+			viewportStateCreateInfo.scissorCount = 1;
+			viewportStateCreateInfo.pScissors = &rect2D;
+			viewportStateCreateInfo.viewportCount = 1;
+			viewportStateCreateInfo.pViewports = &viewport;
+
+			// Pipeline create info.
+			VkGraphicsPipelineCreateInfo createInfo = {};
+			createInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+			createInfo.pNext = nullptr;
+			createInfo.flags = 0;
+			createInfo.stageCount = static_cast<uint32_t>(m_ShaderStageCreateInfo.size());
+			createInfo.pStages = m_ShaderStageCreateInfo.data();
+			createInfo.pVertexInputState = &inputState;
+			createInfo.pInputAssemblyState = &m_InputAssemblyStateCreateInfo;
+			createInfo.pTessellationState = &m_TessellationStateCreateInfo;
+			createInfo.pViewportState = &viewportStateCreateInfo;
+			createInfo.pRasterizationState = &m_RasterizationStateCreateInfo;
+			createInfo.pMultisampleState = &m_MultisampleStateCreateInfo;
+			createInfo.pDepthStencilState = &m_DepthStencilStateCreateInfo;
+			createInfo.pColorBlendState = &m_ColorBlendStateCreateInfo;
+			createInfo.pDynamicState = &m_DynamicStateCreateInfo;
+			createInfo.layout = m_PipelineLayout;
+			createInfo.renderPass = m_pRasterizer->getRenderPass();
+			createInfo.subpass = 0;	// TODO
+			createInfo.basePipelineHandle = VK_NULL_HANDLE;
+			createInfo.basePipelineIndex = 0;
+
+			XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkCreateGraphicsPipelines(m_pDevice->getLogicalDevice(), pipeline.m_PipelineCache, 1, &createInfo, nullptr, &pipeline.m_Pipeline), "Failed to create the pipeline!");
 		}
 	}
 }
