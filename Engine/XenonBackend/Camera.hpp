@@ -5,6 +5,8 @@
 
 #include "Buffer.hpp"
 
+#include <glm/vec3.hpp>
+
 namespace Xenon
 {
 	namespace Backend
@@ -44,10 +46,8 @@ namespace Xenon
 
 			/**
 			 * Update the camera.
-			 *
-			 * @return The time difference between the previous frame and now.s
 			 */
-			[[nodiscard]] virtual std::chrono::nanoseconds update() = 0;
+			virtual void update() = 0;
 
 			/**
 			 * Get the view ports.
@@ -56,6 +56,76 @@ namespace Xenon
 			 * @return The view ports of the camera.
 			 */
 			[[nodiscard]] virtual std::vector<Viewport> getViewports() = 0;
+
+			/**
+			 * Move the camera forward.
+			 *
+			 * @param delta The time delta in nanoseconds.
+			 */
+			void moveForward(std::chrono::nanoseconds delta) { m_Position += m_Front * (static_cast<float>(delta.count()) / m_DeltaReductionFactor) * m_MovementBias; }
+
+			/**
+			 * Move the camera backward.
+			 *
+			 * @param delta The time delta in nanoseconds.
+			 */
+			void moveBackward(std::chrono::nanoseconds delta) { m_Position -= m_Front * (static_cast<float>(delta.count()) / m_DeltaReductionFactor) * m_MovementBias; }
+
+			/**
+			 * Move the camera to the left.
+			 *
+			 * @param delta The time delta in nanoseconds.
+			 */
+			void moveLeft(std::chrono::nanoseconds delta) { m_Position -= m_Right * (static_cast<float>(delta.count()) / m_DeltaReductionFactor) * m_MovementBias; }
+
+			/**
+			 * Move the camera to the right.
+			 *
+			 * @param delta The time delta in nanoseconds.
+			 */
+			void moveRight(std::chrono::nanoseconds delta) { m_Position += m_Right * (static_cast<float>(delta.count()) / m_DeltaReductionFactor) * m_MovementBias; }
+
+			/**
+			 * Move the camera up.
+			 *
+			 * @param delta The time delta in nanoseconds.
+			 */
+			void moveUp(std::chrono::nanoseconds delta) { m_Position += m_Up * (static_cast<float>(delta.count()) / m_DeltaReductionFactor) * m_MovementBias; }
+
+			/**
+			 * Move the camera down.
+			 *
+			 * @param delta The time delta in nanoseconds.
+			 */
+			void moveDown(std::chrono::nanoseconds delta) { m_Position -= m_Up * (static_cast<float>(delta.count()) / m_DeltaReductionFactor) * m_MovementBias; }
+
+			/**
+			 * Rotate the camera up.
+			 *
+			 * @param delta The time delta in nanoseconds.
+			 */
+			void rotateUp(std::chrono::nanoseconds delta) { m_Pitch += (static_cast<float>(delta.count()) / m_DeltaReductionFactor) * m_RotationBias; }
+
+			/**
+			 * Rotate the camera down.
+			 *
+			 * @param delta The time delta in nanoseconds.
+			 */
+			void rotateDown(std::chrono::nanoseconds delta) { m_Pitch -= (static_cast<float>(delta.count()) / m_DeltaReductionFactor) * m_RotationBias; }
+
+			/**
+			 * Rotate the camera to the left.
+			 *
+			 * @param delta The time delta in nanoseconds.
+			 */
+			void rotateLeft(std::chrono::nanoseconds delta) { m_Yaw += (static_cast<float>(delta.count()) / m_DeltaReductionFactor) * m_RotationBias; }
+
+			/**
+			 * Rotate the camera to the right.
+			 *
+			 * @param delta The time delta in nanoseconds.
+			 */
+			void rotateRight(std::chrono::nanoseconds delta) { m_Yaw -= (static_cast<float>(delta.count()) / m_DeltaReductionFactor) * m_RotationBias; }
 
 		public:
 			/**
@@ -72,7 +142,26 @@ namespace Xenon
 			 */
 			[[nodiscard]] uint32_t getHeight() const { return m_Height; }
 
-		public:
+		protected:
+			glm::vec3 m_Position = glm::vec3(0.0f, 1.0f, 0.0f);
+			glm::vec3 m_Up = glm::vec3(0.0f, 1.0f, 0.0f);
+			glm::vec3 m_Front = glm::vec3(0.0f, 0.0f, -1.0f);
+			glm::vec3 m_Right = glm::vec3(1.0f, 0.0f, 0.0f);
+			glm::vec3 m_WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
+
+			float m_MovementBias = 0.005f;
+			float m_RotationBias = 0.005f;	// Radians per second.
+
+			float m_FieldOfView = 60.0f;
+			float m_AspectRatio = 0.0f;
+			float m_FarPlane = 256.0f;
+			float m_NearPlane = 0.001f;
+
+			float m_Yaw = 90.0f;
+			float m_Pitch = 0.0f;
+
+			float m_DeltaReductionFactor = 100000000.0f;
+
 			uint32_t m_Width = 0;
 			uint32_t m_Height = 0;
 		};

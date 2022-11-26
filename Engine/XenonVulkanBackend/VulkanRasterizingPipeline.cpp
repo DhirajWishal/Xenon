@@ -668,7 +668,7 @@ namespace Xenon
 			}
 		}
 
-		void VulkanRasterizingPipeline::setup(const VertexSpecification& vertexSpecification)
+		const VulkanRasterizingPipeline::PipelineStorage& VulkanRasterizingPipeline::getPipeline(const VertexSpecification& vertexSpecification)
 		{
 			const auto hash = GenerateHashFor(vertexSpecification);
 
@@ -718,6 +718,8 @@ namespace Xenon
 				// Save the pipeline cache.
 				savePipelineCache(hash, pipeline);
 			}
+
+			return m_Pipelines[hash];
 		}
 
 		void VulkanRasterizingPipeline::createPipelineLayout(std::vector<VkDescriptorSetLayout>&& layouts, std::vector<VkPushConstantRange>&& pushConstantRanges)

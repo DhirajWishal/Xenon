@@ -4,8 +4,10 @@
 #include "Studio.hpp"
 #include "CacheHandler.hpp"
 
-#include "XenonCore/Logging.hpp"
 #include "Xenon/MeshStorage.hpp"
+#include "Xenon/FrameTimer.hpp"
+
+#include "XenonCore/Logging.hpp"
 #include "XenonBackend/ShaderSource.hpp"
 
 #include "Xenon/Layers/ClearScreenLayer.hpp"
@@ -74,13 +76,20 @@ void Studio::run()
 	auto pPipeline = m_Instance.getFactory()->createRasterizingPipeline(m_Instance.getBackendDevice(), std::make_unique<CacheHandler>(), pLayer->getRasterizer(), specification);
 
 	bool dataLoaded = false;
+
+	Xenon::FrameTimer timer;
 	while (m_Renderer.update())
 	{
+		const auto delta = timer.tick();
+
+		// Add the draw data when the model has been loaded.
 		if (!dataLoaded && is_ready(storage))
 		{
 			pLayer->addDrawData(storage.get(), pPipeline.get());
 			dataLoaded = true;
 		}
+
+		m_Camera.update();
 	}
 
 	XENON_LOG_INFORMATION("Exiting the {}", GetRendererTitle(m_Instance.getBackendType()));

@@ -380,8 +380,7 @@ namespace Xenon
 
 		void VulkanCommandRecorder::bind(RasterizingPipeline* pPipeline, const VertexSpecification& vertexSpecification)
 		{
-			auto pVkPipeline = pPipeline->as<VulkanRasterizingPipeline>();
-			pVkPipeline->setup(vertexSpecification);
+			m_pDevice->getDeviceTable().vkCmdBindPipeline(*m_pCurrentBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pPipeline->as<VulkanRasterizingPipeline>()->getPipeline(vertexSpecification).m_Pipeline);
 		}
 
 		void VulkanCommandRecorder::end()

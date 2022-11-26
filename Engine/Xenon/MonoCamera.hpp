@@ -41,10 +41,8 @@ namespace Xenon
 
 		/**
 		 * Update the camera.
-		 *
-		 * @return The time difference between the previous frame and now.s
 		 */
-		[[nodiscard]] std::chrono::nanoseconds update() override;
+		void update() override;
 
 		/**
 		 * Get the view ports.
@@ -57,8 +55,6 @@ namespace Xenon
 	private:
 		CameraBuffer m_CameraBuffer;
 		Backend::Viewport m_Viewport;
-
-		TimePoint m_OldTimePoint;
 
 		std::unique_ptr<Backend::Buffer> m_pUniformBuffer = nullptr;
 	};

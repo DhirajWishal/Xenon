@@ -47,11 +47,13 @@ namespace Xenon
 			~VulkanRasterizingPipeline() override;
 
 			/**
-			 * Setup a child pipeline for the provided vertex specification.
+			 * Get the pipeline.
+			 * If a pipeline does not exist for the vertex specification, it will create a new one.
 			 *
 			 * @param vertexSpecification The vertex specification.
+			 * @return The pipeline storage.
 			 */
-			void setup(const VertexSpecification& vertexSpecification);
+			const PipelineStorage& getPipeline(const VertexSpecification& vertexSpecification);
 
 		private:
 			/**

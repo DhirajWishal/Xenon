@@ -25,6 +25,8 @@ set(
 	"Layer.hpp"
 	"RasterizingLayer.cpp"
 	"RasterizingLayer.hpp"
+	"FrameTimer.cpp"
+	"FrameTimer.hpp"
 
 	"Layers/ClearScreenLayer.cpp"
 	"Layers/ClearScreenLayer.hpp"
