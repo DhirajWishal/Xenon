@@ -42,6 +42,15 @@ namespace Xenon
 			~VulkanDescriptorSetManager();
 
 			/**
+			 * Get the descriptor set layout.
+			 *
+			 * @param bindingInfo The descriptor binding info.
+			 * @param descriptorType The descriptor type.
+			 * @return The descriptor set layout.
+			 */
+			[[nodicard]] VkDescriptorSetLayout getDescriptorSetLayout(const std::vector<DescriptorBindingInfo>& bindingInfo, DescriptorType descriptorType);
+
+			/**
 			 * Create a new descriptor set.
 			 *
 			 * @param bindingInfo The descriptor binding info.

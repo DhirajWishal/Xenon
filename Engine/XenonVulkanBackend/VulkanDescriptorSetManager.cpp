@@ -12,7 +12,7 @@ namespace /* anonymous */
 	 * @param type The type of the shader.
 	 * @return The shader stage flags.
 	 */
-	VkShaderStageFlags GetStageFlags(Xenon::Backend::ShaderType type)
+	[[nodiscard]] constexpr VkShaderStageFlags GetStageFlags(Xenon::Backend::ShaderType type) noexcept
 	{
 		VkShaderStageFlags flags = 0;
 		if (type & Xenon::Backend::ShaderType::Vertex) flags |= VK_SHADER_STAGE_VERTEX_BIT;
@@ -52,10 +52,73 @@ namespace Xenon
 			}
 		}
 
+		VkDescriptorSetLayout VulkanDescriptorSetManager::getDescriptorSetLayout(const std::vector<DescriptorBindingInfo>& bindingInfo, DescriptorType descriptorType)
+		{
+			auto& descriptorStorage = m_DescriptorSetStorages[EnumToInt(descriptorType)];
+			const auto bindingHash = GenerateHash(ToBytes(bindingInfo.data()), bindingInfo.size() * sizeof(DescriptorBindingInfo));
+
+			// Create a new one if the layout for the hash does not exist.
+			if (!descriptorStorage.contains(bindingHash))
+			{
+				// Get the basic information from the binding info.
+				std::vector<VkDescriptorSetLayoutBinding> bindings;
+				std::vector<VkDescriptorPoolSize> poolSizes;
+				bindings.reserve(bindingInfo.size());
+				poolSizes.reserve(bindingInfo.size());
+
+				for (uint32_t index = 0; index < bindingInfo.size(); index++)
+				{
+					const auto& binding = bindingInfo[index];
+
+					auto& vkBinding = bindings.emplace_back();
+					vkBinding.binding = index;
+					vkBinding.descriptorCount = 1;
+					vkBinding.descriptorType = m_pDevice->convertResourceType(binding.m_Type);
+					vkBinding.pImmutableSamplers = nullptr;
+					vkBinding.stageFlags = GetStageFlags(binding.m_ApplicableShaders);
+
+					auto& vkPoolSize = poolSizes.emplace_back();
+					vkPoolSize.descriptorCount = 1;
+					vkPoolSize.type = vkBinding.descriptorType;
+				}
+
+				// Create the descriptor set layout.
+				VkDescriptorSetLayoutCreateInfo layoutCreateInfo = {};
+				layoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+				layoutCreateInfo.pNext = nullptr;
+				layoutCreateInfo.flags = 0;
+				layoutCreateInfo.bindingCount = static_cast<uint32_t>(bindings.size());
+				layoutCreateInfo.pBindings = bindings.data();
+
+				VkDescriptorSetLayout layout = VK_NULL_HANDLE;
+				XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkCreateDescriptorSetLayout(m_pDevice->getLogicalDevice(), &layoutCreateInfo, nullptr, &layout), "Failed to create the descriptor set layout!");
+
+				// Create the first descriptor pool.
+				VkDescriptorPoolCreateInfo poolCreateInfo = {};
+				poolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+				poolCreateInfo.pNext = nullptr;
+				poolCreateInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+				poolCreateInfo.maxSets = XENON_VK_MAX_DESCRIPTOR_SETS_COUNT;
+				poolCreateInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+				poolCreateInfo.pPoolSizes = poolSizes.data();
+
+				VkDescriptorPool pool = VK_NULL_HANDLE;
+				XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkCreateDescriptorPool(m_pDevice->getLogicalDevice(), &poolCreateInfo, nullptr, &pool), "Failed to create the descriptor pool!");
+
+				// Set the information to the storage.
+				auto& storage = descriptorStorage[bindingHash];
+				storage.m_BindingInfo = bindingInfo;
+				storage.m_Layout = layout;
+				storage.m_Pools.emplace_back(pool, 0);
+			}
+
+			return descriptorStorage[bindingHash].m_Layout;
+		}
+
 		std::pair<VkDescriptorPool, VkDescriptorSet> VulkanDescriptorSetManager::createDescriptorSet(const std::vector<DescriptorBindingInfo>& bindingInfo, DescriptorType descriptorType)
 		{
 			auto& descriptorStorage = m_DescriptorSetStorages[EnumToInt(descriptorType)];
-			const auto bindingHash = GenerateHash(reinterpret_cast<const std::byte*>(bindingInfo.data()), bindingInfo.size() * sizeof(DescriptorBindingInfo));
+			const auto bindingHash = GenerateHash(ToBytes(bindingInfo.data()), bindingInfo.size() * sizeof(DescriptorBindingInfo));
 
 			// Create a new one if the layout for the hash does not exist.
 			if (!descriptorStorage.contains(bindingHash))
@@ -167,7 +230,7 @@ namespace Xenon
 
 		void VulkanDescriptorSetManager::freeDescriptorSet(VkDescriptorPool pool, VkDescriptorSet descriptorSet, const std::vector<DescriptorBindingInfo>& bindingInfo, DescriptorType descriptorType)
 		{
-			const auto bindingHash = GenerateHash(reinterpret_cast<const std::byte*>(bindingInfo.data()), bindingInfo.size() * sizeof(DescriptorBindingInfo));
+			const auto bindingHash = GenerateHash(ToBytes(bindingInfo.data()), bindingInfo.size() * sizeof(DescriptorBindingInfo));
 			auto& storage = m_DescriptorSetStorages[EnumToInt(descriptorType)][bindingHash];
 
 			XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkFreeDescriptorSets(m_pDevice->getLogicalDevice(), pool, 1, &descriptorSet), "Failed to free the descriptor set!");

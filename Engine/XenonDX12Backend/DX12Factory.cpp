@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "DX12Factory.hpp"
-#include "../XenonCore/Logging.hpp"
-
 #include "DX12Instance.hpp"
 #include "DX12Device.hpp"
 #include "DX12CommandRecorder.hpp"
@@ -13,6 +11,8 @@
 #include "DX12Swapchain.hpp"
 #include "DX12ImageSampler.hpp"
 #include "DX12Descriptor.hpp"
+
+#include "../XenonCore/Logging.hpp"
 
 namespace Xenon
 {

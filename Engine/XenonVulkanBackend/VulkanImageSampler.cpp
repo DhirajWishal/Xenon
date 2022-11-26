@@ -12,7 +12,7 @@ namespace /* anonymous */
 	 * @param mode The xenon address mode.
 	 * @return The Vulkan address mode.
 	 */
-	VkSamplerAddressMode GetAddressMode(Xenon::Backend::AddressMode mode)
+	[[nodiscard]] constexpr VkSamplerAddressMode GetAddressMode(Xenon::Backend::AddressMode mode) noexcept
 	{
 		switch (mode)
 		{
@@ -33,7 +33,7 @@ namespace /* anonymous */
 	 * @param color The xenon border color.
 	 * @return The Vulkan border color.
 	 */
-	VkBorderColor GetBorderColor(Xenon::Backend::BorderColor color)
+	[[nodiscard]] constexpr VkBorderColor GetBorderColor(Xenon::Backend::BorderColor color) noexcept
 	{
 		switch (color)
 		{
@@ -55,7 +55,7 @@ namespace /* anonymous */
 	 * @param op The xenon operator.
 	 * @return The Vulkan compare operator.
 	 */
-	VkCompareOp GetCompareOperator(Xenon::Backend::CompareOperator op)
+	[[nodiscard]] constexpr VkCompareOp GetCompareOperator(Xenon::Backend::CompareOperator op) noexcept
 	{
 		switch (op)
 		{
@@ -79,7 +79,7 @@ namespace /* anonymous */
 	 * @param filter The xenon filter.
 	 * @return The VUlkan filter.
 	 */
-	VkFilter GetFilter(Xenon::Backend::ImageFilter filter)
+	[[nodiscard]] constexpr VkFilter GetFilter(Xenon::Backend::ImageFilter filter) noexcept
 	{
 		switch (filter)
 		{
@@ -98,7 +98,7 @@ namespace /* anonymous */
 	 * @param mode The xenon mode.
 	 * @return The Vulkan mode.
 	 */
-	VkSamplerMipmapMode GetMipMapMode(Xenon::Backend::ImageMipMapMode mode)
+	[[nodiscard]] constexpr VkSamplerMipmapMode GetMipMapMode(Xenon::Backend::ImageMipMapMode mode) noexcept
 	{
 		switch (mode)
 		{

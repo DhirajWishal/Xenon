@@ -3,7 +3,6 @@
 
 #include "DX12Descriptor.hpp"
 #include "DX12Macros.hpp"
-
 #include "DX12Buffer.hpp"
 #include "DX12ImageView.hpp"
 #include "DX12ImageSampler.hpp"

@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "VulkanFactory.hpp"
-
 #include "VulkanInstance.hpp"
 #include "VulkanDevice.hpp"
 #include "VulkanCommandRecorder.hpp"

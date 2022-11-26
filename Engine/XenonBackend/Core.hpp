@@ -7,6 +7,8 @@
 
 #include <vector>
 
+#include <glm/vec3.hpp>
+
 namespace Xenon
 {
 	namespace Backend
@@ -120,7 +122,7 @@ namespace Xenon
 		[[nodiscard]] constexpr std::vector<DataFormat> GetCandidateFormats(DataFormat format)
 		{
 			std::vector<DataFormat> candidates;
-			for (auto i = sizeof(std::underlying_type_t<DataFormat>) * 8; i > 0; i--)
+			for (auto i = (sizeof(std::underlying_type_t<DataFormat>) * 8) - 1; i > 0; i--)
 			{
 				if (EnumToInt(format) & (1 << i))
 					candidates.push_back(static_cast<DataFormat>(1 << i));
@@ -158,6 +160,128 @@ namespace Xenon
 		XENON_DEFINE_ENUM_OR(ImageUsage);
 
 		/**
+		 * Input element enum.
+		 *
+		 * Input elements are of two types.
+		 * 1. Vertex elements. These are the ones that are stored in vertex buffers.
+		 * 2. Instance elements. These are the ones that are stored in instance buffers.
+		 */
+		enum class InputElement : uint8_t
+		{
+			// Stored and used as a 3 component vector.
+			// Access this from GLSL: layout(location = 0) in vec3
+			VertexPosition,
+
+			// Stored and used as a 3 component vector. 
+			// Access this from GLSL: layout(location = 1) in vec3
+			VertexNormal,
+
+			// Stored and used as a 3 component vector. 
+			// Access this from GLSL: layout(location = 2) in vec3
+			VertexTangent,
+
+			// Stored and used as a 4 component vector. 
+			// Access this from GLSL: layout(location = 3) in vec4
+			VertexColor_0,
+
+			// Stored and used as a 4 component vector. 
+			// Access this from GLSL: layout(location = 4) in vec4
+			VertexColor_1,
+
+			// Stored and used as a 4 component vector. 
+			// Access this from GLSL: layout(location = 5) in vec4
+			VertexColor_2,
+
+			// Stored and used as a 4 component vector. 
+			// Access this from GLSL: layout(location = 6) in vec4
+			VertexColor_3,
+
+			// Stored and used as a 4 component vector. 
+			// Access this from GLSL: layout(location = 7) in vec4
+			VertexColor_4,
+
+			// Stored and used as a 4 component vector. 
+			// Access this from GLSL: layout(location = 8) in vec4
+			VertexColor_5,
+
+			// Stored and used as a 4 component vector. 
+			// Access this from GLSL: layout(location = 9) in vec4
+			VertexColor_6,
+
+			// Stored and used as a 4 component vector. 
+			// Access this from GLSL: layout(location = 10) in vec4
+			VertexColor_7,
+
+			// Stored and used as a 2 component vector. 
+			// Access this from GLSL: layout(location = 11) in vec2
+			VertexTextureCoordinate_0,
+
+			// Stored and used as a 2 component vector. 
+			// Access this from GLSL: layout(location = 12) in vec2
+			VertexTextureCoordinate_1,
+
+			// Stored and used as a 2 component vector. 
+			// Access this from GLSL: layout(location = 13) in vec2
+			VertexTextureCoordinate_2,
+
+			// Stored and used as a 2 component vector. 
+			// Access this from GLSL: layout(location = 14) in vec2
+			VertexTextureCoordinate_3,
+
+			// Stored and used as a 2 component vector. 
+			// Access this from GLSL: layout(location = 15) in vec2
+			VertexTextureCoordinate_4,
+
+			// Stored and used as a 2 component vector. 
+			// Access this from GLSL: layout(location = 16) in vec2
+			VertexTextureCoordinate_5,
+
+			// Stored and used as a 2 component vector. 
+			// Access this from GLSL: layout(location = 17) in vec2
+			VertexTextureCoordinate_6,
+
+			// Stored and used as a 2 component vector. 
+			// Access this from GLSL: layout(location = 18) in vec2
+			VertexTextureCoordinate_7,
+
+			// Stored and used as a 4 component vector. 
+			// Access this from GLSL: layout(location = 19) in vec4
+			VertexJointIndices,
+
+			// Stored and used as a 4 component vector. 
+			// Access this from GLSL: layout(location = 20) in vec4
+			VertexJointWeight,
+
+			// Stored and used as a 3 component vector. 
+			// Access this from GLSL: layout(location = 21) in vec3
+			InstancePosition,
+
+			// Stored and used as a 3 component vector. 
+			// Access this from GLSL: layout(location = 22) in vec3
+			InstanceRotation,
+
+			// Stored and used as a 3 component vector. 
+			// Access this from GLSL: layout(location = 23) in vec3
+			InstanceScale,
+
+			// Stored and used as an integer.
+			// Access this from GLSL: layout(location = 24) in int
+			InstanceID,
+
+			// This is just a count of the number of supported elements.
+			Count,
+
+			// This is just a count of the number of supported vertex elements.
+			VertexElementCount = VertexJointWeight - VertexPosition + 1,
+
+			// This is just a count of the number of supported instance elements.
+			InstanceElementCount = InstanceID - InstancePosition + 1,
+
+			// Undefined element.
+			Undefined = -1
+		};
+
+		/**
 		 * Attribute data type.
 		 * This specifies which data type an attribute uses.
 		 */
@@ -172,6 +296,200 @@ namespace Xenon
 			Mat4,
 
 			Scalar
+		};
+
+		/**
+		 * Get the number of components an attribute data type has.
+		 *
+		 * @param type The type of the attribute.
+		 * @return The component count.
+		 */
+		[[nodiscard]] constexpr uint8_t GetAttributeDataTypeComponentCount(AttributeDataType type) noexcept
+		{
+			switch (type)
+			{
+			case Xenon::Backend::AttributeDataType::Vec2:
+				return 2;
+
+			case Xenon::Backend::AttributeDataType::Vec3:
+				return 3;
+
+			case Xenon::Backend::AttributeDataType::Vec4:
+				return 4;
+
+			case Xenon::Backend::AttributeDataType::Mat2:
+				return 4;
+
+			case Xenon::Backend::AttributeDataType::Mat3:
+				return 9;
+
+			case Xenon::Backend::AttributeDataType::Mat4:
+				return 16;
+
+			case Xenon::Backend::AttributeDataType::Scalar:
+				return 1;
+
+			default:
+				return 0;
+			}
+		}
+
+		/**
+		 * Check if an input element is a vertex element.
+		 *
+		 * @param element The element to check.
+		 * @return True if the element is a vertex element.
+		 * @return False if the element is not a vertex element.
+		 */
+		[[nodiscard]] constexpr bool IsVertexElement(InputElement element) noexcept
+		{
+			return EnumToInt(element) <= EnumToInt(InputElement::VertexJointWeight);
+		}
+
+		/**
+		 * Check if an input element is an instance element.
+		 *
+		 * @param element The element to check.
+		 * @return True if the element is an instance element.
+		 * @return False if the element is not an instance element.
+		 */
+		[[nodiscard]] constexpr bool IsInstanceElement(InputElement element) noexcept
+		{
+			return EnumToInt(element) >= EnumToInt(InputElement::InstancePosition) && EnumToInt(element) <= EnumToInt(InputElement::InstanceID);
+		}
+
+		/**
+		 * Get the input element data types.
+		 *
+		 * @param element The element to get the data type of.
+		 * @return The data type.
+		 */
+		[[nodiscard]] constexpr AttributeDataType GetInputElementDataType(InputElement element)
+		{
+			switch (element)
+			{
+			case Xenon::Backend::InputElement::VertexPosition:
+			case Xenon::Backend::InputElement::VertexNormal:
+			case Xenon::Backend::InputElement::VertexTangent:
+				return AttributeDataType::Vec3;
+
+			case Xenon::Backend::InputElement::VertexColor_0:
+			case Xenon::Backend::InputElement::VertexColor_1:
+			case Xenon::Backend::InputElement::VertexColor_2:
+			case Xenon::Backend::InputElement::VertexColor_3:
+			case Xenon::Backend::InputElement::VertexColor_4:
+			case Xenon::Backend::InputElement::VertexColor_5:
+			case Xenon::Backend::InputElement::VertexColor_6:
+			case Xenon::Backend::InputElement::VertexColor_7:
+				return AttributeDataType::Vec4;
+
+			case Xenon::Backend::InputElement::VertexTextureCoordinate_0:
+			case Xenon::Backend::InputElement::VertexTextureCoordinate_1:
+			case Xenon::Backend::InputElement::VertexTextureCoordinate_2:
+			case Xenon::Backend::InputElement::VertexTextureCoordinate_3:
+			case Xenon::Backend::InputElement::VertexTextureCoordinate_4:
+			case Xenon::Backend::InputElement::VertexTextureCoordinate_5:
+			case Xenon::Backend::InputElement::VertexTextureCoordinate_6:
+			case Xenon::Backend::InputElement::VertexTextureCoordinate_7:
+				return AttributeDataType::Vec2;
+
+			case Xenon::Backend::InputElement::VertexJointIndices:
+			case Xenon::Backend::InputElement::VertexJointWeight:
+				return AttributeDataType::Vec4;
+
+			case Xenon::Backend::InputElement::InstancePosition:
+			case Xenon::Backend::InputElement::InstanceRotation:
+			case Xenon::Backend::InputElement::InstanceScale:
+				return AttributeDataType::Vec3;
+
+			case Xenon::Backend::InputElement::InstanceID:
+				return AttributeDataType::Scalar;
+
+			default:
+				return AttributeDataType::Scalar;
+			}
+		}
+
+		/**
+		 * Vertex specification class.
+		 * This contains information about a single vertex including it's size, and the actual elements that are been stored.
+		 */
+		class VertexSpecification final
+		{
+		public:
+			/**
+			 * Default constructor.
+			 */
+			constexpr VertexSpecification() = default;
+
+			/**
+			 * Add a vertex element to the specification.
+			 *
+			 * @param element The element to add.
+			 * @param componentSize The size of a single component in the element in bytes. Default is sizeof(float).
+			 * @return The specification reference.
+			 */
+			VertexSpecification& addElement(InputElement element, uint8_t componentSize = sizeof(float))
+			{
+				const auto size = componentSize * GetAttributeDataTypeComponentCount(GetInputElementDataType(element));
+
+				// Update the information only if it's needed.
+				if (!isAvailable(element) || m_ElementSizes[EnumToInt(element)] != size)
+				{
+					m_VertexElements |= 1 << EnumToInt(element);
+					m_ElementSizes[EnumToInt(element)] = size;
+				}
+
+				return *this;
+			}
+
+			/**
+			 * Get the size of a single element.
+			 *
+			 * @param element The element to get the size of.
+			 * @return The element's size.
+			 */
+			[[nodiscard]] uint8_t getElementSize(InputElement element) const { return m_ElementSizes[EnumToInt(element)]; }
+
+			/**
+			 * Get the size of the vertex.
+			 *
+			 * @return The size in bytes.
+			 */
+			[[nodiscard]] uint32_t getSize() const noexcept
+			{
+				uint32_t size = 0;
+				for (const auto elementSize : m_ElementSizes)
+					size += elementSize;
+
+				return size;
+			}
+
+			/**
+			 * Check if a vertex element is present in the vertex.
+			 *
+			 * @param element The element to check.
+			 * @return True if the element is present.
+			 * @return False if the element is not present.
+			 */
+			[[nodiscard]] bool isAvailable(InputElement element) const noexcept { return m_VertexElements & (1 << EnumToInt(element)); }
+
+		private:
+			uint32_t m_VertexElements = 0;
+			std::array<uint8_t, EnumToInt(InputElement::VertexElementCount)> m_ElementSizes = { 0 };
+		};
+
+		/**
+		 * Instance entry structure.
+		 * This contains information regarding a single instance entry in the instance buffer.
+		 */
+		struct InstanceEntry final
+		{
+			glm::vec3 m_Position = {};	// InputElement::InstancePosition
+			glm::vec3 m_Rotation = {};	// InputElement::InstanceRotation
+			glm::vec3 m_Scale = {};		// InputElement::InstanceScale
+
+			uint32_t m_InstanceID = 0;	// InputElement::InstanceID
 		};
 
 		/**

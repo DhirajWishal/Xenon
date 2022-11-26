@@ -3,7 +3,6 @@
 
 #include "VulkanCommandRecorder.hpp"
 #include "VulkanMacros.hpp"
-
 #include "VulkanBuffer.hpp"
 #include "VulkanSwapchain.hpp"
 #include "VulkanRasterizer.hpp"
@@ -82,7 +81,7 @@ namespace /* anonymous */
 	 * @param flags Access flags.
 	 * @return The stage flags.
 	 */
-	VkPipelineStageFlags GetPipelineStageFlags(VkAccessFlags flags)
+	[[nodiscard]] constexpr VkPipelineStageFlags GetPipelineStageFlags(VkAccessFlags flags) noexcept
 	{
 		switch (flags)
 		{

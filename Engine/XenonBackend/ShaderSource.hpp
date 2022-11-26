@@ -12,6 +12,15 @@ namespace Xenon
 	namespace Backend
 	{
 		/**
+		 * Shader attribute structure.
+		 */
+		struct ShaderAttribute final
+		{
+			uint32_t m_Location = 0;
+			AttributeDataType m_DataType = AttributeDataType::Scalar;
+		};
+
+		/**
 		 * Shader resource structure.
 		 */
 		struct ShaderResource final
@@ -23,12 +32,13 @@ namespace Xenon
 		};
 
 		/**
-		 * Shader attribute structure.
+		 * Shader constant buffer structure.
+		 * Constant buffers are data sent to shaders/ pipelines at draw time.
 		 */
-		struct ShaderAttribute final
+		struct ConstantBuffer final
 		{
-			uint32_t m_Location = 0;
-			AttributeDataType m_DataType = AttributeDataType::Scalar;
+			uint32_t m_Size = 0;
+			uint32_t m_Offset = 0;
 		};
 
 		/**
@@ -75,12 +85,50 @@ namespace Xenon
 			 */
 			[[nodiscard]] const BinaryType& getBinary() const { return m_Binary; }
 
+			/**
+			 * Check if the shader source is valid or not.
+			 * A shader source is valid if we have some binary data.
+			 *
+			 * @return True if the shader source is valid.
+			 * @return False if the shader source is not valid.
+			 */
+			[[nodiscard]] bool isValid() const { return !m_Binary.empty(); }
+
+			/**
+			 * Get the shader's input attributes.
+			 *
+			 * @return The input attributes.
+			 */
+			[[nodiscard]] const std::vector<ShaderAttribute>& getInputAttributes() const { return m_InputAttributes; }
+
+			/**
+			 * Get the shader's output attributes.
+			 *
+			 * @return The output attributes.
+			 */
+			[[nodiscard]] const std::vector<ShaderAttribute>& getOutputAttributes() const { return m_OutputAttributes; }
+
+			/**
+			 * Get the resources.
+			 *
+			 * @return The shader resources.
+			 */
+			[[nodiscard]] const std::vector<ShaderResource>& getResources() const { return m_Resources; }
+
+			/**
+			 * Get the constant buffers.
+			 *
+			 * @return The shader constant buffers.
+			 */
+			[[nodiscard]] const std::vector<ConstantBuffer>& getConstantBuffers() const { return m_ConstantBuffers; }
+
 		private:
 			BinaryType m_Binary;
 
-			std::vector<ShaderResource> m_Resources;
 			std::vector<ShaderAttribute> m_InputAttributes;
 			std::vector<ShaderAttribute> m_OutputAttributes;
+			std::vector<ShaderResource> m_Resources;
+			std::vector<ConstantBuffer> m_ConstantBuffers;
 		};
 	}
 }

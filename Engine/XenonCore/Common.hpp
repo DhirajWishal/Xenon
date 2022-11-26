@@ -58,6 +58,46 @@ namespace Xenon
 	[[nodiscard]] constexpr std::underlying_type_t<Type> EnumToInt(Type value) noexcept { return static_cast<std::underlying_type_t<Type>>(value); }
 
 	/**
+	 * Cast a pointer to std::byte pointer.
+	 *
+	 * @tparam Type The pointer type.
+	 * @param pointer The pointer to cast from.
+	 * @return The std::byte pointer.
+	 */
+	template<class Type>
+	[[nodiscard]] constexpr std::byte* ToBytes(Type* poitner) noexcept { return reinterpret_cast<std::byte*>(pointer); }
+
+	/**
+	 * Cast a pointer to std::byte pointer.
+	 *
+	 * @tparam Type The pointer type.
+	 * @param pointer The pointer to cast from.
+	 * @return The std::byte pointer.
+	 */
+	template<class Type>
+	[[nodiscard]] constexpr const std::byte* ToBytes(const Type* pointer) noexcept { return reinterpret_cast<const std::byte*>(pointer); }
+
+	/**
+	 * Cast a std::byte pointer to a typed pointer.
+	 *
+	 * @tparam Type The pointer type.
+	 * @param pointer The pointer to cast from.
+	 * @return The type pointer.
+	 */
+	template<class Type>
+	[[nodiscard]] constexpr Type* FromBytes(std::byte* poitner) noexcept { return reinterpret_cast<Type*>(pointer); }
+
+	/**
+	 * Cast a std::byte pointer to a typed pointer.
+	 *
+	 * @tparam Type The pointer type.
+	 * @param pointer The pointer to cast from.
+	 * @return The type pointer.
+	 */
+	template<class Type>
+	[[nodiscard]] constexpr const Type* FromBytes(const std::byte* pointer) noexcept { return reinterpret_cast<const Type*>(pointer); }
+
+	/**
 	 * Generate hash for a set of bytes.
 	 *
 	 * @param pBytes The bytes to hash.
@@ -84,10 +124,16 @@ namespace Xenon
 	constexpr bool operator&(const name lhs, const name rhs)								\
 	{																						\
 		return ::Xenon::EnumToInt(lhs) & ::Xenon::EnumToInt(rhs);							\
-	}
+	}																						
 
 #define XENON_DEFINE_ENUM_OR(name)															\
 	constexpr name operator|(const name lhs, const name rhs)								\
 	{																						\
 		return static_cast<name>(::Xenon::EnumToInt(lhs) | ::Xenon::EnumToInt(rhs));		\
-	}
+	}																						\
+																							\
+	constexpr name& operator|=(name& lhs, const name rhs)									\
+	{																						\
+		lhs = lhs | rhs;																	\
+		return lhs;																			\
+	}																						

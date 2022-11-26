@@ -29,16 +29,18 @@ namespace Xenon
 			/**
 			 * Load the cache data from the store.
 			 *
+			 * @param hash The internal hash used to identify unique pipelines.
 			 * @return The pipeline cache.
 			 */
-			[[nodiscard]] virtual std::vector<std::byte> load() = 0;
+			[[nodiscard]] virtual std::vector<std::byte> load(uint64_t hash) = 0;
 
 			/**
 			 * Store the cache data generated from the backend.
 			 *
+			 * @param hash The internal hash used to identify unique pipelines. It's the best to store cache in a way that it can be accessed using the hash.
 			 * @param bytes The bytes to store.
 			 */
-			virtual void store(const std::vector<std::byte>& bytes) = 0;
+			virtual void store(uint64_t hash, const std::vector<std::byte>& bytes) = 0;
 		};
 
 		/**
@@ -56,7 +58,7 @@ namespace Xenon
 			 */
 			explicit Pipeline([[maybe_unused]] Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler) : m_pCacheHandler(std::move(pCacheHandler)) {}
 
-		private:
+		protected:
 			std::unique_ptr<PipelineCacheHandler> m_pCacheHandler = nullptr;
 		};
 	}

@@ -3,7 +3,6 @@
 
 #include "VulkanBuffer.hpp"
 #include "VulkanMacros.hpp"
-
 #include "VulkanCommandRecorder.hpp"
 
 namespace Xenon
@@ -152,7 +151,7 @@ namespace Xenon
 			void* pDataStore = nullptr;
 
 			XENON_VK_ASSERT(vmaMapMemory(m_pDevice->getAllocator(), m_Allocation, &pDataStore), "Failed to map the staging buffer memory!");
-			return reinterpret_cast<std::byte*>(pDataStore);
+			return ToBytes(pDataStore);
 		}
 
 		void VulkanBuffer::unmap()

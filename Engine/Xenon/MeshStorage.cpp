@@ -476,12 +476,12 @@ namespace Xenon
 
 		// Load the vertex data and clear the buffer.
 		storage.m_pVertexBuffer = instance.getFactory()->createBuffer(instance.getBackendDevice(), vertexBufferSize, Backend::BufferType::Vertex);
-		storage.m_pVertexBuffer->write(reinterpret_cast<const std::byte*>(vertices.data()), vertexBufferSize);
+		storage.m_pVertexBuffer->write(ToBytes(vertices.data()), vertexBufferSize);
 		vertices.clear();
 
 		// Load the index data and clear the buffer.
 		storage.m_pIndexBuffer = instance.getFactory()->createBuffer(instance.getBackendDevice(), indexBufferSize, Backend::BufferType::Index);
-		storage.m_pIndexBuffer->write(reinterpret_cast<const std::byte*>(indices.data()), indexBufferSize);
+		storage.m_pIndexBuffer->write(ToBytes(indices.data()), indexBufferSize);
 		indices.clear();
 
 		return storage;

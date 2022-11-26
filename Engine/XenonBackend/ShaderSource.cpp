@@ -15,7 +15,7 @@ namespace /* anonymous */
 	 *
 	 * @param result The reflection result.
 	 */
-	void ValidateReflection(const SpvReflectResult result)
+	constexpr void ValidateReflection(const SpvReflectResult result) noexcept
 	{
 		switch (result)
 		{
@@ -50,7 +50,7 @@ namespace /* anonymous */
 	 * @parma type The reflection type.
 	 * @return The binding type.
 	 */
-	Xenon::Backend::ResourceType GetResourceType(SpvReflectDescriptorType type)
+	[[nodiscard]] constexpr Xenon::Backend::ResourceType GetResourceType(SpvReflectDescriptorType type) noexcept
 	{
 		switch (type)
 		{
@@ -76,7 +76,7 @@ namespace /* anonymous */
 	 * @param dimensions The vector's dimensions.
 	 * @return The attribute data type.
 	 */
-	Xenon::Backend::AttributeDataType ResolveVectorDataType(uint32_t dimensions)
+	[[nodiscard]] constexpr Xenon::Backend::AttributeDataType ResolveVectorDataType(uint32_t dimensions) noexcept
 	{
 		switch (dimensions)
 		{
@@ -90,10 +90,8 @@ namespace /* anonymous */
 			return Xenon::Backend::AttributeDataType::Vec4;
 
 		default:
-			break;
+			return Xenon::Backend::AttributeDataType::Scalar;
 		}
-
-		return Xenon::Backend::AttributeDataType::Scalar;
 	}
 }
 
@@ -164,6 +162,23 @@ namespace Xenon
 					resource.m_Binding = pResource->binding;
 					resource.m_Set = static_cast<DescriptorType>(pResource->set);
 					resource.m_Type = GetResourceType(pResource->descriptor_type);
+				}
+			}
+
+			// Resolve push constants.
+			{
+				uint32_t variableCount = 0;
+				ValidateReflection(spvReflectEnumeratePushConstantBlocks(&reflectionModule, &variableCount, nullptr));
+
+				std::vector<SpvReflectBlockVariable*> pPushConstants(variableCount);
+				ValidateReflection(spvReflectEnumeratePushConstantBlocks(&reflectionModule, &variableCount, pPushConstants.data()));
+
+				// Iterate over the push constants and setup.
+				for (const auto& resource : pPushConstants)
+				{
+					auto& pushConstant = m_ConstantBuffers.emplace_back();
+					pushConstant.m_Size = resource->size;
+					pushConstant.m_Offset = resource->offset;
 				}
 			}
 		}

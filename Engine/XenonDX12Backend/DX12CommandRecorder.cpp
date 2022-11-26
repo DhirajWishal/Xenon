@@ -3,7 +3,6 @@
 
 #include "DX12CommandRecorder.hpp"
 #include "DX12Macros.hpp"
-
 #include "DX12Buffer.hpp"
 #include "DX12Swapchain.hpp"
 #include "DX12Rasterizer.hpp"

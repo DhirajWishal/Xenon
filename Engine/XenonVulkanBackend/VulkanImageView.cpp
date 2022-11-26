@@ -12,7 +12,7 @@ namespace /* anonymous */
 	 * @param swizzle The component swizzle.
 	 * @return The Vulkan component swizzle.
 	 */
-	VkComponentSwizzle GetComponentSwizzle(Xenon::Backend::ComponentSwizzle swizzle)
+	[[nodiscard]] constexpr VkComponentSwizzle GetComponentSwizzle(Xenon::Backend::ComponentSwizzle swizzle) noexcept
 	{
 		switch (swizzle)
 		{
@@ -39,9 +39,8 @@ namespace /* anonymous */
 
 		default:
 			XENON_LOG_ERROR("Invalid component swizzle provided!");
+			return VK_COMPONENT_SWIZZLE_IDENTITY;
 		}
-
-		return VK_COMPONENT_SWIZZLE_IDENTITY;
 	}
 }
 
