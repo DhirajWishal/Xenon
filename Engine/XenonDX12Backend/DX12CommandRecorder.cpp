@@ -79,6 +79,11 @@ namespace Xenon
 			m_IsRenderTargetBound = true;
 		}
 
+		void DX12CommandRecorder::bind(RasterizingPipeline* pPipeline, const VertexSpecification& vertexSpecification)
+		{
+
+		}
+
 		void DX12CommandRecorder::end()
 		{
 			XENON_DX12_ASSERT(m_pCurrentCommandList->Close(), "Failed to stop the current command list!");

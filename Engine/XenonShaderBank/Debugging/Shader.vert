@@ -1,7 +1,7 @@
 #version 450
 
 layout(location = 0) in vec3 inPosition;
-layout(location = 12) in vec2 inTextureCoordinates;
+layout(location = 11) in vec2 inTextureCoordinates;
 
 layout(location = 0) out vec2 outTextureCoordinates;
 

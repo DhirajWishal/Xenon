@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "Studio.hpp"
+#include "CacheHandler.hpp"
 
 #include "XenonCore/Logging.hpp"
 #include "Xenon/MeshStorage.hpp"
@@ -70,14 +71,17 @@ void Studio::run()
 	specification.m_VertexShader = Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Debugging/Shader.vert.spv");
 	specification.m_FragmentShader = Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Debugging/Shader.frag.spv");
 
-	auto pPipeline = m_Instance.getFactory()->createRasterizingPipeline(m_Instance.getBackendDevice(), nullptr, pLayer->getRasterizer(), specification);
+	auto pPipeline = m_Instance.getFactory()->createRasterizingPipeline(m_Instance.getBackendDevice(), std::make_unique<CacheHandler>(), pLayer->getRasterizer(), specification);
 
-	bool shaderHandled = false;
+	bool dataLoaded = false;
 	while (m_Renderer.update())
 	{
-
+		if (!dataLoaded && is_ready(storage))
+		{
+			pLayer->addDrawData(storage.get(), pPipeline.get());
+			dataLoaded = true;
+		}
 	}
 
 	XENON_LOG_INFORMATION("Exiting the {}", GetRendererTitle(m_Instance.getBackendType()));
-	[[maybe_unused]] auto meshStorage = storage.get();
 }

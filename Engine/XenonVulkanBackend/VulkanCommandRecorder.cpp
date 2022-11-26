@@ -6,6 +6,7 @@
 #include "VulkanBuffer.hpp"
 #include "VulkanSwapchain.hpp"
 #include "VulkanRasterizer.hpp"
+#include "VulkanRasterizingPipeline.hpp"
 
 namespace /* anonymous */
 {
@@ -375,6 +376,12 @@ namespace Xenon
 
 			m_pDevice->getDeviceTable().vkCmdBeginRenderPass(*m_pCurrentBuffer, &beginInfo, VK_SUBPASS_CONTENTS_INLINE);
 			m_IsRenderTargetBound = true;
+		}
+
+		void VulkanCommandRecorder::bind(RasterizingPipeline* pPipeline, const VertexSpecification& vertexSpecification)
+		{
+			auto pVkPipeline = pPipeline->as<VulkanRasterizingPipeline>();
+			pVkPipeline->setup(vertexSpecification);
 		}
 
 		void VulkanCommandRecorder::end()

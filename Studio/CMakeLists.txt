@@ -15,6 +15,8 @@ set(
 	"Main.cpp"
 	"Studio.cpp"
 	"Studio.hpp"
+	"CacheHandler.cpp"
+	"CacheHandler.hpp"
 )
 
 # Add the source group.

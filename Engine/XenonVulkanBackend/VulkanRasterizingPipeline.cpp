@@ -586,10 +586,48 @@ namespace Xenon
 			std::vector<VkPushConstantRange> pushConstants;
 
 			if (specification.m_VertexShader.isValid())
+			{
 				GetShaderBindings(specification.m_VertexShader, bindingMap, indexToBindingMap, pushConstants, m_VertexInputBindings, m_VertexInputAttributes, ShaderType::Vertex);
 
+				auto& createInfo = m_ShaderStageCreateInfo.emplace_back();
+				createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+				createInfo.pNext = nullptr;
+				createInfo.flags = 0;
+				createInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+				createInfo.pName = "main";
+				createInfo.pSpecializationInfo = nullptr;
+
+				VkShaderModuleCreateInfo moduleCreateInfo = {};
+				moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+				moduleCreateInfo.pNext = nullptr;
+				moduleCreateInfo.flags = 0;
+				moduleCreateInfo.codeSize = specification.m_VertexShader.getBinary().size();
+				moduleCreateInfo.pCode = specification.m_VertexShader.getBinary().data();
+
+				XENON_VK_ASSERT(pDevice->getDeviceTable().vkCreateShaderModule(pDevice->getLogicalDevice(), &moduleCreateInfo, nullptr, &createInfo.module), "Failed to create the vertex shader module!");
+			}
+
 			if (specification.m_FragmentShader.isValid())
+			{
 				GetShaderBindings(specification.m_FragmentShader, bindingMap, indexToBindingMap, pushConstants, m_VertexInputBindings, m_VertexInputAttributes, ShaderType::Fragment);
+
+				auto& createInfo = m_ShaderStageCreateInfo.emplace_back();
+				createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+				createInfo.pNext = nullptr;
+				createInfo.flags = 0;
+				createInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+				createInfo.pName = "main";
+				createInfo.pSpecializationInfo = nullptr;
+
+				VkShaderModuleCreateInfo moduleCreateInfo = {};
+				moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+				moduleCreateInfo.pNext = nullptr;
+				moduleCreateInfo.flags = 0;
+				moduleCreateInfo.codeSize = specification.m_FragmentShader.getBinary().size();
+				moduleCreateInfo.pCode = specification.m_FragmentShader.getBinary().data();
+
+				XENON_VK_ASSERT(pDevice->getDeviceTable().vkCreateShaderModule(pDevice->getLogicalDevice(), &moduleCreateInfo, nullptr, &createInfo.module), "Failed to create the fragment shader module!");
+			}
 
 			// Get the layouts.
 			std::vector<VkDescriptorSetLayout> layouts;
@@ -607,6 +645,9 @@ namespace Xenon
 		{
 			try
 			{
+				for (const auto& info : m_ShaderStageCreateInfo)
+					m_pDevice->getDeviceTable().vkDestroyShaderModule(m_pDevice->getLogicalDevice(), info.module, nullptr);
+
 				for (const auto& [hash, pipeline] : m_Pipelines)
 				{
 					m_pDevice->getDeviceTable().vkDestroyPipelineCache(m_pDevice->getLogicalDevice(), pipeline.m_PipelineCache, nullptr);
@@ -642,7 +683,7 @@ namespace Xenon
 				pipeline.m_InputBindingDescriptions = m_VertexInputBindings;
 				pipeline.m_InputAttributeDescriptions = m_VertexInputAttributes;
 
-				uint32_t stride = 0;
+				bool hasVertexData = false;
 				for (auto& attribute : pipeline.m_InputAttributeDescriptions)
 				{
 					// Continue if we're in instance data.
@@ -658,17 +699,17 @@ namespace Xenon
 							vertexSpecification.getElementComponentDataType(element)
 						);
 
-						stride += vertexSpecification.getElementSize(element);
+						hasVertexData = true;
 					}
 				}
 
 				// Setup the input bindings if we have vertex data (stride is not 0).
-				if (stride > 0)
+				if (hasVertexData)
 				{
 					auto& binding = pipeline.m_InputBindingDescriptions.emplace_back();
-					binding.binding = 1;
+					binding.binding = 0;
 					binding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-					binding.stride = stride;
+					binding.stride = vertexSpecification.getSize();
 				}
 
 				// Create the pipeline.

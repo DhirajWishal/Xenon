@@ -15,5 +15,10 @@ namespace Xenon
 	void DefaultRasterizingLayer::bind(Layer* pPreviousLayer, Backend::CommandRecorder* pCommandRecorder)
 	{
 		pCommandRecorder->bind(m_pRasterizer.get(), { glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), 0.0f, static_cast<uint32_t>(0) });
+
+		for (const auto& drawData : m_DrawData)
+		{
+			pCommandRecorder->bind(drawData.m_pPipeline, drawData.m_Storage.getVertexSpecification());
+		}
 	}
 }

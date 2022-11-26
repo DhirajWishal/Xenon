@@ -5,7 +5,7 @@
 
 #include "Buffer.hpp"
 #include "Swapchain.hpp"
-#include "Rasterizer.hpp"
+#include "RasterizingPipeline.hpp"
 
 namespace Xenon
 {
@@ -68,6 +68,14 @@ namespace Xenon
 			 * @param clearValues The rasterizer's clear values.
 			 */
 			virtual void bind(Rasterizer* pRasterizer, const std::vector<Rasterizer::ClearValueType>& clearValues) = 0;
+
+			/**
+			 * Bind a rasterizing pipeline to the command recorder.
+			 *
+			 * @param pPipeline The pipeline pointer.
+			 * @param vertexSpecification The vertex specification.
+			 */
+			virtual void bind(RasterizingPipeline* pPipeline, const VertexSpecification& vertexSpecification) = 0;
 
 			/**
 			 * End the command recorder recording.

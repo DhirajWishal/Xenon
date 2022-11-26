@@ -76,6 +76,14 @@ namespace Xenon
 			void bind(Rasterizer* pRasterizer, const std::vector<Rasterizer::ClearValueType>& clearValues) override;
 
 			/**
+			 * Bind a rasterizing pipeline to the command recorder.
+			 *
+			 * @param pPipeline The pipeline pointer.
+			 * @param vertexSpecification The vertex specification.
+			 */
+			void bind(RasterizingPipeline* pPipeline, const VertexSpecification& vertexSpecification) override;
+
+			/**
 			 * End the command recorder recording.
 			 */
 			void end() override;

@@ -4,6 +4,9 @@
 #pragma once
 
 #include "../RasterizingLayer.hpp"
+#include "../MeshStorage.hpp"
+
+#include "../../XenonBackend/RasterizingPipeline.hpp"
 
 namespace Xenon
 {
@@ -13,6 +16,15 @@ namespace Xenon
 	 */
 	class DefaultRasterizingLayer final : public RasterizingLayer
 	{
+		/**
+		 * Draw data structure.
+		 */
+		struct DrawData final
+		{
+			MeshStorage m_Storage;
+			Backend::RasterizingPipeline* m_pPipeline = nullptr;
+		};
+
 	public:
 		/**
 		 * Explicit constructor.
@@ -31,7 +43,15 @@ namespace Xenon
 		 */
 		void bind(Layer* pPreviousLayer, Backend::CommandRecorder* pCommandRecorder) override;
 
+		/**
+		 * Add draw data to the layer to be rendered.
+		 *
+		 * @param storage The storage to render.
+		 * @apram pPipeline The pipeline pointer to render with.
+		 */
+		void addDrawData(MeshStorage&& storage, Backend::RasterizingPipeline* pPipeline) { m_DrawData.emplace_back(std::move(storage), pPipeline); }
+
 	private:
-		glm::vec4 m_ClearColor;
+		std::vector<DrawData> m_DrawData;
 	};
 }
