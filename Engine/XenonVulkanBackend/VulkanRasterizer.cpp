@@ -40,20 +40,53 @@ namespace Xenon
 			if (m_AttachmentTypes & type)
 			{
 				uint8_t index = 0;
-				if (m_AttachmentTypes & AttachmentType::Color && type != AttachmentType::Color)
-					index++;
+				if (m_AttachmentTypes & AttachmentType::Color)
+				{
+					if (type == AttachmentType::Color)
+						return &m_ImageAttachments[index];
 
-				if (m_AttachmentTypes & AttachmentType::EntityID && type != AttachmentType::EntityID)
 					index++;
+				}
 
-				if (m_AttachmentTypes & AttachmentType::Normal && type != AttachmentType::Normal)
-					index++;
+				if (m_AttachmentTypes & AttachmentType::EntityID)
+				{
+					if (type == AttachmentType::EntityID)
+						return &m_ImageAttachments[index];
 
-				if (m_AttachmentTypes & AttachmentType::Depth && type != AttachmentType::Depth)
 					index++;
+				}
 
-				if (m_AttachmentTypes & AttachmentType::Stencil && type != AttachmentType::Stencil)
+				if (m_AttachmentTypes & AttachmentType::Normal)
+				{
+					if (type == AttachmentType::Normal)
+						return &m_ImageAttachments[index];
+
 					index++;
+				}
+
+				if (m_AttachmentTypes & AttachmentType::Depth && m_AttachmentTypes & AttachmentType::Stencil)
+				{
+					if (type & AttachmentType::Depth && type & AttachmentType::Stencil)
+						return &m_ImageAttachments[index];
+
+					index++;
+				}
+
+				if (m_AttachmentTypes & AttachmentType::Depth)
+				{
+					if (type == AttachmentType::Depth)
+						return &m_ImageAttachments[index];
+
+					index++;
+				}
+
+				if (m_AttachmentTypes & AttachmentType::Stencil)
+				{
+					if (type == AttachmentType::Stencil)
+						return &m_ImageAttachments[index];
+
+					index++;
+				}
 
 				// Return the attachment pointer.
 				return &m_ImageAttachments[index];

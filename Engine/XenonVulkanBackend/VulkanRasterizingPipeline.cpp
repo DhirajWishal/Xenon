@@ -175,7 +175,7 @@ namespace /* anonymous */
 		case Xenon::Backend::PrimitiveTopology::TriangleListWithAdjacency:		return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST_WITH_ADJACENCY;
 		case Xenon::Backend::PrimitiveTopology::TriangleStripWithAdjacency:		return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP_WITH_ADJACENCY;
 		case Xenon::Backend::PrimitiveTopology::PatchList:						return VK_PRIMITIVE_TOPOLOGY_PATCH_LIST;
-		default:																XENON_LOG_ERROR("Invalid or Undefined primitive topology!");
+		default:																XENON_LOG_ERROR("Invalid or Undefined primitive topology! Defaulting to PointList."); return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
 		}
 	}
 
@@ -193,7 +193,7 @@ namespace /* anonymous */
 		case Xenon::Backend::CullMode::Front:									return VK_CULL_MODE_FRONT_BIT;
 		case Xenon::Backend::CullMode::Back:									return VK_CULL_MODE_BACK_BIT;
 		case Xenon::Backend::CullMode::FrontAndBack:							return VK_CULL_MODE_FRONT_AND_BACK;
-		default:																XENON_LOG_ERROR("Invalid or Undefined cull mode!");
+		default:																XENON_LOG_ERROR("Invalid or Undefined cull mode! Defaulting to None."); return VK_CULL_MODE_NONE;
 		}
 	}
 
@@ -209,7 +209,7 @@ namespace /* anonymous */
 		{
 		case Xenon::Backend::FrontFace::CounterClockwise:						return VK_FRONT_FACE_COUNTER_CLOCKWISE;
 		case Xenon::Backend::FrontFace::Clockwise:								return VK_FRONT_FACE_CLOCKWISE;
-		default:																XENON_LOG_ERROR("Invalid or Undefined front face!");
+		default:																XENON_LOG_ERROR("Invalid or Undefined front face! Defaulting to CounterClockwise."); return VK_FRONT_FACE_COUNTER_CLOCKWISE;
 		}
 	}
 
@@ -226,7 +226,7 @@ namespace /* anonymous */
 		case Xenon::Backend::PolygonMode::Fill:									return VK_POLYGON_MODE_FILL;
 		case Xenon::Backend::PolygonMode::Line:									return VK_POLYGON_MODE_LINE;
 		case Xenon::Backend::PolygonMode::Point:								return VK_POLYGON_MODE_POINT;
-		default:																XENON_LOG_ERROR("Invalid or Undefined polygon mode!");
+		default:																XENON_LOG_ERROR("Invalid or Undefined polygon mode! Defaulting to Fill."); return VK_POLYGON_MODE_FILL;
 		}
 	}
 
@@ -256,7 +256,7 @@ namespace /* anonymous */
 		case Xenon::Backend::ColorBlendLogic::InvertedOR:						return VK_LOGIC_OP_OR_INVERTED;
 		case Xenon::Backend::ColorBlendLogic::NAND:								return VK_LOGIC_OP_NAND;
 		case Xenon::Backend::ColorBlendLogic::Set:								return VK_LOGIC_OP_SET;
-		default:																XENON_LOG_ERROR("Invalid or Undefined color blend logic!");
+		default:																XENON_LOG_ERROR("Invalid or Undefined color blend logic! Defaulting to Clear."); return VK_LOGIC_OP_CLEAR;
 		}
 	}
 
@@ -278,7 +278,7 @@ namespace /* anonymous */
 		case Xenon::Backend::DepthCompareLogic::NotEqual:						return VK_COMPARE_OP_NOT_EQUAL;
 		case Xenon::Backend::DepthCompareLogic::GreaterOrEqual:					return VK_COMPARE_OP_GREATER_OR_EQUAL;
 		case Xenon::Backend::DepthCompareLogic::Always:							return VK_COMPARE_OP_ALWAYS;
-		default:																XENON_LOG_ERROR("Invalid or Undefined depth compare logic!");
+		default:																XENON_LOG_ERROR("Invalid or Undefined depth compare logic! Defaulting to Never."); return VK_COMPARE_OP_NEVER;
 		}
 	}
 
@@ -330,7 +330,7 @@ namespace /* anonymous */
 		case Xenon::Backend::ColorBlendFactor::OneMinusSourceOneColor:			return VK_BLEND_FACTOR_ONE_MINUS_SRC1_COLOR;
 		case Xenon::Backend::ColorBlendFactor::SourceOneAlpha:					return VK_BLEND_FACTOR_SRC1_ALPHA;
 		case Xenon::Backend::ColorBlendFactor::OneMinusSourceOneAlpha:			return VK_BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA;
-		default:																XENON_LOG_ERROR("Invalid color blend factor!");
+		default:																XENON_LOG_ERROR("Invalid color blend factor! Defaulting to Zero."); return VK_BLEND_FACTOR_ZERO;
 		}
 	}
 
@@ -395,7 +395,7 @@ namespace /* anonymous */
 		case Xenon::Backend::ColorBlendOperator::Red:							return VK_BLEND_OP_RED_EXT;
 		case Xenon::Backend::ColorBlendOperator::Green:							return VK_BLEND_OP_GREEN_EXT;
 		case Xenon::Backend::ColorBlendOperator::Blue:							return VK_BLEND_OP_BLUE_EXT;
-		default:																XENON_LOG_ERROR("Invalid color blend operator!");
+		default:																XENON_LOG_ERROR("Invalid color blend operator! Defaulting to Add."); return VK_BLEND_OP_ADD;
 		}
 	}
 
@@ -766,10 +766,10 @@ namespace Xenon
 			m_ColorBlendStateCreateInfo.logicOpEnable = XENON_VK_BOOL(m_Specification.m_EnableColorBlendLogic);
 
 #ifdef XENON_PLATFORM_WINDOWS
-			std::copy_n(std::execution::unseq, m_Specification.m_ColorBlendConstants, 4, m_ColorBlendStateCreateInfo.blendConstants);
+			std::copy_n(std::execution::unseq, m_Specification.m_ColorBlendConstants.data(), 4, m_ColorBlendStateCreateInfo.blendConstants);
 
 #else 
-			std::copy_n(m_Specification.m_ColorBlendConstants, 4, m_ColorBlendStateCreateInfo.blendConstants);
+			std::copy_n(m_Specification.m_ColorBlendConstants.data(), 4, m_ColorBlendStateCreateInfo.blendConstants);
 
 #endif
 

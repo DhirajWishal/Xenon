@@ -61,19 +61,14 @@ namespace Xenon
 			 *
 			 * @param binary The binary data to set.
 			 */
-			explicit ShaderSource(const BinaryType& binary) : m_Binary(binary) {}
+			explicit ShaderSource(const BinaryType& binary);
 
 			/**
 			 * Explicit constructor.
 			 *
 			 * @param binary The binary data to set.
 			 */
-			explicit ShaderSource(BinaryType&& binary) : m_Binary(std::move(binary)) {}
-
-			/**
-			 * Perform reflection over the binary source and get information about inputs, outputs and resources.
-			 */
-			void performReflection();
+			explicit ShaderSource(BinaryType&& binary);
 
 			/**
 			 * Load the shader source from a source file.
@@ -126,6 +121,12 @@ namespace Xenon
 			 * @return The shader constant buffers.
 			 */
 			[[nodiscard]] const std::vector<ConstantBuffer>& getConstantBuffers() const { return m_ConstantBuffers; }
+
+		private:
+			/**
+			 * Perform reflection over the binary source and get information about inputs, outputs and resources.
+			 */
+			void performReflection();
 
 		private:
 			BinaryType m_Binary;

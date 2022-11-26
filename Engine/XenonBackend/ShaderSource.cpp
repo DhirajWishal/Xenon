@@ -99,6 +99,46 @@ namespace Xenon
 {
 	namespace Backend
 	{
+
+		ShaderSource::ShaderSource(const BinaryType& binary)
+			: m_Binary(binary)
+		{
+			performReflection();
+		}
+
+		ShaderSource::ShaderSource(BinaryType&& binary)
+			: m_Binary(std::move(binary))
+		{
+			performReflection();
+		}
+
+		Xenon::Backend::ShaderSource ShaderSource::FromFile(const std::filesystem::path& shader)
+		{
+			std::vector<uint32_t> binaryData;
+			auto shaderFile = std::fstream(shader, std::ios::in | std::ios::binary | std::ios::ate);
+
+			// Load the data if we were able to open the file.
+			if (shaderFile.is_open())
+			{
+				// Get the file size.
+				const auto size = shaderFile.tellg();
+				shaderFile.seekg(0);
+
+				// Load the data to the vector.
+				binaryData.resize(size);
+				shaderFile.read(reinterpret_cast<char*>(binaryData.data()), size);
+
+				// Close the file now.
+				shaderFile.close();
+			}
+			else
+			{
+				XENON_LOG_ERROR("Failed to load the shader source @{}", shader.string());
+			}
+
+			return ShaderSource(std::move(binaryData));
+		}
+
 		void ShaderSource::performReflection()
 		{
 			// Prepare the shader code for reflection.
@@ -181,33 +221,6 @@ namespace Xenon
 					pushConstant.m_Offset = resource->offset;
 				}
 			}
-		}
-
-		Xenon::Backend::ShaderSource ShaderSource::FromFile(const std::filesystem::path& shader)
-		{
-			std::vector<uint32_t> binaryData;
-			auto shaderFile = std::fstream(shader, std::ios::in | std::ios::binary | std::ios::ate);
-
-			// Load the data if we were able to open the file.
-			if (shaderFile.is_open())
-			{
-				// Get the file size.
-				const auto size = shaderFile.tellg();
-				shaderFile.seekg(0);
-
-				// Load the data to the vector.
-				binaryData.resize(size);
-				shaderFile.read(reinterpret_cast<char*>(binaryData.data()), size);
-
-				// Close the file now.
-				shaderFile.close();
-			}
-			else
-			{
-				XENON_LOG_ERROR("Failed to load the shader source @{}", shader.string());
-			}
-
-			return ShaderSource(std::move(binaryData));
 		}
 	}
 }

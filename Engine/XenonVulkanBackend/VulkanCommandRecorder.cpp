@@ -60,6 +60,7 @@ namespace /* anonymous */
 			++itr;
 		}
 
+
 		if (attachmentTypes & Xenon::Backend::AttachmentType::Depth)
 		{
 			vkClearValues.emplace_back().depthStencil.depth = std::get<float>(*itr);

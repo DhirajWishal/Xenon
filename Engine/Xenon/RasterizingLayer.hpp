@@ -39,6 +39,20 @@ namespace Xenon
 		 */
 		[[nodiscard]] Backend::Image* getColorAttachment() override;
 
+		/**
+		 * Get the internally stored rasterizer.
+		 *
+		 * @return The rasterizer pointer.
+		 */
+		[[nodsicard]] Backend::Rasterizer* getRasterizer() { return m_pRasterizer.get(); }
+
+		/**
+		 * Get the internally stored rasterizer.
+		 *
+		 * @return The rasterizer pointer.
+		 */
+		[[nodsicard]] const Backend::Rasterizer* getRasterizer() const { return m_pRasterizer.get(); }
+
 	protected:
 		std::unique_ptr<Backend::Rasterizer> m_pRasterizer = nullptr;
 	};

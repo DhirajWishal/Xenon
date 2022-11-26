@@ -136,6 +136,7 @@ namespace Xenon
 			, m_AttachmentDescription(std::exchange(other.m_AttachmentDescription, {}))
 			, m_Image(std::exchange(other.m_Image, VK_NULL_HANDLE))
 			, m_Allocation(std::exchange(other.m_Allocation, nullptr))
+			, m_CurrentLayout(std::exchange(other.m_CurrentLayout, VK_IMAGE_LAYOUT_UNDEFINED))
 		{
 		}
 
@@ -173,6 +174,7 @@ namespace Xenon
 			m_AttachmentDescription = std::exchange(other.m_AttachmentDescription, {});
 			m_Image = std::exchange(other.m_Image, VK_NULL_HANDLE);
 			m_Allocation = std::exchange(other.m_Allocation, nullptr);
+			m_CurrentLayout = std::exchange(other.m_CurrentLayout, VK_IMAGE_LAYOUT_UNDEFINED);
 
 			return *this;
 		}

@@ -4,9 +4,11 @@
 #include "Studio.hpp"
 
 #include "XenonCore/Logging.hpp"
-#include "Xenon/Layers/ClearScreenLayer.hpp"
 #include "Xenon/MeshStorage.hpp"
 #include "XenonBackend/ShaderSource.hpp"
+
+#include "Xenon/Layers/ClearScreenLayer.hpp"
+#include "Xenon/Layers/DefaultRasterizingLayer.hpp"
 
 namespace /* anonymous */
 {
@@ -60,12 +62,15 @@ Studio::Studio(Xenon::BackendType type /*= Xenon::BackendType::Any*/)
 void Studio::run()
 {
 	m_Renderer.createLayer<Xenon::ClearScreenLayer>(m_Instance, &m_Camera, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
+	auto pLayer = m_Renderer.createLayer<Xenon::DefaultRasterizingLayer>(m_Instance, &m_Camera);
 
 	auto storage = Xenon::XObject::GetJobSystem().insert([this] { return Xenon::MeshStorage::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"); });
 
 	Xenon::Backend::RasterizingPipelineSpecification specification;
 	specification.m_VertexShader = Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Debugging/Shader.vert.spv");
 	specification.m_FragmentShader = Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Debugging/Shader.frag.spv");
+
+	auto pPipeline = m_Instance.getFactory()->createRasterizingPipeline(m_Instance.getBackendDevice(), nullptr, pLayer->getRasterizer(), specification);
 
 	bool shaderHandled = false;
 	while (m_Renderer.update())

@@ -6,6 +6,7 @@
 #include "../XenonCore/Common.hpp"
 
 #include <vector>
+#include <array>
 
 #include <glm/vec3.hpp>
 
@@ -278,7 +279,7 @@ namespace Xenon
 			InstanceElementCount = InstanceID - InstancePosition + 1,
 
 			// Undefined element.
-			Undefined = -1
+			Undefined = UINT8_MAX
 		};
 
 		/**

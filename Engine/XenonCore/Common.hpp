@@ -65,7 +65,7 @@ namespace Xenon
 	 * @return The std::byte pointer.
 	 */
 	template<class Type>
-	[[nodiscard]] constexpr std::byte* ToBytes(Type* poitner) noexcept { return reinterpret_cast<std::byte*>(pointer); }
+	[[nodiscard]] constexpr std::byte* ToBytes(Type* pointer) noexcept { return reinterpret_cast<std::byte*>(pointer); }
 
 	/**
 	 * Cast a pointer to std::byte pointer.
@@ -85,7 +85,7 @@ namespace Xenon
 	 * @return The type pointer.
 	 */
 	template<class Type>
-	[[nodiscard]] constexpr Type* FromBytes(std::byte* poitner) noexcept { return reinterpret_cast<Type*>(pointer); }
+	[[nodiscard]] constexpr Type* FromBytes(std::byte* pointer) noexcept { return reinterpret_cast<Type*>(pointer); }
 
 	/**
 	 * Cast a std::byte pointer to a typed pointer.

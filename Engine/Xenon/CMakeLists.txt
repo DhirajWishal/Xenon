@@ -28,6 +28,8 @@ set(
 
 	"Layers/ClearScreenLayer.cpp"
 	"Layers/ClearScreenLayer.hpp"
+	"Layers/DefaultRasterizingLayer.cpp"
+	"Layers/DefaultRasterizingLayer.hpp"
 )
 
 # Add the source group.
