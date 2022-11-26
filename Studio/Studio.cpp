@@ -62,18 +62,15 @@ void Studio::run()
 	m_Renderer.createLayer<Xenon::ClearScreenLayer>(m_Instance, &m_Camera, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
 
 	auto storage = Xenon::XObject::GetJobSystem().insert([this] { return Xenon::MeshStorage::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"); });
-	auto shader = Xenon::XObject::GetJobSystem().insert([] { return Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Debugging/Shader.vert.spv"); });
+
+	Xenon::Backend::RasterizingPipelineSpecification specification;
+	specification.m_VertexShader = Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Debugging/Shader.vert.spv");
+	specification.m_FragmentShader = Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Debugging/Shader.frag.spv");
 
 	bool shaderHandled = false;
 	while (m_Renderer.update())
 	{
-		if (!shaderHandled && is_ready(shader))
-		{
-			auto shaderSource = shader.get();
-			shaderSource.performReflection();
 
-			shaderHandled = true;
-		}
 	}
 
 	XENON_LOG_INFORMATION("Exiting the {}", GetRendererTitle(m_Instance.getBackendType()));

@@ -7,6 +7,8 @@
 #include "Rasterizer.hpp"
 #include "ShaderSource.hpp"
 
+#include <array>
+
 namespace Xenon
 {
 	namespace Backend

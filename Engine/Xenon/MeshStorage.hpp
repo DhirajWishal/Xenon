@@ -4,7 +4,6 @@
 #pragma once
 
 #include "Instance.hpp"
-#include "VertexSpecification.hpp"
 
 #include <filesystem>
 
@@ -91,7 +90,7 @@ namespace Xenon
 		 *
 		 * @return The vertex specification.
 		 */
-		[[nodiscard]] const VertexSpecification& getVertexSpecification() const { return m_VertexSpecification; }
+		[[nodiscard]] const Backend::VertexSpecification& getVertexSpecification() const { return m_VertexSpecification; }
 
 		/**
 		 * Get the meshes.
@@ -113,6 +112,6 @@ namespace Xenon
 
 		std::vector<Mesh> m_Meshes;
 
-		VertexSpecification m_VertexSpecification;
+		Backend::VertexSpecification m_VertexSpecification;
 	};
 }

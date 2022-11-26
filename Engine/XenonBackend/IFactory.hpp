@@ -10,6 +10,7 @@
 #include "Descriptor.hpp"
 #include "ImageView.hpp"
 #include "ImageSampler.hpp"
+#include "RasterizingPipeline.hpp"
 
 namespace Xenon
 {
@@ -130,6 +131,17 @@ namespace Xenon
 			 * @return The image sampler pointer.
 			 */
 			[[nodiscard]] virtual std::unique_ptr<ImageSampler> createImageSampler(Device* pDevice, const ImageSamplerSpecification& specification) = 0;
+
+			/**
+			 * Create a new rasterizing pipeline.
+			 *
+			 * @param pDevice The device pointer.
+			 * @param pCacheHandler The cache handler pointer.
+			 * @param pRasterizer The rasterizer pointer.
+			 * @param specification The pipeline specification.
+			 * @return The pipeline pointer.
+			 */
+			[[nodiscard]] virtual std::unique_ptr<RasterizingPipeline> createRasterizingPipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, [[maybe_unused]] Rasterizer* pRasterizer, const RasterizingPipelineSpecification& specification) = 0;
 		};
 	}
 }

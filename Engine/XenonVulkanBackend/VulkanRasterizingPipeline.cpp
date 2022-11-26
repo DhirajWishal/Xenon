@@ -607,6 +607,14 @@ namespace Xenon
 		{
 			try
 			{
+				for (const auto& [hash, pipeline] : m_Pipelines)
+				{
+					m_pDevice->getDeviceTable().vkDestroyPipelineCache(m_pDevice->getLogicalDevice(), pipeline.m_PipelineCache, nullptr);
+					m_pDevice->getDeviceTable().vkDestroyPipeline(m_pDevice->getLogicalDevice(), pipeline.m_Pipeline, nullptr);
+				}
+
+				m_pDevice->getDeviceTable().vkDestroyPipelineLayout(m_pDevice->getLogicalDevice(), m_PipelineLayout, nullptr);
+
 				m_pDevice->getInstance()->getDeletionQueue().insert([pDevice = m_pDevice, layout = m_PipelineLayout]
 					{
 						pDevice->getDeviceTable().vkDestroyPipelineLayout(pDevice->getLogicalDevice(), layout, nullptr);

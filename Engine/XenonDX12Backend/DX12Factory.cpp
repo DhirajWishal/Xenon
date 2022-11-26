@@ -67,5 +67,11 @@ namespace Xenon
 		{
 			return std::make_unique<DX12ImageSampler>(pDevice->as<DX12Device>(), specification);
 		}
+
+		std::unique_ptr<Xenon::Backend::RasterizingPipeline> DX12Factory::createRasterizingPipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, [[maybe_unused]] Rasterizer* pRasterizer, const RasterizingPipelineSpecification& specification)
+		{
+			XENON_TODO_NOW("(Dhiraj) Implement this on D3D12");
+			return nullptr;
+		}
 	}
 }

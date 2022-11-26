@@ -124,6 +124,17 @@ namespace Xenon
 			 * @return The image sampler pointer.
 			 */
 			[[nodiscard]] std::unique_ptr<ImageSampler> createImageSampler(Device* pDevice, const ImageSamplerSpecification& specification) override;
+
+			/**
+			 * Create a new rasterizing pipeline.
+			 *
+			 * @param pDevice The device pointer.
+			 * @param pCacheHandler The cache handler pointer.
+			 * @param pRasterizer The rasterizer pointer.
+			 * @param specification The pipeline specification.
+			 * @return The pipeline pointer.
+			 */
+			[[nodiscard]] std::unique_ptr<RasterizingPipeline> createRasterizingPipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, [[maybe_unused]] Rasterizer* pRasterizer, const RasterizingPipelineSpecification& specification) override;
 		};
 	}
 }

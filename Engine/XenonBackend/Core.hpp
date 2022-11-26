@@ -428,7 +428,8 @@ namespace Xenon
 			Int32,
 			Int64,
 
-			Float
+			Float,
+			Double
 		};
 
 		/**
@@ -467,6 +468,9 @@ namespace Xenon
 
 			case Xenon::Backend::ComponentDataType::Float:
 				return sizeof(float);
+
+			case Xenon::Backend::ComponentDataType::Double:
+				return sizeof(double);
 
 			default:
 				return 0;

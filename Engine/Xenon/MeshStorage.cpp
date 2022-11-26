@@ -52,8 +52,8 @@ namespace /* anonymous */
 		const tinygltf::Model& model,
 		const tinygltf::Primitive& primitive,
 		const std::string& attribute,
-		Xenon::VertexElement element,
-		Xenon::VertexSpecification& specification)
+		Xenon::Backend::InputElement element,
+		Xenon::Backend::VertexSpecification& specification)
 	{
 		if (!primitive.attributes.contains(attribute))
 			return 0;
@@ -66,26 +66,35 @@ namespace /* anonymous */
 		switch (accessor.componentType)
 		{
 		case TINYGLTF_COMPONENT_TYPE_BYTE:
+			specification.addElement(element, Xenon::Backend::ComponentDataType::Uint8);
+			break;
+
 		case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
-			specification.addElement(element, sizeof(std::byte));
+			specification.addElement(element, Xenon::Backend::ComponentDataType::Int8);
 			break;
 
 		case TINYGLTF_COMPONENT_TYPE_SHORT:
+			specification.addElement(element, Xenon::Backend::ComponentDataType::Int16);
+			break;
+
 		case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT:
-			specification.addElement(element, sizeof(short));
+			specification.addElement(element, Xenon::Backend::ComponentDataType::Uint16);
 			break;
 
 		case TINYGLTF_COMPONENT_TYPE_INT:
+			specification.addElement(element, Xenon::Backend::ComponentDataType::Int32);
+			break;
+
 		case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT:
-			specification.addElement(element, sizeof(int));
+			specification.addElement(element, Xenon::Backend::ComponentDataType::Uint32);
 			break;
 
 		case TINYGLTF_COMPONENT_TYPE_FLOAT:
-			specification.addElement(element, sizeof(float));
+			specification.addElement(element, Xenon::Backend::ComponentDataType::Float);
 			break;
 
 		case TINYGLTF_COMPONENT_TYPE_DOUBLE:
-			specification.addElement(element, sizeof(double));
+			specification.addElement(element, Xenon::Backend::ComponentDataType::Double);
 			break;
 
 		default:
@@ -109,7 +118,7 @@ namespace /* anonymous */
 		uint64_t m_Size = 0;
 		uint32_t m_Stride = 0;
 
-		Xenon::VertexElement m_Element = Xenon::VertexElement::Position;
+		Xenon::Backend::InputElement m_Element = Xenon::Backend::InputElement::VertexPosition;
 		Xenon::Backend::AttributeDataType m_DataType = Xenon::Backend::AttributeDataType::Vec3;
 		Xenon::PrimitiveMode m_PrimitiveMode = Xenon::PrimitiveMode::Triangles;
 	};
@@ -122,7 +131,7 @@ namespace /* anonymous */
 	 * @param element The vertex element to get the view of.
 	 * @return The tuple of iterators and sizes containing the begin and end iterators and the byte stride.
 	 */
-	decltype(auto) GetAttributeView(const tinygltf::Model& model, const tinygltf::Primitive& primitive, Xenon::VertexElement element)
+	decltype(auto) GetAttributeView(const tinygltf::Model& model, const tinygltf::Primitive& primitive, Xenon::Backend::InputElement element)
 	{
 		AttributeView view;
 		view.m_Element = element;
@@ -237,7 +246,7 @@ namespace /* anonymous */
 	 */
 	void LoadSubMesh(
 		Xenon::SubMesh& subMesh,
-		const Xenon::VertexSpecification& specification,
+		const Xenon::Backend::VertexSpecification& specification,
 		const tinygltf::Model& model,
 		const tinygltf::Primitive& primitive,
 		std::vector<unsigned char>::iterator vertexBegin,
@@ -285,11 +294,11 @@ namespace /* anonymous */
 
 		// Get the vertex information.
 		std::vector<AttributeView> attributes;
-		for (auto i = EnumToInt(Xenon::VertexElement::Position); i < EnumToInt(Xenon::VertexElement::Count); i++)
+		for (auto i = Xenon::EnumToInt(Xenon::Backend::InputElement::VertexPosition); i < Xenon::EnumToInt(Xenon::Backend::InputElement::VertexElementCount); i++)
 		{
-			if (specification.isAvailable(static_cast<Xenon::VertexElement>(i)))
+			if (specification.isAvailable(static_cast<Xenon::Backend::InputElement>(i)))
 			{
-				const auto& view = attributes.emplace_back(GetAttributeView(model, primitive, static_cast<Xenon::VertexElement>(i)));
+				const auto& view = attributes.emplace_back(GetAttributeView(model, primitive, static_cast<Xenon::Backend::InputElement>(i)));
 				vertexStride += view.m_Stride;
 				vertexBufferSize += view.m_Size;
 			}
@@ -371,14 +380,14 @@ namespace /* anonymous */
 			workers.insert([&subMesh, &model, &storage, &gltfPrimitive, vertexItr, indexItr, &synchronization]
 				{
 					LoadSubMesh(subMesh, storage.getVertexSpecification(), model, gltfPrimitive, vertexItr, indexItr);
-					synchronization.count_down();
+			synchronization.count_down();
 				}
 			);
 
 			// Get the next available vertex begin position.
-			for (auto i = Xenon::EnumToInt(Xenon::VertexElement::Position); i < Xenon::EnumToInt(Xenon::VertexElement::Count); i++)
+			for (auto i = Xenon::EnumToInt(Xenon::Backend::InputElement::VertexPosition); i < Xenon::EnumToInt(Xenon::Backend::InputElement::VertexElementCount); i++)
 			{
-				if (storage.getVertexSpecification().isAvailable(static_cast<Xenon::VertexElement>(i)) && gltfPrimitive.attributes.contains(Attributes[i]))
+				if (storage.getVertexSpecification().isAvailable(static_cast<Xenon::Backend::InputElement>(i)) && gltfPrimitive.attributes.contains(Attributes[i]))
 				{
 					const auto& accessor = model.accessors[gltfPrimitive.attributes.at(Attributes[i])];
 					const auto& bufferView = model.bufferViews[accessor.bufferView];
@@ -443,8 +452,8 @@ namespace Xenon
 			for (const auto& primitive : mesh.primitives)
 			{
 				// Get the vertex information.
-				for (auto i = EnumToInt(VertexElement::Position); i < EnumToInt(VertexElement::Count); i++)
-					vertexBufferSize += ResolvePrimitive(model, primitive, Attributes[i], static_cast<VertexElement>(i), storage.m_VertexSpecification);
+				for (auto i = EnumToInt(Backend::InputElement::VertexPosition); i < EnumToInt(Backend::InputElement::VertexElementCount); i++)
+					vertexBufferSize += ResolvePrimitive(model, primitive, Attributes[i], static_cast<Backend::InputElement>(i), storage.m_VertexSpecification);
 
 				// Get the index buffer size.
 				if (primitive.indices >= 0)

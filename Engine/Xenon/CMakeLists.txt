@@ -19,7 +19,6 @@ set(
 	"MeshStorage.cpp"
 	"MeshStorage.hpp"
 	"StaticModel.hpp"
-	"VertexSpecification.hpp"
 	"MonoCamera.cpp"
 	"MonoCamera.hpp"
 	"Layer.cpp"

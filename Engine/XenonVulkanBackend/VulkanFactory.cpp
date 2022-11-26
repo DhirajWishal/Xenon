@@ -11,6 +11,7 @@
 #include "VulkanDescriptor.hpp"
 #include "VulkanImageView.hpp"
 #include "VulkanImageSampler.hpp"
+#include "VulkanRasterizingPipeline.hpp"
 
 namespace Xenon
 {
@@ -64,6 +65,11 @@ namespace Xenon
 		std::unique_ptr<Xenon::Backend::ImageSampler> VulkanFactory::createImageSampler(Device* pDevice, const ImageSamplerSpecification& specification)
 		{
 			return std::make_unique<Xenon::Backend::VulkanImageSampler>(pDevice->as<VulkanDevice>(), specification);
+		}
+
+		std::unique_ptr<Xenon::Backend::RasterizingPipeline> VulkanFactory::createRasterizingPipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, [[maybe_unused]] Rasterizer* pRasterizer, const RasterizingPipelineSpecification& specification)
+		{
+			return std::make_unique<VulkanRasterizingPipeline>(pDevice->as<VulkanDevice>(), std::move(pCacheHandler), pRasterizer->as<VulkanRasterizer>(), specification);
 		}
 	}
 }

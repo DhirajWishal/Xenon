@@ -52,6 +52,11 @@ namespace Xenon
 
 		public:
 			/**
+			 * Default constructor.
+			 */
+			ShaderSource() = default;
+
+			/**
 			 * Explicit constructor.
 			 *
 			 * @param binary The binary data to set.
