@@ -112,18 +112,10 @@ namespace /* anonymous */
 
 			// Cross-compile the binary.
 			const auto hlsl = compiler.compile();
-			XENON_LOG_INFORMATION("Compiled shader code.\n{}", hlsl);
 
-#ifdef XENON_DEBUG
-			UINT compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
-
-#else
-			UINT compileFlags = 0;
-
-#endif
-
+			// Compile the shader.
 			ComPtr<ID3DBlob> error;
-			XENON_DX12_ASSERT(D3DCompile(hlsl.data(), hlsl.size(), nullptr, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", target.data(), compileFlags, 0, &shaderBlob, &error), "Failed to compile the shader!");
+			XENON_DX12_ASSERT(D3DCompile(hlsl.data(), hlsl.size(), nullptr, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", target.data(), 0, 0, &shaderBlob, &error), "Failed to compile the shader!");
 			XENON_DX12_ASSERT_BLOB(error);
 		}
 		catch (const std::exception& e)
@@ -720,9 +712,8 @@ namespace Xenon
 
 				// Load the pipeline cache.
 				const auto cache = loadPipelineStateCache(hash);
-				const auto computedHash = GenerateHash(cache.data(), cache.size());
-				// pipelineState.CachedPSO.pCachedBlob = cache.data();
-				// pipelineState.CachedPSO.CachedBlobSizeInBytes = cache.size();
+				pipelineState.CachedPSO.pCachedBlob = cache.data();
+				pipelineState.CachedPSO.CachedBlobSizeInBytes = cache.size();
 
 				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateGraphicsPipelineState(&pipelineState, IID_PPV_ARGS(&pipeline.m_PipelineState)), "Failed to create the pipeline state!");
 
@@ -797,16 +788,16 @@ namespace Xenon
 			m_PipelineStateDescriptor.DepthStencilState.DepthWriteMask = m_Specification.m_EnableDepthWrite ? D3D12_DEPTH_WRITE_MASK_ZERO : D3D12_DEPTH_WRITE_MASK_ALL;
 			m_PipelineStateDescriptor.DepthStencilState.DepthFunc = GetComparisonFunction(m_Specification.m_DepthCompareLogic);
 			m_PipelineStateDescriptor.DepthStencilState.StencilEnable = FALSE;
-			// m_PipelineStateDescriptor.DepthStencilState.StencilReadMask;
-			// m_PipelineStateDescriptor.DepthStencilState.StencilWriteMask;
-			// m_PipelineStateDescriptor.DepthStencilState.FrontFace.StencilDepthFailOp;
-			// m_PipelineStateDescriptor.DepthStencilState.FrontFace.StencilFailOp;
-			// m_PipelineStateDescriptor.DepthStencilState.FrontFace.StencilFunc;
-			// m_PipelineStateDescriptor.DepthStencilState.FrontFace.StencilPassOp;
-			// m_PipelineStateDescriptor.DepthStencilState.BackFace.StencilDepthFailOp;
-			// m_PipelineStateDescriptor.DepthStencilState.BackFace.StencilFailOp;
-			// m_PipelineStateDescriptor.DepthStencilState.BackFace.StencilFunc;
-			// m_PipelineStateDescriptor.DepthStencilState.BackFace.StencilPassOp;
+			m_PipelineStateDescriptor.DepthStencilState.StencilReadMask = {};
+			m_PipelineStateDescriptor.DepthStencilState.StencilWriteMask = {};
+			m_PipelineStateDescriptor.DepthStencilState.FrontFace.StencilDepthFailOp = {};
+			m_PipelineStateDescriptor.DepthStencilState.FrontFace.StencilFailOp = {};
+			m_PipelineStateDescriptor.DepthStencilState.FrontFace.StencilFunc = {};
+			m_PipelineStateDescriptor.DepthStencilState.FrontFace.StencilPassOp = {};
+			m_PipelineStateDescriptor.DepthStencilState.BackFace.StencilDepthFailOp = {};
+			m_PipelineStateDescriptor.DepthStencilState.BackFace.StencilFailOp = {};
+			m_PipelineStateDescriptor.DepthStencilState.BackFace.StencilFunc = {};
+			m_PipelineStateDescriptor.DepthStencilState.BackFace.StencilPassOp = {};
 
 			m_PipelineStateDescriptor.SampleMask = UINT_MAX;
 			m_PipelineStateDescriptor.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
@@ -836,10 +827,7 @@ namespace Xenon
 				ComPtr<ID3DBlob> cacheBlob;
 				XENON_DX12_ASSERT(pipeline.m_PipelineState->GetCachedBlob(&cacheBlob), "Failed to get the pipeline state object's cache!");
 
-				const auto cacheData = std::vector<std::byte>(ToBytes(cacheBlob->GetBufferPointer()), ToBytes(cacheBlob->GetBufferPointer()) + cacheBlob->GetBufferSize());
-				const auto computedHash = GenerateHash(cacheData.data(), cacheData.size());
-				XENON_LOG_INFORMATION("Pipeline cache hash (store): {}", computedHash);
-				m_pCacheHandler->store(hash ^ g_MagicNumber, cacheData);
+				m_pCacheHandler->store(hash ^ g_MagicNumber, std::vector<std::byte>(ToBytes(cacheBlob->GetBufferPointer()), ToBytes(cacheBlob->GetBufferPointer()) + cacheBlob->GetBufferSize()));
 			}
 			else
 			{

@@ -10,6 +10,7 @@
 #define XENON_DX12_ASSERT(exp, ...)				XENON_ASSERT(SUCCEEDED(exp), "Direct X 12: " __VA_ARGS__)
 #define XENON_DX12_BLOB_TO_STRING(blob)			blob ? std::string(reinterpret_cast<const char*>(blob->GetBufferPointer()), blob->GetBufferSize()) : std::string()
 #define XENON_DX12_LOG_HRESULT(result)			XENON_LOG_INFORMATION("HRESULT: {}", std::system_category().message(result))
+#define XENON_DX12_LOG_BLOB_HASH(msg, blob)		XENON_LOG_INFORMATION(msg ": {}", ::Xenon::GenerateHash(::Xenon::ToBytes(blob->GetBufferPointer()), blob->GetBufferSize()))
 
 #define XENON_DX12_UNIQUE_LINE_VARIABLE(...)	_variable_##__VA_ARGS__
 #define XENON_DX12_ASSERT_BLOB(blob, ...)													\
