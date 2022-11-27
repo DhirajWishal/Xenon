@@ -248,7 +248,11 @@ namespace /* anonymous */
 			const auto hlsl = compiler.compile();
 			XENON_LOG_INFORMATION("Compiled shader code.\n{}", hlsl);
 
-			compiler.get_hlsl_options().shader_model;
+			// Set the options.
+			spirv_cross::CompilerHLSL::Options options;
+			options.shader_model = 50;
+
+			compiler.set_hlsl_options(options);
 
 #ifdef XENON_DEBUG
 			UINT compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
@@ -259,7 +263,7 @@ namespace /* anonymous */
 #endif
 
 			ComPtr<ID3DBlob> error;
-			XENON_DX12_ASSERT(D3DCompile(hlsl.data(), sizeof(hlsl), nullptr, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", target.data(), compileFlags, 0, &shaderBlob, &error), "Failed to compile the shader!");
+			XENON_DX12_ASSERT(D3DCompile(hlsl.data(), hlsl.size(), nullptr, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", target.data(), compileFlags, 0, &shaderBlob, &error), "Failed to compile the shader!");
 			XENON_DX12_ASSERT_BLOB(error);
 		}
 		catch (const std::exception& e)
