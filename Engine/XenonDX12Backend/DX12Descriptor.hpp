@@ -48,6 +48,9 @@ namespace Xenon
 		public:
 			std::vector<UINT> m_SamplerIndex;
 
+			std::vector<CD3DX12_DESCRIPTOR_RANGE1> m_Ranges;
+			CD3DX12_ROOT_PARAMETER1 m_RootParameter;
+
 			ComPtr<ID3D12DescriptorHeap> m_CbvSrvUavDescriptorHeap;
 			ComPtr<ID3D12DescriptorHeap> m_SamplerDescriptorHeap;
 

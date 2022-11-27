@@ -5,7 +5,7 @@
 #include "DX12Macros.hpp"
 #include "DX12Buffer.hpp"
 #include "DX12Swapchain.hpp"
-#include "DX12Rasterizer.hpp"
+#include "DX12RasterizingPipeline.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -81,7 +81,7 @@ namespace Xenon
 
 		void DX12CommandRecorder::bind(RasterizingPipeline* pPipeline, const VertexSpecification& vertexSpecification)
 		{
-
+			m_pCurrentCommandList->SetPipelineState(pPipeline->as<DX12RasterizingPipeline>()->getPipeline(vertexSpecification).m_PipelineState.Get());
 		}
 
 		void DX12CommandRecorder::end()

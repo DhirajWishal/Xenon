@@ -12,6 +12,59 @@
 
 #endif
 
+namespace /* anonymous */
+{
+	/**
+	 * Get the descriptor range type.
+	 *
+	 * @param resource The Xenon resource type.
+	 * @return The D3D12 descriptor range type.
+	 */
+	[[nodiscard]] constexpr D3D12_DESCRIPTOR_RANGE_TYPE GetDescriptorRangeType(Xenon::Backend::ResourceType resource) noexcept
+	{
+		switch (resource)
+		{
+		case Xenon::Backend::ResourceType::Sampler:
+		case Xenon::Backend::ResourceType::CombinedImageSampler:
+			return D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
+
+		case Xenon::Backend::ResourceType::SampledImage:
+			return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+
+		case Xenon::Backend::ResourceType::StorageImage:
+			return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+
+		case Xenon::Backend::ResourceType::UniformTexelBuffer:
+			return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+
+		case Xenon::Backend::ResourceType::StorageTexelBuffer:
+			return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+
+		case Xenon::Backend::ResourceType::UniformBuffer:
+			return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+
+		case Xenon::Backend::ResourceType::StorageBuffer:
+			return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+
+		case Xenon::Backend::ResourceType::DynamicUniformBuffer:
+			return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+
+		case Xenon::Backend::ResourceType::DynamicStorageBuffer:
+			return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+
+		case Xenon::Backend::ResourceType::InputAttachment:
+			return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+
+		case Xenon::Backend::ResourceType::AccelerationStructure:
+			return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+
+		default:
+			XENON_LOG_ERROR("Invalid resource type! Defaulting to SRV.");
+			return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+		}
+	}
+}
+
 namespace Xenon
 {
 	namespace Backend
@@ -30,6 +83,9 @@ namespace Xenon
 
 				viewCount++;
 				m_SamplerIndex.emplace_back(samplerCount);
+
+				auto range = m_Ranges.emplace_back();
+				range.Init(GetDescriptorRangeType(info.m_Type), 1, 0);
 			}
 
 			D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};

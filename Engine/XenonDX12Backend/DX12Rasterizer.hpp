@@ -70,6 +70,20 @@ namespace Xenon
 			 */
 			[[nodiscard]] UINT getRenderTargetDescriptorSize() const { return m_RenderTargetDescriptorSize; }
 
+			/**
+			 * Get the number of render targets stored.
+			 *
+			 * @return The render target count.
+			 */
+			[[nodiscard]] uint64_t getRenderTargetCount() const noexcept { return m_RenderTargets.size(); }
+
+			/**
+			 * Get the render targets.
+			 *
+			 * @return The render targets.
+			 */
+			[[nodiscard]] const std::vector<DX12Image>& getRenderTargets() const noexcept { return m_RenderTargets; }
+
 		private:
 			std::vector<DX12Image> m_RenderTargets;
 			ComPtr<ID3D12DescriptorHeap> m_RenderTargetHeap;

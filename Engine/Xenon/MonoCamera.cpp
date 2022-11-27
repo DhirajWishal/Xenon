@@ -17,14 +17,11 @@ namespace Xenon
 		m_Viewport.m_pUniformBuffer = m_pUniformBuffer.get();
 		m_Viewport.m_Width = static_cast<float>(width);
 		m_Viewport.m_Height = static_cast<float>(height);
-
-		// Initialize the old time point.
-		m_OldTimePoint = Clock::now();
 	}
 
 	void MonoCamera::update()
 	{
-		glm::vec3 front;
+		glm::vec3 front = {};
 		front.x = cos(glm::radians(m_Yaw)) * cos(glm::radians(m_Pitch));
 		front.y = sin(glm::radians(m_Pitch));
 		front.z = sin(glm::radians(m_Yaw)) * cos(glm::radians(m_Pitch));
@@ -36,5 +33,8 @@ namespace Xenon
 		m_CameraBuffer.m_View = glm::lookAt(m_Position, m_Position + m_Front, m_Up);
 		m_CameraBuffer.m_Projection = glm::perspective(glm::radians(m_FieldOfView), m_AspectRatio, m_NearPlane, m_FarPlane);
 		m_CameraBuffer.m_Projection[1][1] *= -1.0f;
+
+		// Copy the data to the uniform buffer.
+		m_pUniformBuffer->write(ToBytes(&m_CameraBuffer), sizeof(CameraBuffer));
 	}
 }

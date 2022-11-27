@@ -37,6 +37,8 @@ set(
 	"DX12ImageView.hpp"
 	"DX12ImageSampler.cpp"
 	"DX12ImageSampler.hpp"
+	"DX12RasterizingPipeline.cpp"
+	"DX12RasterizingPipeline.hpp"
 )
 
 # Add the source group.

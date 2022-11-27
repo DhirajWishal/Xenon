@@ -134,7 +134,7 @@ namespace Xenon
 			 * @param specification The pipeline specification.
 			 * @return The pipeline pointer.
 			 */
-			[[nodiscard]] std::unique_ptr<RasterizingPipeline> createRasterizingPipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, [[maybe_unused]] Rasterizer* pRasterizer, const RasterizingPipelineSpecification& specification) override;
+			[[nodiscard]] std::unique_ptr<RasterizingPipeline> createRasterizingPipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, Rasterizer* pRasterizer, const RasterizingPipelineSpecification& specification) override;
 		};
 	}
 }
