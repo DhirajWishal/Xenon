@@ -6,6 +6,9 @@
 
 #include <spirv_hlsl.hpp>
 
+// This magic number is used by the rasterizing pipeline to uniquely identify it's pipeline caches.
+constexpr uint64_t g_MagicNumber = 0b0011111000011111001000001010110101101110111001101000110000110001;
+
 namespace /* anonymous */
 {
 	/**
@@ -35,13 +38,13 @@ namespace /* anonymous */
 			return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
 
 		case Xenon::Backend::ResourceType::UniformBuffer:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+			return D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
 
 		case Xenon::Backend::ResourceType::StorageBuffer:
 			return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
 
 		case Xenon::Backend::ResourceType::DynamicUniformBuffer:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+			return D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
 
 		case Xenon::Backend::ResourceType::DynamicStorageBuffer:
 			return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
@@ -63,180 +66,19 @@ namespace /* anonymous */
 	 *
 	 * @param shader The shader to get the data from.
 	 * @param rangeMap The descriptor range map.
+	 * @param inputs The shader's inputs.
+	 * @param target The shader's target name.
+	 * @param type The shader's type.
+	 * @return The shader binary.
 	 */
-	void SetupShaderData(
+	[[nodiscard]] ComPtr<ID3DBlob> SetupShaderData(
 		const Xenon::Backend::ShaderSource& shader,
 		std::unordered_map<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>& rangeMap,
 		std::vector<D3D12_INPUT_ELEMENT_DESC>& inputs,
+		const std::string_view& target,
 		Xenon::Backend::ShaderType type)
 	{
-		// Setup resources.
-		for (const auto& resource : shader.getResources())
-		{
-			const auto rangeType = GetDescriptorRangeType(resource.m_Type);
-			const auto index = (Xenon::EnumToInt(resource.m_Set) * 2) + (rangeType == D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER ? 1 : 0);
-			rangeMap[static_cast<uint8_t>(index)].emplace_back().Init(rangeType, 1, resource.m_Binding);
-		}
-
-		// Setup the inputs if it's the vertex shader.
-		if (type & Xenon::Backend::ShaderType::Vertex)
-		{
-			for (const auto& input : shader.getInputAttributes())
-			{
-				const auto element = static_cast<Xenon::Backend::InputElement>(input.m_Location);
-
-				auto& desc = inputs.emplace_back();
-				desc.Format = DXGI_FORMAT_UNKNOWN;
-				desc.InputSlot = 0;
-				desc.AlignedByteOffset = 0;
-				desc.InputSlotClass = Xenon::Backend::IsVertexElement(element) ? D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA : D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA;
-				desc.InstanceDataStepRate = 0;
-
-				switch (element)
-				{
-				case Xenon::Backend::InputElement::VertexPosition:
-					desc.SemanticName = "POSITION";
-					desc.SemanticIndex = 0;
-					break;
-
-				case Xenon::Backend::InputElement::VertexNormal:
-					desc.SemanticName = "NORMAL";
-					desc.SemanticIndex = 0;
-					break;
-
-				case Xenon::Backend::InputElement::VertexTangent:
-					desc.SemanticName = "TANGENT";
-					desc.SemanticIndex = 0;
-					break;
-
-				case Xenon::Backend::InputElement::VertexColor_0:
-					desc.SemanticName = "COLOR";
-					desc.SemanticIndex = 0;
-					break;
-
-				case Xenon::Backend::InputElement::VertexColor_1:
-					desc.SemanticName = "COLOR";
-					desc.SemanticIndex = 1;
-					break;
-
-				case Xenon::Backend::InputElement::VertexColor_2:
-					desc.SemanticName = "COLOR";
-					desc.SemanticIndex = 2;
-					break;
-
-				case Xenon::Backend::InputElement::VertexColor_3:
-					desc.SemanticName = "COLOR";
-					desc.SemanticIndex = 3;
-					break;
-
-				case Xenon::Backend::InputElement::VertexColor_4:
-					desc.SemanticName = "COLOR";
-					desc.SemanticIndex = 4;
-					break;
-
-				case Xenon::Backend::InputElement::VertexColor_5:
-					desc.SemanticName = "COLOR";
-					desc.SemanticIndex = 5;
-					break;
-
-				case Xenon::Backend::InputElement::VertexColor_6:
-					desc.SemanticName = "COLOR";
-					desc.SemanticIndex = 6;
-					break;
-
-				case Xenon::Backend::InputElement::VertexColor_7:
-					desc.SemanticName = "COLOR";
-					desc.SemanticIndex = 7;
-					break;
-
-				case Xenon::Backend::InputElement::VertexTextureCoordinate_0:
-					desc.SemanticName = "TEXCOORD";
-					desc.SemanticIndex = 0;
-					break;
-
-				case Xenon::Backend::InputElement::VertexTextureCoordinate_1:
-					desc.SemanticName = "TEXCOORD";
-					desc.SemanticIndex = 1;
-					break;
-
-				case Xenon::Backend::InputElement::VertexTextureCoordinate_2:
-					desc.SemanticName = "TEXCOORD";
-					desc.SemanticIndex = 2;
-					break;
-
-				case Xenon::Backend::InputElement::VertexTextureCoordinate_3:
-					desc.SemanticName = "TEXCOORD";
-					desc.SemanticIndex = 3;
-					break;
-
-				case Xenon::Backend::InputElement::VertexTextureCoordinate_4:
-					desc.SemanticName = "TEXCOORD";
-					desc.SemanticIndex = 4;
-					break;
-
-				case Xenon::Backend::InputElement::VertexTextureCoordinate_5:
-					desc.SemanticName = "TEXCOORD";
-					desc.SemanticIndex = 5;
-					break;
-
-				case Xenon::Backend::InputElement::VertexTextureCoordinate_6:
-					desc.SemanticName = "TEXCOORD";
-					desc.SemanticIndex = 6;
-					break;
-
-				case Xenon::Backend::InputElement::VertexTextureCoordinate_7:
-					desc.SemanticName = "TEXCOORD";
-					desc.SemanticIndex = 7;
-					break;
-
-				case Xenon::Backend::InputElement::InstancePosition:
-					desc.SemanticName = "POSITION";
-					desc.SemanticIndex = 1;
-					desc.Format = DXGI_FORMAT_R32G32B32_FLOAT;
-					desc.InputSlot = 1;
-					desc.AlignedByteOffset = offsetof(Xenon::Backend::InstanceEntry, m_Position);
-					break;
-
-				case Xenon::Backend::InputElement::InstanceRotation:
-					desc.SemanticName = "POSITION";
-					desc.SemanticIndex = 2;
-					desc.Format = DXGI_FORMAT_R32G32B32_FLOAT;
-					desc.InputSlot = 1;
-					desc.AlignedByteOffset = offsetof(Xenon::Backend::InstanceEntry, m_Rotation);
-					break;
-
-				case Xenon::Backend::InputElement::InstanceScale:
-					desc.SemanticName = "POSITION";
-					desc.SemanticIndex = 3;
-					desc.Format = DXGI_FORMAT_R32G32B32_FLOAT;
-					desc.InputSlot = 1;
-					desc.AlignedByteOffset = offsetof(Xenon::Backend::InstanceEntry, m_Scale);
-					break;
-
-				case Xenon::Backend::InputElement::InstanceID:
-					desc.SemanticName = "PSIZE";
-					desc.SemanticIndex = 1;
-					desc.Format = DXGI_FORMAT_R32_FLOAT;
-					desc.InputSlot = 1;
-					desc.AlignedByteOffset = offsetof(Xenon::Backend::InstanceEntry, m_InstanceID);
-					break;
-
-				default:
-					XENON_LOG_ERROR("Invalid or unsupported input type!");
-					break;
-				}
-			}
-		}
-	}
-
-	/**
-	 * Compile a shader to a D3D12 shader blob.
-	 *
-	 * @param shader The shader to compile.
-	 * @return The shader binary.
-	 */
-	ComPtr<ID3DBlob> CompileShader(const Xenon::Backend::ShaderSource& shader, const std::string_view& target)
-	{
+		// Compile the shader.
 		ComPtr<ID3DBlob> shaderBlob;
 
 		try
@@ -244,15 +86,15 @@ namespace /* anonymous */
 			// Remove the end padding and create the compiler.
 			auto compiler = spirv_cross::CompilerHLSL(shader.getBinaryWithoutPadding());
 
+			// Set the options.
+			spirv_cross::CompilerHLSL::Options options;
+			options.shader_model = 50;	// [vs/ps]_5_0
+
+			compiler.set_hlsl_options(options);
+
 			// Cross-compile the binary.
 			const auto hlsl = compiler.compile();
 			XENON_LOG_INFORMATION("Compiled shader code.\n{}", hlsl);
-
-			// Set the options.
-			spirv_cross::CompilerHLSL::Options options;
-			options.shader_model = 50;
-
-			compiler.set_hlsl_options(options);
 
 #ifdef XENON_DEBUG
 			UINT compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
@@ -269,6 +111,89 @@ namespace /* anonymous */
 		catch (const std::exception& e)
 		{
 			XENON_LOG_FATAL("An exception was thrown when cross-compiling SPI-V to HLSL! {}", e.what());
+		}
+
+		// Load the data if we were able to compile the shader.
+		if (shaderBlob)
+		{
+			ComPtr<ID3D12ShaderReflection> pReflector;
+			XENON_DX12_ASSERT(D3DReflect(shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), IID_PPV_ARGS(&pReflector)), "Failed to reflect on the shader!");
+
+			D3D12_SHADER_DESC shaderDesc = {};
+			XENON_DX12_ASSERT(pReflector->GetDesc(&shaderDesc), "Failed to get the reflection description!");
+
+			// Setup resources.
+			for (const auto& resource : shader.getResources())
+			{
+				const auto rangeType = GetDescriptorRangeType(resource.m_Type);
+
+				// If it's a sampler, we need one for the texture (SRV) and another as the sampler.
+				if (rangeType == D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER)
+				{
+					const auto setIndex = static_cast<uint8_t>(Xenon::EnumToInt(resource.m_Set) * 2);
+					rangeMap[setIndex + 0].emplace_back().Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, resource.m_Binding);	// Set the texture buffer (SRV).
+					rangeMap[setIndex + 1].emplace_back().Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, resource.m_Binding);	// Set the texture sampler.
+				}
+
+				// Else just one entry for the buffer.
+				else
+				{
+					rangeMap[static_cast<uint8_t>(Xenon::EnumToInt(resource.m_Set) * 2)].emplace_back().Init(rangeType, 1, resource.m_Binding);
+				}
+			}
+
+			// Setup the inputs if it's the vertex shader.
+			if (type & Xenon::Backend::ShaderType::Vertex)
+			{
+				for (UINT i = 0; i < shaderDesc.InputParameters; i++)
+				{
+					D3D12_SIGNATURE_PARAMETER_DESC input = {};
+					XENON_DX12_ASSERT(pReflector->GetInputParameterDesc(i, &input), "Failed to get the input parameter ({})!", i);
+
+					auto& desc = inputs.emplace_back();
+					desc.SemanticName = Xenon::Backend::DX12RasterizingPipeline::GetSemanticsSet().emplace(input.SemanticName).first->c_str();
+					desc.SemanticIndex = input.SemanticIndex;
+					desc.Format = DXGI_FORMAT_UNKNOWN;
+					desc.InputSlot = 0;
+					desc.AlignedByteOffset = 0;
+					desc.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
+					desc.InstanceDataStepRate = 0;
+
+					switch (static_cast<Xenon::Backend::InputElement>(input.SemanticIndex))
+					{
+					case Xenon::Backend::InputElement::InstancePosition:
+						desc.Format = DXGI_FORMAT_R32G32B32_FLOAT;
+						desc.InputSlot = 1;
+						desc.AlignedByteOffset = offsetof(Xenon::Backend::InstanceEntry, m_Position);
+						desc.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA;
+						break;
+
+					case Xenon::Backend::InputElement::InstanceRotation:
+						desc.Format = DXGI_FORMAT_R32G32B32_FLOAT;
+						desc.InputSlot = 1;
+						desc.AlignedByteOffset = offsetof(Xenon::Backend::InstanceEntry, m_Rotation);
+						desc.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA;
+						break;
+
+					case Xenon::Backend::InputElement::InstanceScale:
+						desc.Format = DXGI_FORMAT_R32G32B32_FLOAT;
+						desc.InputSlot = 1;
+						desc.AlignedByteOffset = offsetof(Xenon::Backend::InstanceEntry, m_Scale);
+						desc.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA;
+						break;
+
+					case Xenon::Backend::InputElement::InstanceID:
+						desc.Format = DXGI_FORMAT_R32_FLOAT;
+						desc.InputSlot = 1;
+						desc.AlignedByteOffset = offsetof(Xenon::Backend::InstanceEntry, m_InstanceID);
+						desc.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA;
+						break;
+
+					default:
+						break;
+					}
+				}
+			}
 		}
 
 		return shaderBlob;
@@ -685,16 +610,10 @@ namespace Xenon
 			// Resolve shader-specific data.
 			std::unordered_map<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>> rangeMap;
 			if (specification.m_VertexShader.isValid())
-			{
-				SetupShaderData(specification.m_VertexShader, rangeMap, m_Inputs, ShaderType::Vertex);
-				m_VertexShader = CompileShader(specification.m_VertexShader, "vs_5_0");
-			}
+				m_VertexShader = SetupShaderData(specification.m_VertexShader, rangeMap, m_Inputs, "vs_5_0", ShaderType::Vertex);
 
 			if (specification.m_FragmentShader.isValid())
-			{
-				SetupShaderData(specification.m_FragmentShader, rangeMap, m_Inputs, ShaderType::Fragment);
-				m_PixelShader = CompileShader(specification.m_FragmentShader, "ps_5_0");
-			}
+				m_PixelShader = SetupShaderData(specification.m_FragmentShader, rangeMap, m_Inputs, "ps_5_0", ShaderType::Fragment);
 
 			// Create the root signature.
 			createRootSignature(std::move(rangeMap));
@@ -725,7 +644,7 @@ namespace Xenon
 					const auto element = static_cast<InputElement>(itr->m_Location);
 
 					// If we have the input element in the vertex specification, we can setup the information.
-					if (vertexSpecification.isAvailable(static_cast<InputElement>(itr->m_Location)))
+					if (vertexSpecification.isAvailable(element))
 					{
 						input.AlignedByteOffset = vertexSpecification.offsetOf(element);
 						input.Format = GetElementFormat(
@@ -742,10 +661,24 @@ namespace Xenon
 				pipelineState.InputLayout.pInputElementDescs = pipeline.m_Inputs.data();
 				pipelineState.InputLayout.NumElements = static_cast<UINT>(pipeline.m_Inputs.size());
 
+				// Load the pipeline cache.
+				const auto cache = loadPipelineStateCache(hash);
+				pipelineState.CachedPSO.pCachedBlob = cache.data();
+				pipelineState.CachedPSO.CachedBlobSizeInBytes = cache.size();
+
 				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateGraphicsPipelineState(&pipelineState, IID_PPV_ARGS(&pipeline.m_PipelineState)), "Failed to create the pipeline state!");
+
+				// Save the pipeline cache.
+				storePipelineStateCache(hash, pipeline);
 			}
 
 			return m_Pipelines[hash];
+		}
+
+		std::set<std::string>& DX12RasterizingPipeline::GetSemanticsSet()
+		{
+			static std::set<std::string> globalSemantics;
+			return globalSemantics;
 		}
 
 		void DX12RasterizingPipeline::createRootSignature(std::unordered_map<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>&& rangeMap)
@@ -834,6 +767,30 @@ namespace Xenon
 
 			m_PipelineStateDescriptor.SampleDesc.Count = 1;
 			m_PipelineStateDescriptor.SampleDesc.Quality = 0;
+		}
+
+		std::vector<std::byte> DX12RasterizingPipeline::loadPipelineStateCache(uint64_t hash) const
+		{
+			if (m_pCacheHandler)
+				return m_pCacheHandler->load(hash ^ g_MagicNumber);
+
+			XENON_LOG_INFORMATION("A pipeline cache handler is not attached to load the pipeline cache data.");
+			return {};
+		}
+
+		void DX12RasterizingPipeline::storePipelineStateCache(uint64_t hash, const PipelineStorage& pipeline) const
+		{
+			if (m_pCacheHandler)
+			{
+				ComPtr<ID3DBlob> cacheBlob;
+				XENON_DX12_ASSERT(pipeline.m_PipelineState->GetCachedBlob(&cacheBlob), "Failed to get the pipeline state object's cache!");
+
+				m_pCacheHandler->store(hash ^ g_MagicNumber, std::vector<std::byte>(ToBytes(cacheBlob->GetBufferPointer()), ToBytes(cacheBlob->GetBufferPointer()) + cacheBlob->GetBufferSize()));
+			}
+			else
+			{
+				XENON_LOG_INFORMATION("A pipeline cache handler is not attached to store the pipeline cache data.");
+			}
 		}
 	}
 }

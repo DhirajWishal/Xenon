@@ -7,6 +7,8 @@
 
 #include "DX12Rasterizer.hpp"
 
+#include <set>
+
 namespace Xenon
 {
 	namespace Backend
@@ -50,6 +52,14 @@ namespace Xenon
 			 */
 			[[nodiscard]] const PipelineStorage& getPipeline(const VertexSpecification& vertexSpecification);
 
+			/**
+			 * Get the semantics set.
+			 * This is a static set which persistently holds the semantic names used by the engine.
+			 *
+			 * @return The set reference.
+			 */
+			[[nodiscard]] static std::set<std::string>& GetSemanticsSet();
+
 		private:
 			/**
 			 * Create the root signature.
@@ -62,6 +72,22 @@ namespace Xenon
 			 * Setup the pipeline state descriptor for future use.
 			 */
 			void setupPipelineStateDescriptor();
+
+			/**
+			 * Load the pipeline cache.
+			 *
+			 * @param hash The pipeline hash.
+			 * @return The pipeline cache.
+			 */
+			[[nodiscard]] std::vector<std::byte> loadPipelineStateCache(uint64_t hash) const;
+
+			/**
+			 * Store the pipeline cache.
+			 *
+			 * @param hash The pipeline hash.
+			 * @param pipeline The pipeline to store the cache data from.
+			 */
+			void storePipelineStateCache(uint64_t hash, const PipelineStorage& pipeline) const;
 
 		private:
 			D3D12_GRAPHICS_PIPELINE_STATE_DESC m_PipelineStateDescriptor = {};

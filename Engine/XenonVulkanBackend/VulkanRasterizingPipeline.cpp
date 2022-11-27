@@ -11,6 +11,9 @@
 
 #endif
 
+// This magic number is used by the rasterizing pipeline to uniquely identify it's pipeline caches.
+constexpr uint64_t g_MagicNumber = 0b0111110011100110101100111010010010001011111101111110001010110001;
+
 namespace /* anonymous */
 {
 	/**
@@ -740,7 +743,7 @@ namespace Xenon
 		{
 			std::vector<std::byte> cacheData;
 			if (m_pCacheHandler)
-				cacheData = m_pCacheHandler->load(hash);
+				cacheData = m_pCacheHandler->load(hash ^ g_MagicNumber);
 
 			else
 				XENON_LOG_INFORMATION("A pipeline cache handler was not set to load the pipeline cache.");
@@ -765,7 +768,7 @@ namespace Xenon
 				auto cacheData = std::vector<std::byte>(cacheSize);
 				XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkGetPipelineCacheData(m_pDevice->getLogicalDevice(), pipeline.m_PipelineCache, &cacheSize, cacheData.data()), "Failed to get the pipeline cache data!");
 
-				m_pCacheHandler->store(hash, cacheData);
+				m_pCacheHandler->store(hash ^ g_MagicNumber, cacheData);
 			}
 			else
 			{

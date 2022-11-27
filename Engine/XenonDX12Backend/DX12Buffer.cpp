@@ -107,6 +107,10 @@ namespace Xenon
 			ComPtr<ID3D12GraphicsCommandList> commandList;
 			XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_pDevice->getCommandAllocator(), nullptr, IID_PPV_ARGS(&commandList)), "Failed to create the copy command list!");
 
+			// Return if we failed to create the command list.
+			if (!commandList)
+				return;
+
 			// Set the proper resource states.
 			// Destination (this)
 			auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(m_pAllocation->GetResource(), m_CurrentState, D3D12_RESOURCE_STATE_COPY_DEST);

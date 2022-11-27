@@ -74,7 +74,7 @@ namespace Xenon
 			CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(dxRasterizer->getRenderTargetHeap()->GetCPUDescriptorHandleForHeapStart(), dxRasterizer->getFrameIndex(), dxRasterizer->getRenderTargetDescriptorSize());
 
 			m_pCurrentCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
-			m_pCurrentCommandList->ClearRenderTargetView(rtvHandle, glm::value_ptr(std::get<glm::vec4>(clearValues.front())), 0, nullptr);
+			// m_pCurrentCommandList->ClearRenderTargetView(rtvHandle, glm::value_ptr(std::get<glm::vec4>(clearValues.front())), 0, nullptr);
 
 			m_IsRenderTargetBound = true;
 		}
