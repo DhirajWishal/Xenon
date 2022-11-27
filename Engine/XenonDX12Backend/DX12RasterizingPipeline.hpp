@@ -7,8 +7,6 @@
 
 #include "DX12Rasterizer.hpp"
 
-#include <set>
-
 namespace Xenon
 {
 	namespace Backend
@@ -51,14 +49,6 @@ namespace Xenon
 			 * @return The pipeline storage.
 			 */
 			[[nodiscard]] const PipelineStorage& getPipeline(const VertexSpecification& vertexSpecification);
-
-			/**
-			 * Get the semantics set.
-			 * This is a static set which persistently holds the semantic names used by the engine.
-			 *
-			 * @return The set reference.
-			 */
-			[[nodiscard]] static std::set<std::string>& GetSemanticsSet();
 
 		private:
 			/**

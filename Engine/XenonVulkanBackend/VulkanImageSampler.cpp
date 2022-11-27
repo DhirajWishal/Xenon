@@ -16,15 +16,25 @@ namespace /* anonymous */
 	{
 		switch (mode)
 		{
-		case Xenon::Backend::AddressMode::Repeat:						return VK_SAMPLER_ADDRESS_MODE_REPEAT;
-		case Xenon::Backend::AddressMode::MirroredRepeat:				return VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
-		case Xenon::Backend::AddressMode::ClampToEdge:					return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-		case Xenon::Backend::AddressMode::ClampToBorder:				return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
-		case Xenon::Backend::AddressMode::MirrorClampToEdge:			return VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE;
-		default:														XENON_LOG_ERROR("Invalid address mode!");
-		}
+		case Xenon::Backend::AddressMode::Repeat:
+			return VK_SAMPLER_ADDRESS_MODE_REPEAT;
 
-		return VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		case Xenon::Backend::AddressMode::MirroredRepeat:
+			return VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
+
+		case Xenon::Backend::AddressMode::ClampToEdge:
+			return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+
+		case Xenon::Backend::AddressMode::ClampToBorder:
+			return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+
+		case Xenon::Backend::AddressMode::MirrorClampToEdge:
+			return VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE;
+
+		default:
+			XENON_LOG_ERROR("Invalid address mode!");
+			return VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		}
 	}
 
 	/**
@@ -37,16 +47,28 @@ namespace /* anonymous */
 	{
 		switch (color)
 		{
-		case Xenon::Backend::BorderColor::TransparentBlackFLOAT:		return VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
-		case Xenon::Backend::BorderColor::TransparentBlackINT:			return VK_BORDER_COLOR_INT_TRANSPARENT_BLACK;
-		case Xenon::Backend::BorderColor::OpaqueBlackFLOAT:				return VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
-		case Xenon::Backend::BorderColor::OpaqueBlackINT:				return VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-		case Xenon::Backend::BorderColor::OpaqueWhiteFLOAT:				return VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-		case Xenon::Backend::BorderColor::OpaqueWhiteINT:				return VK_BORDER_COLOR_INT_OPAQUE_WHITE;
-		default:														XENON_LOG_ERROR("Invalid border color!");
-		}
+		case Xenon::Backend::BorderColor::TransparentBlackFLOAT:
+			return VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
 
-		return VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
+		case Xenon::Backend::BorderColor::TransparentBlackINT:
+			return VK_BORDER_COLOR_INT_TRANSPARENT_BLACK;
+
+		case Xenon::Backend::BorderColor::OpaqueBlackFLOAT:
+			return VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
+
+		case Xenon::Backend::BorderColor::OpaqueBlackINT:
+			return VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+
+		case Xenon::Backend::BorderColor::OpaqueWhiteFLOAT:
+			return VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+
+		case Xenon::Backend::BorderColor::OpaqueWhiteINT:
+			return VK_BORDER_COLOR_INT_OPAQUE_WHITE;
+
+		default:
+			XENON_LOG_ERROR("Invalid border color!");
+			return VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
+		}
 	}
 
 	/**
@@ -59,18 +81,34 @@ namespace /* anonymous */
 	{
 		switch (op)
 		{
-		case Xenon::Backend::CompareOperator::Never:					return VK_COMPARE_OP_NEVER;
-		case Xenon::Backend::CompareOperator::Less:						return VK_COMPARE_OP_LESS;
-		case Xenon::Backend::CompareOperator::Equal:					return VK_COMPARE_OP_EQUAL;
-		case Xenon::Backend::CompareOperator::LessOrEqual:				return VK_COMPARE_OP_LESS_OR_EQUAL;
-		case Xenon::Backend::CompareOperator::Greater:					return VK_COMPARE_OP_GREATER;
-		case Xenon::Backend::CompareOperator::NotEqual:					return VK_COMPARE_OP_NOT_EQUAL;
-		case Xenon::Backend::CompareOperator::GreaterOrEqual:			return VK_COMPARE_OP_GREATER_OR_EQUAL;
-		case Xenon::Backend::CompareOperator::Always:					return VK_COMPARE_OP_ALWAYS;
-		default:														XENON_LOG_ERROR("Invalid compare operator!");
-		}
+		case Xenon::Backend::CompareOperator::Never:
+			return VK_COMPARE_OP_NEVER;
 
-		return VK_COMPARE_OP_NEVER;
+		case Xenon::Backend::CompareOperator::Less:
+			return VK_COMPARE_OP_LESS;
+
+		case Xenon::Backend::CompareOperator::Equal:
+			return VK_COMPARE_OP_EQUAL;
+
+		case Xenon::Backend::CompareOperator::LessOrEqual:
+			return VK_COMPARE_OP_LESS_OR_EQUAL;
+
+		case Xenon::Backend::CompareOperator::Greater:
+			return VK_COMPARE_OP_GREATER;
+
+		case Xenon::Backend::CompareOperator::NotEqual:
+			return VK_COMPARE_OP_NOT_EQUAL;
+
+		case Xenon::Backend::CompareOperator::GreaterOrEqual:
+			return VK_COMPARE_OP_GREATER_OR_EQUAL;
+
+		case Xenon::Backend::CompareOperator::Always:
+			return VK_COMPARE_OP_ALWAYS;
+
+		default:
+			XENON_LOG_ERROR("Invalid compare operator!");
+			return VK_COMPARE_OP_NEVER;
+		}
 	}
 
 	/**
@@ -83,13 +121,19 @@ namespace /* anonymous */
 	{
 		switch (filter)
 		{
-		case Xenon::Backend::ImageFilter::Nearest:						return VK_FILTER_NEAREST;
-		case Xenon::Backend::ImageFilter::Linear:						return VK_FILTER_LINEAR;
-		case Xenon::Backend::ImageFilter::CubicImage:					return VK_FILTER_CUBIC_IMG;
-		default:														XENON_LOG_ERROR("Invalid image filter!");
-		}
+		case Xenon::Backend::ImageFilter::Nearest:
+			return VK_FILTER_NEAREST;
 
-		return VK_FILTER_NEAREST;
+		case Xenon::Backend::ImageFilter::Linear:
+			return VK_FILTER_LINEAR;
+
+		case Xenon::Backend::ImageFilter::CubicImage:
+			return VK_FILTER_CUBIC_IMG;
+
+		default:
+			XENON_LOG_ERROR("Invalid image filter!");
+			return VK_FILTER_NEAREST;
+		}
 	}
 
 	/**
@@ -102,12 +146,16 @@ namespace /* anonymous */
 	{
 		switch (mode)
 		{
-		case Xenon::Backend::ImageMipMapMode::Nearest:					return VK_SAMPLER_MIPMAP_MODE_NEAREST;
-		case Xenon::Backend::ImageMipMapMode::Linear:					return VK_SAMPLER_MIPMAP_MODE_LINEAR;
-		default:														XENON_LOG_ERROR("Invalid image mip map filter!");
-		}
+		case Xenon::Backend::ImageMipMapMode::Nearest:
+			return VK_SAMPLER_MIPMAP_MODE_NEAREST;
 
-		return VK_SAMPLER_MIPMAP_MODE_NEAREST;
+		case Xenon::Backend::ImageMipMapMode::Linear:
+			return VK_SAMPLER_MIPMAP_MODE_LINEAR;
+
+		default:
+			XENON_LOG_ERROR("Invalid image mip map filter!");
+			return VK_SAMPLER_MIPMAP_MODE_NEAREST;
+		}
 	}
 }
 

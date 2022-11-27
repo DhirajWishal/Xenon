@@ -89,8 +89,26 @@ namespace /* anonymous */
 			// Set the options.
 			spirv_cross::CompilerHLSL::Options options;
 			options.shader_model = 50;	// [vs/ps]_5_0
-
 			compiler.set_hlsl_options(options);
+
+			// If we're in the vertex shader set the correct semantics.
+			if (type & Xenon::Backend::ShaderType::Vertex)
+			{
+				compiler.add_vertex_attribute_remap({ .location = Xenon::EnumToInt(Xenon::Backend::InputElement::VertexPosition), .semantic = "POSITION" });
+				compiler.add_vertex_attribute_remap({ .location = Xenon::EnumToInt(Xenon::Backend::InputElement::VertexNormal), .semantic = "NORMAL" });
+				compiler.add_vertex_attribute_remap({ .location = Xenon::EnumToInt(Xenon::Backend::InputElement::VertexTangent), .semantic = "TANGENT" });
+
+				for (uint32_t i = Xenon::EnumToInt(Xenon::Backend::InputElement::VertexColor_0); i <= Xenon::EnumToInt(Xenon::Backend::InputElement::VertexColor_7); i++)
+					compiler.add_vertex_attribute_remap({ .location = i, .semantic = "COLOR" });
+
+				for (uint32_t i = Xenon::EnumToInt(Xenon::Backend::InputElement::VertexTextureCoordinate_0); i <= Xenon::EnumToInt(Xenon::Backend::InputElement::VertexTextureCoordinate_7); i++)
+					compiler.add_vertex_attribute_remap({ .location = i, .semantic = "TEXCOORD" });
+
+				compiler.add_vertex_attribute_remap({ .location = Xenon::EnumToInt(Xenon::Backend::InputElement::InstancePosition), .semantic = "POSITION" });
+				compiler.add_vertex_attribute_remap({ .location = Xenon::EnumToInt(Xenon::Backend::InputElement::InstanceRotation), .semantic = "POSITION" });
+				compiler.add_vertex_attribute_remap({ .location = Xenon::EnumToInt(Xenon::Backend::InputElement::InstanceScale), .semantic = "POSITION" });
+				compiler.add_vertex_attribute_remap({ .location = Xenon::EnumToInt(Xenon::Backend::InputElement::InstanceID), .semantic = "PSIZE" });
+			}
 
 			// Cross-compile the binary.
 			const auto hlsl = compiler.compile();
@@ -145,13 +163,13 @@ namespace /* anonymous */
 			// Setup the inputs if it's the vertex shader.
 			if (type & Xenon::Backend::ShaderType::Vertex)
 			{
+				const auto& inputAttribute = shader.getInputAttributes();
 				for (UINT i = 0; i < shaderDesc.InputParameters; i++)
 				{
 					D3D12_SIGNATURE_PARAMETER_DESC input = {};
 					XENON_DX12_ASSERT(pReflector->GetInputParameterDesc(i, &input), "Failed to get the input parameter ({})!", i);
 
 					auto& desc = inputs.emplace_back();
-					desc.SemanticName = Xenon::Backend::DX12RasterizingPipeline::GetSemanticsSet().emplace(input.SemanticName).first->c_str();
 					desc.SemanticIndex = input.SemanticIndex;
 					desc.Format = DXGI_FORMAT_UNKNOWN;
 					desc.InputSlot = 0;
@@ -159,9 +177,44 @@ namespace /* anonymous */
 					desc.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
 					desc.InstanceDataStepRate = 0;
 
-					switch (static_cast<Xenon::Backend::InputElement>(input.SemanticIndex))
+					switch (static_cast<Xenon::Backend::InputElement>(inputAttribute[i].m_Location))
 					{
+					case Xenon::Backend::InputElement::VertexPosition:
+						desc.SemanticName = "POSITION";
+						break;
+
+					case Xenon::Backend::InputElement::VertexNormal:
+						desc.SemanticName = "NORMAL";
+						break;
+
+					case Xenon::Backend::InputElement::VertexTangent:
+						desc.SemanticName = "TANGENT";
+						break;
+
+					case Xenon::Backend::InputElement::VertexColor_0:
+					case Xenon::Backend::InputElement::VertexColor_1:
+					case Xenon::Backend::InputElement::VertexColor_2:
+					case Xenon::Backend::InputElement::VertexColor_3:
+					case Xenon::Backend::InputElement::VertexColor_4:
+					case Xenon::Backend::InputElement::VertexColor_5:
+					case Xenon::Backend::InputElement::VertexColor_6:
+					case Xenon::Backend::InputElement::VertexColor_7:
+						desc.SemanticName = "COLOR";
+						break;
+
+					case Xenon::Backend::InputElement::VertexTextureCoordinate_0:
+					case Xenon::Backend::InputElement::VertexTextureCoordinate_1:
+					case Xenon::Backend::InputElement::VertexTextureCoordinate_2:
+					case Xenon::Backend::InputElement::VertexTextureCoordinate_3:
+					case Xenon::Backend::InputElement::VertexTextureCoordinate_4:
+					case Xenon::Backend::InputElement::VertexTextureCoordinate_5:
+					case Xenon::Backend::InputElement::VertexTextureCoordinate_6:
+					case Xenon::Backend::InputElement::VertexTextureCoordinate_7:
+						desc.SemanticName = "TEXCOORD";
+						break;
+
 					case Xenon::Backend::InputElement::InstancePosition:
+						desc.SemanticName = "POSITION";
 						desc.Format = DXGI_FORMAT_R32G32B32_FLOAT;
 						desc.InputSlot = 1;
 						desc.AlignedByteOffset = offsetof(Xenon::Backend::InstanceEntry, m_Position);
@@ -169,6 +222,7 @@ namespace /* anonymous */
 						break;
 
 					case Xenon::Backend::InputElement::InstanceRotation:
+						desc.SemanticName = "POSITION";
 						desc.Format = DXGI_FORMAT_R32G32B32_FLOAT;
 						desc.InputSlot = 1;
 						desc.AlignedByteOffset = offsetof(Xenon::Backend::InstanceEntry, m_Rotation);
@@ -176,6 +230,7 @@ namespace /* anonymous */
 						break;
 
 					case Xenon::Backend::InputElement::InstanceScale:
+						desc.SemanticName = "POSITION";
 						desc.Format = DXGI_FORMAT_R32G32B32_FLOAT;
 						desc.InputSlot = 1;
 						desc.AlignedByteOffset = offsetof(Xenon::Backend::InstanceEntry, m_Scale);
@@ -183,6 +238,7 @@ namespace /* anonymous */
 						break;
 
 					case Xenon::Backend::InputElement::InstanceID:
+						desc.SemanticName = "PSIZE";
 						desc.Format = DXGI_FORMAT_R32_FLOAT;
 						desc.InputSlot = 1;
 						desc.AlignedByteOffset = offsetof(Xenon::Backend::InstanceEntry, m_InstanceID);
@@ -190,6 +246,7 @@ namespace /* anonymous */
 						break;
 
 					default:
+						XENON_LOG_ERROR("Invalid or unsupported input type!");
 						break;
 					}
 				}
@@ -663,8 +720,9 @@ namespace Xenon
 
 				// Load the pipeline cache.
 				const auto cache = loadPipelineStateCache(hash);
-				pipelineState.CachedPSO.pCachedBlob = cache.data();
-				pipelineState.CachedPSO.CachedBlobSizeInBytes = cache.size();
+				const auto computedHash = GenerateHash(cache.data(), cache.size());
+				// pipelineState.CachedPSO.pCachedBlob = cache.data();
+				// pipelineState.CachedPSO.CachedBlobSizeInBytes = cache.size();
 
 				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateGraphicsPipelineState(&pipelineState, IID_PPV_ARGS(&pipeline.m_PipelineState)), "Failed to create the pipeline state!");
 
@@ -673,12 +731,6 @@ namespace Xenon
 			}
 
 			return m_Pipelines[hash];
-		}
-
-		std::set<std::string>& DX12RasterizingPipeline::GetSemanticsSet()
-		{
-			static std::set<std::string> globalSemantics;
-			return globalSemantics;
 		}
 
 		void DX12RasterizingPipeline::createRootSignature(std::unordered_map<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>&& rangeMap)
@@ -707,7 +759,6 @@ namespace Xenon
 
 		void DX12RasterizingPipeline::setupPipelineStateDescriptor()
 		{
-			// m_PipelineStateDescriptor.InputLayout = { inputElementDescs, _countof(inputElementDescs) };
 			m_PipelineStateDescriptor.pRootSignature = m_RootSignature.Get();
 			m_PipelineStateDescriptor.VS = CD3DX12_SHADER_BYTECODE(m_VertexShader.Get());
 			m_PipelineStateDescriptor.PS = CD3DX12_SHADER_BYTECODE(m_PixelShader.Get());
@@ -782,10 +833,13 @@ namespace Xenon
 		{
 			if (m_pCacheHandler)
 			{
-				ComPtr<ID3DBlob> cacheBlob;
+				ComPtr<ID3D12Blob> cacheBlob;
 				XENON_DX12_ASSERT(pipeline.m_PipelineState->GetCachedBlob(&cacheBlob), "Failed to get the pipeline state object's cache!");
 
-				m_pCacheHandler->store(hash ^ g_MagicNumber, std::vector<std::byte>(ToBytes(cacheBlob->GetBufferPointer()), ToBytes(cacheBlob->GetBufferPointer()) + cacheBlob->GetBufferSize()));
+				const auto cacheData = std::vector<std::byte>(ToBytes(cacheBlob->GetBufferPointer()), ToBytes(cacheBlob->GetBufferPointer()) + cacheBlob->GetBufferSize());
+				const auto computedHash = GenerateHash(cacheData.data(), cacheData.size());
+				XENON_LOG_INFORMATION("Pipeline cache hash (store): {}", computedHash);
+				m_pCacheHandler->store(hash ^ g_MagicNumber, cacheData);
 			}
 			else
 			{

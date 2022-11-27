@@ -167,18 +167,42 @@ namespace /* anonymous */
 	{
 		switch (topology)
 		{
-		case Xenon::Backend::PrimitiveTopology::PointList:						return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
-		case Xenon::Backend::PrimitiveTopology::LineList:						return VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
-		case Xenon::Backend::PrimitiveTopology::LineStrip:						return VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
-		case Xenon::Backend::PrimitiveTopology::TriangleList:					return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-		case Xenon::Backend::PrimitiveTopology::TriangleStrip:					return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
-		case Xenon::Backend::PrimitiveTopology::TriangleFan:					return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN;
-		case Xenon::Backend::PrimitiveTopology::LineListWithAdjacency:			return VK_PRIMITIVE_TOPOLOGY_LINE_LIST_WITH_ADJACENCY;
-		case Xenon::Backend::PrimitiveTopology::LineStripWithAdjacency:			return VK_PRIMITIVE_TOPOLOGY_LINE_STRIP_WITH_ADJACENCY;
-		case Xenon::Backend::PrimitiveTopology::TriangleListWithAdjacency:		return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST_WITH_ADJACENCY;
-		case Xenon::Backend::PrimitiveTopology::TriangleStripWithAdjacency:		return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP_WITH_ADJACENCY;
-		case Xenon::Backend::PrimitiveTopology::PatchList:						return VK_PRIMITIVE_TOPOLOGY_PATCH_LIST;
-		default:																XENON_LOG_ERROR("Invalid or Undefined primitive topology! Defaulting to PointList."); return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+		case Xenon::Backend::PrimitiveTopology::PointList:
+			return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+
+		case Xenon::Backend::PrimitiveTopology::LineList:
+			return VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+
+		case Xenon::Backend::PrimitiveTopology::LineStrip:
+			return VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
+
+		case Xenon::Backend::PrimitiveTopology::TriangleList:
+			return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+
+		case Xenon::Backend::PrimitiveTopology::TriangleStrip:
+			return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+
+		case Xenon::Backend::PrimitiveTopology::TriangleFan:
+			return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN;
+
+		case Xenon::Backend::PrimitiveTopology::LineListWithAdjacency:
+			return VK_PRIMITIVE_TOPOLOGY_LINE_LIST_WITH_ADJACENCY;
+
+		case Xenon::Backend::PrimitiveTopology::LineStripWithAdjacency:
+			return VK_PRIMITIVE_TOPOLOGY_LINE_STRIP_WITH_ADJACENCY;
+
+		case Xenon::Backend::PrimitiveTopology::TriangleListWithAdjacency:
+			return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST_WITH_ADJACENCY;
+
+		case Xenon::Backend::PrimitiveTopology::TriangleStripWithAdjacency:
+			return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP_WITH_ADJACENCY;
+
+		case Xenon::Backend::PrimitiveTopology::PatchList:
+			return VK_PRIMITIVE_TOPOLOGY_PATCH_LIST;
+
+		default:
+			XENON_LOG_ERROR("Invalid or Undefined primitive topology! Defaulting to PointList.");
+			return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
 		}
 	}
 
@@ -192,11 +216,21 @@ namespace /* anonymous */
 	{
 		switch (cull)
 		{
-		case Xenon::Backend::CullMode::None:									return VK_CULL_MODE_NONE;
-		case Xenon::Backend::CullMode::Front:									return VK_CULL_MODE_FRONT_BIT;
-		case Xenon::Backend::CullMode::Back:									return VK_CULL_MODE_BACK_BIT;
-		case Xenon::Backend::CullMode::FrontAndBack:							return VK_CULL_MODE_FRONT_AND_BACK;
-		default:																XENON_LOG_ERROR("Invalid or Undefined cull mode! Defaulting to None."); return VK_CULL_MODE_NONE;
+		case Xenon::Backend::CullMode::None:
+			return VK_CULL_MODE_NONE;
+
+		case Xenon::Backend::CullMode::Front:
+			return VK_CULL_MODE_FRONT_BIT;
+
+		case Xenon::Backend::CullMode::Back:
+			return VK_CULL_MODE_BACK_BIT;
+
+		case Xenon::Backend::CullMode::FrontAndBack:
+			return VK_CULL_MODE_FRONT_AND_BACK;
+
+		default:
+			XENON_LOG_ERROR("Invalid or Undefined cull mode! Defaulting to None.");
+			return VK_CULL_MODE_NONE;
 		}
 	}
 
@@ -210,9 +244,15 @@ namespace /* anonymous */
 	{
 		switch (face)
 		{
-		case Xenon::Backend::FrontFace::CounterClockwise:						return VK_FRONT_FACE_COUNTER_CLOCKWISE;
-		case Xenon::Backend::FrontFace::Clockwise:								return VK_FRONT_FACE_CLOCKWISE;
-		default:																XENON_LOG_ERROR("Invalid or Undefined front face! Defaulting to CounterClockwise."); return VK_FRONT_FACE_COUNTER_CLOCKWISE;
+		case Xenon::Backend::FrontFace::CounterClockwise:
+			return VK_FRONT_FACE_COUNTER_CLOCKWISE;
+
+		case Xenon::Backend::FrontFace::Clockwise:
+			return VK_FRONT_FACE_CLOCKWISE;
+
+		default:
+			XENON_LOG_ERROR("Invalid or Undefined front face! Defaulting to CounterClockwise.");
+			return VK_FRONT_FACE_COUNTER_CLOCKWISE;
 		}
 	}
 
@@ -226,10 +266,18 @@ namespace /* anonymous */
 	{
 		switch (mode)
 		{
-		case Xenon::Backend::PolygonMode::Fill:									return VK_POLYGON_MODE_FILL;
-		case Xenon::Backend::PolygonMode::Line:									return VK_POLYGON_MODE_LINE;
-		case Xenon::Backend::PolygonMode::Point:								return VK_POLYGON_MODE_POINT;
-		default:																XENON_LOG_ERROR("Invalid or Undefined polygon mode! Defaulting to Fill."); return VK_POLYGON_MODE_FILL;
+		case Xenon::Backend::PolygonMode::Fill:
+			return VK_POLYGON_MODE_FILL;
+
+		case Xenon::Backend::PolygonMode::Line:
+			return VK_POLYGON_MODE_LINE;
+
+		case Xenon::Backend::PolygonMode::Point:
+			return VK_POLYGON_MODE_POINT;
+
+		default:
+			XENON_LOG_ERROR("Invalid or Undefined polygon mode! Defaulting to Fill.");
+			return VK_POLYGON_MODE_FILL;
 		}
 	}
 
@@ -243,23 +291,57 @@ namespace /* anonymous */
 	{
 		switch (logic)
 		{
-		case Xenon::Backend::ColorBlendLogic::Clear:							return VK_LOGIC_OP_CLEAR;
-		case Xenon::Backend::ColorBlendLogic::And:								return VK_LOGIC_OP_AND;
-		case Xenon::Backend::ColorBlendLogic::AndReverse:						return VK_LOGIC_OP_AND_REVERSE;
-		case Xenon::Backend::ColorBlendLogic::Copy:								return VK_LOGIC_OP_COPY;
-		case Xenon::Backend::ColorBlendLogic::AndInverted:						return VK_LOGIC_OP_AND_INVERTED;
-		case Xenon::Backend::ColorBlendLogic::NoOperator:						return VK_LOGIC_OP_NO_OP;
-		case Xenon::Backend::ColorBlendLogic::XOR:								return VK_LOGIC_OP_XOR;
-		case Xenon::Backend::ColorBlendLogic::OR:								return VK_LOGIC_OP_OR;
-		case Xenon::Backend::ColorBlendLogic::NOR:								return VK_LOGIC_OP_NOR;
-		case Xenon::Backend::ColorBlendLogic::Equivalent:						return VK_LOGIC_OP_EQUIVALENT;
-		case Xenon::Backend::ColorBlendLogic::Invert:							return VK_LOGIC_OP_INVERT;
-		case Xenon::Backend::ColorBlendLogic::ReverseOR:						return VK_LOGIC_OP_OR_REVERSE;
-		case Xenon::Backend::ColorBlendLogic::CopyInverted:						return VK_LOGIC_OP_COPY_INVERTED;
-		case Xenon::Backend::ColorBlendLogic::InvertedOR:						return VK_LOGIC_OP_OR_INVERTED;
-		case Xenon::Backend::ColorBlendLogic::NAND:								return VK_LOGIC_OP_NAND;
-		case Xenon::Backend::ColorBlendLogic::Set:								return VK_LOGIC_OP_SET;
-		default:																XENON_LOG_ERROR("Invalid or Undefined color blend logic! Defaulting to Clear."); return VK_LOGIC_OP_CLEAR;
+		case Xenon::Backend::ColorBlendLogic::Clear:
+			return VK_LOGIC_OP_CLEAR;
+
+		case Xenon::Backend::ColorBlendLogic::And:
+			return VK_LOGIC_OP_AND;
+
+		case Xenon::Backend::ColorBlendLogic::AndReverse:
+			return VK_LOGIC_OP_AND_REVERSE;
+
+		case Xenon::Backend::ColorBlendLogic::Copy:
+			return VK_LOGIC_OP_COPY;
+
+		case Xenon::Backend::ColorBlendLogic::AndInverted:
+			return VK_LOGIC_OP_AND_INVERTED;
+
+		case Xenon::Backend::ColorBlendLogic::NoOperator:
+			return VK_LOGIC_OP_NO_OP;
+
+		case Xenon::Backend::ColorBlendLogic::XOR:
+			return VK_LOGIC_OP_XOR;
+
+		case Xenon::Backend::ColorBlendLogic::OR:
+			return VK_LOGIC_OP_OR;
+
+		case Xenon::Backend::ColorBlendLogic::NOR:
+			return VK_LOGIC_OP_NOR;
+
+		case Xenon::Backend::ColorBlendLogic::Equivalent:
+			return VK_LOGIC_OP_EQUIVALENT;
+
+		case Xenon::Backend::ColorBlendLogic::Invert:
+			return VK_LOGIC_OP_INVERT;
+
+		case Xenon::Backend::ColorBlendLogic::ReverseOR:
+			return VK_LOGIC_OP_OR_REVERSE;
+
+		case Xenon::Backend::ColorBlendLogic::CopyInverted:
+			return VK_LOGIC_OP_COPY_INVERTED;
+
+		case Xenon::Backend::ColorBlendLogic::InvertedOR:
+			return VK_LOGIC_OP_OR_INVERTED;
+
+		case Xenon::Backend::ColorBlendLogic::NAND:
+			return VK_LOGIC_OP_NAND;
+
+		case Xenon::Backend::ColorBlendLogic::Set:
+			return VK_LOGIC_OP_SET;
+
+		default:
+			XENON_LOG_ERROR("Invalid or Undefined color blend logic! Defaulting to Clear.");
+			return VK_LOGIC_OP_CLEAR;
 		}
 	}
 
@@ -273,15 +355,33 @@ namespace /* anonymous */
 	{
 		switch (logic)
 		{
-		case Xenon::Backend::DepthCompareLogic::Never:							return VK_COMPARE_OP_NEVER;
-		case Xenon::Backend::DepthCompareLogic::Less:							return VK_COMPARE_OP_LESS;
-		case Xenon::Backend::DepthCompareLogic::Equal:							return VK_COMPARE_OP_EQUAL;
-		case Xenon::Backend::DepthCompareLogic::LessOrEqual:					return VK_COMPARE_OP_LESS_OR_EQUAL;
-		case Xenon::Backend::DepthCompareLogic::Greater:						return VK_COMPARE_OP_GREATER;
-		case Xenon::Backend::DepthCompareLogic::NotEqual:						return VK_COMPARE_OP_NOT_EQUAL;
-		case Xenon::Backend::DepthCompareLogic::GreaterOrEqual:					return VK_COMPARE_OP_GREATER_OR_EQUAL;
-		case Xenon::Backend::DepthCompareLogic::Always:							return VK_COMPARE_OP_ALWAYS;
-		default:																XENON_LOG_ERROR("Invalid or Undefined depth compare logic! Defaulting to Never."); return VK_COMPARE_OP_NEVER;
+		case Xenon::Backend::DepthCompareLogic::Never:
+			return VK_COMPARE_OP_NEVER;
+
+		case Xenon::Backend::DepthCompareLogic::Less:
+			return VK_COMPARE_OP_LESS;
+
+		case Xenon::Backend::DepthCompareLogic::Equal:
+			return VK_COMPARE_OP_EQUAL;
+
+		case Xenon::Backend::DepthCompareLogic::LessOrEqual:
+			return VK_COMPARE_OP_LESS_OR_EQUAL;
+
+		case Xenon::Backend::DepthCompareLogic::Greater:
+			return VK_COMPARE_OP_GREATER;
+
+		case Xenon::Backend::DepthCompareLogic::NotEqual:
+			return VK_COMPARE_OP_NOT_EQUAL;
+
+		case Xenon::Backend::DepthCompareLogic::GreaterOrEqual:
+			return VK_COMPARE_OP_GREATER_OR_EQUAL;
+
+		case Xenon::Backend::DepthCompareLogic::Always:
+			return VK_COMPARE_OP_ALWAYS;
+
+		default:
+			XENON_LOG_ERROR("Invalid or Undefined depth compare logic! Defaulting to Never.");
+			return VK_COMPARE_OP_NEVER;
 		}
 	}
 
@@ -314,26 +414,66 @@ namespace /* anonymous */
 	{
 		switch (factor)
 		{
-		case Xenon::Backend::ColorBlendFactor::Zero:							return VK_BLEND_FACTOR_ZERO;
-		case Xenon::Backend::ColorBlendFactor::One:								return VK_BLEND_FACTOR_ONE;
-		case Xenon::Backend::ColorBlendFactor::SourceColor:						return VK_BLEND_FACTOR_SRC_COLOR;
-		case Xenon::Backend::ColorBlendFactor::OneMinusSourceColor:				return VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
-		case Xenon::Backend::ColorBlendFactor::DestinationColor:				return VK_BLEND_FACTOR_DST_COLOR;
-		case Xenon::Backend::ColorBlendFactor::OneMinusDestinationColor:		return VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR;
-		case Xenon::Backend::ColorBlendFactor::SourceAlpha:						return VK_BLEND_FACTOR_SRC_ALPHA;
-		case Xenon::Backend::ColorBlendFactor::OneMinusSourceAlpha:				return VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-		case Xenon::Backend::ColorBlendFactor::DestinationAlpha:				return VK_BLEND_FACTOR_DST_ALPHA;
-		case Xenon::Backend::ColorBlendFactor::OneMinusDestinationAlpha:		return VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
-		case Xenon::Backend::ColorBlendFactor::ConstantColor:					return VK_BLEND_FACTOR_CONSTANT_COLOR;
-		case Xenon::Backend::ColorBlendFactor::OneMinusConstantColor:			return VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR;
-		case Xenon::Backend::ColorBlendFactor::ConstantAlpha:					return VK_BLEND_FACTOR_CONSTANT_ALPHA;
-		case Xenon::Backend::ColorBlendFactor::OneMinusConstantAlpha:			return VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_ALPHA;
-		case Xenon::Backend::ColorBlendFactor::SourceAlphaSaturate:				return VK_BLEND_FACTOR_SRC_ALPHA_SATURATE;
-		case Xenon::Backend::ColorBlendFactor::SourceOneColor:					return VK_BLEND_FACTOR_SRC1_COLOR;
-		case Xenon::Backend::ColorBlendFactor::OneMinusSourceOneColor:			return VK_BLEND_FACTOR_ONE_MINUS_SRC1_COLOR;
-		case Xenon::Backend::ColorBlendFactor::SourceOneAlpha:					return VK_BLEND_FACTOR_SRC1_ALPHA;
-		case Xenon::Backend::ColorBlendFactor::OneMinusSourceOneAlpha:			return VK_BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA;
-		default:																XENON_LOG_ERROR("Invalid color blend factor! Defaulting to Zero."); return VK_BLEND_FACTOR_ZERO;
+		case Xenon::Backend::ColorBlendFactor::Zero:
+			return VK_BLEND_FACTOR_ZERO;
+
+		case Xenon::Backend::ColorBlendFactor::One:
+			return VK_BLEND_FACTOR_ONE;
+
+		case Xenon::Backend::ColorBlendFactor::SourceColor:
+			return VK_BLEND_FACTOR_SRC_COLOR;
+
+		case Xenon::Backend::ColorBlendFactor::OneMinusSourceColor:
+			return VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
+
+		case Xenon::Backend::ColorBlendFactor::DestinationColor:
+			return VK_BLEND_FACTOR_DST_COLOR;
+
+		case Xenon::Backend::ColorBlendFactor::OneMinusDestinationColor:
+			return VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR;
+
+		case Xenon::Backend::ColorBlendFactor::SourceAlpha:
+			return VK_BLEND_FACTOR_SRC_ALPHA;
+
+		case Xenon::Backend::ColorBlendFactor::OneMinusSourceAlpha:
+			return VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+
+		case Xenon::Backend::ColorBlendFactor::DestinationAlpha:
+			return VK_BLEND_FACTOR_DST_ALPHA;
+
+		case Xenon::Backend::ColorBlendFactor::OneMinusDestinationAlpha:
+			return VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
+
+		case Xenon::Backend::ColorBlendFactor::ConstantColor:
+			return VK_BLEND_FACTOR_CONSTANT_COLOR;
+
+		case Xenon::Backend::ColorBlendFactor::OneMinusConstantColor:
+			return VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR;
+
+		case Xenon::Backend::ColorBlendFactor::ConstantAlpha:
+			return VK_BLEND_FACTOR_CONSTANT_ALPHA;
+
+		case Xenon::Backend::ColorBlendFactor::OneMinusConstantAlpha:
+			return VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_ALPHA;
+
+		case Xenon::Backend::ColorBlendFactor::SourceAlphaSaturate:
+			return VK_BLEND_FACTOR_SRC_ALPHA_SATURATE;
+
+		case Xenon::Backend::ColorBlendFactor::SourceOneColor:
+			return VK_BLEND_FACTOR_SRC1_COLOR;
+
+		case Xenon::Backend::ColorBlendFactor::OneMinusSourceOneColor:
+			return VK_BLEND_FACTOR_ONE_MINUS_SRC1_COLOR;
+
+		case Xenon::Backend::ColorBlendFactor::SourceOneAlpha:
+			return VK_BLEND_FACTOR_SRC1_ALPHA;
+
+		case Xenon::Backend::ColorBlendFactor::OneMinusSourceOneAlpha:
+			return VK_BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA;
+
+		default:
+			XENON_LOG_ERROR("Invalid color blend factor! Defaulting to Zero.");
+			return VK_BLEND_FACTOR_ZERO;
 		}
 	}
 
@@ -347,58 +487,162 @@ namespace /* anonymous */
 	{
 		switch (op)
 		{
-		case Xenon::Backend::ColorBlendOperator::Add:							return VK_BLEND_OP_ADD;
-		case Xenon::Backend::ColorBlendOperator::Subtract:						return VK_BLEND_OP_SUBTRACT;
-		case Xenon::Backend::ColorBlendOperator::ReverseSubtract:				return VK_BLEND_OP_REVERSE_SUBTRACT;
-		case Xenon::Backend::ColorBlendOperator::Minimum:						return VK_BLEND_OP_MIN;
-		case Xenon::Backend::ColorBlendOperator::Maximum:						return VK_BLEND_OP_MAX;
-		case Xenon::Backend::ColorBlendOperator::Zero:							return VK_BLEND_OP_ZERO_EXT;
-		case Xenon::Backend::ColorBlendOperator::Source:						return VK_BLEND_OP_SRC_EXT;
-		case Xenon::Backend::ColorBlendOperator::Destination:					return VK_BLEND_OP_DST_EXT;
-		case Xenon::Backend::ColorBlendOperator::SourceOver:					return VK_BLEND_OP_SRC_OVER_EXT;
-		case Xenon::Backend::ColorBlendOperator::DestinationOver:				return VK_BLEND_OP_DST_OVER_EXT;
-		case Xenon::Backend::ColorBlendOperator::SourceIn:						return VK_BLEND_OP_SRC_IN_EXT;
-		case Xenon::Backend::ColorBlendOperator::DestinationIn:					return VK_BLEND_OP_DST_IN_EXT;
-		case Xenon::Backend::ColorBlendOperator::SouceOut:						return VK_BLEND_OP_SRC_OUT_EXT;
-		case Xenon::Backend::ColorBlendOperator::DestinationOut:				return VK_BLEND_OP_DST_OUT_EXT;
-		case Xenon::Backend::ColorBlendOperator::SourceATOP:					return VK_BLEND_OP_SRC_ATOP_EXT;
-		case Xenon::Backend::ColorBlendOperator::DestinationATOP:				return VK_BLEND_OP_DST_ATOP_EXT;
-		case Xenon::Backend::ColorBlendOperator::XOR:							return VK_BLEND_OP_XOR_EXT;
-		case Xenon::Backend::ColorBlendOperator::Multiply:						return VK_BLEND_OP_MULTIPLY_EXT;
-		case Xenon::Backend::ColorBlendOperator::Screen:						return VK_BLEND_OP_SCREEN_EXT;
-		case Xenon::Backend::ColorBlendOperator::Overlay:						return VK_BLEND_OP_OVERLAY_EXT;
-		case Xenon::Backend::ColorBlendOperator::Darken:						return VK_BLEND_OP_DARKEN_EXT;
-		case Xenon::Backend::ColorBlendOperator::Lighten:						return VK_BLEND_OP_LIGHTEN_EXT;
-		case Xenon::Backend::ColorBlendOperator::ColorDodge:					return VK_BLEND_OP_COLORDODGE_EXT;
-		case Xenon::Backend::ColorBlendOperator::ColorBurn:						return VK_BLEND_OP_COLORBURN_EXT;
-		case Xenon::Backend::ColorBlendOperator::HardLight:						return VK_BLEND_OP_HARDLIGHT_EXT;
-		case Xenon::Backend::ColorBlendOperator::SoftLight:						return VK_BLEND_OP_SOFTLIGHT_EXT;
-		case Xenon::Backend::ColorBlendOperator::Difference:					return VK_BLEND_OP_DIFFERENCE_EXT;
-		case Xenon::Backend::ColorBlendOperator::Exclusion:						return VK_BLEND_OP_EXCLUSION_EXT;
-		case Xenon::Backend::ColorBlendOperator::Invert:						return VK_BLEND_OP_INVERT_EXT;
-		case Xenon::Backend::ColorBlendOperator::InvertRGB:						return VK_BLEND_OP_INVERT_RGB_EXT;
-		case Xenon::Backend::ColorBlendOperator::LinearDodge:					return VK_BLEND_OP_LINEARDODGE_EXT;
-		case Xenon::Backend::ColorBlendOperator::LinearBurn:					return VK_BLEND_OP_LINEARBURN_EXT;
-		case Xenon::Backend::ColorBlendOperator::VividLight:					return VK_BLEND_OP_VIVIDLIGHT_EXT;
-		case Xenon::Backend::ColorBlendOperator::LinearLight:					return VK_BLEND_OP_LINEARLIGHT_EXT;
-		case Xenon::Backend::ColorBlendOperator::PinLight:						return VK_BLEND_OP_PINLIGHT_EXT;
-		case Xenon::Backend::ColorBlendOperator::HardMix:						return VK_BLEND_OP_HARDMIX_EXT;
-		case Xenon::Backend::ColorBlendOperator::HSLHue:						return VK_BLEND_OP_HSL_HUE_EXT;
-		case Xenon::Backend::ColorBlendOperator::HSLSaturation:					return VK_BLEND_OP_HSL_SATURATION_EXT;
-		case Xenon::Backend::ColorBlendOperator::HSLColor:						return VK_BLEND_OP_HSL_COLOR_EXT;
-		case Xenon::Backend::ColorBlendOperator::HSLLuminosity:					return VK_BLEND_OP_HSL_LUMINOSITY_EXT;
-		case Xenon::Backend::ColorBlendOperator::Plus:							return VK_BLEND_OP_PLUS_EXT;
-		case Xenon::Backend::ColorBlendOperator::PlusClamped:					return VK_BLEND_OP_PLUS_CLAMPED_EXT;
-		case Xenon::Backend::ColorBlendOperator::PlusClampedAlpha:				return VK_BLEND_OP_PLUS_CLAMPED_ALPHA_EXT;
-		case Xenon::Backend::ColorBlendOperator::PlusDarker:					return VK_BLEND_OP_PLUS_DARKER_EXT;
-		case Xenon::Backend::ColorBlendOperator::Minus:							return VK_BLEND_OP_MINUS_EXT;
-		case Xenon::Backend::ColorBlendOperator::MinusClamped:					return VK_BLEND_OP_MINUS_CLAMPED_EXT;
-		case Xenon::Backend::ColorBlendOperator::Contrast:						return VK_BLEND_OP_CONTRAST_EXT;
-		case Xenon::Backend::ColorBlendOperator::InvertOVG:						return VK_BLEND_OP_INVERT_OVG_EXT;
-		case Xenon::Backend::ColorBlendOperator::Red:							return VK_BLEND_OP_RED_EXT;
-		case Xenon::Backend::ColorBlendOperator::Green:							return VK_BLEND_OP_GREEN_EXT;
-		case Xenon::Backend::ColorBlendOperator::Blue:							return VK_BLEND_OP_BLUE_EXT;
-		default:																XENON_LOG_ERROR("Invalid color blend operator! Defaulting to Add."); return VK_BLEND_OP_ADD;
+		case Xenon::Backend::ColorBlendOperator::Add:
+			return VK_BLEND_OP_ADD;
+
+		case Xenon::Backend::ColorBlendOperator::Subtract:
+			return VK_BLEND_OP_SUBTRACT;
+
+		case Xenon::Backend::ColorBlendOperator::ReverseSubtract:
+			return VK_BLEND_OP_REVERSE_SUBTRACT;
+
+		case Xenon::Backend::ColorBlendOperator::Minimum:
+			return VK_BLEND_OP_MIN;
+
+		case Xenon::Backend::ColorBlendOperator::Maximum:
+			return VK_BLEND_OP_MAX;
+
+		case Xenon::Backend::ColorBlendOperator::Zero:
+			return VK_BLEND_OP_ZERO_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::Source:
+			return VK_BLEND_OP_SRC_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::Destination:
+			return VK_BLEND_OP_DST_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::SourceOver:
+			return VK_BLEND_OP_SRC_OVER_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::DestinationOver:
+			return VK_BLEND_OP_DST_OVER_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::SourceIn:
+			return VK_BLEND_OP_SRC_IN_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::DestinationIn:
+			return VK_BLEND_OP_DST_IN_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::SouceOut:
+			return VK_BLEND_OP_SRC_OUT_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::DestinationOut:
+			return VK_BLEND_OP_DST_OUT_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::SourceATOP:
+			return VK_BLEND_OP_SRC_ATOP_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::DestinationATOP:
+			return VK_BLEND_OP_DST_ATOP_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::XOR:
+			return VK_BLEND_OP_XOR_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::Multiply:
+			return VK_BLEND_OP_MULTIPLY_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::Screen:
+			return VK_BLEND_OP_SCREEN_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::Overlay:
+			return VK_BLEND_OP_OVERLAY_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::Darken:
+			return VK_BLEND_OP_DARKEN_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::Lighten:
+			return VK_BLEND_OP_LIGHTEN_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::ColorDodge:
+			return VK_BLEND_OP_COLORDODGE_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::ColorBurn:
+			return VK_BLEND_OP_COLORBURN_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::HardLight:
+			return VK_BLEND_OP_HARDLIGHT_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::SoftLight:
+			return VK_BLEND_OP_SOFTLIGHT_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::Difference:
+			return VK_BLEND_OP_DIFFERENCE_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::Exclusion:
+			return VK_BLEND_OP_EXCLUSION_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::Invert:
+			return VK_BLEND_OP_INVERT_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::InvertRGB:
+			return VK_BLEND_OP_INVERT_RGB_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::LinearDodge:
+			return VK_BLEND_OP_LINEARDODGE_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::LinearBurn:
+			return VK_BLEND_OP_LINEARBURN_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::VividLight:
+			return VK_BLEND_OP_VIVIDLIGHT_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::LinearLight:
+			return VK_BLEND_OP_LINEARLIGHT_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::PinLight:
+			return VK_BLEND_OP_PINLIGHT_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::HardMix:
+			return VK_BLEND_OP_HARDMIX_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::HSLHue:
+			return VK_BLEND_OP_HSL_HUE_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::HSLSaturation:
+			return VK_BLEND_OP_HSL_SATURATION_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::HSLColor:
+			return VK_BLEND_OP_HSL_COLOR_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::HSLLuminosity:
+			return VK_BLEND_OP_HSL_LUMINOSITY_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::Plus:
+			return VK_BLEND_OP_PLUS_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::PlusClamped:
+			return VK_BLEND_OP_PLUS_CLAMPED_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::PlusClampedAlpha:
+			return VK_BLEND_OP_PLUS_CLAMPED_ALPHA_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::PlusDarker:
+			return VK_BLEND_OP_PLUS_DARKER_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::Minus:
+			return VK_BLEND_OP_MINUS_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::MinusClamped:
+			return VK_BLEND_OP_MINUS_CLAMPED_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::Contrast:
+			return VK_BLEND_OP_CONTRAST_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::InvertOVG:
+			return VK_BLEND_OP_INVERT_OVG_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::Red:
+			return VK_BLEND_OP_RED_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::Green:
+			return VK_BLEND_OP_GREEN_EXT;
+
+		case Xenon::Backend::ColorBlendOperator::Blue:
+			return VK_BLEND_OP_BLUE_EXT;
+
+		default:
+			XENON_LOG_ERROR("Invalid color blend operator! Defaulting to Add.");
+			return VK_BLEND_OP_ADD;
 		}
 	}
 

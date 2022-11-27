@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "../XenonCore/Mutex.hpp"
 #include "../XenonBackend/Device.hpp"
 
 #include "DX12Instance.hpp"
@@ -141,14 +142,14 @@ namespace Xenon
 			 *
 			 * @return The command allocator pointer.
 			 */
-			[[nodsicard]] ID3D12CommandAllocator* getCommandAllocator() { return m_GlobalCommandAllocator.Get(); }
+			[[nodsicard]] Mutex<ComPtr<ID3D12CommandAllocator>>& getCommandAllocator() { return m_GlobalCommandAllocator; }
 
 			/**
 			 * Get the global command allocator.
 			 *
 			 * @return The const command allocator pointer.
 			 */
-			[[nodsicard]] const ID3D12CommandAllocator* getCommandAllocator() const { return m_GlobalCommandAllocator.Get(); }
+			[[nodsicard]] const Mutex<ComPtr<ID3D12CommandAllocator>>& getCommandAllocator() const { return m_GlobalCommandAllocator; }
 
 		private:
 			/**
@@ -188,7 +189,7 @@ namespace Xenon
 			ComPtr<IDXGIAdapter> m_Adapter;
 
 			ComPtr<ID3D12CommandQueue> m_GraphicsQueue;
-			ComPtr<ID3D12CommandAllocator> m_GlobalCommandAllocator;
+			Mutex<ComPtr<ID3D12CommandAllocator>> m_GlobalCommandAllocator;
 
 			D3D12MA::Allocator* m_pAllocator = nullptr;
 		};

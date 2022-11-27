@@ -105,7 +105,11 @@ namespace Xenon
 
 			// Create the command list.
 			ComPtr<ID3D12GraphicsCommandList> commandList;
-			XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_pDevice->getCommandAllocator(), nullptr, IID_PPV_ARGS(&commandList)), "Failed to create the copy command list!");
+			m_pDevice->getCommandAllocator().access([&commandList, this](ComPtr<ID3D12CommandAllocator>& allocator)
+				{
+					XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, allocator.Get(), nullptr, IID_PPV_ARGS(&commandList)), "Failed to create the copy command list!");
+				}
+			);
 
 			// Return if we failed to create the command list.
 			if (!commandList)
