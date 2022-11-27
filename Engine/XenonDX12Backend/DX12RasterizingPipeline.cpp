@@ -833,7 +833,7 @@ namespace Xenon
 		{
 			if (m_pCacheHandler)
 			{
-				ComPtr<ID3D12Blob> cacheBlob;
+				ComPtr<ID3DBlob> cacheBlob;
 				XENON_DX12_ASSERT(pipeline.m_PipelineState->GetCachedBlob(&cacheBlob), "Failed to get the pipeline state object's cache!");
 
 				const auto cacheData = std::vector<std::byte>(ToBytes(cacheBlob->GetBufferPointer()), ToBytes(cacheBlob->GetBufferPointer()) + cacheBlob->GetBufferSize());
