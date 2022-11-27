@@ -4,11 +4,6 @@
 #include "DX12Buffer.hpp"
 #include "DX12Macros.hpp"
 
-#ifdef max
-#undef max
-
-#endif
-
 namespace Xenon
 {
 	namespace Backend

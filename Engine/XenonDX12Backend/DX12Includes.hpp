@@ -8,6 +8,8 @@
 
 #endif
 
+#define NOMINMAX
+
 #include <Windows.h>
 
 #include <directx/d3d12.h>

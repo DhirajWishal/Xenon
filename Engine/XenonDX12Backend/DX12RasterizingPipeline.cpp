@@ -4,6 +4,8 @@
 #include "DX12RasterizingPipeline.hpp"
 #include "DX12Macros.hpp"
 
+#include <spirv_hlsl.hpp>
+
 namespace /* anonymous */
 {
 	/**
@@ -64,13 +66,17 @@ namespace /* anonymous */
 	 */
 	void SetupShaderData(
 		const Xenon::Backend::ShaderSource& shader,
-		std::unordered_map<Xenon::Backend::DescriptorType, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>& rangeMap,
+		std::unordered_map<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>& rangeMap,
 		std::vector<D3D12_INPUT_ELEMENT_DESC>& inputs,
 		Xenon::Backend::ShaderType type)
 	{
 		// Setup resources.
 		for (const auto& resource : shader.getResources())
-			rangeMap[resource.m_Set].emplace_back().Init(GetDescriptorRangeType(resource.m_Type), 1, resource.m_Binding);
+		{
+			const auto rangeType = GetDescriptorRangeType(resource.m_Type);
+			const auto index = (Xenon::EnumToInt(resource.m_Set) * 2) + (rangeType == D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER ? 1 : 0);
+			rangeMap[static_cast<uint8_t>(index)].emplace_back().Init(rangeType, 1, resource.m_Binding);
+		}
 
 		// Setup the inputs if it's the vertex shader.
 		if (type & Xenon::Backend::ShaderType::Vertex)
@@ -221,6 +227,47 @@ namespace /* anonymous */
 				}
 			}
 		}
+	}
+
+	/**
+	 * Compile a shader to a D3D12 shader blob.
+	 *
+	 * @param shader The shader to compile.
+	 * @return The shader binary.
+	 */
+	ComPtr<ID3DBlob> CompileShader(const Xenon::Backend::ShaderSource& shader, const std::string_view& target)
+	{
+		ComPtr<ID3DBlob> shaderBlob;
+
+		try
+		{
+			// Remove the end padding and create the compiler.
+			auto compiler = spirv_cross::CompilerHLSL(shader.getBinaryWithoutPadding());
+
+			// Cross-compile the binary.
+			const auto hlsl = compiler.compile();
+			XENON_LOG_INFORMATION("Compiled shader code.\n{}", hlsl);
+
+			compiler.get_hlsl_options().shader_model;
+
+#ifdef XENON_DEBUG
+			UINT compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+
+#else
+			UINT compileFlags = 0;
+
+#endif
+
+			ComPtr<ID3DBlob> error;
+			XENON_DX12_ASSERT(D3DCompile(hlsl.data(), sizeof(hlsl), nullptr, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", target.data(), compileFlags, 0, &shaderBlob, &error), "Failed to compile the shader!");
+			XENON_DX12_ASSERT_BLOB(error);
+		}
+		catch (const std::exception& e)
+		{
+			XENON_LOG_FATAL("An exception was thrown when cross-compiling SPI-V to HLSL! {}", e.what());
+		}
+
+		return shaderBlob;
 	}
 
 	/**
@@ -632,17 +679,17 @@ namespace Xenon
 			, m_pRasterizer(pRasterizer)
 		{
 			// Resolve shader-specific data.
-			std::unordered_map<DescriptorType, std::vector<CD3DX12_DESCRIPTOR_RANGE1>> rangeMap;
+			std::unordered_map<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>> rangeMap;
 			if (specification.m_VertexShader.isValid())
 			{
 				SetupShaderData(specification.m_VertexShader, rangeMap, m_Inputs, ShaderType::Vertex);
-				D3DCompileFromFile();
+				m_VertexShader = CompileShader(specification.m_VertexShader, "vs_5_0");
 			}
 
 			if (specification.m_FragmentShader.isValid())
 			{
 				SetupShaderData(specification.m_FragmentShader, rangeMap, m_Inputs, ShaderType::Fragment);
-
+				m_PixelShader = CompileShader(specification.m_FragmentShader, "ps_5_0");
 			}
 
 			// Create the root signature.
@@ -697,7 +744,7 @@ namespace Xenon
 			return m_Pipelines[hash];
 		}
 
-		void DX12RasterizingPipeline::createRootSignature(std::unordered_map<DescriptorType, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>&& rangeMap)
+		void DX12RasterizingPipeline::createRootSignature(std::unordered_map<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>&& rangeMap)
 		{
 			std::vector<CD3DX12_ROOT_PARAMETER1> rootParameters;
 			for (const auto& [set, ranges] : rangeMap)
@@ -716,6 +763,8 @@ namespace Xenon
 			ComPtr<ID3DBlob> signature;
 			ComPtr<ID3DBlob> error;
 			XENON_DX12_ASSERT(D3DX12SerializeVersionedRootSignature(&rootSignatureDesc, featureData.HighestVersion, &signature, &error), "Failed to serialize the version-ed root signature!");
+			XENON_DX12_ASSERT_BLOB(error);
+
 			XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature)), "Failed to create the root signature!");
 		}
 

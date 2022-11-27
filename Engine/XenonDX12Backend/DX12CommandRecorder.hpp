@@ -7,11 +7,6 @@
 
 #include "DX12DeviceBoundObject.hpp"
 
-#ifdef max
-#undef max
-
-#endif
-
 namespace Xenon
 {
 	namespace Backend

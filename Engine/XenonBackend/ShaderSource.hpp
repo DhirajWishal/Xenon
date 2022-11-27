@@ -86,6 +86,13 @@ namespace Xenon
 			[[nodiscard]] const BinaryType& getBinary() const { return m_Binary; }
 
 			/**
+			 * Get the shader binary without the last padding bytes.
+			 *
+			 * @return The shader binary without padding.
+			 */
+			[[nodiscard]] BinaryType getBinaryWithoutPadding() const { return std::vector<uint32_t>(m_Binary.begin(), m_Binary.begin() + (m_Binary.size() / 4)); }
+
+			/**
 			 * Check if the shader source is valid or not.
 			 * A shader source is valid if we have some binary data.
 			 *

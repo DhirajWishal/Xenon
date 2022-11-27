@@ -20,7 +20,7 @@ set(PREDEFINED_TARGETS_FOLDER "PredefinedTargets")
 # Set the caches.
 set(XENON_LOG_LEVEL 5 CACHE INTERNAL "This defines what to log. Checkout the wiki page for more information.")
 
-# Add the third party includes.
+# Add the third party libraries.
 set(SPDLOG_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/spdlog/include)
 set(VULKAN_HEADERS_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/Vulkan-Headers/include)
 set(VOLK_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/volk)
@@ -32,6 +32,9 @@ set(TINYGLTF_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/tinygltf)
 set(GLM_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/glm)
 set(SPIRV_REFLECT_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/SPIRV-Reflect)
 set(XXHASH_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/xxHash)
+set(SPIRV_CROSS_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/SPIRV-Cross)
+
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/SPIRV-Cross)
 
 # Include the shader bank and it's information.
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonShaderBank)
@@ -84,5 +87,16 @@ if (MSVC)
 	 
 	# Add the custom target to a folder so it won't clutter up the solution explorer.
 	set_target_properties(XenonConfigureCMake PROPERTIES FOLDER "VisualStudio")
+
+	# Add the third party targets to a third party folder.
+	set_target_properties(spirv-cross PROPERTIES FOLDER "ThirdParty")
+	set_target_properties(spirv-cross-c PROPERTIES FOLDER "ThirdParty")
+	set_target_properties(spirv-cross-core PROPERTIES FOLDER "ThirdParty")
+	set_target_properties(spirv-cross-cpp PROPERTIES FOLDER "ThirdParty")
+	set_target_properties(spirv-cross-glsl PROPERTIES FOLDER "ThirdParty")
+	set_target_properties(spirv-cross-hlsl PROPERTIES FOLDER "ThirdParty")
+	set_target_properties(spirv-cross-msl PROPERTIES FOLDER "ThirdParty")
+	set_target_properties(spirv-cross-reflect PROPERTIES FOLDER "ThirdParty")
+	set_target_properties(spirv-cross-util PROPERTIES FOLDER "ThirdParty")
 
 endif ()

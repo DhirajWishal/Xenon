@@ -56,7 +56,7 @@ namespace Xenon
 			 *
 			 * @param rangeMap The descriptor range map.
 			 */
-			void createRootSignature(std::unordered_map<DescriptorType, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>&& rangeMap);
+			void createRootSignature(std::unordered_map<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>&& rangeMap);
 
 			/**
 			 * Setup the pipeline state descriptor for future use.

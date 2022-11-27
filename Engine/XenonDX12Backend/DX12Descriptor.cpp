@@ -7,11 +7,6 @@
 #include "DX12ImageView.hpp"
 #include "DX12ImageSampler.hpp"
 
-#ifdef min
-#undef min
-
-#endif
-
 namespace /* anonymous */
 {
 	/**
