@@ -55,6 +55,12 @@ namespace Xenon
 			 */
 			const PipelineStorage& getPipeline(const VertexSpecification& vertexSpecification);
 
+			/**
+			 * Recreate the pipelines.
+			 * This should be called if the associated rasterizer resizes.
+			 */
+			void recreate();
+
 		private:
 			/**
 			 * Create the pipeline layout.

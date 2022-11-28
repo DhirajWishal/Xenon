@@ -39,7 +39,7 @@ namespace Xenon
 			/**
 			 * Destructor.
 			 */
-			~DX12RasterizingPipeline() override = default;
+			~DX12RasterizingPipeline() override;
 
 			/**
 			 * Get a pipeline using the vertex specification.

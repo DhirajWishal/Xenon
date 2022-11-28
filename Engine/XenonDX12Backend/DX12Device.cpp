@@ -38,6 +38,53 @@ namespace Xenon
 			}
 		}
 
+		void DX12Device::waitIdle()
+		{
+			// Wait for the direct queue.
+			{
+				ComPtr<ID3D12Fence> fence;
+				XENON_DX12_ASSERT(m_Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence)), "Failed to create the fence!");
+				XENON_DX12_ASSERT(m_DirectQueue->Signal(fence.Get(), 1), "Failed to signal the fence!");
+
+				// Setup synchronization.
+				auto fenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+
+				// Validate the event.
+				if (fenceEvent == nullptr)
+				{
+					XENON_LOG_ERROR("Failed to wait till the command list execution!");
+					return;
+				}
+
+				// Set the event and wait.
+				XENON_DX12_ASSERT(fence->SetEventOnCompletion(1, fenceEvent), "Failed to set the fence event on completion event!");
+				WaitForSingleObjectEx(fenceEvent, std::numeric_limits<DWORD>::max(), FALSE);
+				CloseHandle(fenceEvent);
+			}
+
+			// Wait for the copy queue.
+			{
+				ComPtr<ID3D12Fence> fence;
+				XENON_DX12_ASSERT(m_Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence)), "Failed to create the fence!");
+				XENON_DX12_ASSERT(m_CopyQueue->Signal(fence.Get(), 1), "Failed to signal the fence!");
+
+				// Setup synchronization.
+				auto fenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+
+				// Validate the event.
+				if (fenceEvent == nullptr)
+				{
+					XENON_LOG_ERROR("Failed to wait till the command list execution!");
+					return;
+				}
+
+				// Set the event and wait.
+				XENON_DX12_ASSERT(fence->SetEventOnCompletion(1, fenceEvent), "Failed to set the fence event on completion event!");
+				WaitForSingleObjectEx(fenceEvent, std::numeric_limits<DWORD>::max(), FALSE);
+				CloseHandle(fenceEvent);
+			}
+		}
+
 		DXGI_FORMAT DX12Device::convertFormat(DataFormat format) const
 		{
 			switch (format)
@@ -133,15 +180,14 @@ namespace Xenon
 
 		void DX12Device::createCommandStructures()
 		{
-			// Setup graphics queue.
 			D3D12_COMMAND_QUEUE_DESC queueDesc = {};
 			queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+
 			queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+			XENON_DX12_ASSERT(m_Device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_DirectQueue)), "Failed to create the direct queue!");
 
-			XENON_DX12_ASSERT(m_Device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_GraphicsQueue)), "Failed to create the graphics queue!");
-
-			// Create the global command allocator.
-			XENON_DX12_ASSERT(m_Device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_GlobalCommandAllocator.getUnsafe())), "Failed to create the global command allocator!");
+			queueDesc.Type = D3D12_COMMAND_LIST_TYPE_COPY;
+			XENON_DX12_ASSERT(m_Device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_CopyQueue)), "Failed to create the copy queue!");
 		}
 
 		void DX12Device::createAllocator()

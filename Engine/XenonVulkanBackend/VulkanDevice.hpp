@@ -36,6 +36,11 @@ namespace Xenon
 			 */
 			~VulkanDevice() override;
 
+			/**
+			 * Finish all device operations and wait idle.
+			 */
+			void waitIdle() override;
+
 		public:
 			/**
 			 * Convert the Xenon multi sampling count to the Vulkan multi sampling count bits.

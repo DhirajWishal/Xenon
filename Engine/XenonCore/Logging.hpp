@@ -95,14 +95,20 @@ namespace Xenon
 #endif
 
 #ifdef XENON_DEBUG
-#define XENON_LOG_DEBUG(...)									SPDLOG_DEBUG(__VA_ARGS__)
+#	define XENON_LOG_DEBUG(...)									SPDLOG_DEBUG(__VA_ARGS__)
+
+#	ifdef XENON_PLATFORM_WINDOWS
+#		define XENON_DEBUG_BREAK								__debugbreak()
+
+#	endif
 
 #else
-#define XENON_LOG_DEBUG(...)									::Xenon::NoOp()
+#	define XENON_LOG_DEBUG(...)									::Xenon::NoOp()
+#	define XENON_DEBUG_BREAK									::Xenon::NoOp()
 
 #endif // XENON_DEBUG
 
-#define XENON_ASSERT(condition, ...)							if (!(condition)) XENON_LOG_FATAL(__VA_ARGS__)
+#define XENON_ASSERT(condition, ...)							if (!(condition)) (XENON_LOG_FATAL(__VA_ARGS__), XENON_DEBUG_BREAK)
 
 #define XENON_TODO(_day, _month, _year, ...)																											\
 	if (std::chrono::year(_year)/_month/_day >= std::chrono::year_month_day(std::chrono::floor<std::chrono::days>(std::chrono::system_clock::now())))	\

@@ -886,26 +886,30 @@ namespace Xenon
 
 			// Setup the initial pipeline data.
 			setupPipelineInfo();
+
+			// Attach the pipeline to the render target.
+			m_pRasterizer->attachPipeline(this);
 		}
 
 		VulkanRasterizingPipeline::~VulkanRasterizingPipeline()
 		{
 			try
 			{
-				for (const auto& info : m_ShaderStageCreateInfo)
-					m_pDevice->getDeviceTable().vkDestroyShaderModule(m_pDevice->getLogicalDevice(), info.module, nullptr);
+				m_pRasterizer->detachPipeline(this);
+				m_pDevice->getInstance()->getDeletionQueue().insert([pDevice = m_pDevice, layout = m_PipelineLayout, createInfos = m_ShaderStageCreateInfo, pipelines = m_Pipelines]
+					{
+						pDevice->waitIdle();
 
-				for (const auto& [hash, pipeline] : m_Pipelines)
+				for (const auto& info : createInfos)
+					pDevice->getDeviceTable().vkDestroyShaderModule(pDevice->getLogicalDevice(), info.module, nullptr);
+
+				for (const auto& [hash, pipeline] : pipelines)
 				{
-					m_pDevice->getDeviceTable().vkDestroyPipelineCache(m_pDevice->getLogicalDevice(), pipeline.m_PipelineCache, nullptr);
-					m_pDevice->getDeviceTable().vkDestroyPipeline(m_pDevice->getLogicalDevice(), pipeline.m_Pipeline, nullptr);
+					pDevice->getDeviceTable().vkDestroyPipelineCache(pDevice->getLogicalDevice(), pipeline.m_PipelineCache, nullptr);
+					pDevice->getDeviceTable().vkDestroyPipeline(pDevice->getLogicalDevice(), pipeline.m_Pipeline, nullptr);
 				}
 
-				m_pDevice->getDeviceTable().vkDestroyPipelineLayout(m_pDevice->getLogicalDevice(), m_PipelineLayout, nullptr);
-
-				m_pDevice->getInstance()->getDeletionQueue().insert([pDevice = m_pDevice, layout = m_PipelineLayout]
-					{
-						pDevice->getDeviceTable().vkDestroyPipelineLayout(pDevice->getLogicalDevice(), layout, nullptr);
+				pDevice->getDeviceTable().vkDestroyPipelineLayout(pDevice->getLogicalDevice(), layout, nullptr);
 					}
 				);
 			}
@@ -967,6 +971,15 @@ namespace Xenon
 			}
 
 			return m_Pipelines[hash];
+		}
+
+		void VulkanRasterizingPipeline::recreate()
+		{
+			for (auto& [hash, pipeline] : m_Pipelines)
+			{
+				createPipeline(pipeline);
+				savePipelineCache(hash, pipeline);
+			}
 		}
 
 		void VulkanRasterizingPipeline::createPipelineLayout(std::vector<VkDescriptorSetLayout>&& layouts, std::vector<VkPushConstantRange>&& pushConstantRanges)

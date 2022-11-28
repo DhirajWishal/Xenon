@@ -31,7 +31,7 @@ namespace Xenon
 
 			ComPtr<IDXGISwapChain1> swapChain;
 			XENON_DX12_ASSERT(pDevice->getFactory()->CreateSwapChainForHwnd(
-				pDevice->getCommandQueue(),
+				pDevice->getDirectQueue(),
 				windowHandle,
 				&swapChainDesc,
 				nullptr,
@@ -85,7 +85,7 @@ namespace Xenon
 			// Move to the next frame.
 			// Schedule a Signal command in the queue.
 			const UINT64 currentFenceValue = m_FenceValues[m_ImageIndex];
-			XENON_DX12_ASSERT(m_pDevice->getCommandQueue()->Signal(m_FrameFence.Get(), currentFenceValue), "Failed to signal the command queue!");
+			XENON_DX12_ASSERT(m_pDevice->getDirectQueue()->Signal(m_FrameFence.Get(), currentFenceValue), "Failed to signal the command queue!");
 
 			// Update the frame index.
 			m_ImageIndex = m_SwapChain->GetCurrentBackBufferIndex();

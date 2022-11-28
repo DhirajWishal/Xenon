@@ -13,11 +13,8 @@ void run(Xenon::BackendType backend)
 
 int main()
 {
-	XENON_LOG_INFORMATION("Hello from the Xenon Studio!");
-
-	std::vector<std::future<void>> backends;
-	backends.emplace_back(std::async(std::launch::async, run, Xenon::BackendType::DirectX_12));
-	backends.emplace_back(std::async(std::launch::async, run, Xenon::BackendType::Vulkan));
+	run(Xenon::BackendType::Vulkan);
+	run(Xenon::BackendType::DirectX_12);
 
 	return 0;
 }

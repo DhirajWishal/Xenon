@@ -152,17 +152,31 @@ namespace Xenon
 					graphicsCommandPool = m_GraphicsCommandPool.getUnsafe(), transferCommandPool = m_TransferCommandPool.getUnsafe(), allocator = m_Allocator]
 					{
 						deviceTable.vkDestroyCommandPool(device, computeCommandPool, nullptr);
-					deviceTable.vkDestroyCommandPool(device, graphicsCommandPool, nullptr);
-					deviceTable.vkDestroyCommandPool(device, transferCommandPool, nullptr);
+						deviceTable.vkDestroyCommandPool(device, graphicsCommandPool, nullptr);
+						deviceTable.vkDestroyCommandPool(device, transferCommandPool, nullptr);
 
-					vmaDestroyAllocator(allocator);
-					deviceTable.vkDestroyDevice(device, nullptr);
+						vmaDestroyAllocator(allocator);
+						deviceTable.vkDestroyDevice(device, nullptr);
 					}
 					);
 			}
 			catch (...)
 			{
 				XENON_VK_ASSERT(VK_ERROR_UNKNOWN, "Failed to push the device deletion function to the deletion queue!");
+			}
+		}
+
+		void VulkanDevice::waitIdle()
+		{
+			m_DeviceTable.vkDeviceWaitIdle(m_LogicalDevice);
+
+			for (auto& queue : m_Queues)
+			{
+				queue.access([this](const VulkanQueue& vkQueue)
+					{
+						m_DeviceTable.vkQueueWaitIdle(vkQueue.getQueue());
+					}
+				);
 			}
 		}
 

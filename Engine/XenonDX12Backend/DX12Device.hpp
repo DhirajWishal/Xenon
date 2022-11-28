@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "../XenonCore/Mutex.hpp"
 #include "../XenonBackend/Device.hpp"
 
 #include "DX12Instance.hpp"
@@ -32,6 +31,11 @@ namespace Xenon
 			 * Destructor.
 			 */
 			~DX12Device() override;
+
+			/**
+			 * Finish all device operations and wait idle.
+			 */
+			void waitIdle() override;
 
 		public:
 			/**
@@ -124,32 +128,33 @@ namespace Xenon
 			[[nodiscard]] const D3D12MA::Allocator* getAllocator() const { return m_pAllocator; }
 
 			/**
-			 * Get the command queue.
+			 * Get the direct command queue.
+			 *
+			 * @return The direct command queue pointer.
+			 */
+			[[nodiscard]] ID3D12CommandQueue* getDirectQueue() { return m_DirectQueue.Get(); }
+
+			/**
+			 * Get the graphics queue.
+			 *
+			 * @return The const graphics queue pointer.
+			 */
+			[[nodiscard]] const ID3D12CommandQueue* getDirectQueue() const { return m_DirectQueue.Get(); }
+
+			/**
+			 * Get the copy queue.
 			 *
 			 * @return The command queue pointer.
 			 */
-			[[nodiscard]] ID3D12CommandQueue* getCommandQueue() { return m_GraphicsQueue.Get(); }
+			[[nodiscard]] ID3D12CommandQueue* getCopyQueue() { return m_CopyQueue.Get(); }
 
 			/**
-			 * Get the command queue.
+			 * Get the copy queue.
 			 *
 			 * @return The const command queue pointer.
 			 */
-			[[nodiscard]] const ID3D12CommandQueue* getCommandQueue() const { return m_GraphicsQueue.Get(); }
+			[[nodiscard]] const ID3D12CommandQueue* getCopyQueue() const { return m_CopyQueue.Get(); }
 
-			/**
-			 * Get the global command allocator.
-			 *
-			 * @return The command allocator pointer.
-			 */
-			[[nodsicard]] Mutex<ComPtr<ID3D12CommandAllocator>>& getCommandAllocator() { return m_GlobalCommandAllocator; }
-
-			/**
-			 * Get the global command allocator.
-			 *
-			 * @return The const command allocator pointer.
-			 */
-			[[nodsicard]] const Mutex<ComPtr<ID3D12CommandAllocator>>& getCommandAllocator() const { return m_GlobalCommandAllocator; }
 
 		private:
 			/**
@@ -188,8 +193,8 @@ namespace Xenon
 			ComPtr<ID3D12Device> m_Device;
 			ComPtr<IDXGIAdapter> m_Adapter;
 
-			ComPtr<ID3D12CommandQueue> m_GraphicsQueue;
-			Mutex<ComPtr<ID3D12CommandAllocator>> m_GlobalCommandAllocator;
+			ComPtr<ID3D12CommandQueue> m_DirectQueue;
+			ComPtr<ID3D12CommandQueue> m_CopyQueue;
 
 			D3D12MA::Allocator* m_pAllocator = nullptr;
 		};

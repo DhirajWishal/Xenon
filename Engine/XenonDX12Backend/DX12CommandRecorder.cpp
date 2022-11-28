@@ -25,7 +25,7 @@ namespace Xenon
 			{
 				// Create the command allocator.
 				ComPtr<ID3D12CommandAllocator> allocator;
-				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&allocator)), "Failed to create the global command allocator!");
+				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&allocator)), "Failed to create the command allocator!");
 
 				// Create the command list.
 				ComPtr<ID3D12GraphicsCommandList> commandList;
@@ -100,14 +100,14 @@ namespace Xenon
 		void DX12CommandRecorder::submit(Swapchain* pSawpchain /*= nullptr*/)
 		{
 			std::array<ID3D12CommandList*, 1> pCommandLists = { m_pCurrentCommandList };
-			m_pDevice->getCommandQueue()->ExecuteCommandLists(pCommandLists.size(), pCommandLists.data());
-			XENON_DX12_ASSERT(m_pDevice->getCommandQueue()->Signal(m_pCurrentCommandListFence, 1), "Failed to signal the fence!");
+			m_pDevice->getDirectQueue()->ExecuteCommandLists(pCommandLists.size(), pCommandLists.data());
+			XENON_DX12_ASSERT(m_pDevice->getDirectQueue()->Signal(m_pCurrentCommandListFence, 1), "Failed to signal the fence!");
 		}
 
 		void DX12CommandRecorder::wait(uint64_t timeout /*= UINT64_MAX*/)
 		{
 			const auto nextFence = m_pCurrentCommandListFence->GetCompletedValue() + 1;
-			XENON_DX12_ASSERT(m_pDevice->getCommandQueue()->Signal(m_pCurrentCommandListFence, nextFence), "Failed to signal the fence!");
+			XENON_DX12_ASSERT(m_pDevice->getDirectQueue()->Signal(m_pCurrentCommandListFence, nextFence), "Failed to signal the fence!");
 
 			if (m_pCurrentCommandListFence->GetCompletedValue() < nextFence)
 			{

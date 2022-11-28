@@ -43,7 +43,12 @@ namespace Xenon
 		/**
 		 * Destructor.
 		 */
-		~Instance();
+		~Instance() override;
+
+		/**
+		 * Cleanup the internal commands and finish their execution.
+		 */
+		void cleanup() const;
 
 	public:
 		/**

@@ -40,6 +40,11 @@ namespace Xenon
 			 */
 			explicit Device([[maybe_unused]] Instance* pInstance, RenderTargetType requiredRenderTargets) : m_SupportedRenderTargetTypes(requiredRenderTargets) {}
 
+			/**
+			 * Finish all device operations and wait idle.
+			 */
+			virtual void waitIdle() = 0;
+
 		public:
 			/**
 			 * Get the supported render target types.

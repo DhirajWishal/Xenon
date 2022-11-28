@@ -3,6 +3,7 @@
 
 #include "VulkanRasterizer.hpp"
 #include "VulkanMacros.hpp"
+#include "VulkanRasterizingPipeline.hpp"
 
 namespace Xenon
 {
@@ -35,6 +36,20 @@ namespace Xenon
 			m_pDevice->getDeviceTable().vkDestroyRenderPass(m_pDevice->getLogicalDevice(), m_RenderPass, nullptr);
 		}
 
+		void VulkanRasterizer::attachPipeline(VulkanRasterizingPipeline* pPipeline)
+		{
+			m_pPipelines.emplace_back(pPipeline);
+		}
+
+		void VulkanRasterizer::detachPipeline(const VulkanRasterizingPipeline* pPipeline)
+		{
+			for (auto itr = m_pPipelines.begin(); itr != m_pPipelines.end(); ++itr)
+			{
+				if (*itr == pPipeline)
+					m_pPipelines.erase(itr);
+			}
+		}
+
 		Xenon::Backend::Image* VulkanRasterizer::getImageAttachment(AttachmentType type)
 		{
 			if (m_AttachmentTypes & type)
@@ -42,7 +57,7 @@ namespace Xenon
 				uint8_t index = 0;
 				if (m_AttachmentTypes & AttachmentType::Color)
 				{
-					if (type == AttachmentType::Color)
+					if (type & AttachmentType::Color)
 						return &m_ImageAttachments[index];
 
 					index++;
@@ -50,7 +65,7 @@ namespace Xenon
 
 				if (m_AttachmentTypes & AttachmentType::EntityID)
 				{
-					if (type == AttachmentType::EntityID)
+					if (type & AttachmentType::EntityID)
 						return &m_ImageAttachments[index];
 
 					index++;
@@ -58,7 +73,7 @@ namespace Xenon
 
 				if (m_AttachmentTypes & AttachmentType::Normal)
 				{
-					if (type == AttachmentType::Normal)
+					if (type & AttachmentType::Normal)
 						return &m_ImageAttachments[index];
 
 					index++;
@@ -74,7 +89,7 @@ namespace Xenon
 
 				if (m_AttachmentTypes & AttachmentType::Depth)
 				{
-					if (type == AttachmentType::Depth)
+					if (type & AttachmentType::Depth)
 						return &m_ImageAttachments[index];
 
 					index++;

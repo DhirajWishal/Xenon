@@ -65,6 +65,15 @@ namespace Xenon
 				&m_pAllocation,
 				IID_NULL,
 				nullptr), "Failed to create the buffer!");
+
+			// Create the allocator.
+			XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_CommandAllocator)), "Failed to create the copy command allocator!");
+
+			// Create the command list.
+			XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_CommandAllocator.Get(), nullptr, IID_PPV_ARGS(&m_CommandList)), "Failed to create the copy command list!");
+
+			// End the command list.
+			XENON_DX12_ASSERT(m_CommandList->Close(), "Failed to stop the current command list!");
 		}
 
 		DX12Buffer::DX12Buffer(DX12Device* pDevice, uint64_t size, D3D12_HEAP_TYPE heapType, D3D12_RESOURCE_STATES resourceStates, D3D12_RESOURCE_FLAGS resourceFlags /*= D3D12_RESOURCE_FLAG_NONE*/)
@@ -85,6 +94,15 @@ namespace Xenon
 				&m_pAllocation,
 				IID_NULL,
 				nullptr), "Failed to create the buffer!");
+
+			// Create the allocator.
+			XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_CommandAllocator)), "Failed to create the copy command allocator!");
+
+			// Create the command list.
+			XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_CommandAllocator.Get(), nullptr, IID_PPV_ARGS(&m_CommandList)), "Failed to create the copy command list!");
+
+			// End the command list.
+			XENON_DX12_ASSERT(m_CommandList->Close(), "Failed to stop the current command list!");
 		}
 
 		DX12Buffer::~DX12Buffer()
@@ -103,56 +121,48 @@ namespace Xenon
 		{
 			auto pSourceBuffer = pBuffer->as<DX12Buffer>();
 
-			// Create the command list.
-			ComPtr<ID3D12GraphicsCommandList> commandList;
-			m_pDevice->getCommandAllocator().access([&commandList, this](ComPtr<ID3D12CommandAllocator>& allocator)
-				{
-					XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, allocator.Get(), nullptr, IID_PPV_ARGS(&commandList)), "Failed to create the copy command list!");
-				}
-			);
-
-			// Return if we failed to create the command list.
-			if (!commandList)
-				return;
+			// Begin the command list.
+			XENON_DX12_ASSERT(m_CommandAllocator->Reset(), "Failed to reset the current command allocator!");
+			XENON_DX12_ASSERT(m_CommandList->Reset(m_CommandAllocator.Get(), nullptr), "Failed to reset the current command list!");
 
 			// Set the proper resource states.
 			// Destination (this)
 			auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(m_pAllocation->GetResource(), m_CurrentState, D3D12_RESOURCE_STATE_COPY_DEST);
-			commandList->ResourceBarrier(1, &barrier);
+			m_CommandList->ResourceBarrier(1, &barrier);
 
 			// Source
 			if (pSourceBuffer->m_CurrentState != D3D12_RESOURCE_STATE_GENERIC_READ)
 			{
 				barrier = CD3DX12_RESOURCE_BARRIER::Transition(pSourceBuffer->getResource(), pSourceBuffer->m_CurrentState, D3D12_RESOURCE_STATE_COPY_SOURCE);
-				commandList->ResourceBarrier(1, &barrier);
+				m_CommandList->ResourceBarrier(1, &barrier);
 			}
 
 			// Copy the buffer region.
-			commandList->CopyBufferRegion(m_pAllocation->GetResource(), dstOffset, pSourceBuffer->getResource(), srcOffset, size);
+			m_CommandList->CopyBufferRegion(m_pAllocation->GetResource(), dstOffset, pSourceBuffer->getResource(), srcOffset, size);
 
 			// Change the state back to previous.
 			// Destination (this)
 			barrier = CD3DX12_RESOURCE_BARRIER::Transition(m_pAllocation->GetResource(), D3D12_RESOURCE_STATE_COPY_DEST, m_CurrentState);
-			commandList->ResourceBarrier(1, &barrier);
+			m_CommandList->ResourceBarrier(1, &barrier);
 
 			// Source
 			if (pSourceBuffer->m_CurrentState != D3D12_RESOURCE_STATE_GENERIC_READ)
 			{
 				barrier = CD3DX12_RESOURCE_BARRIER::Transition(pSourceBuffer->getResource(), D3D12_RESOURCE_STATE_COPY_SOURCE, pSourceBuffer->m_CurrentState);
-				commandList->ResourceBarrier(1, &barrier);
+				m_CommandList->ResourceBarrier(1, &barrier);
 			}
 
 			// End the command list.
-			XENON_DX12_ASSERT(commandList->Close(), "Failed to stop the current command list!");
+			XENON_DX12_ASSERT(m_CommandList->Close(), "Failed to stop the current command list!");
 
 			// Submit the command list to be executed.
-			std::array<ID3D12CommandList*, 1> ppCommandLists = { commandList.Get() };
-			m_pDevice->getCommandQueue()->ExecuteCommandLists(ppCommandLists.size(), ppCommandLists.data());
+			std::array<ID3D12CommandList*, 1> ppCommandLists = { m_CommandList.Get() };
+			m_pDevice->getDirectQueue()->ExecuteCommandLists(ppCommandLists.size(), ppCommandLists.data());
 
 			// Wait till the command is done executing.
 			ComPtr<ID3D12Fence> fence;
 			XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence)), "Failed to create the fence!");
-			XENON_DX12_ASSERT(m_pDevice->getCommandQueue()->Signal(fence.Get(), 1), "Failed to signal the fence!");
+			XENON_DX12_ASSERT(m_pDevice->getDirectQueue()->Signal(fence.Get(), 1), "Failed to signal the fence!");
 
 			// Setup synchronization.
 			auto fenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);

@@ -51,6 +51,8 @@ Studio::Studio(Xenon::BackendType type /*= Xenon::BackendType::Any*/)
 	, m_Camera(m_Instance, 1280, 720)
 	, m_Renderer(m_Instance, &m_Camera, GetRendererTitle(type))
 {
+	XENON_LOG_INFORMATION("Starting the {}", GetRendererTitle(m_Instance.getBackendType()));
+
 	std::vector<Xenon::Backend::DescriptorBindingInfo> bindingInfo;
 	auto& info = bindingInfo.emplace_back();
 	info.m_ApplicableShaders = Xenon::Backend::ShaderType::Vertex;
@@ -91,6 +93,11 @@ void Studio::run()
 
 		m_Camera.update();
 	}
+
+	if (!dataLoaded)
+		storage.wait();
+
+	m_Instance.cleanup();
 
 	XENON_LOG_INFORMATION("Exiting the {}", GetRendererTitle(m_Instance.getBackendType()));
 }

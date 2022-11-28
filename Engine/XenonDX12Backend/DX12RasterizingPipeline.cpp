@@ -671,6 +671,11 @@ namespace Xenon
 			setupPipelineStateDescriptor();
 		}
 
+		DX12RasterizingPipeline::~DX12RasterizingPipeline()
+		{
+			m_pDevice->waitIdle();
+		}
+
 		const Xenon::Backend::DX12RasterizingPipeline::PipelineStorage& DX12RasterizingPipeline::getPipeline(const VertexSpecification& vertexSpecification)
 		{
 			const auto hash = GenerateHashFor(vertexSpecification);

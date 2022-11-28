@@ -53,17 +53,24 @@ namespace Xenon
 			const auto lock = std::scoped_lock(m_JobMutex);
 			const auto jobStatus = m_JobEntries.emplace_back([pPromise, job = std::move(job)]
 				{
-					if constexpr (std::is_void_v<ReturnType>)
+					try
 					{
-						job();
-						pPromise->set_value();
-					}
-					else
-					{
-						pPromise->set_value(job());
-					}
+						if constexpr (std::is_void_v<ReturnType>)
+						{
+							job();
+							pPromise->set_value();
+						}
+						else
+						{
+							pPromise->set_value(job());
+						}
 
-					delete pPromise;
+						delete pPromise;
+					}
+					catch (std::exception_ptr ptr)
+					{
+						pPromise->set_exception(ptr);
+					}
 				});
 
 			m_ConditionVariable.notify_one();

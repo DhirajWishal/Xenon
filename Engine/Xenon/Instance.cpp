@@ -54,4 +54,9 @@ namespace Xenon
 		m_pDevice.reset();
 		m_pInstance.reset();
 	}
+
+	void Instance::cleanup() const
+	{
+		m_pDevice->waitIdle();
+	}
 }

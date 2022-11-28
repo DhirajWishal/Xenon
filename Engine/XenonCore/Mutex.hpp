@@ -102,7 +102,7 @@ namespace Xenon
 		 *
 		 * @retrun The data copy.
 		 */
-		[[nodiscard]] Type get() const
+		[[nodiscard]] Type get()
 		{
 			auto lock = std::scoped_lock(m_Mutex);
 			return m_Data;

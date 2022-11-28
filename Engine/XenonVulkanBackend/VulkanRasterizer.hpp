@@ -11,6 +11,8 @@ namespace Xenon
 {
 	namespace Backend
 	{
+		class VulkanRasterizingPipeline;
+
 		/**
 		 * Vulkan rasterizer class.
 		 */
@@ -32,6 +34,20 @@ namespace Xenon
 			 * Destructor.
 			 */
 			~VulkanRasterizer() override;
+
+			/**
+			 * Attach a pipeline to the rasterizer.
+			 *
+			 * @param pPipeline The pipeline pointer.
+			 */
+			void attachPipeline(VulkanRasterizingPipeline* pPipeline);
+
+			/**
+			 * Detach a pipeline to the rasterizer.
+			 *
+			 * @param pPipeline The pipeline pointer.
+			 */
+			void detachPipeline(const VulkanRasterizingPipeline* pPipeline);
 
 			/**
 			 * Get the image attachment of the relevant attachment type.
@@ -85,6 +101,8 @@ namespace Xenon
 			std::vector<VkImageView> m_AttachmentViews;
 			std::vector<VkFramebuffer> m_Framebuffers;
 			std::vector<VulkanImage> m_ImageAttachments;
+
+			std::vector<VulkanRasterizingPipeline*> m_pPipelines;
 
 			uint32_t m_FrameIndex = 0;
 		};

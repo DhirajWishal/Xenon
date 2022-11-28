@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "DX12DeviceBoundObject.hpp"
-
 #include "../XenonBackend/Buffer.hpp"
+
+#include "DX12DeviceBoundObject.hpp"
 
 namespace Xenon
 {
@@ -107,6 +107,9 @@ namespace Xenon
 
 		private:
 			D3D12MA::Allocation* m_pAllocation = nullptr;
+
+			ComPtr<ID3D12CommandAllocator> m_CommandAllocator;
+			ComPtr<ID3D12GraphicsCommandList> m_CommandList;
 
 			std::unique_ptr<DX12Buffer> m_pTemporaryBuffer = nullptr;
 
