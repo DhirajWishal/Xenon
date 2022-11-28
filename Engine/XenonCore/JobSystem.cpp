@@ -3,14 +3,21 @@
 
 #include "JobSystem.hpp"
 
+#include <latch>
+
 namespace Xenon
 {
 	JobSystem::JobSystem(uint32_t threadCount)
 		: m_WorkerState(threadCount, false)
 	{
+		auto latch = std::latch(threadCount);
+
 		m_Workers.reserve(threadCount);
 		for (uint32_t i = 0; i < threadCount; i++)
-			m_Workers.emplace_back([this, i] { worker(i); });
+			m_Workers.emplace_back([this, &latch, i] { latch.count_down(); worker(i); });
+
+		// Wait till all the workers have started.
+		latch.wait();
 	}
 
 	JobSystem::~JobSystem()

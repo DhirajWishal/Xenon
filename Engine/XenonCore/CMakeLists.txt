@@ -22,6 +22,9 @@ set(
 	"XObject.cpp"
 	"XObject.hpp"
 	"BitSet.hpp"
+	"TaskNode.cpp"
+	"TaskNode.hpp"
+	"TaskGraph.hpp"
 )
 
 # Add the source group.

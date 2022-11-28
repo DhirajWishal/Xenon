@@ -41,8 +41,7 @@ namespace Xenon
 
 		void VulkanDescriptor::attach(uint32_t binding, Buffer* pBuffer)
 		{
-			auto pVkBuffer = pBuffer->as<VulkanBuffer>();
-			const auto& bufferInfo = pVkBuffer->getDescriptorBufferInfo();
+			const auto& bufferInfo = pBuffer->as<VulkanBuffer>()->getDescriptorBufferInfo();
 
 			VkWriteDescriptorSet writeDescriptorSet = {};
 			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
