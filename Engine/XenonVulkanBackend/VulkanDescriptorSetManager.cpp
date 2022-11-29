@@ -40,25 +40,21 @@ namespace Xenon
 
 		VulkanDescriptorSetManager::~VulkanDescriptorSetManager()
 		{
-			for (const auto& storages : m_DescriptorSetStorages)
+			for (const auto& [hash, storage] : m_DescriptorSetStorages)
 			{
-				for (const auto& [hash, storage] : storages)
-				{
-					for (const auto& [pool, count] : storage.m_Pools)
-						m_pDevice->getDeviceTable().vkDestroyDescriptorPool(m_pDevice->getLogicalDevice(), pool, nullptr);
+				for (const auto& [pool, count] : storage.m_Pools)
+					m_pDevice->getDeviceTable().vkDestroyDescriptorPool(m_pDevice->getLogicalDevice(), pool, nullptr);
 
-					m_pDevice->getDeviceTable().vkDestroyDescriptorSetLayout(m_pDevice->getLogicalDevice(), storage.m_Layout, nullptr);
-				}
+				m_pDevice->getDeviceTable().vkDestroyDescriptorSetLayout(m_pDevice->getLogicalDevice(), storage.m_Layout, nullptr);
 			}
 		}
 
-		VkDescriptorSetLayout VulkanDescriptorSetManager::getDescriptorSetLayout(const std::vector<DescriptorBindingInfo>& bindingInfo, DescriptorType descriptorType)
+		VkDescriptorSetLayout VulkanDescriptorSetManager::getDescriptorSetLayout(const std::vector<DescriptorBindingInfo>& bindingInfo)
 		{
-			auto& descriptorStorage = m_DescriptorSetStorages[EnumToInt(descriptorType)];
 			const auto bindingHash = GenerateHash(ToBytes(bindingInfo.data()), bindingInfo.size() * sizeof(DescriptorBindingInfo));
 
 			// Create a new one if the layout for the hash does not exist.
-			if (!descriptorStorage.contains(bindingHash))
+			if (!m_DescriptorSetStorages.contains(bindingHash))
 			{
 				// Get the basic information from the binding info.
 				std::vector<VkDescriptorSetLayoutBinding> bindings;
@@ -106,22 +102,21 @@ namespace Xenon
 				XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkCreateDescriptorPool(m_pDevice->getLogicalDevice(), &poolCreateInfo, nullptr, &pool), "Failed to create the descriptor pool!");
 
 				// Set the information to the storage.
-				auto& storage = descriptorStorage[bindingHash];
+				auto& storage = m_DescriptorSetStorages[bindingHash];
 				storage.m_BindingInfo = bindingInfo;
 				storage.m_Layout = layout;
 				storage.m_Pools.emplace_back(pool, 0);
 			}
 
-			return descriptorStorage[bindingHash].m_Layout;
+			return m_DescriptorSetStorages[bindingHash].m_Layout;
 		}
 
-		std::pair<VkDescriptorPool, VkDescriptorSet> VulkanDescriptorSetManager::createDescriptorSet(const std::vector<DescriptorBindingInfo>& bindingInfo, DescriptorType descriptorType)
+		std::pair<VkDescriptorPool, VkDescriptorSet> VulkanDescriptorSetManager::createDescriptorSet(const std::vector<DescriptorBindingInfo>& bindingInfo)
 		{
-			auto& descriptorStorage = m_DescriptorSetStorages[EnumToInt(descriptorType)];
 			const auto bindingHash = GenerateHash(ToBytes(bindingInfo.data()), bindingInfo.size() * sizeof(DescriptorBindingInfo));
 
 			// Create a new one if the layout for the hash does not exist.
-			if (!descriptorStorage.contains(bindingHash))
+			if (!m_DescriptorSetStorages.contains(bindingHash))
 			{
 				// Get the basic information from the binding info.
 				std::vector<VkDescriptorSetLayoutBinding> bindings;
@@ -169,13 +164,13 @@ namespace Xenon
 				XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkCreateDescriptorPool(m_pDevice->getLogicalDevice(), &poolCreateInfo, nullptr, &pool), "Failed to create the descriptor pool!");
 
 				// Set the information to the storage.
-				auto& storage = descriptorStorage[bindingHash];
+				auto& storage = m_DescriptorSetStorages[bindingHash];
 				storage.m_BindingInfo = bindingInfo;
 				storage.m_Layout = layout;
 				storage.m_Pools.emplace_back(pool, 0);
 			}
 
-			auto& storage = descriptorStorage[bindingHash];
+			auto& storage = m_DescriptorSetStorages[bindingHash];
 
 			// Find a suitable descriptor set.
 			VkDescriptorPool pool = VK_NULL_HANDLE;
@@ -228,10 +223,10 @@ namespace Xenon
 			return std::make_pair(pool, descriptorSet);
 		}
 
-		void VulkanDescriptorSetManager::freeDescriptorSet(VkDescriptorPool pool, VkDescriptorSet descriptorSet, const std::vector<DescriptorBindingInfo>& bindingInfo, DescriptorType descriptorType)
+		void VulkanDescriptorSetManager::freeDescriptorSet(VkDescriptorPool pool, VkDescriptorSet descriptorSet, const std::vector<DescriptorBindingInfo>& bindingInfo)
 		{
 			const auto bindingHash = GenerateHash(ToBytes(bindingInfo.data()), bindingInfo.size() * sizeof(DescriptorBindingInfo));
-			auto& storage = m_DescriptorSetStorages[EnumToInt(descriptorType)][bindingHash];
+			auto& storage = m_DescriptorSetStorages[bindingHash];
 
 			XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkFreeDescriptorSets(m_pDevice->getLogicalDevice(), pool, 1, &descriptorSet), "Failed to free the descriptor set!");
 

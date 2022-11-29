@@ -12,7 +12,7 @@
 #include <latch>
 #include <fstream>
 
-constexpr const char* Attributes[] = {
+constexpr const char* g_Attributes[] = {
 	"POSITION",
 	"NORMAL",
 	"TANGENT",
@@ -35,6 +35,19 @@ constexpr const char* Attributes[] = {
 	"JOINTS_0",
 	"WEIGHTS_0",
 };
+
+namespace Materials
+{
+	/**
+	 * PBR Metallic Roughness Material.
+	 */
+	struct PBRMetallicRoughnessMaterial final : public Xenon::MaterialBlob
+	{
+		std::unique_ptr<Xenon::Backend::Image> m_pImage = nullptr;
+		std::unique_ptr<Xenon::Backend::ImageView> m_pImageView = nullptr;
+		std::unique_ptr<Xenon::Backend::ImageSampler> m_pSampler = nullptr;
+	};
+}
 
 namespace /* anonymous */
 {
@@ -136,10 +149,10 @@ namespace /* anonymous */
 		AttributeView view;
 		view.m_Element = element;
 
-		if (!primitive.attributes.contains(Attributes[Xenon::EnumToInt(element)]))
+		if (!primitive.attributes.contains(g_Attributes[Xenon::EnumToInt(element)]))
 			return view;
 
-		const auto& accessor = model.accessors[primitive.attributes.at(Attributes[Xenon::EnumToInt(element)])];
+		const auto& accessor = model.accessors[primitive.attributes.at(g_Attributes[Xenon::EnumToInt(element)])];
 		const auto& bufferView = model.bufferViews[accessor.bufferView];
 		const auto& buffer = model.buffers[bufferView.buffer];
 
@@ -332,7 +345,8 @@ namespace /* anonymous */
 			const auto end = start + accessor.count * stride;
 
 			subMesh.m_IndexCount = accessor.count;
-			subMesh.m_IndexSize = stride;
+			subMesh.m_IndexSize = static_cast<uint8_t>(stride);
+			subMesh.m_IndexOffset /= subMesh.m_IndexSize;
 
 			std::copy(buffer.data.begin() + start, buffer.data.begin() + end, indexBegin);
 		}
@@ -341,6 +355,7 @@ namespace /* anonymous */
 	/**
 	 * Load a node from the model.
 	 *
+	 * @param instance The instance reference.
 	 * @param model The model to load from.
 	 * @param node The node to load.
 	 * @param storage The mesh storage.
@@ -351,6 +366,7 @@ namespace /* anonymous */
 	 * @param synchronization The synchronization latch.
 	 */
 	void LoadNode(
+		Xenon::Instance& instance,
 		const tinygltf::Model& model,
 		const tinygltf::Node& node,
 		Xenon::MeshStorage& storage,
@@ -361,6 +377,7 @@ namespace /* anonymous */
 		std::latch& synchronization)
 	{
 		static auto workers = Xenon::JobSystem(std::thread::hardware_concurrency() - 1);	// Keep one thread free for other purposes.
+		static std::unordered_map<uint64_t, Materials::PBRMetallicRoughnessMaterial> materialMap;
 
 		// Get the mesh and initialize everything.
 		const auto& gltfMesh = model.meshes[node.mesh];
@@ -387,9 +404,9 @@ namespace /* anonymous */
 			// Get the next available vertex begin position.
 			for (auto i = Xenon::EnumToInt(Xenon::Backend::InputElement::VertexPosition); i < Xenon::EnumToInt(Xenon::Backend::InputElement::VertexElementCount); i++)
 			{
-				if (storage.getVertexSpecification().isAvailable(static_cast<Xenon::Backend::InputElement>(i)) && gltfPrimitive.attributes.contains(Attributes[i]))
+				if (storage.getVertexSpecification().isAvailable(static_cast<Xenon::Backend::InputElement>(i)) && gltfPrimitive.attributes.contains(g_Attributes[i]))
 				{
-					const auto& accessor = model.accessors[gltfPrimitive.attributes.at(Attributes[i])];
+					const auto& accessor = model.accessors[gltfPrimitive.attributes.at(g_Attributes[i])];
 					const auto& bufferView = model.bufferViews[accessor.bufferView];
 
 					vertexItr += accessor.ByteStride(bufferView) * accessor.count;
@@ -404,11 +421,97 @@ namespace /* anonymous */
 
 				indexItr += accessor.ByteStride(bufferView) * accessor.count;
 			}
+
+			// Load materials.
+			auto material = model.materials[gltfPrimitive.material];
+			if (material.pbrMetallicRoughness.baseColorTexture.index >= 0)
+			{
+				auto texture = model.textures[material.pbrMetallicRoughness.baseColorTexture.index];
+				auto image = model.images[texture.source];
+				auto sampler = model.samplers[texture.sampler];
+
+				auto pMaterial = std::make_unique<Materials::PBRMetallicRoughnessMaterial>();
+
+				const auto imageHash = Xenon::GenerateHash(Xenon::ToBytes(image.image.data()), image.image.size());
+				if (materialMap.contains(imageHash))
+				{
+					const auto& loadedMaterial = materialMap[imageHash];
+
+					// Setup the descriptor.
+					std::vector<Xenon::Backend::DescriptorBindingInfo> bindingInfos;
+					auto& info = bindingInfos.emplace_back();
+					info.m_ApplicableShaders = Xenon::Backend::ShaderType::Fragment;
+					info.m_Type = Xenon::Backend::ResourceType::CombinedImageSampler;
+
+					pMaterial->m_pDescriptor = instance.getFactory()->createDescriptor(instance.getBackendDevice(), bindingInfos, Xenon::Backend::DescriptorType::Material);
+
+					// Attach the resources.
+					pMaterial->m_pDescriptor->attach(0, loadedMaterial.m_pImage.get(), loadedMaterial.m_pImageView.get(), loadedMaterial.m_pSampler.get(), Xenon::Backend::ImageUsage::Graphics);
+
+					// Set the material.
+					subMesh.m_pMaterial = std::move(pMaterial);
+				}
+				else
+				{
+					auto& loadedMaterial = materialMap[imageHash];
+
+					// Setup the image.
+					Xenon::Backend::ImageSpecification imageSpecification = {};
+					imageSpecification.m_Width = image.width;
+					imageSpecification.m_Height = image.height;
+					imageSpecification.m_Format = Xenon::Backend::DataFormat::R8G8B8A8_SRGB;
+
+					loadedMaterial.m_pImage = instance.getFactory()->createImage(instance.getBackendDevice(), imageSpecification);
+
+					// Copy the image data to the image.
+					{
+						const auto copySize = image.width * image.height * image.component;
+						auto pStagingBuffer = instance.getFactory()->createBuffer(instance.getBackendDevice(), copySize, Xenon::Backend::BufferType::Staging);
+
+						pStagingBuffer->write(Xenon::ToBytes(image.image.data()), copySize);
+						loadedMaterial.m_pImage->copyFrom(pStagingBuffer.get());
+					}
+
+					// Setup image view.
+					Xenon::Backend::ImageViewSpecification imageViewSpecification = {};
+					loadedMaterial.m_pImageView = instance.getFactory()->createImageView(instance.getBackendDevice(), loadedMaterial.m_pImage.get(), imageViewSpecification);
+
+					// Setup image sampler.
+					Xenon::Backend::ImageSamplerSpecification imageSamplerSpecification = {};
+					loadedMaterial.m_pSampler = instance.getFactory()->createImageSampler(instance.getBackendDevice(), imageSamplerSpecification);
+
+					// Setup the descriptor.
+					std::vector<Xenon::Backend::DescriptorBindingInfo> bindingInfos;
+					auto& info = bindingInfos.emplace_back();
+					info.m_ApplicableShaders = Xenon::Backend::ShaderType::Fragment;
+					info.m_Type = Xenon::Backend::ResourceType::CombinedImageSampler;
+
+					pMaterial->m_pDescriptor = instance.getFactory()->createDescriptor(instance.getBackendDevice(), bindingInfos, Xenon::Backend::DescriptorType::Material);
+
+					// Attach the resources.
+					pMaterial->m_pDescriptor->attach(0, loadedMaterial.m_pImage.get(), loadedMaterial.m_pImageView.get(), loadedMaterial.m_pSampler.get(), Xenon::Backend::ImageUsage::Graphics);
+
+					// Set the material.
+					subMesh.m_pMaterial = std::move(pMaterial);
+				}
+			}
+			else
+			{
+				std::vector<Xenon::Backend::DescriptorBindingInfo> bindingInfos;
+				auto& info = bindingInfos.emplace_back();
+				info.m_ApplicableShaders = Xenon::Backend::ShaderType::Fragment;
+				info.m_Type = Xenon::Backend::ResourceType::CombinedImageSampler;
+
+				subMesh.m_pMaterial->m_pDescriptor = instance.getFactory()->createDescriptor(instance.getBackendDevice(), bindingInfos, Xenon::Backend::DescriptorType::Material);
+
+				// Attach the resources.
+				subMesh.m_pMaterial->m_pDescriptor->attach(0, instance.getDefaultImage(), instance.getDefaultImageView(), instance.getDefaultSampler(), Xenon::Backend::ImageUsage::Graphics);
+			}
 		}
 
 		// Load the children.
 		for (const auto child : node.children)
-			LoadNode(model, model.nodes[child], storage, vertices, vertexItr, indices, indexItr, synchronization);
+			LoadNode(instance, model, model.nodes[child], storage, vertices, vertexItr, indices, indexItr, synchronization);
 	}
 }
 
@@ -453,7 +556,7 @@ namespace Xenon
 			{
 				// Get the vertex information.
 				for (auto i = EnumToInt(Backend::InputElement::VertexPosition); i < EnumToInt(Backend::InputElement::VertexElementCount); i++)
-					vertexBufferSize += ResolvePrimitive(model, primitive, Attributes[i], static_cast<Backend::InputElement>(i), storage.m_VertexSpecification);
+					vertexBufferSize += ResolvePrimitive(model, primitive, g_Attributes[i], static_cast<Backend::InputElement>(i), storage.m_VertexSpecification);
 
 				// Get the index buffer size.
 				if (primitive.indices >= 0)
@@ -478,7 +581,7 @@ namespace Xenon
 		auto synchronization = std::latch(workerSubmissions);
 
 		const auto& scene = model.scenes[model.defaultScene];
-		LoadNode(model, model.nodes[scene.nodes.front()], storage, vertices, vertexItr, indices, indexItr, synchronization);
+		LoadNode(instance, model, model.nodes[scene.nodes.front()], storage, vertices, vertexItr, indices, indexItr, synchronization);
 
 		// Wait till all the sub-meshes are loaded.
 		synchronization.wait();

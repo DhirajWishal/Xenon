@@ -81,7 +81,13 @@ namespace Xenon
 
 		void DX12CommandRecorder::copy(Image* pSource, Swapchain* pDestination)
 		{
+			XENON_TODO_NOW("(Dhiraj) Implement this function {}", __FUNCSIG__);
 			// m_pCurrentCommandList->CopyResource(pDestination->as<DX12Swapchain>()->getCurrentSwapchainImageResource(), pSource->as<DX12Image>()->getResource());
+		}
+
+		void DX12CommandRecorder::copy(Buffer* pSource, uint64_t bufferOffset, Image* pImage, glm::vec3 imageSize, glm::vec3 imageOffset /*= glm::vec3(0)*/)
+		{
+			XENON_TODO_NOW("(Dhiraj) Implement this function {}", __FUNCSIG__);
 		}
 
 		void DX12CommandRecorder::bind(Rasterizer* pRasterizer, const std::vector<Rasterizer::ClearValueType>& clearValues, bool usingSecondaryCommandRecorders /*= false*/)

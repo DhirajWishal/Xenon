@@ -17,7 +17,7 @@ namespace Xenon
 			, VulkanDeviceBoundObject(pDevice)
 		{
 			// Create a new descriptor set.
-			const auto [pool, set] = pDevice->getDescriptorSetManager()->createDescriptorSet(bindingInfo, type);
+			const auto [pool, set] = pDevice->getDescriptorSetManager()->createDescriptorSet(bindingInfo);
 
 			m_Pool = pool;
 			m_DescriptorSet = set;
@@ -27,9 +27,9 @@ namespace Xenon
 		{
 			try
 			{
-				m_pDevice->getInstance()->getDeletionQueue().insert([pDevice = m_pDevice, pool = m_Pool, set = m_DescriptorSet, bindingInfo = std::move(m_BindingInformation), type = m_Type]
+				m_pDevice->getInstance()->getDeletionQueue().insert([pDevice = m_pDevice, pool = m_Pool, set = m_DescriptorSet, bindingInfo = std::move(m_BindingInformation)]
 					{
-						pDevice->getDescriptorSetManager()->freeDescriptorSet(pool, set, bindingInfo, type);
+						pDevice->getDescriptorSetManager()->freeDescriptorSet(pool, set, bindingInfo);
 					}
 				);
 			}
@@ -63,7 +63,7 @@ namespace Xenon
 			VkDescriptorImageInfo imageInfo = {};
 			imageInfo.sampler = pSampler->as<VulkanImageSampler>()->getSampler();
 			imageInfo.imageView = pView->as<VulkanImageView>()->getView();
-			imageInfo.imageLayout = pImage->as<VulkanImage>()->getImageLayout(); XENON_FIXME_NOW("(Dhiraj) Use a better way to set the layouts.");
+			imageInfo.imageLayout = pImage->as<VulkanImage>()->getImageLayout();
 
 			VkWriteDescriptorSet writeDescriptorSet = {};
 			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;

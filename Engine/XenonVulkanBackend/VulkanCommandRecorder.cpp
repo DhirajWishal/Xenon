@@ -486,6 +486,26 @@ namespace Xenon
 			changeImageLayout(currentSwapchainImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_IMAGE_ASPECT_COLOR_BIT);
 		}
 
+		void VulkanCommandRecorder::copy(Buffer* pSource, uint64_t bufferOffset, Image* pImage, glm::vec3 imageSize, glm::vec3 imageOffset /*= glm::vec3(0)*/)
+		{
+			VkBufferImageCopy imageCopy = {};
+			imageCopy.bufferOffset = bufferOffset;
+			imageCopy.bufferRowLength = static_cast<uint32_t>(imageSize.x);
+			imageCopy.bufferImageHeight = static_cast<uint32_t>(imageSize.y);
+			imageCopy.imageSubresource.aspectMask = pImage->getUsage() & ImageUsage::DepthAttachment ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+			imageCopy.imageSubresource.baseArrayLayer = 0;
+			imageCopy.imageSubresource.layerCount = 1;
+			imageCopy.imageSubresource.mipLevel = 0;
+			imageCopy.imageOffset.x = static_cast<int32_t>(imageOffset.x);
+			imageCopy.imageOffset.y = static_cast<int32_t>(imageOffset.y);
+			imageCopy.imageOffset.z = static_cast<int32_t>(imageOffset.z);
+			imageCopy.imageExtent.depth = static_cast<uint32_t>(imageSize.z);
+			imageCopy.imageExtent.width = static_cast<uint32_t>(imageSize.x);
+			imageCopy.imageExtent.height = static_cast<uint32_t>(imageSize.y);
+
+			m_pDevice->getDeviceTable().vkCmdCopyBufferToImage(*m_pCurrentBuffer, pSource->as<VulkanBuffer>()->getBuffer(), pImage->as<VulkanImage>()->getImage(), pImage->as<VulkanImage>()->getImageLayout(), 1, &imageCopy);
+		}
+
 		void VulkanCommandRecorder::bind(Rasterizer* pRasterizer, const std::vector<Rasterizer::ClearValueType>& clearValues, bool usingSecondaryCommandRecorders /*= false*/)
 		{
 			// Unbind the previous render pass if we need to.

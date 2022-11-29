@@ -46,6 +46,13 @@ namespace Xenon
 			~DX12Image() override;
 
 			/**
+			 * Copy image data from a source buffer.
+			 *
+			 * @param pSrcBuffer The source buffer pointer.
+			 */
+			void copyFrom(Buffer* pSrcBuffer) override;
+
+			/**
 			 * Get the backend resource.
 			 *
 			 * @return The resource pointer.

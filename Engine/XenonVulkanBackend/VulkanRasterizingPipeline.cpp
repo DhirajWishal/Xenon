@@ -6,6 +6,8 @@
 #include "VulkanRasterizer.hpp"
 #include "VulkanDescriptorSetManager.hpp"
 
+#include <algorithm>
+
 #ifdef XENON_PLATFORM_WINDOWS
 #include <execution>
 
@@ -107,7 +109,7 @@ namespace /* anonymous */
 		}
 
 		// Setup the input bindings if we're on the vertex shader.
-		if (type == Xenon::Backend::ShaderType::Vertex)
+		if (type & Xenon::Backend::ShaderType::Vertex)
 		{
 			bool hasInstanceInputs = false;
 			for (const auto& input : shader.getInputAttributes())
@@ -876,10 +878,13 @@ namespace Xenon
 				XENON_VK_ASSERT(pDevice->getDeviceTable().vkCreateShaderModule(pDevice->getLogicalDevice(), &moduleCreateInfo, nullptr, &createInfo.module), "Failed to create the fragment shader module!");
 			}
 
+			std::vector<std::pair<uint32_t, std::vector<DescriptorBindingInfo>>> sortedBindings(bindingMap.begin(), bindingMap.end());
+			std::ranges::sort(sortedBindings, [](const auto& lhs, const auto& rhs) { return lhs.first < rhs.first; });
+
 			// Get the layouts.
 			std::vector<VkDescriptorSetLayout> layouts;
-			for (const auto& [set, bindings] : bindingMap)
-				layouts.emplace_back(pDevice->getDescriptorSetManager()->getDescriptorSetLayout(bindings, static_cast<DescriptorType>(set)));
+			for (const auto& [set, bindings] : sortedBindings)
+				layouts.emplace_back(pDevice->getDescriptorSetManager()->getDescriptorSetLayout(bindings));
 
 			// Create the pipeline layout.
 			createPipelineLayout(std::move(layouts), std::move(pushConstants));

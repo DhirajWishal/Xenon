@@ -126,7 +126,7 @@ namespace Xenon
 
 				// Load the data to the vector.
 				binaryData.resize(size);
-				shaderFile.read(reinterpret_cast<char*>(binaryData.data()), size);
+				shaderFile.read(std::bit_cast<char*>(binaryData.data()), size);
 
 				// Close the file now.
 				shaderFile.close();

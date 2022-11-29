@@ -15,7 +15,7 @@ std::vector<std::byte> CacheHandler::load(uint64_t hash)
 		cacheFile.seekg(0);
 
 		cacheData.resize(size);
-		cacheFile.read(reinterpret_cast<char*>(cacheData.data()), size);
+		cacheFile.read(std::bit_cast<char*>(cacheData.data()), size);
 
 		cacheFile.close();
 	}
@@ -28,7 +28,7 @@ void CacheHandler::store(uint64_t hash, const std::vector<std::byte>& bytes)
 	auto cacheFile = std::fstream(std::to_string(hash) + ".bin", std::ios::out | std::ios::binary);
 	if (cacheFile.is_open())
 	{
-		cacheFile.write(reinterpret_cast<const char*>(bytes.data()), bytes.size());
+		cacheFile.write(std::bit_cast<const char*>(bytes.data()), bytes.size());
 		cacheFile.close();
 	}
 }

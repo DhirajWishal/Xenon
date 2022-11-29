@@ -187,7 +187,7 @@ namespace Xenon
 
 			// Map the memory.
 			std::byte* copyBufferMemory = nullptr;
-			copyBuffer.getResource()->Map(0, nullptr, reinterpret_cast<void**>(&copyBufferMemory));
+			copyBuffer.getResource()->Map(0, nullptr, std::bit_cast<void**>(&copyBufferMemory));
 
 			// Copy the data to the copy buffer.
 			std::copy_n(pData, size, copyBufferMemory);
@@ -215,7 +215,7 @@ namespace Xenon
 			m_pTemporaryBuffer->copy(this, m_Size, 0, 0);
 
 			std::byte* tempBufferMemory = nullptr;
-			m_pTemporaryBuffer->getResource()->Map(0, nullptr, reinterpret_cast<void**>(&tempBufferMemory));
+			m_pTemporaryBuffer->getResource()->Map(0, nullptr, std::bit_cast<void**>(&tempBufferMemory));
 			return tempBufferMemory;
 		}
 

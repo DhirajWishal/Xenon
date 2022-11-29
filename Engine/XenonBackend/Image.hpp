@@ -9,6 +9,8 @@ namespace Xenon
 {
 	namespace Backend
 	{
+		class Buffer;
+
 		/**
 		 * Image specification structure.
 		 * This contains all the necessary information to create an image.
@@ -41,7 +43,7 @@ namespace Xenon
 			 * @param pDevice The device pointer.
 			 * @param specification The image specification.
 			 */
-			explicit Image([[maybe_unused]] Device* pDevice, const ImageSpecification& specification) : m_Specification(specification) {}
+			explicit Image([[maybe_unused]] const Device* pDevice, const ImageSpecification& specification) : m_Specification(specification) {}
 
 			/**
 			 * Move constructor.
@@ -49,6 +51,13 @@ namespace Xenon
 			 * @param other The other image.
 			 */
 			Image(Image&& other) noexcept : m_Specification(other.m_Specification) {}
+
+			/**
+			 * Copy image data from a source buffer.
+			 *
+			 * @param pSrcBuffer The source buffer pointer.
+			 */
+			virtual void copyFrom(Buffer* pSrcBuffer) = 0;
 
 			/**
 			 * Get the image specification.

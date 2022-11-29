@@ -5,7 +5,6 @@
 
 #include "VulkanDevice.hpp"
 
-#include <array>
 #include <unordered_map>
 
 namespace Xenon
@@ -48,7 +47,7 @@ namespace Xenon
 			 * @param descriptorType The descriptor type.
 			 * @return The descriptor set layout.
 			 */
-			[[nodicard]] VkDescriptorSetLayout getDescriptorSetLayout(const std::vector<DescriptorBindingInfo>& bindingInfo, DescriptorType descriptorType);
+			[[nodicard]] VkDescriptorSetLayout getDescriptorSetLayout(const std::vector<DescriptorBindingInfo>& bindingInfo);
 
 			/**
 			 * Create a new descriptor set.
@@ -57,7 +56,7 @@ namespace Xenon
 			 * @param descriptorType The descriptor type.
 			 * @return The descriptor pool and its set.
 			 */
-			[[nodiscard]] std::pair<VkDescriptorPool, VkDescriptorSet> createDescriptorSet(const std::vector<DescriptorBindingInfo>& bindingInfo, DescriptorType descriptorType);
+			[[nodiscard]] std::pair<VkDescriptorPool, VkDescriptorSet> createDescriptorSet(const std::vector<DescriptorBindingInfo>& bindingInfo);
 
 			/**
 			 * Free the descriptor set.
@@ -67,10 +66,10 @@ namespace Xenon
 			 * @param bindingInfo The descriptor binding info.
 			 * @param descriptorType The descriptor type.
 			 */
-			void freeDescriptorSet(VkDescriptorPool pool, VkDescriptorSet descriptorSet, const std::vector<DescriptorBindingInfo>& bindingInfo, DescriptorType descriptorType);
+			void freeDescriptorSet(VkDescriptorPool pool, VkDescriptorSet descriptorSet, const std::vector<DescriptorBindingInfo>& bindingInfo);
 
 		private:
-			std::array<std::unordered_map<uint64_t, VulkanDescriptorStorage>, 3> m_DescriptorSetStorages;
+			std::unordered_map<uint64_t, VulkanDescriptorStorage> m_DescriptorSetStorages;
 
 			VulkanDevice* m_pDevice = nullptr;
 		};

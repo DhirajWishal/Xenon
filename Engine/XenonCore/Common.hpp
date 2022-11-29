@@ -65,7 +65,7 @@ namespace Xenon
 	 * @return The std::byte pointer.
 	 */
 	template<class Type>
-	[[nodiscard]] constexpr std::byte* ToBytes(Type* pointer) noexcept { return reinterpret_cast<std::byte*>(pointer); }
+	[[nodiscard]] constexpr std::byte* ToBytes(Type* pointer) noexcept { return std::bit_cast<std::byte*>(pointer); }
 
 	/**
 	 * Cast a pointer to std::byte pointer.
@@ -75,7 +75,7 @@ namespace Xenon
 	 * @return The std::byte pointer.
 	 */
 	template<class Type>
-	[[nodiscard]] constexpr const std::byte* ToBytes(const Type* pointer) noexcept { return reinterpret_cast<const std::byte*>(pointer); }
+	[[nodiscard]] constexpr const std::byte* ToBytes(const Type* pointer) noexcept { return std::bit_cast<const std::byte*>(pointer); }
 
 	/**
 	 * Cast a std::byte pointer to a typed pointer.
@@ -85,7 +85,7 @@ namespace Xenon
 	 * @return The type pointer.
 	 */
 	template<class Type>
-	[[nodiscard]] constexpr Type* FromBytes(std::byte* pointer) noexcept { return reinterpret_cast<Type*>(pointer); }
+	[[nodiscard]] constexpr Type* FromBytes(std::byte* pointer) noexcept { return std::bit_cast<Type*>(pointer); }
 
 	/**
 	 * Cast a std::byte pointer to a typed pointer.
@@ -95,7 +95,7 @@ namespace Xenon
 	 * @return The type pointer.
 	 */
 	template<class Type>
-	[[nodiscard]] constexpr const Type* FromBytes(const std::byte* pointer) noexcept { return reinterpret_cast<const Type*>(pointer); }
+	[[nodiscard]] constexpr const Type* FromBytes(const std::byte* pointer) noexcept { return std::bit_cast<const Type*>(pointer); }
 
 	/**
 	 * Generate hash for a set of bytes.
@@ -117,7 +117,7 @@ namespace Xenon
 	 * @return The 64-bit hash value.
 	 */
 	template<class Type>
-	[[nodiscard]] uint64_t GenerateHashFor(const Type& data, uint64_t seed = 0) noexcept { return GenerateHash(reinterpret_cast<const std::byte*>(&data), sizeof(Type), seed); }
+	[[nodiscard]] uint64_t GenerateHashFor(const Type& data, uint64_t seed = 0) noexcept { return GenerateHash(std::bit_cast<const std::byte*>(&data), sizeof(Type), seed); }
 }
 
 #define XENON_DEFINE_ENUM_AND(name)															\

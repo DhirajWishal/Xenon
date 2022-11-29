@@ -218,7 +218,7 @@ namespace Xenon
 
 			// Create the debugger.
 			const auto debugMessengerCreateInfo = CreateDebugMessengerCreateInfo(this);
-			const auto vkCreateDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(m_Instance, "vkCreateDebugUtilsMessengerEXT"));
+			const auto vkCreateDebugUtilsMessengerEXT = std::bit_cast<PFN_vkCreateDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(m_Instance, "vkCreateDebugUtilsMessengerEXT"));
 			XENON_VK_ASSERT(vkCreateDebugUtilsMessengerEXT(m_Instance, &debugMessengerCreateInfo, nullptr, &m_DebugMessenger), "Failed to create the debug messenger.");
 
 #endif // XENON_DEBUG
@@ -232,7 +232,7 @@ namespace Xenon
 					{
 #ifdef XENON_DEBUG
 						// Destroy the debugger.
-						const auto vkDestroyDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT"));
+						const auto vkDestroyDebugUtilsMessengerEXT = std::bit_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT"));
 				vkDestroyDebugUtilsMessengerEXT(instance, debugger, nullptr);
 
 #endif // XENON_DEBUG

@@ -47,6 +47,21 @@ namespace Xenon
 
 		// Create the device.
 		m_pDevice = m_pFactory->createDevice(m_pInstance.get(), renderTargets);
+
+		// Setup the default image, image view and sampler.
+		Backend::ImageSpecification imageSpecification = {};
+		imageSpecification.m_Width = 1;
+		imageSpecification.m_Height = 1;
+		imageSpecification.m_Format = Xenon::Backend::DataFormat::R8G8B8A8_SRGB;
+		m_pDefaultImage = getFactory()->createImage(getBackendDevice(), imageSpecification);
+
+		// Setup image view.
+		Backend::ImageViewSpecification imageViewSpecification = {};
+		m_pDefaultImageView = getFactory()->createImageView(getBackendDevice(), m_pDefaultImage.get(), imageViewSpecification);
+
+		// Setup image sampler.
+		Backend::ImageSamplerSpecification imageSamplerSpecification = {};
+		m_pDefaultSampler = getFactory()->createImageSampler(getBackendDevice(), imageSamplerSpecification);
 	}
 
 	Instance::~Instance()

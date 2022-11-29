@@ -10,7 +10,7 @@ namespace /* anonymous */
 	{
 		std::vector<Xenon::Backend::DescriptorBindingInfo> bindingInfo;
 		auto& info = bindingInfo.emplace_back();
-		info.m_ApplicableShaders = Xenon::Backend::ShaderType::Vertex | Xenon::Backend::ShaderType::Fragment;
+		info.m_ApplicableShaders = Xenon::Backend::ShaderType::Vertex;
 		info.m_Type = Xenon::Backend::ResourceType::UniformBuffer;
 
 		return bindingInfo;

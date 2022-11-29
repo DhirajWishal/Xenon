@@ -25,12 +25,21 @@ namespace Xenon
 	};
 
 	/**
+	 * Material blob structure.
+	 * This structure is the base structure for all the materials of a single sub-mesh.
+	 */
+	struct MaterialBlob
+	{
+		std::unique_ptr<Backend::Descriptor> m_pDescriptor;
+	};
+
+	/**
 	 * Sub-mesh structure.
 	 * Sub-meshes are the building blocks of a mesh.
 	 */
 	struct SubMesh final
 	{
-		std::unique_ptr<Backend::Descriptor> m_pMaterial = nullptr;
+		std::unique_ptr<MaterialBlob> m_pMaterial = nullptr;
 
 		uint64_t m_VertexOffset = 0;
 		uint64_t m_VertexCount = 0;

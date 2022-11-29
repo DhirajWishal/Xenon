@@ -56,14 +56,14 @@ namespace Xenon
 		 *
 		 * @return The application name string view.
 		 */
-		[[nodiscard]] const std::string_view getApplicationName() const { return m_ApplicationName; }
+		[[nodiscard]] const std::string_view getApplicationName() const noexcept { return m_ApplicationName; }
 
 		/**
 		 * Get the application version.
 		 *
 		 * @return The application version.
 		 */
-		[[nodiscard]] uint32_t getApplicationVersion() const { return m_ApplicationVersion; }
+		[[nodiscard]] uint32_t getApplicationVersion() const noexcept { return m_ApplicationVersion; }
 
 		/**
 		 * Get the supported render target types.
@@ -77,49 +77,91 @@ namespace Xenon
 		 *
 		 * @return The backend type.
 		 */
-		[[nodiscard]] BackendType getBackendType() const { return m_BackendType; }
+		[[nodiscard]] BackendType getBackendType() const noexcept { return m_BackendType; }
 
 		/**
 		 * Get the backend factory.
 		 *
 		 * @return The backend factory pointer.
 		 */
-		[[nodiscard]] Backend::IFactory* getFactory() { return m_pFactory.get(); }
+		[[nodiscard]] Backend::IFactory* getFactory() noexcept { return m_pFactory.get(); }
 
 		/**
 		 * Get the backend factory.
 		 *
 		 * @return The const backend factory pointer.
 		 */
-		[[nodiscard]] const Backend::IFactory* getFactory() const { return m_pFactory.get(); }
+		[[nodiscard]] const Backend::IFactory* getFactory() const noexcept { return m_pFactory.get(); }
 
 		/**
 		 * Get the backend instance pointer.
 		 *
 		 * @return The instance pointer.
 		 */
-		[[nodiscard]] Backend::Instance* getBackendInstance() { return m_pInstance.get(); }
+		[[nodiscard]] Backend::Instance* getBackendInstance() noexcept { return m_pInstance.get(); }
 
 		/**
 		 * Get the backend instance pointer.
 		 *
 		 * @return The const instance pointer.
 		 */
-		[[nodiscard]] const Backend::Instance* getBackendInstance() const { return m_pInstance.get(); }
+		[[nodiscard]] const Backend::Instance* getBackendInstance() const noexcept { return m_pInstance.get(); }
 
 		/**
 		 * Get the backend device pointer.
 		 *
 		 * @return The device pointer.
 		 */
-		[[nodiscard]] Backend::Device* getBackendDevice() { return m_pDevice.get(); }
+		[[nodiscard]] Backend::Device* getBackendDevice() noexcept { return m_pDevice.get(); }
 
 		/**
 		 * Get the backend device pointer.
 		 *
 		 * @return The const device pointer.
 		 */
-		[[nodiscard]] const Backend::Device* getBackendDevice() const { return m_pDevice.get(); }
+		[[nodiscard]] const Backend::Device* getBackendDevice() const noexcept { return m_pDevice.get(); }
+
+		/**
+		 * Get the default backend image.
+		 *
+		 * @return The image pointer.
+		 */
+		[[nodiscard]] Backend::Image* getDefaultImage() noexcept { return m_pDefaultImage.get(); }
+
+		/**
+		 * Get the default backend image.
+		 *
+		 * @return The image pointer.
+		 */
+		[[nodiscard]] const Backend::Image* getDefaultImage() const noexcept { return m_pDefaultImage.get(); }
+
+		/**
+		 * Get the default backend image view.
+		 *
+		 * @return The image view pointer.
+		 */
+		[[nodiscard]] Backend::ImageView* getDefaultImageView() noexcept { return m_pDefaultImageView.get(); }
+
+		/**
+		 * Get the default backend image view.
+		 *
+		 * @return The image view pointer.
+		 */
+		[[nodiscard]] const Backend::ImageView* getDefaultImageView() const noexcept { return m_pDefaultImageView.get(); }
+
+		/**
+		 * Get the default backend sampler.
+		 *
+		 * @return The sampler pointer.
+		 */
+		[[nodiscard]] Backend::ImageSampler* getDefaultSampler() noexcept { return m_pDefaultSampler.get(); }
+
+		/**
+		 * Get the default backend sampler.
+		 *
+		 * @return The sampler pointer.
+		 */
+		[[nodiscard]] const Backend::ImageSampler* getDefaultSampler() const noexcept { return m_pDefaultSampler.get(); }
 
 	private:
 		std::string m_ApplicationName;
@@ -128,6 +170,10 @@ namespace Xenon
 		std::unique_ptr<Backend::IFactory> m_pFactory = nullptr;
 		std::unique_ptr<Backend::Instance> m_pInstance = nullptr;
 		std::unique_ptr<Backend::Device> m_pDevice = nullptr;
+
+		std::unique_ptr<Backend::Image> m_pDefaultImage = nullptr;
+		std::unique_ptr<Backend::ImageView> m_pDefaultImageView = nullptr;
+		std::unique_ptr<Backend::ImageSampler> m_pDefaultSampler = nullptr;
 
 		BackendType m_BackendType = BackendType::Any;
 	};

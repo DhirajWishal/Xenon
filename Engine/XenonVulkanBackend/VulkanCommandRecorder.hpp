@@ -76,6 +76,17 @@ namespace Xenon
 			void copy(Image* pSource, Swapchain* pDestination) override;
 
 			/**
+			 * Copy image data from a buffer to an image.
+			 *
+			 * @param pSource The source buffer pointer.
+			 * @param bufferOffset The buffer offset.
+			 * @param pImage the image pointer to copy the data to.
+			 * @param imageSize The image data size to copy.
+			 * @param imageOffset The image offset to copy the data to. Default is 0.
+			 */
+			void copy(Buffer* pSource, uint64_t bufferOffset, Image* pImage, glm::vec3 imageSize, glm::vec3 imageOffset = glm::vec3(0)) override;
+
+			/**
 			 * Bind a rasterizer to the command recorder.
 			 *
 			 * @param pRasterizer The rasterizer pointer.

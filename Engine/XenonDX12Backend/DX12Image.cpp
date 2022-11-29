@@ -106,6 +106,11 @@ namespace Xenon
 			}
 		}
 
+		void DX12Image::copyFrom(Buffer* pSrcBuffer)
+		{
+
+		}
+
 		Xenon::Backend::DX12Image& DX12Image::operator=(DX12Image&& other) noexcept
 		{
 			Image::operator=(std::move(other));

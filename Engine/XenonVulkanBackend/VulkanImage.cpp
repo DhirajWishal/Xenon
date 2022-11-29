@@ -3,6 +3,8 @@
 
 #include "VulkanImage.hpp"
 #include "VulkanMacros.hpp"
+#include "VulkanCommandRecorder.hpp"
+#include "VulkanBuffer.hpp"
 
 namespace Xenon
 {
@@ -157,6 +159,26 @@ namespace Xenon
 					XENON_VK_ASSERT(VK_ERROR_UNKNOWN, "Failed to push the image deletion function to the deletion queue!");
 				}
 			}
+		}
+
+		void VulkanImage::copyFrom(Buffer* pSrcBuffer)
+		{
+			auto commandBuffers = VulkanCommandRecorder(m_pDevice, CommandRecorderUsage::Transfer);
+			commandBuffers.begin();
+
+			const auto previousLayout = m_CurrentLayout;
+			commandBuffers.changeImageLayout(m_Image, m_CurrentLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT);
+			m_CurrentLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+
+			commandBuffers.copy(pSrcBuffer, 0, this, glm::vec3(getWidth(), getHeight(), 1));
+
+			const auto newLayout = previousLayout == VK_IMAGE_LAYOUT_UNDEFINED ? VK_IMAGE_LAYOUT_GENERAL : previousLayout;
+			commandBuffers.changeImageLayout(m_Image, m_CurrentLayout, newLayout, VK_IMAGE_ASPECT_COLOR_BIT);
+			m_CurrentLayout = newLayout;
+
+			commandBuffers.end();
+			commandBuffers.submit();
+			commandBuffers.wait();
 		}
 
 		VkImageAspectFlags VulkanImage::getAspectFlags() const

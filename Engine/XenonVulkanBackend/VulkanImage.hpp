@@ -38,6 +38,13 @@ namespace Xenon
 			~VulkanImage() override;
 
 			/**
+			 * Copy image data from a source buffer.
+			 *
+			 * @param pSrcBuffer The source buffer pointer.
+			 */
+			void copyFrom(Buffer* pSrcBuffer) override;
+
+			/**
 			 * Get the Vulkan image handle.
 			 *
 			 * @return The image.
