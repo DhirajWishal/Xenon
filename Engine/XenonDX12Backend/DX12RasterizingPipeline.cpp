@@ -702,7 +702,7 @@ namespace Xenon
 					{
 						input.AlignedByteOffset = vertexSpecification.offsetOf(element);
 						input.Format = GetElementFormat(
-							GetAttributeDataTypeComponentCount(GetInputElementDataType(element)),
+							GetAttributeDataTypeComponentCount(vertexSpecification.getElementAttributeDataType(element)),
 							vertexSpecification.getElementComponentDataType(element)
 						);
 					}

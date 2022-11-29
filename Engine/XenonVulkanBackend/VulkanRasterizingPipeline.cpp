@@ -878,7 +878,8 @@ namespace Xenon
 				XENON_VK_ASSERT(pDevice->getDeviceTable().vkCreateShaderModule(pDevice->getLogicalDevice(), &moduleCreateInfo, nullptr, &createInfo.module), "Failed to create the fragment shader module!");
 			}
 
-			std::vector<std::pair<uint32_t, std::vector<DescriptorBindingInfo>>> sortedBindings(bindingMap.begin(), bindingMap.end());
+			// Sort the bindings to the correct binding order.
+			auto sortedBindings = std::vector<std::pair<uint32_t, std::vector<DescriptorBindingInfo>>>(bindingMap.begin(), bindingMap.end());
 			std::ranges::sort(sortedBindings, [](const auto& lhs, const auto& rhs) { return lhs.first < rhs.first; });
 
 			// Get the layouts.
@@ -951,7 +952,7 @@ namespace Xenon
 					{
 						attribute.offset = vertexSpecification.offsetOf(element);
 						attribute.format = GetElementFormat(
-							GetAttributeDataTypeComponentCount(GetInputElementDataType(element)),
+							GetAttributeDataTypeComponentCount(vertexSpecification.getElementAttributeDataType(element)),
 							vertexSpecification.getElementComponentDataType(element)
 						);
 

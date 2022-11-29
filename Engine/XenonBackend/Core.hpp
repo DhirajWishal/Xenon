@@ -169,88 +169,67 @@ namespace Xenon
 		 */
 		enum class InputElement : uint8_t
 		{
-			// Stored and used as a 3 component vector.
-			// Access this from GLSL: layout(location = 0) in vec3
+			// Access this from GLSL: layout(location = 0) in
 			VertexPosition,
 
-			// Stored and used as a 3 component vector. 
-			// Access this from GLSL: layout(location = 1) in vec3
+			// Access this from GLSL: layout(location = 1) in
 			VertexNormal,
 
-			// Stored and used as a 3 component vector. 
-			// Access this from GLSL: layout(location = 2) in vec3
+			// Access this from GLSL: layout(location = 2) in
 			VertexTangent,
 
-			// Stored and used as a 4 component vector. 
-			// Access this from GLSL: layout(location = 3) in vec4
+			// Access this from GLSL: layout(location = 3) in
 			VertexColor_0,
 
-			// Stored and used as a 4 component vector. 
-			// Access this from GLSL: layout(location = 4) in vec4
+			// Access this from GLSL: layout(location = 4) in
 			VertexColor_1,
 
-			// Stored and used as a 4 component vector. 
-			// Access this from GLSL: layout(location = 5) in vec4
+			// Access this from GLSL: layout(location = 5) in
 			VertexColor_2,
 
-			// Stored and used as a 4 component vector. 
-			// Access this from GLSL: layout(location = 6) in vec4
+			// Access this from GLSL: layout(location = 6) in
 			VertexColor_3,
 
-			// Stored and used as a 4 component vector. 
-			// Access this from GLSL: layout(location = 7) in vec4
+			// Access this from GLSL: layout(location = 7) in
 			VertexColor_4,
 
-			// Stored and used as a 4 component vector. 
-			// Access this from GLSL: layout(location = 8) in vec4
+			// Access this from GLSL: layout(location = 8) in
 			VertexColor_5,
 
-			// Stored and used as a 4 component vector. 
-			// Access this from GLSL: layout(location = 9) in vec4
+			// Access this from GLSL: layout(location = 9) in
 			VertexColor_6,
 
-			// Stored and used as a 4 component vector. 
-			// Access this from GLSL: layout(location = 10) in vec4
+			// Access this from GLSL: layout(location = 10) in
 			VertexColor_7,
 
-			// Stored and used as a 2 component vector. 
-			// Access this from GLSL: layout(location = 11) in vec2
+			// Access this from GLSL: layout(location = 11) in
 			VertexTextureCoordinate_0,
 
-			// Stored and used as a 2 component vector. 
-			// Access this from GLSL: layout(location = 12) in vec2
+			// Access this from GLSL: layout(location = 12) in
 			VertexTextureCoordinate_1,
 
-			// Stored and used as a 2 component vector. 
-			// Access this from GLSL: layout(location = 13) in vec2
+			// Access this from GLSL: layout(location = 13) in
 			VertexTextureCoordinate_2,
 
-			// Stored and used as a 2 component vector. 
-			// Access this from GLSL: layout(location = 14) in vec2
+			// Access this from GLSL: layout(location = 14) in
 			VertexTextureCoordinate_3,
 
-			// Stored and used as a 2 component vector. 
-			// Access this from GLSL: layout(location = 15) in vec2
+			// Access this from GLSL: layout(location = 15) in
 			VertexTextureCoordinate_4,
 
-			// Stored and used as a 2 component vector. 
-			// Access this from GLSL: layout(location = 16) in vec2
+			// Access this from GLSL: layout(location = 16) in
 			VertexTextureCoordinate_5,
 
-			// Stored and used as a 2 component vector. 
-			// Access this from GLSL: layout(location = 17) in vec2
+			// Access this from GLSL: layout(location = 17) in
 			VertexTextureCoordinate_6,
 
-			// Stored and used as a 2 component vector. 
-			// Access this from GLSL: layout(location = 18) in vec2
+			// Access this from GLSL: layout(location = 18) in
 			VertexTextureCoordinate_7,
 
-			// Stored and used as a 4 component vector. 
-			// Access this from GLSL: layout(location = 19) in vec4
+			// Access this from GLSL: layout(location = 19) in
 			VertexJointIndices,
 
-			// Stored and used as a 4 component vector. 
-			// Access this from GLSL: layout(location = 20) in vec4
+			// Access this from GLSL: layout(location = 20) in
 			VertexJointWeight,
 
 			// Stored and used as a 3 component vector. 
@@ -360,58 +339,6 @@ namespace Xenon
 		}
 
 		/**
-		 * Get the input element data types.
-		 *
-		 * @param element The element to get the data type of.
-		 * @return The data type.
-		 */
-		[[nodiscard]] constexpr AttributeDataType GetInputElementDataType(InputElement element)
-		{
-			switch (element)
-			{
-			case Xenon::Backend::InputElement::VertexPosition:
-			case Xenon::Backend::InputElement::VertexNormal:
-			case Xenon::Backend::InputElement::VertexTangent:
-				return AttributeDataType::Vec3;
-
-			case Xenon::Backend::InputElement::VertexColor_0:
-			case Xenon::Backend::InputElement::VertexColor_1:
-			case Xenon::Backend::InputElement::VertexColor_2:
-			case Xenon::Backend::InputElement::VertexColor_3:
-			case Xenon::Backend::InputElement::VertexColor_4:
-			case Xenon::Backend::InputElement::VertexColor_5:
-			case Xenon::Backend::InputElement::VertexColor_6:
-			case Xenon::Backend::InputElement::VertexColor_7:
-				return AttributeDataType::Vec4;
-
-			case Xenon::Backend::InputElement::VertexTextureCoordinate_0:
-			case Xenon::Backend::InputElement::VertexTextureCoordinate_1:
-			case Xenon::Backend::InputElement::VertexTextureCoordinate_2:
-			case Xenon::Backend::InputElement::VertexTextureCoordinate_3:
-			case Xenon::Backend::InputElement::VertexTextureCoordinate_4:
-			case Xenon::Backend::InputElement::VertexTextureCoordinate_5:
-			case Xenon::Backend::InputElement::VertexTextureCoordinate_6:
-			case Xenon::Backend::InputElement::VertexTextureCoordinate_7:
-				return AttributeDataType::Vec2;
-
-			case Xenon::Backend::InputElement::VertexJointIndices:
-			case Xenon::Backend::InputElement::VertexJointWeight:
-				return AttributeDataType::Vec4;
-
-			case Xenon::Backend::InputElement::InstancePosition:
-			case Xenon::Backend::InputElement::InstanceRotation:
-			case Xenon::Backend::InputElement::InstanceScale:
-				return AttributeDataType::Vec3;
-
-			case Xenon::Backend::InputElement::InstanceID:
-				return AttributeDataType::Scalar;
-
-			default:
-				return AttributeDataType::Scalar;
-			}
-		}
-
-		/**
 		 * Component data type enum.
 		 * This defines information about a single component data type.
 		 */
@@ -494,19 +421,21 @@ namespace Xenon
 			 * Add a vertex element to the specification.
 			 *
 			 * @param element The element to add.
+			 * @param dataType The element's data type.
 			 * @param componentSize The size of a single component in the element in bytes. Default is Float.
 			 * @return The specification reference.
 			 */
-			VertexSpecification& addElement(InputElement element, ComponentDataType componentSize = ComponentDataType::Float)
+			VertexSpecification& addElement(InputElement element, AttributeDataType dataType, ComponentDataType componentSize = ComponentDataType::Float)
 			{
-				const auto size = GetComponentTypeSize(componentSize) * GetAttributeDataTypeComponentCount(GetInputElementDataType(element));
+				const auto size = GetComponentTypeSize(componentSize) * GetAttributeDataTypeComponentCount(dataType);
 
 				// Update the information only if it's needed.
 				if (!isAvailable(element) || m_ElementSizes[EnumToInt(element)] != size)
 				{
 					m_VertexElements |= 1 << EnumToInt(element);
-					m_ElementSizes[EnumToInt(element)] = size;
+					m_ElementSizes[EnumToInt(element)] = static_cast<uint8_t>(size);
 					m_ElementComponentType[EnumToInt(element)] = componentSize;
+					m_ElementAttributeType[EnumToInt(element)] = dataType;
 				}
 
 				return *this;
@@ -544,6 +473,14 @@ namespace Xenon
 			[[nodsicard]] ComponentDataType getElementComponentDataType(InputElement element) const { return m_ElementComponentType[EnumToInt(element)]; }
 
 			/**
+			 * Get the element attribute data type of a given element.
+			 *
+			 * @param element The element type.
+			 * @return The attribute data type.
+			 */
+			[[nodsicard]] AttributeDataType getElementAttributeDataType(InputElement element) const { return m_ElementAttributeType[EnumToInt(element)]; }
+
+			/**
 			 * Get the size of the vertex.
 			 *
 			 * @return The size in bytes.
@@ -569,6 +506,7 @@ namespace Xenon
 		private:
 			uint32_t m_VertexElements = 0;
 			std::array<uint8_t, EnumToInt(InputElement::VertexElementCount)> m_ElementSizes = { 0 };
+			std::array<AttributeDataType, EnumToInt(InputElement::VertexElementCount)> m_ElementAttributeType = {};
 			std::array<ComponentDataType, EnumToInt(InputElement::VertexElementCount)> m_ElementComponentType = {};
 		};
 

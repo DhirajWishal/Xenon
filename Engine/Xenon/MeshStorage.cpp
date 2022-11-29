@@ -75,39 +75,85 @@ namespace /* anonymous */
 		const auto& accessor = model.accessors[index];
 		const auto& bufferView = model.bufferViews[accessor.bufferView];
 
+		// Setup the data type.
+		Xenon::Backend::AttributeDataType dataType = Xenon::Backend::AttributeDataType::Vec3;
+		switch (accessor.type)
+		{
+		case TINYGLTF_TYPE_VEC2:
+			dataType = Xenon::Backend::AttributeDataType::Vec2;
+			break;
+
+		case TINYGLTF_TYPE_VEC3:
+			dataType = Xenon::Backend::AttributeDataType::Vec3;
+			break;
+
+		case TINYGLTF_TYPE_VEC4:
+			dataType = Xenon::Backend::AttributeDataType::Vec4;
+			break;
+
+		case TINYGLTF_TYPE_MAT2:
+			dataType = Xenon::Backend::AttributeDataType::Mat2;
+			break;
+
+		case TINYGLTF_TYPE_MAT3:
+			dataType = Xenon::Backend::AttributeDataType::Mat3;
+			break;
+
+		case TINYGLTF_TYPE_MAT4:
+			dataType = Xenon::Backend::AttributeDataType::Mat4;
+			break;
+
+		case TINYGLTF_TYPE_SCALAR:
+			dataType = Xenon::Backend::AttributeDataType::Scalar;
+			break;
+
+		case TINYGLTF_TYPE_VECTOR:
+			dataType = Xenon::Backend::AttributeDataType::Vec3;
+			break;
+
+		case TINYGLTF_TYPE_MATRIX:
+			dataType = Xenon::Backend::AttributeDataType::Mat4;
+			break;
+
+		default:
+			XENON_LOG_ERROR("Invalid or unsupported vertex data type in the provided model file. Defaulting to vector 3.");
+			dataType = Xenon::Backend::AttributeDataType::Vec3;
+			break;
+		}
+
 		// Setup the component type.
 		switch (accessor.componentType)
 		{
 		case TINYGLTF_COMPONENT_TYPE_BYTE:
-			specification.addElement(element, Xenon::Backend::ComponentDataType::Uint8);
+			specification.addElement(element, dataType, Xenon::Backend::ComponentDataType::Uint8);
 			break;
 
 		case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
-			specification.addElement(element, Xenon::Backend::ComponentDataType::Int8);
+			specification.addElement(element, dataType, Xenon::Backend::ComponentDataType::Int8);
 			break;
 
 		case TINYGLTF_COMPONENT_TYPE_SHORT:
-			specification.addElement(element, Xenon::Backend::ComponentDataType::Int16);
+			specification.addElement(element, dataType, Xenon::Backend::ComponentDataType::Int16);
 			break;
 
 		case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT:
-			specification.addElement(element, Xenon::Backend::ComponentDataType::Uint16);
+			specification.addElement(element, dataType, Xenon::Backend::ComponentDataType::Uint16);
 			break;
 
 		case TINYGLTF_COMPONENT_TYPE_INT:
-			specification.addElement(element, Xenon::Backend::ComponentDataType::Int32);
+			specification.addElement(element, dataType, Xenon::Backend::ComponentDataType::Int32);
 			break;
 
 		case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT:
-			specification.addElement(element, Xenon::Backend::ComponentDataType::Uint32);
+			specification.addElement(element, dataType, Xenon::Backend::ComponentDataType::Uint32);
 			break;
 
 		case TINYGLTF_COMPONENT_TYPE_FLOAT:
-			specification.addElement(element, Xenon::Backend::ComponentDataType::Float);
+			specification.addElement(element, dataType, Xenon::Backend::ComponentDataType::Float);
 			break;
 
 		case TINYGLTF_COMPONENT_TYPE_DOUBLE:
-			specification.addElement(element, Xenon::Backend::ComponentDataType::Double);
+			specification.addElement(element, dataType, Xenon::Backend::ComponentDataType::Double);
 			break;
 
 		default:
@@ -132,7 +178,6 @@ namespace /* anonymous */
 		uint32_t m_Stride = 0;
 
 		Xenon::Backend::InputElement m_Element = Xenon::Backend::InputElement::VertexPosition;
-		Xenon::Backend::AttributeDataType m_DataType = Xenon::Backend::AttributeDataType::Vec3;
 		Xenon::PrimitiveMode m_PrimitiveMode = Xenon::PrimitiveMode::Triangles;
 	};
 
@@ -161,51 +206,6 @@ namespace /* anonymous */
 		view.m_End = view.m_Begin + (accessor.count * view.m_Stride);
 
 		view.m_Size = std::distance(view.m_Begin, view.m_End);
-
-		// Setup the data type.
-		switch (accessor.type)
-		{
-		case TINYGLTF_TYPE_VEC2:
-			view.m_DataType = Xenon::Backend::AttributeDataType::Vec2;
-			break;
-
-		case TINYGLTF_TYPE_VEC3:
-			view.m_DataType = Xenon::Backend::AttributeDataType::Vec3;
-			break;
-
-		case TINYGLTF_TYPE_VEC4:
-			view.m_DataType = Xenon::Backend::AttributeDataType::Vec4;
-			break;
-
-		case TINYGLTF_TYPE_MAT2:
-			view.m_DataType = Xenon::Backend::AttributeDataType::Mat2;
-			break;
-
-		case TINYGLTF_TYPE_MAT3:
-			view.m_DataType = Xenon::Backend::AttributeDataType::Mat3;
-			break;
-
-		case TINYGLTF_TYPE_MAT4:
-			view.m_DataType = Xenon::Backend::AttributeDataType::Mat4;
-			break;
-
-		case TINYGLTF_TYPE_SCALAR:
-			view.m_DataType = Xenon::Backend::AttributeDataType::Scalar;
-			break;
-
-		case TINYGLTF_TYPE_VECTOR:
-			view.m_DataType = Xenon::Backend::AttributeDataType::Vec3;
-			break;
-
-		case TINYGLTF_TYPE_MATRIX:
-			view.m_DataType = Xenon::Backend::AttributeDataType::Mat4;
-			break;
-
-		default:
-			XENON_LOG_ERROR("Invalid or unsupported vertex data type in the provided model file. Defaulting to vector 3.");
-			view.m_DataType = Xenon::Backend::AttributeDataType::Vec3;
-			break;
-		}
 
 		// Setup the vertex mode.
 		switch (primitive.mode)
@@ -346,7 +346,9 @@ namespace /* anonymous */
 
 			subMesh.m_IndexCount = accessor.count;
 			subMesh.m_IndexSize = static_cast<uint8_t>(stride);
-			subMesh.m_IndexOffset /= subMesh.m_IndexSize;
+
+			if (subMesh.m_IndexOffset > 0)
+				subMesh.m_IndexOffset /= subMesh.m_IndexSize;
 
 			std::copy(buffer.data.begin() + start, buffer.data.begin() + end, indexBegin);
 		}
@@ -392,6 +394,9 @@ namespace /* anonymous */
 			auto& subMesh = mesh.m_SubMeshes.emplace_back();
 			subMesh.m_VertexOffset = std::distance(vertices.begin(), vertexItr);
 			subMesh.m_IndexOffset = std::distance(indices.begin(), indexItr);
+
+			if (subMesh.m_VertexOffset > 0)
+				subMesh.m_VertexOffset /= storage.getVertexSpecification().getSize();
 
 			// Insert the job.
 			workers.insert([&subMesh, &model, &storage, &gltfPrimitive, vertexItr, indexItr, &synchronization]
