@@ -5,7 +5,7 @@ layout(location = 11) in vec2 inTextureCoordinates;
 
 layout(location = 0) out vec2 outTextureCoordinates;
 
-layout (binding = 0) uniform Camera 
+layout (set = 1, binding = 0) uniform Camera 
 {
 	mat4 view;
 	mat4 projection;

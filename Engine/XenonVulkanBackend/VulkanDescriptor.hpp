@@ -50,6 +50,13 @@ namespace Xenon
 			 */
 			void attach(uint32_t binding, Image* pImage, ImageView* pView, ImageSampler* pSampler, ImageUsage usage) override;
 
+			/**
+			 * Get the descriptor set.
+			 *
+			 * @return The Vulkan descriptor set.
+			 */
+			[[nodiscard]] VkDescriptorSet getDescriptorSet() const noexcept { return m_DescriptorSet; }
+
 		private:
 			VkDescriptorPool m_Pool = VK_NULL_HANDLE;
 			VkDescriptorSet m_DescriptorSet = VK_NULL_HANDLE;

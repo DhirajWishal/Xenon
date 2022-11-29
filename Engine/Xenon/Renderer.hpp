@@ -81,6 +81,20 @@ namespace Xenon
 		[[nodiscard]] const Backend::Camera* getCamera() const { return m_pCamera; }
 
 		/**
+		 * Get the attached camera descriptor pointer.
+		 *
+		 * @return The descriptor pointer.
+		 */
+		[[nodiscard]] Backend::Descriptor* getCameraDescriptor() { return m_pCameraDescriptor.get(); }
+
+		/**
+		 * Get the attached camera descriptor pointer.
+		 *
+		 * @return The descriptor pointer.
+		 */
+		[[nodiscard]] const Backend::Descriptor* getCameraDescriptor() const { return m_pCameraDescriptor.get(); }
+
+		/**
 		 * Get the instance to which the renderer is bound to.
 		 *
 		 * @return The instance reference.
@@ -128,6 +142,7 @@ namespace Xenon
 
 		std::unique_ptr<Backend::Swapchain> m_pSwapChain = nullptr;
 		std::unique_ptr<Backend::CommandRecorder> m_pCommandRecorder = nullptr;
+		std::unique_ptr<Backend::Descriptor> m_pCameraDescriptor = nullptr;
 
 		Backend::Camera* m_pCamera = nullptr;
 

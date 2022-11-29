@@ -6,6 +6,7 @@
 #include "DX12Buffer.hpp"
 #include "DX12Swapchain.hpp"
 #include "DX12RasterizingPipeline.hpp"
+#include "DX12Descriptor.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -97,6 +98,49 @@ namespace Xenon
 		void DX12CommandRecorder::bind(RasterizingPipeline* pPipeline, const VertexSpecification& vertexSpecification)
 		{
 			m_pCurrentCommandList->SetPipelineState(pPipeline->as<DX12RasterizingPipeline>()->getPipeline(vertexSpecification).m_PipelineState.Get());
+		}
+
+		void DX12CommandRecorder::bind(Buffer* pVertexBuffer, uint32_t vertexStride, Buffer* pIndexBuffer /*= nullptr*/, uint8_t indexStride /*= 0*/)
+		{
+			D3D12_VERTEX_BUFFER_VIEW vertexView = {};
+			vertexView.BufferLocation = pVertexBuffer->as<DX12Buffer>()->getResource()->GetGPUVirtualAddress();
+			vertexView.SizeInBytes = static_cast<UINT>(pVertexBuffer->getSize());
+			vertexView.StrideInBytes = vertexStride;
+
+			m_pCurrentCommandList->IASetVertexBuffers(0, 1, &vertexView);
+
+			if (pIndexBuffer)
+			{
+				D3D12_INDEX_BUFFER_VIEW indexView = {};
+				indexView.BufferLocation = pIndexBuffer->as<DX12Buffer>()->getResource()->GetGPUVirtualAddress();
+				indexView.SizeInBytes = static_cast<UINT>(pIndexBuffer->getSize());
+				indexView.Format = DXGI_FORMAT_UNKNOWN;
+
+				if (indexStride == sizeof(uint8_t))
+					indexView.Format = DXGI_FORMAT_R8_UINT;
+
+				else if (indexStride == sizeof(uint16_t))
+					indexView.Format = DXGI_FORMAT_R16_UINT;
+
+				else if (indexStride == sizeof(uint32_t))
+					indexView.Format = DXGI_FORMAT_R32_UINT;
+
+				else
+					XENON_LOG_ERROR("Invalid index stride!");
+
+				m_pCurrentCommandList->IASetIndexBuffer(&indexView);
+			}
+		}
+
+		void DX12CommandRecorder::bind(RasterizingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pCameraDescriptor)
+		{
+			XENON_TODO_NOW("(Dhiraj) Implement this function {}", __FUNCSIG__);
+			// m_pCurrentCommandList->SetGraphicsRootDescriptorTable(0, pUserDefinedDescriptor->as<DX12Descriptor>());
+		}
+
+		void DX12CommandRecorder::drawIndexed(uint64_t vertexOffset, uint64_t indexOffset, uint64_t indexCount, uint32_t instanceCount /*= 1*/, uint32_t firstInstance /*= 0*/)
+		{
+			XENON_TODO_NOW("(Dhiraj) Implement this function {}", __FUNCSIG__);
 		}
 
 		void DX12CommandRecorder::executeChildren()

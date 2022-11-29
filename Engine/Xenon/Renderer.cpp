@@ -4,16 +4,31 @@
 #include "Renderer.hpp"
 #include "../XenonCore/Logging.hpp"
 
+namespace /* anonymous */
+{
+	std::vector<Xenon::Backend::DescriptorBindingInfo> GetCameraBindingInfo()
+	{
+		std::vector<Xenon::Backend::DescriptorBindingInfo> bindingInfo;
+		auto& info = bindingInfo.emplace_back();
+		info.m_ApplicableShaders = Xenon::Backend::ShaderType::Vertex | Xenon::Backend::ShaderType::Fragment;
+		info.m_Type = Xenon::Backend::ResourceType::UniformBuffer;
+
+		return bindingInfo;
+	}
+}
+
 namespace Xenon
 {
 	Renderer::Renderer(Instance& instance, Backend::Camera* pCamera, const std::string& title)
 		: m_Worker([this] { worker(); })
 		, m_pSwapChain(instance.getFactory()->createSwapchain(instance.getBackendDevice(), title, pCamera->getWidth(), pCamera->getHeight()))
 		, m_pCommandRecorder(instance.getFactory()->createCommandRecorder(instance.getBackendDevice(), Backend::CommandRecorderUsage::Graphics, 3))
+		, m_pCameraDescriptor(instance.getFactory()->createDescriptor(instance.getBackendDevice(), GetCameraBindingInfo(), Backend::DescriptorType::Camera))
 		, m_pCamera(pCamera)
 		, m_Instance(instance)
 	{
 		m_Latch.count_down();
+		m_pCameraDescriptor->attach(0, m_pCamera->getViewports().front().m_pUniformBuffer);
 	}
 
 	Renderer::~Renderer()

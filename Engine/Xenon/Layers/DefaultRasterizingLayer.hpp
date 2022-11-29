@@ -59,7 +59,7 @@ namespace Xenon
 		 * @param drawData The draw data reference.
 		 * @param pCommandRecorder The command recorder pointer.
 		 */
-		void bindDrawData(const DrawData& drawData, Backend::CommandRecorder* pCommandRecorder) const;
+		void bindDrawData(DrawData& drawData, Backend::CommandRecorder* pCommandRecorder) const;
 
 	private:
 		std::vector<DrawData> m_DrawData;

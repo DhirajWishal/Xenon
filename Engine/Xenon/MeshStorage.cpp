@@ -332,7 +332,7 @@ namespace /* anonymous */
 			const auto end = start + accessor.count * stride;
 
 			subMesh.m_IndexCount = accessor.count;
-			subMesh.m_IndexSize = static_cast<Xenon::IndexSize>(stride);
+			subMesh.m_IndexSize = stride;
 
 			std::copy(buffer.data.begin() + start, buffer.data.begin() + end, indexBegin);
 		}

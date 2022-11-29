@@ -7,6 +7,7 @@
 #include "VulkanSwapchain.hpp"
 #include "VulkanRasterizer.hpp"
 #include "VulkanRasterizingPipeline.hpp"
+#include "VulkanDescriptor.hpp"
 
 namespace /* anonymous */
 {
@@ -253,8 +254,17 @@ namespace Xenon
 				break;
 
 			case Xenon::Backend::CommandRecorderUsage::Secondary:
-				pDevice->getGraphicsCommandPool().access(std::move(function));
-				break;
+			{
+				VkCommandPoolCreateInfo createInfo = {};
+				createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+				createInfo.pNext = nullptr;
+				createInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+				createInfo.queueFamilyIndex = pDevice->getGraphicsQueue().getUnsafe().getFamily();
+
+				XENON_VK_ASSERT(pDevice->getDeviceTable().vkCreateCommandPool(pDevice->getLogicalDevice(), &createInfo, nullptr, &m_SecondaryPool), "Failed to create the secondary command pool!");
+				function(m_SecondaryPool);
+			}
+			break;
 
 			default:
 				XENON_LOG_FATAL("Invalid command recorder usage!");
@@ -267,6 +277,14 @@ namespace Xenon
 			m_InheritanceInfo.occlusionQueryEnable = VK_FALSE;
 			m_InheritanceInfo.queryFlags = 0;
 			m_InheritanceInfo.pipelineStatistics = 0;
+		}
+
+		VulkanCommandRecorder::~VulkanCommandRecorder()
+		{
+			m_CommandBuffers.clear();
+
+			if (m_SecondaryPool != VK_NULL_HANDLE)
+				m_pDevice->getDeviceTable().vkDestroyCommandPool(m_pDevice->getLogicalDevice(), m_SecondaryPool, nullptr);
 		}
 
 		void VulkanCommandRecorder::begin()
@@ -503,6 +521,57 @@ namespace Xenon
 		void VulkanCommandRecorder::bind(RasterizingPipeline* pPipeline, const VertexSpecification& vertexSpecification)
 		{
 			m_pDevice->getDeviceTable().vkCmdBindPipeline(*m_pCurrentBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pPipeline->as<VulkanRasterizingPipeline>()->getPipeline(vertexSpecification).m_Pipeline);
+		}
+
+		void VulkanCommandRecorder::bind(Buffer* pVertexBuffer, uint32_t vertexStride, Buffer* pIndexBuffer /*= nullptr*/, uint8_t indexStride /*= 0*/)
+		{
+			const auto pVkVertexBuffer = pVertexBuffer->as<VulkanBuffer>();
+
+			VkBuffer vertexBuffer = pVkVertexBuffer->getBuffer();
+			VkDeviceSize offset = 0;
+			m_pDevice->getDeviceTable().vkCmdBindVertexBuffers(*m_pCurrentBuffer, 0, 1, &vertexBuffer, &offset);
+
+			if (pIndexBuffer)
+			{
+				auto indexType = VK_INDEX_TYPE_NONE_KHR;
+				if (indexStride == sizeof(uint16_t))
+					indexType = VK_INDEX_TYPE_UINT16;
+
+				else if (indexStride == sizeof(uint32_t))
+					indexType = VK_INDEX_TYPE_UINT32;
+
+				else
+					XENON_LOG_ERROR("Invalid or unsupported index stride!");
+
+				m_pDevice->getDeviceTable().vkCmdBindIndexBuffer(*m_pCurrentBuffer, pIndexBuffer->as<VulkanBuffer>()->getBuffer(), 0, indexType);
+			}
+		}
+
+		void VulkanCommandRecorder::bind(RasterizingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pCameraDescriptor)
+		{
+			std::vector<VkDescriptorSet> descriptorSets;
+			if (pUserDefinedDescriptor) descriptorSets.emplace_back(pUserDefinedDescriptor->as<VulkanDescriptor>()->getDescriptorSet());
+			if (pMaterialDescriptor) descriptorSets.emplace_back(pMaterialDescriptor->as<VulkanDescriptor>()->getDescriptorSet());
+			if (pCameraDescriptor) descriptorSets.emplace_back(pCameraDescriptor->as<VulkanDescriptor>()->getDescriptorSet());
+
+			if (descriptorSets.empty())
+				return;
+
+			m_pDevice->getDeviceTable().vkCmdBindDescriptorSets(
+				*m_pCurrentBuffer,
+				VK_PIPELINE_BIND_POINT_GRAPHICS,
+				pPipeline->as<VulkanRasterizingPipeline>()->getPipelineLayout(),
+				0,
+				static_cast<uint32_t>(descriptorSets.size()),
+				descriptorSets.data(),
+				0,
+				nullptr
+			);
+		}
+
+		void VulkanCommandRecorder::drawIndexed(uint64_t vertexOffset, uint64_t indexOffset, uint64_t indexCount, uint32_t instanceCount /*= 1*/, uint32_t firstInstance /*= 0*/)
+		{
+			m_pDevice->getDeviceTable().vkCmdDrawIndexed(*m_pCurrentBuffer, static_cast<uint32_t>(indexCount), instanceCount, static_cast<uint32_t>(indexOffset), static_cast<uint32_t>(vertexOffset), firstInstance);
 		}
 
 		void VulkanCommandRecorder::executeChildren()

@@ -11,6 +11,8 @@ namespace Xenon
 {
 	namespace Backend
 	{
+		class Descriptor;
+
 		/**
 		 * Viewport structure.
 		 * This contains information about a single viewport and it's information which is used when rendering.

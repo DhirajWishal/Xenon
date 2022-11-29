@@ -81,6 +81,40 @@ namespace Xenon
 			void bind(RasterizingPipeline* pPipeline, const VertexSpecification& vertexSpecification) override;
 
 			/**
+			 * Bind a vertex and an index buffer if provided.
+			 * If only the vertex buffer is provided, it'll draw using these vertex data.
+			 * If both the vertex and index buffers are provided it'll use the index data to draw.
+			 *
+			 * @param pVertexBuffer The vertex buffer pointer.
+			 * @param vertexStride The vertex stride.
+			 * @param pIndexBuffer The index buffer pointer. Default is nullptr.
+			 * @param indexStride The stride of a single index. Default is 0.
+			 */
+			void bind(Buffer* pVertexBuffer, uint32_t vertexStride, Buffer* pIndexBuffer = nullptr, uint8_t indexStride = 0) override;
+
+			/**
+			 * Bind descriptors to the command recorder.
+			 * Note that the descriptors can be null in which case this call will be disregarded.
+			 *
+			 * @param pPipeline The pipeline to which the descriptors are bound to.
+			 * @param pUserDefinedDescrptor The user defined descriptor.
+			 * @param pMaterialDescriptor The material descriptor.
+			 * @param pCameraDescriptor The camera descriptor. Default is nullptr.
+			 */
+			void bind(RasterizingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pCameraDescriptor) override;
+
+			/**
+			 * Draw using the bound index buffers.
+			 *
+			 * @param vertexOffset The vertex offset.
+			 * @param indexOffset The index offset.
+			 * @param indexCount The number of indices to draw.
+			 * @param instanceCount The number of instances to draw. Default is 1.
+			 * @param firstInstance The first instance position. Default is 0.
+			 */
+			void drawIndexed(uint64_t vertexOffset, uint64_t indexOffset, uint64_t indexCount, uint32_t instanceCount = 1, uint32_t firstInstance = 0) override;
+
+			/**
 			 * Execute all the child command recorders.
 			 */
 			void executeChildren() override;

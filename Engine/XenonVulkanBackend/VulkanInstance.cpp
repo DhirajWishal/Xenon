@@ -139,7 +139,7 @@ namespace /* anonymous */
 		// Else log to the file.
 		else
 		{
-			auto& logFile = reinterpret_cast<Xenon::Backend::VulkanInstance*>(pUserData)->getLogFile();
+			auto& logFile = std::bit_cast<Xenon::Backend::VulkanInstance*>(pUserData)->getLogFile();
 
 			// Log if the log file is open.
 			if (logFile.is_open())
@@ -233,11 +233,11 @@ namespace Xenon
 #ifdef XENON_DEBUG
 						// Destroy the debugger.
 						const auto vkDestroyDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT"));
-						vkDestroyDebugUtilsMessengerEXT(instance, debugger, nullptr);
+				vkDestroyDebugUtilsMessengerEXT(instance, debugger, nullptr);
 
 #endif // XENON_DEBUG
 
-						vkDestroyInstance(instance, nullptr);
+				vkDestroyInstance(instance, nullptr);
 					}
 				);
 			}

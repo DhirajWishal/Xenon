@@ -25,22 +25,13 @@ namespace Xenon
 	};
 
 	/**
-	 * Index size enum.
-	 */
-	enum class IndexSize : uint8_t
-	{
-		Unknown = 0,
-		Uint8 = sizeof(uint8_t),
-		Uint16 = sizeof(uint16_t),
-		Uint32 = sizeof(uint32_t)
-	};
-
-	/**
 	 * Sub-mesh structure.
 	 * Sub-meshes are the building blocks of a mesh.
 	 */
 	struct SubMesh final
 	{
+		std::unique_ptr<Backend::Descriptor> m_pMaterial = nullptr;
+
 		uint64_t m_VertexOffset = 0;
 		uint64_t m_VertexCount = 0;
 
@@ -48,7 +39,7 @@ namespace Xenon
 		uint64_t m_IndexCount = 0;		// If this is set to 0, it will draw using the vertices.
 
 		PrimitiveMode m_Mode = PrimitiveMode::Triangles;
-		IndexSize m_IndexSize = IndexSize::Unknown;
+		uint8_t m_IndexSize = 0;
 	};
 
 	/**
@@ -91,6 +82,34 @@ namespace Xenon
 		 * @return The vertex specification.
 		 */
 		[[nodiscard]] const Backend::VertexSpecification& getVertexSpecification() const { return m_VertexSpecification; }
+
+		/**
+		 * Get the index buffer.
+		 *
+		 * @return The index buffer pointer.
+		 */
+		[[nodiscard]] Backend::Buffer* getIndexBuffer() { return m_pIndexBuffer.get(); }
+
+		/**
+		 * Get the index buffer.
+		 *
+		 * @return The index buffer pointer.
+		 */
+		[[nodiscard]] const Backend::Buffer* getIndexBuffer() const { return m_pIndexBuffer.get(); }
+
+		/**
+		 * Get the vertex buffer.
+		 *
+		 * @return The vertex buffer pointer.
+		 */
+		[[nodiscard]] Backend::Buffer* getVertexBuffer() { return m_pVertexBuffer.get(); }
+
+		/**
+		 * Get the vertex buffer.
+		 *
+		 * @return The vertex buffer pointer.
+		 */
+		[[nodiscard]] const Backend::Buffer* getVertexBuffer() const { return m_pVertexBuffer.get(); }
 
 		/**
 		 * Get the meshes.

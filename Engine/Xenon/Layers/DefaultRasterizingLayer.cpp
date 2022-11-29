@@ -15,15 +15,9 @@ namespace Xenon
 
 	void DefaultRasterizingLayer::bind(Layer* pPreviousLayer, Backend::CommandRecorder* pCommandRecorder)
 	{
-		if (!m_DrawData.empty())
-		{
-			int i = 0;
-			i = 1000;
-		}
-
 		pCommandRecorder->bind(m_pRasterizer.get(), { glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), 0.0f, static_cast<uint32_t>(0) }, !m_DrawData.empty());
 
-		for (const auto& drawData : m_DrawData)
+		for (auto& drawData : m_DrawData)
 		{
 			auto pchild = m_Renderer.getTaskGraph().create([this, &drawData, pCommandRecorder]
 				{
@@ -45,10 +39,21 @@ namespace Xenon
 		);
 	}
 
-	void DefaultRasterizingLayer::bindDrawData(const DrawData& drawData, Backend::CommandRecorder* pCommandRecorder) const
+	void DefaultRasterizingLayer::bindDrawData(DrawData& drawData, Backend::CommandRecorder* pCommandRecorder) const
 	{
 		drawData.m_pCommandRecorder->begin(pCommandRecorder);
 		drawData.m_pCommandRecorder->bind(drawData.m_pPipeline, drawData.m_Storage.getVertexSpecification());
+
+		for (const auto& mesh : drawData.m_Storage.getMeshes())
+		{
+			for (const auto& subMesh : mesh.m_SubMeshes)
+			{
+				drawData.m_pCommandRecorder->bind(drawData.m_Storage.getVertexBuffer(), drawData.m_Storage.getVertexSpecification().getSize(), drawData.m_Storage.getIndexBuffer(), subMesh.m_IndexSize);
+				drawData.m_pCommandRecorder->bind(drawData.m_pPipeline, nullptr, subMesh.m_pMaterial.get(), m_Renderer.getCameraDescriptor());
+				drawData.m_pCommandRecorder->drawIndexed(subMesh.m_VertexOffset, subMesh.m_IndexOffset, subMesh.m_IndexCount);
+			}
+		}
+
 		drawData.m_pCommandRecorder->end();
 		drawData.m_pCommandRecorder->next();
 	}

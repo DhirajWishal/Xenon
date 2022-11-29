@@ -61,6 +61,13 @@ namespace Xenon
 			 */
 			void recreate();
 
+			/**
+			 * Get the pipeline layout.
+			 *
+			 * @return The pipeline layout.
+			 */
+			[[nodiscard]] VkPipelineLayout getPipelineLayout() const noexcept { return m_PipelineLayout; }
+
 		private:
 			/**
 			 * Create the pipeline layout.
