@@ -66,8 +66,8 @@ Studio::Studio(Xenon::BackendType type /*= Xenon::BackendType::Any*/)
 
 void Studio::run()
 {
-	m_Renderer.createLayer<Xenon::ClearScreenLayer>(m_Instance, &m_Camera, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
-	auto pLayer = m_Renderer.createLayer<Xenon::DefaultRasterizingLayer>(m_Instance, &m_Camera);
+	m_Renderer.createLayer<Xenon::ClearScreenLayer>(&m_Camera, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
+	auto pLayer = m_Renderer.createLayer<Xenon::DefaultRasterizingLayer>(&m_Camera);
 
 	auto storage = Xenon::XObject::GetJobSystem().insert([this] { return Xenon::MeshStorage::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"); });
 

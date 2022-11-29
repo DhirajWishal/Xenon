@@ -23,16 +23,17 @@ namespace Xenon
 		{
 			MeshStorage m_Storage;
 			Backend::RasterizingPipeline* m_pPipeline = nullptr;
+			std::unique_ptr<Backend::CommandRecorder> m_pCommandRecorder = nullptr;
 		};
 
 	public:
 		/**
 		 * Explicit constructor.
 		 *
-		 * @param instance The instance reference.
+		 * @param renderer The renderer reference.
 		 * @param pCamera The camera pointer used by the renderer.
 		 */
-		explicit DefaultRasterizingLayer(Instance& instance, Backend::Camera* pCamera);
+		explicit DefaultRasterizingLayer(Renderer& renderer, Backend::Camera* pCamera);
 
 		/**
 		 * Bind the layer to the command recorder.
@@ -49,7 +50,16 @@ namespace Xenon
 		 * @param storage The storage to render.
 		 * @apram pPipeline The pipeline pointer to render with.
 		 */
-		void addDrawData(MeshStorage&& storage, Backend::RasterizingPipeline* pPipeline) { m_DrawData.emplace_back(std::move(storage), pPipeline); }
+		void addDrawData(MeshStorage&& storage, Backend::RasterizingPipeline* pPipeline);
+
+	private:
+		/**
+		 * Bind the draw data on another thread.
+		 * 
+		 * @param drawData The draw data reference.
+		 * @param pCommandRecorder The command recorder pointer.
+		 */
+		void bindDrawData(const DrawData& drawData, Backend::CommandRecorder* pCommandRecorder) const;
 
 	private:
 		std::vector<DrawData> m_DrawData;

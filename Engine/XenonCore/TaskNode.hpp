@@ -40,7 +40,7 @@ namespace Xenon
 		 * @return The child node.
 		 */
 		template<class Function>
-		[[nodsicard]] std::shared_ptr<TaskNode> after(Function&& function)
+		[[nodsicard]] std::shared_ptr<TaskNode> then(Function&& function)
 		{
 			auto pChild = std::make_shared<TaskNode>(m_JobSystem, std::forward<Function>(function), 1);
 			addDependency(pChild);
@@ -50,17 +50,27 @@ namespace Xenon
 
 		/**
 		 * Reset the current task and set it's completion to false.
-		 * It will also enqueue the task to the job system.
-		 */
-		void reset();
-
-		/**
-		 * Reset the current task and set it's completion to false.
-		 * It'll add this class as a dependency to the parent to be run after it's completion.
+		 * It'll add this class as a dependency to the parents to be run after their completion.
 		 *
-		 * @param pTask The parent task pointer.
+		 * @tparam TaskNodes The parent task node types.
+		 * @param pTasks The parent task pointers.
 		 */
-		void reset(const std::shared_ptr<TaskNode>& pTask);
+		template<class... TaskNodes>
+		void reset(const std::shared_ptr<TaskNodes>&... pTasks)
+		{
+			m_WaitCount = sizeof...(pTasks);
+			m_Completed = false;
+
+			if constexpr (sizeof...(pTasks) == 0)
+			{
+				insertThis();
+			}
+			else
+			{
+				auto pThis = shared_from_this();
+				(pTasks->addDependency(pThis), ...);
+			}
+		}
 
 		/**
 		 * Reset the current task and set it's completion to false.
@@ -116,6 +126,8 @@ namespace Xenon
 		JobSystem& m_JobSystem;
 
 		std::vector<std::shared_ptr<TaskNode>> m_pChildren;
+
+		std::mutex m_Mutex;
 
 		std::function<void()> m_Task;
 		std::atomic<uint64_t> m_WaitCount = 0;

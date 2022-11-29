@@ -19,11 +19,11 @@ namespace Xenon
 		/**
 		 * Explicit constructor.
 		 *
-		 * @param instance The instance reference.
+		 * @param renderer The renderer reference.
 		 * @param pCamera The camera pointer used by the renderer.
 		 * @param color The color to set.
 		 */
-		explicit ClearScreenLayer(Instance& instance, Backend::Camera* pCamera, const glm::vec4& color);
+		explicit ClearScreenLayer(Renderer& renderer, Backend::Camera* pCamera, const glm::vec4& color);
 
 		/**
 		 * Bind the layer to the command recorder.

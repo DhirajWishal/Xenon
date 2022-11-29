@@ -22,9 +22,9 @@ namespace Xenon
 		/**
 		 * Explicit constructor.
 		 *
-		 * @param instance The instance reference.
+		 * @param renderer The renderer reference.
 		 */
-		explicit Layer(Instance& instance) : m_Instance(instance) {}
+		explicit Layer(Renderer& renderer) : m_Renderer(renderer) {}
 
 		/**
 		 * Bind the layer to the command recorder.
@@ -43,6 +43,6 @@ namespace Xenon
 		[[nodiscard]] virtual Backend::Image* getColorAttachment() = 0;
 
 	protected:
-		Instance& m_Instance;
+		Renderer& m_Renderer;
 	};
 }

@@ -5,19 +5,6 @@
 
 namespace Xenon
 {
-	void TaskNode::reset()
-	{
-		m_Completed = false;
-		insertThis();
-	}
-
-	void TaskNode::reset(const std::shared_ptr<TaskNode>& pTask)
-	{
-		m_WaitCount = 1;
-		m_Completed = false;
-		pTask->addDependency(shared_from_this());
-	}
-
 	void TaskNode::reset(const std::vector<std::shared_ptr<TaskNode>>& pTasks)
 	{
 		m_Completed = false;
@@ -39,7 +26,10 @@ namespace Xenon
 			pNode->onParentCompletion(false);
 
 		else
+		{
+			auto lock = std::scoped_lock(m_Mutex);
 			m_pChildren.emplace_back(pNode);
+		}
 	}
 
 	void TaskNode::onParentCompletion(bool forceRun)

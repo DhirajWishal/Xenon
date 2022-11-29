@@ -19,14 +19,14 @@ namespace Xenon
 		/**
 		 * Explicit constructor.
 		 *
-		 * @param instance The instance reference.
+		 * @param renderer The renderer reference.
 		 * @param pCamera The camera which is used to render the scene.
 		 * @param attachmentTypes The attachment types the render target should support.
 		 * @param enableTripleBuffering Whether to enable triple-buffering. Default is false.
 		 * @param multiSampleCount Multi-sampling count to use. Default is x1.
 		 */
 		explicit RasterizingLayer(
-			Instance& instance,
+			Renderer& renderer,
 			Backend::Camera* pCamera,
 			Backend::AttachmentType attachmentTypes,
 			bool enableTripleBuffering = false,

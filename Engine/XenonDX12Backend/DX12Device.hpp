@@ -135,11 +135,25 @@ namespace Xenon
 			[[nodiscard]] ID3D12CommandQueue* getDirectQueue() { return m_DirectQueue.Get(); }
 
 			/**
-			 * Get the graphics queue.
+			 * Get the direct queue.
 			 *
-			 * @return The const graphics queue pointer.
+			 * @return The const direct queue pointer.
 			 */
 			[[nodiscard]] const ID3D12CommandQueue* getDirectQueue() const { return m_DirectQueue.Get(); }
+
+			/**
+			 * Get the bundle command queue.
+			 *
+			 * @return The bundle command queue pointer.
+			 */
+			[[nodiscard]] ID3D12CommandQueue* getBundleQueue() { return m_BundleQueue.Get(); }
+
+			/**
+			 * Get the bundle queue.
+			 *
+			 * @return The const bundle queue pointer.
+			 */
+			[[nodiscard]] const ID3D12CommandQueue* getBundleQueue() const { return m_BundleQueue.Get(); }
 
 			/**
 			 * Get the copy queue.
@@ -194,6 +208,7 @@ namespace Xenon
 			ComPtr<IDXGIAdapter> m_Adapter;
 
 			ComPtr<ID3D12CommandQueue> m_DirectQueue;
+			ComPtr<ID3D12CommandQueue> m_BundleQueue;
 			ComPtr<ID3D12CommandQueue> m_CopyQueue;
 
 			D3D12MA::Allocator* m_pAllocator = nullptr;

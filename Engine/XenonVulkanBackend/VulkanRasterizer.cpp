@@ -46,7 +46,10 @@ namespace Xenon
 			for (auto itr = m_pPipelines.begin(); itr != m_pPipelines.end(); ++itr)
 			{
 				if (*itr == pPipeline)
+				{
 					m_pPipelines.erase(itr);
+					break;
+				}
 			}
 		}
 

@@ -16,10 +16,14 @@ namespace Xenon
 		 */
 		enum class CommandRecorderUsage : uint8_t
 		{
-			Compute,
-			Graphics,
-			Transfer
+			Compute = XENON_BIT_SHIFT(0),
+			Graphics = XENON_BIT_SHIFT(1),
+			Transfer = XENON_BIT_SHIFT(2),
+			Secondary = XENON_BIT_SHIFT(3)
 		};
+
+		XENON_DEFINE_ENUM_OR(CommandRecorderUsage);
+		XENON_DEFINE_ENUM_AND(CommandRecorderUsage);
 
 		/**
 		 * Command recorder class.
@@ -35,12 +39,20 @@ namespace Xenon
 			 * @param usage The command recorder usage.
 			 * @param bufferCount The backend primitive buffer count. Default is 1.
 			 */
-			explicit CommandRecorder([[maybe_unused]] Device* pDevice, CommandRecorderUsage usage, uint32_t bufferCount = 1) : m_BufferCount(bufferCount), m_Usage(usage) {}
+			explicit CommandRecorder([[maybe_unused]] const Device* pDevice, CommandRecorderUsage usage, uint32_t bufferCount = 1) : m_BufferCount(bufferCount), m_Usage(usage) {}
 
 			/**
 			 * Set the command recorder state to recording.
 			 */
 			virtual void begin() = 0;
+
+			/**
+			 * Set the command recorder state to recording.
+			 * This will set the command recorder's state to secondary usage (for multi-threading).
+			 *
+			 * @param pParent The parent command recorder pointer.
+			 */
+			virtual void begin(CommandRecorder* pParent) = 0;
 
 			/**
 			 * Copy data from one buffer to another.
@@ -66,8 +78,9 @@ namespace Xenon
 			 *
 			 * @param pRasterizer The rasterizer pointer.
 			 * @param clearValues The rasterizer's clear values.
+			 * @param usingSecondaryCommandRecorders Whether we are using secondary command recorders to bind the rasterizer's resources. Default is false.
 			 */
-			virtual void bind(Rasterizer* pRasterizer, const std::vector<Rasterizer::ClearValueType>& clearValues) = 0;
+			virtual void bind(Rasterizer* pRasterizer, const std::vector<Rasterizer::ClearValueType>& clearValues, bool usingSecondaryCommandRecorders = false) = 0;
 
 			/**
 			 * Bind a rasterizing pipeline to the command recorder.
@@ -76,6 +89,11 @@ namespace Xenon
 			 * @param vertexSpecification The vertex specification.
 			 */
 			virtual void bind(RasterizingPipeline* pPipeline, const VertexSpecification& vertexSpecification) = 0;
+
+			/**
+			 * Execute all the child command recorders.
+			 */
+			virtual void executeChildren() = 0;
 
 			/**
 			 * End the command recorder recording.
@@ -101,6 +119,14 @@ namespace Xenon
 			 * @param timeout The time to wait till the commands are executed in milliseconds. Default is uint64_t max.
 			 */
 			virtual void wait(uint64_t timeout = UINT64_MAX) = 0;
+
+		public:
+			/**
+			 * Get the backend buffer count.
+			 *
+			 * @return The buffer count.
+			 */
+			[[nodiscard]] uint32_t getBufferCount() const { return m_BufferCount; }
 
 		protected:
 			/**

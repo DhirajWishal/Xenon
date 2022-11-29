@@ -19,17 +19,27 @@ namespace Xenon
 			, DX12DeviceBoundObject(pDevice)
 			, m_pDevice(pDevice)
 		{
+			D3D12_COMMAND_LIST_TYPE type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+			if (usage & CommandRecorderUsage::Secondary)
+				type = D3D12_COMMAND_LIST_TYPE_BUNDLE;
+
+			else if (usage & CommandRecorderUsage::Compute)
+				type = D3D12_COMMAND_LIST_TYPE_COMPUTE;
+
+			else if (usage & CommandRecorderUsage::Transfer)
+				type = D3D12_COMMAND_LIST_TYPE_COPY;
+
 			// Create the command lists.
 			m_pCommandLists.reserve(bufferCount);
 			for (uint32_t i = 0; i < bufferCount; i++)
 			{
 				// Create the command allocator.
 				ComPtr<ID3D12CommandAllocator> allocator;
-				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&allocator)), "Failed to create the command allocator!");
+				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommandAllocator(type, IID_PPV_ARGS(&allocator)), "Failed to create the command allocator!");
 
 				// Create the command list.
 				ComPtr<ID3D12GraphicsCommandList> commandList;
-				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, allocator.Get(), nullptr, IID_PPV_ARGS(&commandList)), "Failed to create the command list!");
+				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommandList(0, type, allocator.Get(), nullptr, IID_PPV_ARGS(&commandList)), "Failed to create the command list!");
 
 				// Create the fence.
 				ComPtr<ID3D12Fence> fence;
@@ -58,6 +68,11 @@ namespace Xenon
 			XENON_DX12_ASSERT(m_pCurrentCommandList->Reset(m_pCurrentCommandAllocator, nullptr), "Failed to reset the command list!");
 		}
 
+		void DX12CommandRecorder::begin(CommandRecorder* pParent)
+		{
+			XENON_TODO_NOW("(Dhiraj) Implement this function {}", __FUNCSIG__);
+		}
+
 		void DX12CommandRecorder::copy(Buffer* pSource, uint64_t srcOffset, Buffer* pDestination, uint64_t dstOffset, uint64_t size)
 		{
 			m_pCurrentCommandList->CopyBufferRegion(pDestination->as<DX12Buffer>()->getResource(), dstOffset, pSource->as<DX12Buffer>()->getResource(), srcOffset, size);
@@ -68,7 +83,7 @@ namespace Xenon
 			// m_pCurrentCommandList->CopyResource(pDestination->as<DX12Swapchain>()->getCurrentSwapchainImageResource(), pSource->as<DX12Image>()->getResource());
 		}
 
-		void DX12CommandRecorder::bind(Rasterizer* pRasterizer, const std::vector<Rasterizer::ClearValueType>& clearValues)
+		void DX12CommandRecorder::bind(Rasterizer* pRasterizer, const std::vector<Rasterizer::ClearValueType>& clearValues, bool usingSecondaryCommandRecorders /*= false*/)
 		{
 			const auto dxRasterizer = pRasterizer->as<DX12Rasterizer>();
 			CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(dxRasterizer->getRenderTargetHeap()->GetCPUDescriptorHandleForHeapStart(), dxRasterizer->getFrameIndex(), dxRasterizer->getRenderTargetDescriptorSize());
@@ -82,6 +97,11 @@ namespace Xenon
 		void DX12CommandRecorder::bind(RasterizingPipeline* pPipeline, const VertexSpecification& vertexSpecification)
 		{
 			m_pCurrentCommandList->SetPipelineState(pPipeline->as<DX12RasterizingPipeline>()->getPipeline(vertexSpecification).m_PipelineState.Get());
+		}
+
+		void DX12CommandRecorder::executeChildren()
+		{
+			XENON_TODO_NOW("(Dhiraj) Implement this function {}", __FUNCSIG__);
 		}
 
 		void DX12CommandRecorder::end()
@@ -99,15 +119,30 @@ namespace Xenon
 
 		void DX12CommandRecorder::submit(Swapchain* pSawpchain /*= nullptr*/)
 		{
+			ID3D12CommandQueue* pQueue = m_pDevice->getDirectQueue();
+			if (m_Usage & CommandRecorderUsage::Secondary)
+				pQueue = m_pDevice->getBundleQueue();
+
+			else if (m_Usage & CommandRecorderUsage::Transfer)
+				pQueue = m_pDevice->getCopyQueue();
+
 			std::array<ID3D12CommandList*, 1> pCommandLists = { m_pCurrentCommandList };
-			m_pDevice->getDirectQueue()->ExecuteCommandLists(pCommandLists.size(), pCommandLists.data());
-			XENON_DX12_ASSERT(m_pDevice->getDirectQueue()->Signal(m_pCurrentCommandListFence, 1), "Failed to signal the fence!");
+			pQueue->ExecuteCommandLists(pCommandLists.size(), pCommandLists.data());
+			XENON_DX12_ASSERT(pQueue->Signal(m_pCurrentCommandListFence, 1), "Failed to signal the fence!");
 		}
 
 		void DX12CommandRecorder::wait(uint64_t timeout /*= UINT64_MAX*/)
 		{
 			const auto nextFence = m_pCurrentCommandListFence->GetCompletedValue() + 1;
-			XENON_DX12_ASSERT(m_pDevice->getDirectQueue()->Signal(m_pCurrentCommandListFence, nextFence), "Failed to signal the fence!");
+
+			ID3D12CommandQueue* pQueue = m_pDevice->getDirectQueue();
+			if (m_Usage & CommandRecorderUsage::Secondary)
+				pQueue = m_pDevice->getBundleQueue();
+
+			else if (m_Usage & CommandRecorderUsage::Transfer)
+				pQueue = m_pDevice->getCopyQueue();
+
+			XENON_DX12_ASSERT(pQueue->Signal(m_pCurrentCommandListFence, nextFence), "Failed to signal the fence!");
 
 			if (m_pCurrentCommandListFence->GetCompletedValue() < nextFence)
 			{

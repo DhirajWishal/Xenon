@@ -37,6 +37,14 @@ namespace Xenon
 			void begin() override;
 
 			/**
+			 * Set the command recorder state to recording.
+			 * This will set the command recorder's state to secondary usage (for multi-threading).
+			 *
+			 * @param pParent The parent command recorder pointer.
+			 */
+			void begin(CommandRecorder* pParent) override;
+
+			/**
 			 * Change the image layout of an image.
 			 *
 			 * @param image The image to change the layout of.
@@ -72,8 +80,9 @@ namespace Xenon
 			 *
 			 * @param pRasterizer The rasterizer pointer.
 			 * @param clearValues The rasterizer's clear values.
+			 * @param usingSecondaryCommandRecorders Whether we are using secondary command recorders to bind the rasterizer's resources. Default is false.
 			 */
-			void bind(Rasterizer* pRasterizer, const std::vector<Rasterizer::ClearValueType>& clearValues) override;
+			void bind(Rasterizer* pRasterizer, const std::vector<Rasterizer::ClearValueType>& clearValues, bool usingSecondaryCommandRecorders = false) override;
 
 			/**
 			 * Bind a rasterizing pipeline to the command recorder.
@@ -82,6 +91,11 @@ namespace Xenon
 			 * @param vertexSpecification The vertex specification.
 			 */
 			void bind(RasterizingPipeline* pPipeline, const VertexSpecification& vertexSpecification) override;
+
+			/**
+			 * Execute all the child command recorders.
+			 */
+			void executeChildren() override;
 
 			/**
 			 * End the command recorder recording.
@@ -109,7 +123,10 @@ namespace Xenon
 			void wait(uint64_t timeout = UINT64_MAX) override;
 
 		private:
+			VkCommandBufferInheritanceInfo m_InheritanceInfo = {};
+
 			std::vector<VulkanCommandBuffer> m_CommandBuffers;
+			std::vector<VkCommandBuffer> m_ChildCommandBuffers;
 			VulkanCommandBuffer* m_pCurrentBuffer = nullptr;
 		};
 	}

@@ -25,33 +25,23 @@ namespace Xenon
 		 * Create a new task node.
 		 *
 		 * @tparam Function The function type.
+		 * @tparam TaskNodes The parent task nodes.
 		 * @param jobSystem The job system to insert the task to.
 		 * @param function The function to run as the task.
+		 * @param pTasks The parent tasks.
 		 * @return The task pointer.
 		 */
-		template<class Function>
-		[[nodiscard]] std::shared_ptr<TaskNode> create(Function&& function)
+		template<class Function, class... TaskNodes>
+		[[nodiscard]] std::shared_ptr<TaskNode> create(Function&& function, const std::shared_ptr<TaskNodes>&... pTasks)
 		{
-			auto pChild = std::make_shared<TaskNode>(m_JobSystem, std::forward<Function>(function), 0);
-			m_JobSystem.insert([pChild] { pChild->run(); });
+			constexpr auto parentCount = sizeof...(pTasks);
+			auto pChild = std::make_shared<TaskNode>(m_JobSystem, std::forward<Function>(function), parentCount);
 
-			return pChild;
-		}
+			if constexpr (parentCount == 0)
+				m_JobSystem.insert([pChild] { pChild->run(); });
 
-		/**
-		 * Create a new task node.
-		 *
-		 * @tparam Function The function type.
-		 * @param jobSystem The job system to insert the task to.
-		 * @param function The function to run as the task.
-		 * @param pTask The parent task.
-		 * @return The task pointer.
-		 */
-		template<class Function>
-		[[nodiscard]] std::shared_ptr<TaskNode> create(Function&& function, const std::shared_ptr<TaskNode>& pTask)
-		{
-			auto pChild = std::make_shared<TaskNode>(m_JobSystem, std::forward<Function>(function), 1);
-			pTask->addDependency(pChild);
+			else
+				(pTasks->addDependency(pChild), ...);
 
 			return pChild;
 		}

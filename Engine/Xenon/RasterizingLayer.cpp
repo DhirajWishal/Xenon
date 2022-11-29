@@ -2,14 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "RasterizingLayer.hpp"
+#include "Renderer.hpp"
 
 #include "../XenonCore/Logging.hpp"
 
 namespace Xenon
 {
-	RasterizingLayer::RasterizingLayer(Instance& instance, Backend::Camera* pCamera, Backend::AttachmentType attachmentTypes, bool enableTripleBuffering /*= false*/, Backend::MultiSamplingCount multiSampleCount /*= Backend::MultiSamplingCount::x1*/)
-		: Layer(instance)
-		, m_pRasterizer(instance.getFactory()->createRasterizer(instance.getBackendDevice(), pCamera, attachmentTypes, enableTripleBuffering, multiSampleCount))
+	RasterizingLayer::RasterizingLayer(Renderer& renderer, Backend::Camera* pCamera, Backend::AttachmentType attachmentTypes, bool enableTripleBuffering /*= false*/, Backend::MultiSamplingCount multiSampleCount /*= Backend::MultiSamplingCount::x1*/)
+		: Layer(renderer)
+		, m_pRasterizer(renderer.getInstance().getFactory()->createRasterizer(renderer.getInstance().getBackendDevice(), pCamera, attachmentTypes, enableTripleBuffering, multiSampleCount))
 	{
 	}
 

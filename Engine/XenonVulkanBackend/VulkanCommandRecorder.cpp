@@ -223,7 +223,7 @@ namespace Xenon
 				allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 				allocateInfo.pNext = nullptr;
 				allocateInfo.commandPool = commandPool;
-				allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+				allocateInfo.level = m_Usage & CommandRecorderUsage::Secondary ? VK_COMMAND_BUFFER_LEVEL_SECONDARY : VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 				allocateInfo.commandBufferCount = bufferCount;
 
 				std::vector<VkCommandBuffer> commandBuffers(bufferCount);
@@ -252,9 +252,21 @@ namespace Xenon
 				pDevice->getTransferCommandPool().access(std::move(function));
 				break;
 
+			case Xenon::Backend::CommandRecorderUsage::Secondary:
+				pDevice->getGraphicsCommandPool().access(std::move(function));
+				break;
+
 			default:
 				XENON_LOG_FATAL("Invalid command recorder usage!");
 			}
+
+			// Setup the initial inheritance info structure data.
+			m_InheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+			m_InheritanceInfo.pNext = nullptr;
+			m_InheritanceInfo.subpass = 0;
+			m_InheritanceInfo.occlusionQueryEnable = VK_FALSE;
+			m_InheritanceInfo.queryFlags = 0;
+			m_InheritanceInfo.pipelineStatistics = 0;
 		}
 
 		void VulkanCommandRecorder::begin()
@@ -267,6 +279,23 @@ namespace Xenon
 
 			m_pCurrentBuffer->wait();
 			m_pDevice->getDeviceTable().vkBeginCommandBuffer(*m_pCurrentBuffer, &beginInfo);
+		}
+
+		void VulkanCommandRecorder::begin(CommandRecorder* pParent)
+		{
+			auto pVkParent = pParent->as<VulkanCommandRecorder>();
+
+			VkCommandBufferBeginInfo beginInfo = {};
+			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+			beginInfo.pNext = VK_NULL_HANDLE;
+			beginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+			beginInfo.pInheritanceInfo = &pVkParent->m_InheritanceInfo;
+
+			m_pCurrentBuffer->wait();
+			m_pDevice->getDeviceTable().vkBeginCommandBuffer(*m_pCurrentBuffer, &beginInfo);
+
+			// Insert he child (this) command buffer.
+			pVkParent->m_ChildCommandBuffers.emplace_back(m_pCurrentBuffer->getCommandBuffer());
 		}
 
 		void VulkanCommandRecorder::changeImageLayout(VkImage image, VkImageLayout currentLayout, VkImageLayout newLayout, VkImageAspectFlags aspectFlags, uint32_t mipLevels /*= 1*/, uint32_t layers /*= 1*/)
@@ -439,7 +468,7 @@ namespace Xenon
 			changeImageLayout(currentSwapchainImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_IMAGE_ASPECT_COLOR_BIT);
 		}
 
-		void VulkanCommandRecorder::bind(Rasterizer* pRasterizer, const std::vector<Rasterizer::ClearValueType>& clearValues)
+		void VulkanCommandRecorder::bind(Rasterizer* pRasterizer, const std::vector<Rasterizer::ClearValueType>& clearValues, bool usingSecondaryCommandRecorders /*= false*/)
 		{
 			// Unbind the previous render pass if we need to.
 			if (m_IsRenderTargetBound)
@@ -462,13 +491,28 @@ namespace Xenon
 			beginInfo.clearValueCount = static_cast<uint32_t>(vkClearValues.size());
 			beginInfo.pClearValues = vkClearValues.data();
 
-			m_pDevice->getDeviceTable().vkCmdBeginRenderPass(*m_pCurrentBuffer, &beginInfo, VK_SUBPASS_CONTENTS_INLINE);
+			const auto contents = usingSecondaryCommandRecorders ? VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS : VK_SUBPASS_CONTENTS_INLINE;
+			m_pDevice->getDeviceTable().vkCmdBeginRenderPass(*m_pCurrentBuffer, &beginInfo, contents);
 			m_IsRenderTargetBound = true;
+
+			// Setup the inheritance info.
+			m_InheritanceInfo.renderPass = beginInfo.renderPass;
+			m_InheritanceInfo.framebuffer = beginInfo.framebuffer;
 		}
 
 		void VulkanCommandRecorder::bind(RasterizingPipeline* pPipeline, const VertexSpecification& vertexSpecification)
 		{
 			m_pDevice->getDeviceTable().vkCmdBindPipeline(*m_pCurrentBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pPipeline->as<VulkanRasterizingPipeline>()->getPipeline(vertexSpecification).m_Pipeline);
+		}
+
+		void VulkanCommandRecorder::executeChildren()
+		{
+			// Skip if we don't have any children :(
+			if (m_ChildCommandBuffers.empty())
+				return;
+
+			m_pDevice->getDeviceTable().vkCmdExecuteCommands(*m_pCurrentBuffer, static_cast<uint32_t>(m_ChildCommandBuffers.size()), m_ChildCommandBuffers.data());
+			m_ChildCommandBuffers.clear();
 		}
 
 		void VulkanCommandRecorder::end()

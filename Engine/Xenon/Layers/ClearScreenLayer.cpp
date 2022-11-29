@@ -2,11 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "ClearScreenLayer.hpp"
+#include "../Renderer.hpp"
 
 namespace Xenon
 {
-	ClearScreenLayer::ClearScreenLayer(Instance& instance, Backend::Camera* pCamera, const glm::vec4& color)
-		: RasterizingLayer(instance, pCamera, Backend::AttachmentType::Color)
+	ClearScreenLayer::ClearScreenLayer(Renderer& renderer, Backend::Camera* pCamera, const glm::vec4& color)
+		: RasterizingLayer(renderer, pCamera, Backend::AttachmentType::Color)
 		, m_ClearColor(color)
 	{
 	}

@@ -11,6 +11,7 @@ namespace Xenon
 		, m_pSwapChain(instance.getFactory()->createSwapchain(instance.getBackendDevice(), title, pCamera->getWidth(), pCamera->getHeight()))
 		, m_pCommandRecorder(instance.getFactory()->createCommandRecorder(instance.getBackendDevice(), Backend::CommandRecorderUsage::Graphics, 3))
 		, m_pCamera(pCamera)
+		, m_Instance(instance)
 	{
 		m_Latch.count_down();
 	}
@@ -65,6 +66,9 @@ namespace Xenon
 			// Copy the previous layer's color buffer to the swapchain if we have a layer.
 			if (pPreviousLayer)
 				m_pCommandRecorder->copy(pPreviousLayer->getColorAttachment(), m_pSwapChain.get());
+
+			// Wait till all the other tasks have been completed before submitting the commands.
+			m_TaskGraph.complete();
 
 			// End the command recorder.
 			m_pCommandRecorder->end();
