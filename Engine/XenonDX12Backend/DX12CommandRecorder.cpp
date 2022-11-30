@@ -109,50 +109,43 @@ namespace Xenon
 
 		void DX12CommandRecorder::bind(RasterizingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pCameraDescriptor)
 		{
+			m_pCurrentCommandList->SetDescriptorHeaps(2, pPipeline->as<DX12RasterizingPipeline>()->getDescriptorHeapStorage().data());
+
 			auto pDx12UserDefinedDescriptor = pUserDefinedDescriptor->as<DX12Descriptor>();
 			auto pDx12MaterialDescriptor = pMaterialDescriptor->as<DX12Descriptor>();
 			auto pDx12CameraDescriptor = pCameraDescriptor->as<DX12Descriptor>();
 
-			std::vector<ID3D12DescriptorHeap*> descriptorHeaps;
-			if (pDx12UserDefinedDescriptor)
-			{
-				if (pDx12UserDefinedDescriptor->getCbvSrvUavDescriptorHeap()) descriptorHeaps.emplace_back(pDx12UserDefinedDescriptor->getCbvSrvUavDescriptorHeap());
-				if (pDx12UserDefinedDescriptor->getSamplerDescriptorHeap()) descriptorHeaps.emplace_back(pDx12UserDefinedDescriptor->getSamplerDescriptorHeap());
-			}
-
-			if (pDx12MaterialDescriptor)
-			{
-				if (pDx12MaterialDescriptor->getCbvSrvUavDescriptorHeap()) descriptorHeaps.emplace_back(pDx12MaterialDescriptor->getCbvSrvUavDescriptorHeap());
-				if (pDx12MaterialDescriptor->getSamplerDescriptorHeap()) descriptorHeaps.emplace_back(pDx12MaterialDescriptor->getSamplerDescriptorHeap());
-			}
-
-			if (pDx12CameraDescriptor)
-			{
-				if (pDx12CameraDescriptor->getCbvSrvUavDescriptorHeap()) descriptorHeaps.emplace_back(pDx12CameraDescriptor->getCbvSrvUavDescriptorHeap());
-				if (pDx12CameraDescriptor->getSamplerDescriptorHeap()) descriptorHeaps.emplace_back(pDx12CameraDescriptor->getSamplerDescriptorHeap());
-			}
-
-			m_pCurrentCommandList->SetDescriptorHeaps(static_cast<UINT>(descriptorHeaps.size()), descriptorHeaps.data());
-
 			UINT index = 0;
 			if (pDx12UserDefinedDescriptor)
 			{
-				if (pDx12UserDefinedDescriptor->getCbvSrvUavDescriptorHeap()) m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index, pDx12UserDefinedDescriptor->getCbvSrvUavDescriptorHeap()->GetGPUDescriptorHandleForHeapStart());
-				if (pDx12UserDefinedDescriptor->getSamplerDescriptorHeap()) m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index, pDx12UserDefinedDescriptor->getSamplerDescriptorHeap()->GetGPUDescriptorHandleForHeapStart());
+				const auto cbvSrvUavHandle = pDx12UserDefinedDescriptor->getCbvSrvUavDescriptorHeapHandleGPU();
+				const auto samplerHandle = pDx12UserDefinedDescriptor->getSamplerDescriptorHeapHandleGPU();
+
+				if (cbvSrvUavHandle.ptr) m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index, cbvSrvUavHandle);
+				if (samplerHandle.ptr)m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index, samplerHandle);
+
 				index++;
 			}
 
 			if (pDx12MaterialDescriptor)
 			{
-				if (pDx12MaterialDescriptor->getCbvSrvUavDescriptorHeap()) m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index, pDx12MaterialDescriptor->getCbvSrvUavDescriptorHeap()->GetGPUDescriptorHandleForHeapStart());
-				if (pDx12MaterialDescriptor->getSamplerDescriptorHeap()) m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index, pDx12MaterialDescriptor->getSamplerDescriptorHeap()->GetGPUDescriptorHandleForHeapStart());
+				const auto cbvSrvUavHandle = pDx12MaterialDescriptor->getCbvSrvUavDescriptorHeapHandleGPU();
+				const auto samplerHandle = pDx12MaterialDescriptor->getSamplerDescriptorHeapHandleGPU();
+
+				if (cbvSrvUavHandle.ptr) m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index, cbvSrvUavHandle);
+				if (samplerHandle.ptr)m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index, samplerHandle);
+
 				index++;
 			}
 
 			if (pDx12CameraDescriptor)
 			{
-				if (pDx12CameraDescriptor->getCbvSrvUavDescriptorHeap()) m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index, pDx12CameraDescriptor->getCbvSrvUavDescriptorHeap()->GetGPUDescriptorHandleForHeapStart());
-				if (pDx12CameraDescriptor->getSamplerDescriptorHeap()) m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index, pDx12CameraDescriptor->getSamplerDescriptorHeap()->GetGPUDescriptorHandleForHeapStart());
+				const auto cbvSrvUavHandle = pDx12CameraDescriptor->getCbvSrvUavDescriptorHeapHandleGPU();
+				const auto samplerHandle = pDx12CameraDescriptor->getSamplerDescriptorHeapHandleGPU();
+
+				if (cbvSrvUavHandle.ptr) m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index, cbvSrvUavHandle);
+				if (samplerHandle.ptr)m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index, samplerHandle);
+
 				index++;
 			}
 		}

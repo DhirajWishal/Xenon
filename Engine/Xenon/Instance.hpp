@@ -4,6 +4,7 @@
 #pragma once
 
 #include "../XenonBackend/IFactory.hpp"
+#include "MaterialDatabase.hpp"
 
 #include <string>
 
@@ -163,9 +164,25 @@ namespace Xenon
 		 */
 		[[nodiscard]] const Backend::ImageSampler* getDefaultSampler() const noexcept { return m_pDefaultSampler.get(); }
 
+		/**
+		 * Get the material database.
+		 *
+		 * @return The database reference.
+		 */
+		[[nodiscard]] MaterialDatabase& getMaterialDatabase() { return m_MaterialDatabase; }
+
+		/**
+		 * Get the material database.
+		 *
+		 * @return The const database reference.
+		 */
+		[[nodiscard]] const MaterialDatabase& getMaterialDatabase() const { return m_MaterialDatabase; }
+
 	private:
 		std::string m_ApplicationName;
 		uint32_t m_ApplicationVersion;
+
+		MaterialDatabase m_MaterialDatabase;
 
 		std::unique_ptr<Backend::IFactory> m_pFactory = nullptr;
 		std::unique_ptr<Backend::Instance> m_pInstance = nullptr;

@@ -97,16 +97,6 @@ namespace Xenon
 			[[nodiscard]] std::unique_ptr<Swapchain> createSwapchain(Device* pDevice, const std::string& title, uint32_t width, uint32_t height) override;
 
 			/**
-			 * Create a new descriptor.
-			 *
-			 * @param pDevice The device pointer.
-			 * @param bindingInfo The descriptor's binding information. Make sure that the binding information are in the binding order (the first one is binging 0, second is 1 and so on).
-			 * @param type The descriptor type.
-			 * @return The descriptor pointer.
-			 */
-			[[nodiscard]] std::unique_ptr<Descriptor> createDescriptor(Device* pDevice, const std::vector<DescriptorBindingInfo>& bindingInfo, DescriptorType type) override;
-
-			/**
 			 * Create a new image view.
 			 *
 			 * @param pDevice The device pointer.

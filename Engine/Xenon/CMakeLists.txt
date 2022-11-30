@@ -27,11 +27,18 @@ set(
 	"RasterizingLayer.hpp"
 	"FrameTimer.cpp"
 	"FrameTimer.hpp"
+	"MaterialBlob.hpp"
+	"MaterialDatabase.hpp"
 
 	"Layers/ClearScreenLayer.cpp"
 	"Layers/ClearScreenLayer.hpp"
 	"Layers/DefaultRasterizingLayer.cpp"
 	"Layers/DefaultRasterizingLayer.hpp"
+
+	"Materials/DefaultMaterial.cpp"
+	"Materials/DefaultMaterial.hpp"
+	"Materials/PBRMetallicRoughnessMaterial.cpp"
+	"Materials/PBRMetallicRoughnessMaterial.hpp"
 )
 
 # Add the source group.

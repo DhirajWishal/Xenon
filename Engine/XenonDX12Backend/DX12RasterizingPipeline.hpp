@@ -5,6 +5,7 @@
 
 #include "../XenonBackend/RasterizingPipeline.hpp"
 
+#include "DX12DescriptorHeapManager.hpp"
 #include "DX12Rasterizer.hpp"
 
 namespace Xenon
@@ -14,7 +15,7 @@ namespace Xenon
 		/**
 		 * Direct X 12 rasterizing pipeline class.
 		 */
-		class DX12RasterizingPipeline final : public RasterizingPipeline, public DX12DeviceBoundObject
+		class DX12RasterizingPipeline final : public RasterizingPipeline, public DX12DescriptorHeapManager
 		{
 			/**
 			 * Pipeline storage structure.
@@ -74,11 +75,6 @@ namespace Xenon
 
 		private:
 			/**
-			 * Setup the descriptor heaps.
-			 */
-			void setupDescriptorHeaps();
-
-			/**
 			 * Create the root signature.
 			 *
 			 * @param rangeMap The descriptor range map.
@@ -109,24 +105,14 @@ namespace Xenon
 		private:
 			D3D12_GRAPHICS_PIPELINE_STATE_DESC m_PipelineStateDescriptor = {};
 
-			std::unordered_map<DescriptorType, std::vector<DescriptorBindingInfo>> m_BindingMap;
 			std::unordered_map<uint64_t, PipelineStorage> m_Pipelines;
 			std::vector<D3D12_INPUT_ELEMENT_DESC> m_Inputs;
-
-			std::vector<UINT> m_SamplerIndex;
-			std::vector<CD3DX12_DESCRIPTOR_RANGE1> m_Ranges;
-
-			ComPtr<ID3D12DescriptorHeap> m_CbvSrvUavDescriptorHeap;
-			ComPtr<ID3D12DescriptorHeap> m_SamplerDescriptorHeap;
 
 			ComPtr<ID3D12RootSignature> m_RootSignature;
 			ComPtr<ID3DBlob> m_VertexShader;
 			ComPtr<ID3DBlob> m_PixelShader;
 
 			DX12Rasterizer* m_pRasterizer = nullptr;
-
-			UINT m_CbvSrvUavDescriptorHeapSize = 0;
-			UINT m_SamplerDescriptorHeapSize = 0;
 		};
 	}
 }

@@ -24,6 +24,7 @@ namespace Xenon
 			MeshStorage m_Storage;
 			Backend::RasterizingPipeline* m_pPipeline = nullptr;
 			std::unique_ptr<Backend::CommandRecorder> m_pCommandRecorder = nullptr;
+			std::unique_ptr<Backend::Descriptor> m_pMaterialDescriptor = nullptr;
 		};
 
 	public:
@@ -55,7 +56,7 @@ namespace Xenon
 	private:
 		/**
 		 * Bind the draw data on another thread.
-		 * 
+		 *
 		 * @param drawData The draw data reference.
 		 * @param pCommandRecorder The command recorder pointer.
 		 */

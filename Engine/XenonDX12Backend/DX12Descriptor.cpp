@@ -64,62 +64,21 @@ namespace Xenon
 {
 	namespace Backend
 	{
-		DX12Descriptor::DX12Descriptor(DX12Device* pDevice, const std::vector<DescriptorBindingInfo>& bindingInfo, DescriptorType type)
+		DX12Descriptor::DX12Descriptor(DX12Device* pDevice, const std::vector<DescriptorBindingInfo>& bindingInfo, DescriptorType type, DX12DescriptorHeapManager* pManager)
 			: Descriptor(pDevice, bindingInfo, type)
 			, DX12DeviceBoundObject(pDevice)
+			, m_pManager(pManager)
 		{
-			// Get the descriptor count.
-			UINT samplerCount = 0;
-			UINT viewCount = 0;
-			for (const auto& info : bindingInfo)
-			{
-				viewCount++;
-				m_SamplerIndex.emplace_back(samplerCount);
-
-				if (info.m_Type == ResourceType::Sampler || info.m_Type == ResourceType::CombinedImageSampler)
-					samplerCount++;
-
-				auto range = m_Ranges.emplace_back();
-				range.Init(GetDescriptorRangeType(info.m_Type), 1, 0);
-			}
-
-			D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
-			heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-
-			switch (type)
-			{
-			case Xenon::Backend::DescriptorType::UserDefined:
-			case Xenon::Backend::DescriptorType::Material:
-				if (samplerCount > 0)
-				{
-					heapDesc.NumDescriptors = std::min(samplerCount, static_cast<UINT>(XENON_DX12_MAX_DESCRIPTOR_COUNT));
-					heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
-					XENON_DX12_ASSERT(pDevice->getDevice()->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&m_SamplerDescriptorHeap)), "Failed to create the sampler descriptor heap!");
-
-					m_SamplerDescriptorHeapSize = pDevice->getDevice()->GetDescriptorHandleIncrementSize(heapDesc.Type);
-				}
-
-			case Xenon::Backend::DescriptorType::Camera:
-				if (viewCount > 0)
-				{
-					heapDesc.NumDescriptors = std::min(viewCount, static_cast<UINT>(XENON_DX12_MAX_DESCRIPTOR_COUNT));
-					heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-					XENON_DX12_ASSERT(pDevice->getDevice()->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&m_CbvSrvUavDescriptorHeap)), "Failed to create the CBV SRV UAV descriptor heap!");
-
-					m_CbvSrvUavDescriptorHeapSize = pDevice->getDevice()->GetDescriptorHandleIncrementSize(heapDesc.Type);
-				}
-				break;
-
-			default:
-				XENON_LOG_ERROR("Invalid descriptor type!");
-			}
+			const auto [buffers, samplers] = m_pManager->setupDescriptor(type);
+			m_CbvSrvUavDescriptorHeapBegin = buffers;
+			m_SamplerDescriptorHeapBegin = samplers;
 		}
 
 		void DX12Descriptor::attach(uint32_t binding, Buffer* pBuffer)
 		{
 			auto pDx12Buffer = pBuffer->as<DX12Buffer>();
 			const auto type = m_BindingInformation[binding].m_Type;
-			auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(m_CbvSrvUavDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), binding, m_CbvSrvUavDescriptorHeapSize);
+			auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(m_pManager->getCbvSrvUavHeapStartCPU(), m_CbvSrvUavDescriptorHeapBegin + binding, m_pManager->getCbvSrvUavHeapIncrementSize());
 
 			if (type == ResourceType::UniformBuffer || type == ResourceType::DynamicUniformBuffer)
 			{
@@ -146,17 +105,19 @@ namespace Xenon
 			{
 				XENON_LOG_ERROR("Invalid buffer resource type!");
 			}
+
+			m_pManager->notifyHeapUpdated();
 		}
 
 		void DX12Descriptor::attach(uint32_t binding, Image* pImage, ImageView* pView, ImageSampler* pSampler, ImageUsage usage)
 		{
-			CD3DX12_CPU_DESCRIPTOR_HANDLE handle(m_CbvSrvUavDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), binding, m_CbvSrvUavDescriptorHeapSize);
+			CD3DX12_CPU_DESCRIPTOR_HANDLE handle(m_pManager->getCbvSrvUavHeapStartCPU(), m_CbvSrvUavDescriptorHeapBegin + binding, m_pManager->getCbvSrvUavHeapIncrementSize());
 
 			if (usage & ImageUsage::Graphics || usage & ImageUsage::ColorAttachment || usage & ImageUsage::DepthAttachment)
 			{
 				m_pDevice->getDevice()->CreateShaderResourceView(pImage->as<DX12Image>()->getResource(), pView->as<DX12ImageView>()->getSRVDescriptionPtr(), handle);
 
-				auto samplerHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(m_SamplerDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), m_SamplerIndex[binding], m_SamplerDescriptorHeapSize);
+				auto samplerHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(m_pManager->getSamplerHeapStartCPU(), m_SamplerDescriptorHeapBegin + m_pManager->getSamplerIndex(binding), m_pManager->getSamplerHeapIncrementSize());
 				m_pDevice->getDevice()->CreateSampler(pSampler->as<DX12ImageSampler>()->getSamplerDescriptionPtr(), samplerHandle);
 			}
 			else if (usage & ImageUsage::Storage)
@@ -167,6 +128,28 @@ namespace Xenon
 			{
 				XENON_LOG_ERROR("Invalid image usage!");
 			}
+
+			m_pManager->notifyHeapUpdated();
+		}
+
+		D3D12_CPU_DESCRIPTOR_HANDLE DX12Descriptor::getCbvSrvUavDescriptorHeapHandleCPU() const
+		{
+			return CD3DX12_CPU_DESCRIPTOR_HANDLE(m_pManager->getCbvSrvUavHeapStartCPU(), m_CbvSrvUavDescriptorHeapBegin);
+		}
+
+		D3D12_GPU_DESCRIPTOR_HANDLE DX12Descriptor::getCbvSrvUavDescriptorHeapHandleGPU() const
+		{
+			return CD3DX12_GPU_DESCRIPTOR_HANDLE(m_pManager->getCbvSrvUavHeapStartGPU(), m_CbvSrvUavDescriptorHeapBegin);
+		}
+
+		D3D12_CPU_DESCRIPTOR_HANDLE DX12Descriptor::getSamplerDescriptorHeapHandleCPU() const
+		{
+			return CD3DX12_CPU_DESCRIPTOR_HANDLE(m_pManager->getCbvSrvUavHeapStartCPU(), m_SamplerDescriptorHeapBegin);
+		}
+
+		D3D12_GPU_DESCRIPTOR_HANDLE DX12Descriptor::getSamplerDescriptorHeapHandleGPU() const
+		{
+			return CD3DX12_GPU_DESCRIPTOR_HANDLE(m_pManager->getCbvSrvUavHeapStartGPU(), m_SamplerDescriptorHeapBegin);
 		}
 	}
 }

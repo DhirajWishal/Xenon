@@ -10,7 +10,6 @@
 #include "DX12Rasterizer.hpp"
 #include "DX12Swapchain.hpp"
 #include "DX12ImageSampler.hpp"
-#include "DX12Descriptor.hpp"
 #include "DX12RasterizingPipeline.hpp"
 
 #include "../XenonCore/Logging.hpp"
@@ -52,11 +51,6 @@ namespace Xenon
 		std::unique_ptr<Xenon::Backend::Swapchain> DX12Factory::createSwapchain(Device* pDevice, const std::string& title, uint32_t width, uint32_t height)
 		{
 			return std::make_unique<DX12Swapchain>(pDevice->as<DX12Device>(), title, width, height);
-		}
-
-		std::unique_ptr<Xenon::Backend::Descriptor> DX12Factory::createDescriptor(Device* pDevice, const std::vector<DescriptorBindingInfo>& bindingInfo, DescriptorType type)
-		{
-			return std::make_unique<DX12Descriptor>(pDevice->as<DX12Device>(), bindingInfo, type);
 		}
 
 		std::unique_ptr<Xenon::Backend::ImageView> DX12Factory::createImageView(Device* pDevice, Image* pImage, const ImageViewSpecification& specification)

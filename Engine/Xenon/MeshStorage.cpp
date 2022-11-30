@@ -3,6 +3,7 @@
 
 #include "MeshStorage.hpp"
 #include "../XenonCore/Logging.hpp"
+#include "Materials/PBRMetallicRoughnessMaterial.hpp"
 
 #define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
@@ -35,19 +36,6 @@ constexpr const char* g_Attributes[] = {
 	"JOINTS_0",
 	"WEIGHTS_0",
 };
-
-namespace Materials
-{
-	/**
-	 * PBR Metallic Roughness Material.
-	 */
-	struct PBRMetallicRoughnessMaterial final : public Xenon::MaterialBlob
-	{
-		std::unique_ptr<Xenon::Backend::Image> m_pImage = nullptr;
-		std::unique_ptr<Xenon::Backend::ImageView> m_pImageView = nullptr;
-		std::unique_ptr<Xenon::Backend::ImageSampler> m_pSampler = nullptr;
-	};
-}
 
 namespace /* anonymous */
 {
@@ -379,7 +367,6 @@ namespace /* anonymous */
 		std::latch& synchronization)
 	{
 		static auto workers = Xenon::JobSystem(std::thread::hardware_concurrency() - 1);	// Keep one thread free for other purposes.
-		static std::unordered_map<uint64_t, Materials::PBRMetallicRoughnessMaterial> materialMap;
 
 		// Get the mesh and initialize everything.
 		const auto& gltfMesh = model.meshes[node.mesh];
@@ -428,89 +415,49 @@ namespace /* anonymous */
 			}
 
 			// Load materials.
-			auto material = model.materials[gltfPrimitive.material];
+			const auto& material = model.materials[gltfPrimitive.material];
 			if (material.pbrMetallicRoughness.baseColorTexture.index >= 0)
 			{
-				auto texture = model.textures[material.pbrMetallicRoughness.baseColorTexture.index];
-				auto image = model.images[texture.source];
-				auto sampler = model.samplers[texture.sampler];
+				const auto& texture = model.textures[material.pbrMetallicRoughness.baseColorTexture.index];
+				const auto& image = model.images[texture.source];
+				const auto& sampler = model.samplers[texture.sampler];
 
-				auto pMaterial = std::make_unique<Materials::PBRMetallicRoughnessMaterial>();
-
-				const auto imageHash = Xenon::GenerateHash(Xenon::ToBytes(image.image.data()), image.image.size());
-				if (materialMap.contains(imageHash))
+				if (!instance.getMaterialDatabase().contains("PBRMetallicRoughness"))
 				{
-					const auto& loadedMaterial = materialMap[imageHash];
-
-					// Setup the descriptor.
-					std::vector<Xenon::Backend::DescriptorBindingInfo> bindingInfos;
-					auto& info = bindingInfos.emplace_back();
-					info.m_ApplicableShaders = Xenon::Backend::ShaderType::Fragment;
-					info.m_Type = Xenon::Backend::ResourceType::CombinedImageSampler;
-
-					pMaterial->m_pDescriptor = instance.getFactory()->createDescriptor(instance.getBackendDevice(), bindingInfos, Xenon::Backend::DescriptorType::Material);
-
-					// Attach the resources.
-					pMaterial->m_pDescriptor->attach(0, loadedMaterial.m_pImage.get(), loadedMaterial.m_pImageView.get(), loadedMaterial.m_pSampler.get(), Xenon::Backend::ImageUsage::Graphics);
-
-					// Set the material.
-					subMesh.m_pMaterial = std::move(pMaterial);
-				}
-				else
-				{
-					auto& loadedMaterial = materialMap[imageHash];
-
 					// Setup the image.
 					Xenon::Backend::ImageSpecification imageSpecification = {};
 					imageSpecification.m_Width = image.width;
 					imageSpecification.m_Height = image.height;
 					imageSpecification.m_Format = Xenon::Backend::DataFormat::R8G8B8A8_SRGB;
 
-					loadedMaterial.m_pImage = instance.getFactory()->createImage(instance.getBackendDevice(), imageSpecification);
+					auto pImage = instance.getFactory()->createImage(instance.getBackendDevice(), imageSpecification);
 
 					// Copy the image data to the image.
 					{
-						const auto copySize = loadedMaterial.m_pImage->getWidth() * loadedMaterial.m_pImage->getHeight() * image.component;
+						const auto copySize = pImage->getWidth() * pImage->getHeight() * image.component;
 						auto pStagingBuffer = instance.getFactory()->createBuffer(instance.getBackendDevice(), copySize, Xenon::Backend::BufferType::Staging);
 
 						pStagingBuffer->write(Xenon::ToBytes(image.image.data()), image.image.size());
-						loadedMaterial.m_pImage->copyFrom(pStagingBuffer.get());
+						pImage->copyFrom(pStagingBuffer.get());
 					}
 
 					// Setup image view.
 					Xenon::Backend::ImageViewSpecification imageViewSpecification = {};
-					loadedMaterial.m_pImageView = instance.getFactory()->createImageView(instance.getBackendDevice(), loadedMaterial.m_pImage.get(), imageViewSpecification);
+					auto pImageView = instance.getFactory()->createImageView(instance.getBackendDevice(), pImage.get(), imageViewSpecification);
 
 					// Setup image sampler.
 					Xenon::Backend::ImageSamplerSpecification imageSamplerSpecification = {};
-					loadedMaterial.m_pSampler = instance.getFactory()->createImageSampler(instance.getBackendDevice(), imageSamplerSpecification);
+					auto pSampler = instance.getFactory()->createImageSampler(instance.getBackendDevice(), imageSamplerSpecification);
 
-					// Setup the descriptor.
-					std::vector<Xenon::Backend::DescriptorBindingInfo> bindingInfos;
-					auto& info = bindingInfos.emplace_back();
-					info.m_ApplicableShaders = Xenon::Backend::ShaderType::Fragment;
-					info.m_Type = Xenon::Backend::ResourceType::CombinedImageSampler;
-
-					pMaterial->m_pDescriptor = instance.getFactory()->createDescriptor(instance.getBackendDevice(), bindingInfos, Xenon::Backend::DescriptorType::Material);
-
-					// Attach the resources.
-					pMaterial->m_pDescriptor->attach(0, loadedMaterial.m_pImage.get(), loadedMaterial.m_pImageView.get(), loadedMaterial.m_pSampler.get(), Xenon::Backend::ImageUsage::Graphics);
-
-					// Set the material.
-					subMesh.m_pMaterial = std::move(pMaterial);
+					instance.getMaterialDatabase().create<Xenon::PBRMetallicRoughnessMaterial>("PBRMetallicRoughness", instance, std::move(pImage), std::move(pImageView), std::move(pSampler));
 				}
+
+				// Set the material.
+				subMesh.m_MaterialIdentifier = "PBRMetallicRoughness";
 			}
 			else
 			{
-				std::vector<Xenon::Backend::DescriptorBindingInfo> bindingInfos;
-				auto& info = bindingInfos.emplace_back();
-				info.m_ApplicableShaders = Xenon::Backend::ShaderType::Fragment;
-				info.m_Type = Xenon::Backend::ResourceType::CombinedImageSampler;
-
-				subMesh.m_pMaterial->m_pDescriptor = instance.getFactory()->createDescriptor(instance.getBackendDevice(), bindingInfos, Xenon::Backend::DescriptorType::Material);
-
-				// Attach the resources.
-				subMesh.m_pMaterial->m_pDescriptor->attach(0, instance.getDefaultImage(), instance.getDefaultImageView(), instance.getDefaultSampler(), Xenon::Backend::ImageUsage::Graphics);
+				subMesh.m_MaterialIdentifier = "Default";
 			}
 		}
 

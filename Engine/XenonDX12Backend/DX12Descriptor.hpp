@@ -5,7 +5,7 @@
 
 #include "../XenonBackend/Descriptor.hpp"
 
-#include "DX12DeviceBoundObject.hpp"
+#include "DX12DescriptorHeapManager.hpp"
 
 namespace Xenon
 {
@@ -23,8 +23,9 @@ namespace Xenon
 			 * @param pDevice The device pointer.
 			 * @param bindingInfo The descriptor's binding information. Make sure that the binding information are in the binding order (the first one is binging 0, second is 1 and so on).
 			 * @param type The descriptor type.
+			 * @param pManager The descriptor manager pointer.
 			 */
-			explicit DX12Descriptor(DX12Device* pDevice, const std::vector<DescriptorBindingInfo>& bindingInfo, DescriptorType type);
+			explicit DX12Descriptor(DX12Device* pDevice, const std::vector<DescriptorBindingInfo>& bindingInfo, DescriptorType type, DX12DescriptorHeapManager* pManager);
 
 			/**
 			 * Attach a buffer to the descriptor.
@@ -46,44 +47,38 @@ namespace Xenon
 			void attach(uint32_t binding, Image* pImage, ImageView* pView, ImageSampler* pSampler, ImageUsage usage) override;
 
 			/**
-			 * Get the CBV, SRV and UAV descriptor heap.
+			 * Get the CPU CBV, SRV and UAV descriptor heap handle.
 			 *
-			 * @return The descriptor heap.
+			 * @return The descriptor handle.
 			 */
-			[[nodiscard]] ID3D12DescriptorHeap* getCbvSrvUavDescriptorHeap() { return m_CbvSrvUavDescriptorHeap.Get(); }
+			[[nodiscard]] D3D12_CPU_DESCRIPTOR_HANDLE getCbvSrvUavDescriptorHeapHandleCPU() const;
 
 			/**
-			 * Get the CBV, SRV and UAV descriptor heap.
+			 * Get the GPU CBV, SRV and UAV descriptor heap handle.
 			 *
-			 * @return The descriptor heap.
+			 * @return The descriptor handle.
 			 */
-			[[nodiscard]] const ID3D12DescriptorHeap* getCbvSrvUavDescriptorHeap() const { return m_CbvSrvUavDescriptorHeap.Get(); }
+			[[nodiscard]] D3D12_GPU_DESCRIPTOR_HANDLE getCbvSrvUavDescriptorHeapHandleGPU() const;
 
 			/**
-			 * Get the sampler descriptor heap.
+			 * Get the CPU sampler descriptor heap handle.
 			 *
-			 * @return The descriptor heap.
+			 * @return The descriptor handle.
 			 */
-			[[nodiscard]] ID3D12DescriptorHeap* getSamplerDescriptorHeap() { return m_SamplerDescriptorHeap.Get(); }
+			[[nodiscard]] D3D12_CPU_DESCRIPTOR_HANDLE getSamplerDescriptorHeapHandleCPU() const;
 
 			/**
-			 * Get the sampler descriptor heap.
+			 * Get the GPU sampler descriptor heap handle.
 			 *
-			 * @return The descriptor heap.
+			 * @return The descriptor handle.
 			 */
-			[[nodiscard]] const ID3D12DescriptorHeap* getSamplerDescriptorHeap() const { return m_SamplerDescriptorHeap.Get(); }
+			[[nodiscard]] D3D12_GPU_DESCRIPTOR_HANDLE getSamplerDescriptorHeapHandleGPU() const;
 
 		public:
-			std::vector<UINT> m_SamplerIndex;
+			DX12DescriptorHeapManager* m_pManager = nullptr;
 
-			std::vector<CD3DX12_DESCRIPTOR_RANGE1> m_Ranges;
-			CD3DX12_ROOT_PARAMETER1 m_RootParameter;
-
-			ComPtr<ID3D12DescriptorHeap> m_CbvSrvUavDescriptorHeap;
-			ComPtr<ID3D12DescriptorHeap> m_SamplerDescriptorHeap;
-
-			UINT m_CbvSrvUavDescriptorHeapSize = 0;
-			UINT m_SamplerDescriptorHeapSize = 0;
+			UINT m_CbvSrvUavDescriptorHeapBegin = 0;
+			UINT m_SamplerDescriptorHeapBegin = 0;
 		};
 	}
 }

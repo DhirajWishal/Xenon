@@ -3,6 +3,7 @@
 
 #include "DefaultRasterizingLayer.hpp"
 #include "../Renderer.hpp"
+#include "../../XenonCore/Logging.hpp"
 
 #include <glm/vec4.hpp>
 
@@ -32,6 +33,7 @@ namespace Xenon
 
 	void DefaultRasterizingLayer::addDrawData(MeshStorage&& storage, Backend::RasterizingPipeline* pPipeline)
 	{
+		XENON_TODO_NOW("(Dhiraj) Find a way to do materials.");
 		m_DrawData.emplace_back(
 			std::move(storage),
 			pPipeline,
@@ -50,7 +52,7 @@ namespace Xenon
 			for (const auto& subMesh : mesh.m_SubMeshes)
 			{
 				drawData.m_pCommandRecorder->bind(drawData.m_Storage.getIndexBuffer(), static_cast<Backend::IndexBufferStride>(subMesh.m_IndexSize));
-				drawData.m_pCommandRecorder->bind(drawData.m_pPipeline, nullptr, subMesh.m_pMaterial->m_pDescriptor.get(), m_Renderer.getCameraDescriptor(m_pRasterizer->getFrameIndex()));
+				drawData.m_pCommandRecorder->bind(drawData.m_pPipeline, nullptr, drawData.m_pMaterialDescriptor.get(), m_Renderer.getCameraDescriptor(m_pRasterizer->getFrameIndex()));
 				drawData.m_pCommandRecorder->drawIndexed(subMesh.m_VertexOffset, subMesh.m_IndexOffset, subMesh.m_IndexCount);
 			}
 		}

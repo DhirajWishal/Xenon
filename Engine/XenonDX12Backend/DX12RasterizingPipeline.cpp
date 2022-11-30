@@ -3,6 +3,7 @@
 
 #include "DX12RasterizingPipeline.hpp"
 #include "DX12Macros.hpp"
+#include "DX12Descriptor.hpp"
 
 #include <spirv_hlsl.hpp>
 
@@ -169,12 +170,6 @@ namespace /* anonymous */
 				{
 					rangeMap[static_cast<uint8_t>(Xenon::EnumToInt(resource.m_Set) * 2)].emplace_back().Init(rangeType, 1, resource.m_Binding);
 				}
-			}
-
-			// Get the resources.
-			for (const auto& resource : shader.getResources())
-			{
-
 			}
 
 			// Setup the inputs if it's the vertex shader.
@@ -678,21 +673,27 @@ namespace Xenon
 	{
 		DX12RasterizingPipeline::DX12RasterizingPipeline(DX12Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, DX12Rasterizer* pRasterizer, const RasterizingPipelineSpecification& specification)
 			: RasterizingPipeline(pDevice, std::move(pCacheHandler), pRasterizer, specification)
-			, DX12DeviceBoundObject(pDevice)
+			, DX12DescriptorHeapManager(pDevice)
 			, m_pRasterizer(pRasterizer)
 		{
+			std::unordered_map<DescriptorType, std::vector<DescriptorBindingInfo>> bindingMap;
 			std::unordered_map<uint32_t, std::unordered_map<uint32_t, size_t>> indexToBindingMap;
 
 			// Resolve shader-specific data.
 			std::unordered_map<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>> rangeMap;
 			if (specification.m_VertexShader.isValid())
-				m_VertexShader = SetupShaderData(specification.m_VertexShader, m_BindingMap, indexToBindingMap, rangeMap, m_Inputs, "vs_5_0", ShaderType::Vertex);
+				m_VertexShader = SetupShaderData(specification.m_VertexShader, bindingMap, indexToBindingMap, rangeMap, m_Inputs, "vs_5_0", ShaderType::Vertex);
 
 			if (specification.m_FragmentShader.isValid())
-				m_PixelShader = SetupShaderData(specification.m_FragmentShader, m_BindingMap, indexToBindingMap, rangeMap, m_Inputs, "ps_5_0", ShaderType::Fragment);
+				m_PixelShader = SetupShaderData(specification.m_FragmentShader, bindingMap, indexToBindingMap, rangeMap, m_Inputs, "ps_5_0", ShaderType::Fragment);
 
-			// Setup the descriptor heaps.
-			setupDescriptorHeaps();
+			// Setup any bindings that are not available.
+			if (!bindingMap.contains(DescriptorType::UserDefined)) bindingMap[DescriptorType::UserDefined];
+			if (!bindingMap.contains(DescriptorType::Material)) bindingMap[DescriptorType::Material];
+			if (!bindingMap.contains(DescriptorType::Camera)) bindingMap[DescriptorType::Camera];
+
+			// Setup the descriptor heap manager.
+			setupDescriptorHeapManager(std::move(bindingMap));
 
 			// Create the root signature.
 			createRootSignature(std::move(rangeMap));
@@ -708,7 +709,7 @@ namespace Xenon
 
 		std::unique_ptr<Xenon::Backend::Descriptor> DX12RasterizingPipeline::createDescriptor(DescriptorType type)
 		{
-			return nullptr;
+			return std::make_unique<DX12Descriptor>(m_pDevice, getBindingInfo(type), type, this);
 		}
 
 		const Xenon::Backend::DX12RasterizingPipeline::PipelineStorage& DX12RasterizingPipeline::getPipeline(const VertexSpecification& vertexSpecification)
@@ -762,58 +763,6 @@ namespace Xenon
 			}
 
 			return m_Pipelines[hash];
-		}
-
-		void DX12RasterizingPipeline::setupDescriptorHeaps()
-		{
-			// Get the descriptor count.
-			for (const auto& [type, bindingInfo] : m_BindingMap)
-			{
-				UINT samplerCount = 0;
-				UINT viewCount = 0;
-				for (const auto& info : bindingInfo)
-				{
-					viewCount++;
-					m_SamplerIndex.emplace_back(samplerCount);
-
-					if (info.m_Type == ResourceType::Sampler || info.m_Type == ResourceType::CombinedImageSampler)
-						samplerCount++;
-
-					auto range = m_Ranges.emplace_back();
-					range.Init(GetDescriptorRangeType(info.m_Type), 1, 0);
-				}
-
-				D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
-				heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-
-				switch (type)
-				{
-				case Xenon::Backend::DescriptorType::UserDefined:
-				case Xenon::Backend::DescriptorType::Material:
-					if (samplerCount > 0)
-					{
-						heapDesc.NumDescriptors = std::min(samplerCount, static_cast<UINT>(XENON_DX12_MAX_DESCRIPTOR_COUNT));
-						heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
-						XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&m_SamplerDescriptorHeap)), "Failed to create the sampler descriptor heap!");
-
-						m_SamplerDescriptorHeapSize = m_pDevice->getDevice()->GetDescriptorHandleIncrementSize(heapDesc.Type);
-					}
-
-				case Xenon::Backend::DescriptorType::Camera:
-					if (viewCount > 0)
-					{
-						heapDesc.NumDescriptors = std::min(viewCount, static_cast<UINT>(XENON_DX12_MAX_DESCRIPTOR_COUNT));
-						heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-						XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&m_CbvSrvUavDescriptorHeap)), "Failed to create the CBV SRV UAV descriptor heap!");
-
-						m_CbvSrvUavDescriptorHeapSize = m_pDevice->getDevice()->GetDescriptorHandleIncrementSize(heapDesc.Type);
-					}
-					break;
-
-				default:
-					XENON_LOG_ERROR("Invalid descriptor type!");
-				}
-			}
 		}
 
 		void DX12RasterizingPipeline::createRootSignature(std::unordered_map<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>&& rangeMap)
