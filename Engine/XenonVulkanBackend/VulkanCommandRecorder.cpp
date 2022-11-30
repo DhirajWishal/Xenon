@@ -545,24 +545,50 @@ namespace Xenon
 
 		void VulkanCommandRecorder::bind(RasterizingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pCameraDescriptor)
 		{
-			std::vector<VkDescriptorSet> descriptorSets;
-			if (pUserDefinedDescriptor) descriptorSets.emplace_back(pUserDefinedDescriptor->as<VulkanDescriptor>()->getDescriptorSet());
-			if (pMaterialDescriptor) descriptorSets.emplace_back(pMaterialDescriptor->as<VulkanDescriptor>()->getDescriptorSet());
-			if (pCameraDescriptor) descriptorSets.emplace_back(pCameraDescriptor->as<VulkanDescriptor>()->getDescriptorSet());
+			if (pUserDefinedDescriptor)
+			{
+				auto descriptorSet = pUserDefinedDescriptor->as<VulkanDescriptor>()->getDescriptorSet();
+				m_pDevice->getDeviceTable().vkCmdBindDescriptorSets(
+					*m_pCurrentBuffer,
+					VK_PIPELINE_BIND_POINT_GRAPHICS,
+					pPipeline->as<VulkanRasterizingPipeline>()->getPipelineLayout(),
+					0,
+					1,
+					&descriptorSet,
+					0,
+					nullptr
+				);
+			}
 
-			if (descriptorSets.empty())
-				return;
+			if (pMaterialDescriptor)
+			{
+				auto descriptorSet = pMaterialDescriptor->as<VulkanDescriptor>()->getDescriptorSet();
+				m_pDevice->getDeviceTable().vkCmdBindDescriptorSets(
+					*m_pCurrentBuffer,
+					VK_PIPELINE_BIND_POINT_GRAPHICS,
+					pPipeline->as<VulkanRasterizingPipeline>()->getPipelineLayout(),
+					1,
+					1,
+					&descriptorSet,
+					0,
+					nullptr
+				);
+			}
 
-			m_pDevice->getDeviceTable().vkCmdBindDescriptorSets(
-				*m_pCurrentBuffer,
-				VK_PIPELINE_BIND_POINT_GRAPHICS,
-				pPipeline->as<VulkanRasterizingPipeline>()->getPipelineLayout(),
-				0,
-				static_cast<uint32_t>(descriptorSets.size()),
-				descriptorSets.data(),
-				0,
-				nullptr
-			);
+			if (pCameraDescriptor)
+			{
+				auto descriptorSet = pCameraDescriptor->as<VulkanDescriptor>()->getDescriptorSet();
+				m_pDevice->getDeviceTable().vkCmdBindDescriptorSets(
+					*m_pCurrentBuffer,
+					VK_PIPELINE_BIND_POINT_GRAPHICS,
+					pPipeline->as<VulkanRasterizingPipeline>()->getPipelineLayout(),
+					2,
+					1,
+					&descriptorSet,
+					0,
+					nullptr
+				);
+			}
 		}
 
 		void VulkanCommandRecorder::bind(Buffer* pVertexBuffer, uint32_t vertexStride)

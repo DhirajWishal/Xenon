@@ -4,6 +4,7 @@
 #pragma once
 
 #include "Device.hpp"
+#include "Descriptor.hpp"
 
 namespace Xenon
 {
@@ -57,6 +58,14 @@ namespace Xenon
 			 * @param pCacheHandler The cache handler pointer. This can be null in which case the pipeline creation might get slow.
 			 */
 			explicit Pipeline([[maybe_unused]] Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler) : m_pCacheHandler(std::move(pCacheHandler)) {}
+
+			/**
+			 * Create a new descriptor.
+			 *
+			 * @param type The descriptor type to create.
+			 * @return The descriptor pointer. It will return nullptr if the descriptor type is not present in the pipeline.
+			 */
+			[[nodiscard]] virtual std::unique_ptr<Descriptor> createDescriptor(DescriptorType type) = 0;
 
 		protected:
 			std::unique_ptr<PipelineCacheHandler> m_pCacheHandler = nullptr;

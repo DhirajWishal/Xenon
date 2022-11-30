@@ -5,6 +5,7 @@
 #include "VulkanMacros.hpp"
 #include "VulkanRasterizer.hpp"
 #include "VulkanDescriptorSetManager.hpp"
+#include "VulkanDescriptor.hpp"
 
 #include <algorithm>
 
@@ -71,7 +72,7 @@ namespace /* anonymous */
 	 */
 	void GetShaderBindings(
 		const Xenon::Backend::ShaderSource& shader,
-		std::unordered_map<uint32_t, std::vector<Xenon::Backend::DescriptorBindingInfo>>& bindingMap,
+		std::unordered_map<Xenon::Backend::DescriptorType, std::vector<Xenon::Backend::DescriptorBindingInfo>>& bindingMap,
 		std::unordered_map<uint32_t, std::unordered_map<uint32_t, size_t>>& indexToBindingMap,
 		std::vector<VkPushConstantRange>& pushConstants,
 		std::vector<VkVertexInputBindingDescription>& inputBindingDescriptions,
@@ -83,7 +84,7 @@ namespace /* anonymous */
 		// Get the resources.
 		for (const auto& resource : shader.getResources())
 		{
-			auto& bindings = bindingMap[Xenon::EnumToInt(resource.m_Set)];
+			auto& bindings = bindingMap[static_cast<Xenon::Backend::DescriptorType>(Xenon::EnumToInt(resource.m_Set))];
 			auto& indexToBinding = indexToBindingMap[Xenon::EnumToInt(resource.m_Set)];
 
 			if (indexToBinding.contains(resource.m_Binding))
@@ -830,13 +831,12 @@ namespace Xenon
 			, m_pRasterizer(pRasterizer)
 		{
 			// Get the shader information.
-			std::unordered_map<uint32_t, std::vector<DescriptorBindingInfo>> bindingMap;
 			std::unordered_map<uint32_t, std::unordered_map<uint32_t, size_t>> indexToBindingMap;
 			std::vector<VkPushConstantRange> pushConstants;
 
 			if (specification.m_VertexShader.isValid())
 			{
-				GetShaderBindings(specification.m_VertexShader, bindingMap, indexToBindingMap, pushConstants, m_VertexInputBindings, m_VertexInputAttributes, ShaderType::Vertex);
+				GetShaderBindings(specification.m_VertexShader, m_BindingMap, indexToBindingMap, pushConstants, m_VertexInputBindings, m_VertexInputAttributes, ShaderType::Vertex);
 
 				auto& createInfo = m_ShaderStageCreateInfo.emplace_back();
 				createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -858,7 +858,7 @@ namespace Xenon
 
 			if (specification.m_FragmentShader.isValid())
 			{
-				GetShaderBindings(specification.m_FragmentShader, bindingMap, indexToBindingMap, pushConstants, m_VertexInputBindings, m_VertexInputAttributes, ShaderType::Fragment);
+				GetShaderBindings(specification.m_FragmentShader, m_BindingMap, indexToBindingMap, pushConstants, m_VertexInputBindings, m_VertexInputAttributes, ShaderType::Fragment);
 
 				auto& createInfo = m_ShaderStageCreateInfo.emplace_back();
 				createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -878,9 +878,14 @@ namespace Xenon
 				XENON_VK_ASSERT(pDevice->getDeviceTable().vkCreateShaderModule(pDevice->getLogicalDevice(), &moduleCreateInfo, nullptr, &createInfo.module), "Failed to create the fragment shader module!");
 			}
 
+			// Setup any missing bindings.
+			if (!m_BindingMap.contains(DescriptorType::UserDefined)) m_BindingMap[DescriptorType::UserDefined];
+			if (!m_BindingMap.contains(DescriptorType::Material)) m_BindingMap[DescriptorType::Material];
+			if (!m_BindingMap.contains(DescriptorType::Camera)) m_BindingMap[DescriptorType::Camera];
+
 			// Sort the bindings to the correct binding order.
-			auto sortedBindings = std::vector<std::pair<uint32_t, std::vector<DescriptorBindingInfo>>>(bindingMap.begin(), bindingMap.end());
-			std::ranges::sort(sortedBindings, [](const auto& lhs, const auto& rhs) { return lhs.first < rhs.first; });
+			auto sortedBindings = std::vector<std::pair<DescriptorType, std::vector<DescriptorBindingInfo>>>(m_BindingMap.begin(), m_BindingMap.end());
+			std::ranges::sort(sortedBindings, [](const auto& lhs, const auto& rhs) { return EnumToInt(lhs.first) < EnumToInt(rhs.first); });
 
 			// Get the layouts.
 			std::vector<VkDescriptorSetLayout> layouts;
@@ -923,6 +928,11 @@ namespace Xenon
 			{
 				XENON_VK_ASSERT(VK_ERROR_UNKNOWN, "Failed to push the rasterizing pipeline deletion function to the deletion queue!");
 			}
+		}
+
+		std::unique_ptr<Xenon::Backend::Descriptor> VulkanRasterizingPipeline::createDescriptor(DescriptorType type)
+		{
+			return std::make_unique<VulkanDescriptor>(m_pDevice, m_BindingMap[type], type);
 		}
 
 		const VulkanRasterizingPipeline::PipelineStorage& VulkanRasterizingPipeline::getPipeline(const VertexSpecification& vertexSpecification)

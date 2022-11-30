@@ -47,6 +47,14 @@ namespace Xenon
 			~VulkanRasterizingPipeline() override;
 
 			/**
+			 * Create a new descriptor.
+			 *
+			 * @param type The descriptor type to create.
+			 * @return The descriptor pointer. It will return nullptr if the descriptor type is not present in the pipeline.
+			 */
+			[[nodiscard]] std::unique_ptr<Descriptor> createDescriptor(DescriptorType type) override;
+
+			/**
 			 * Get the pipeline.
 			 * If a pipeline does not exist for the vertex specification, it will create a new one.
 			 *
@@ -116,6 +124,7 @@ namespace Xenon
 			VkPipelineDepthStencilStateCreateInfo m_DepthStencilStateCreateInfo = {};
 			VkPipelineDynamicStateCreateInfo m_DynamicStateCreateInfo = {};
 
+			std::unordered_map<DescriptorType, std::vector<DescriptorBindingInfo>> m_BindingMap;
 			std::unordered_map<uint64_t, PipelineStorage> m_Pipelines;
 
 			std::vector<VkVertexInputBindingDescription> m_VertexInputBindings;

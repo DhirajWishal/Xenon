@@ -77,6 +77,11 @@ namespace Xenon
 
 		private:
 			D3D12MA::Allocation* m_pAllocation = nullptr;
+
+			ComPtr<ID3D12CommandAllocator> m_CommandAllocator;
+			ComPtr<ID3D12GraphicsCommandList> m_CommandList;
+
+			D3D12_RESOURCE_STATES m_CurrentState;
 		};
 	}
 }

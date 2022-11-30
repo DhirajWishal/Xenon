@@ -34,8 +34,35 @@ namespace Xenon
 	namespace Backend
 	{
 		VulkanDescriptorSetManager::VulkanDescriptorSetManager(VulkanDevice* pDevice)
-			: m_pDevice(pDevice)
+			: VulkanDeviceBoundObject(pDevice)
 		{
+			VkDescriptorSetLayoutCreateInfo dummyLayoutCreateInfo = {};
+			dummyLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+			dummyLayoutCreateInfo.pNext = nullptr;
+			dummyLayoutCreateInfo.flags = 0;
+			dummyLayoutCreateInfo.bindingCount = 0;
+			dummyLayoutCreateInfo.pBindings = nullptr;
+
+			XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkCreateDescriptorSetLayout(m_pDevice->getLogicalDevice(), &dummyLayoutCreateInfo, nullptr, &m_DummyDescriptorSetLayout), "Failed to create the dummy descriptor set layout!");
+
+			VkDescriptorPoolCreateInfo dummyPoolCreateInfo = {};
+			dummyPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+			dummyPoolCreateInfo.pNext = nullptr;
+			dummyPoolCreateInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+			dummyPoolCreateInfo.maxSets = 1;
+			dummyPoolCreateInfo.poolSizeCount = 0;
+			dummyPoolCreateInfo.pPoolSizes = nullptr;
+
+			XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkCreateDescriptorPool(m_pDevice->getLogicalDevice(), &dummyPoolCreateInfo, nullptr, &m_DummyDescriptorPool), "Failed to create the dummy descriptor pool!");
+
+			VkDescriptorSetAllocateInfo allocateInfo = {};
+			allocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+			allocateInfo.pNext = nullptr;
+			allocateInfo.descriptorPool = m_DummyDescriptorPool;
+			allocateInfo.descriptorSetCount = 1;
+			allocateInfo.pSetLayouts = &m_DummyDescriptorSetLayout;
+
+			XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkAllocateDescriptorSets(m_pDevice->getLogicalDevice(), &allocateInfo, &m_DummyDescriptorSet), "Failed to allocate the dummy descriptor set!");
 		}
 
 		VulkanDescriptorSetManager::~VulkanDescriptorSetManager()
@@ -47,10 +74,17 @@ namespace Xenon
 
 				m_pDevice->getDeviceTable().vkDestroyDescriptorSetLayout(m_pDevice->getLogicalDevice(), storage.m_Layout, nullptr);
 			}
+
+			m_pDevice->getDeviceTable().vkDestroyDescriptorPool(m_pDevice->getLogicalDevice(), m_DummyDescriptorPool, nullptr);
+			m_pDevice->getDeviceTable().vkDestroyDescriptorSetLayout(m_pDevice->getLogicalDevice(), m_DummyDescriptorSetLayout, nullptr);
 		}
 
 		VkDescriptorSetLayout VulkanDescriptorSetManager::getDescriptorSetLayout(const std::vector<DescriptorBindingInfo>& bindingInfo)
 		{
+			// If the binding info is empty, return the dummy descriptor set layout.
+			if (bindingInfo.empty())
+				return m_DummyDescriptorSetLayout;
+
 			const auto bindingHash = GenerateHash(ToBytes(bindingInfo.data()), bindingInfo.size() * sizeof(DescriptorBindingInfo));
 
 			// Create a new one if the layout for the hash does not exist.
@@ -113,6 +147,10 @@ namespace Xenon
 
 		std::pair<VkDescriptorPool, VkDescriptorSet> VulkanDescriptorSetManager::createDescriptorSet(const std::vector<DescriptorBindingInfo>& bindingInfo)
 		{
+			// If the binding info is empty, return the dummy descriptor set layout.
+			if (bindingInfo.empty())
+				return std::make_pair(m_DummyDescriptorPool, m_DummyDescriptorSet);
+
 			const auto bindingHash = GenerateHash(ToBytes(bindingInfo.data()), bindingInfo.size() * sizeof(DescriptorBindingInfo));
 
 			// Create a new one if the layout for the hash does not exist.
@@ -225,6 +263,10 @@ namespace Xenon
 
 		void VulkanDescriptorSetManager::freeDescriptorSet(VkDescriptorPool pool, VkDescriptorSet descriptorSet, const std::vector<DescriptorBindingInfo>& bindingInfo)
 		{
+			// Skip if we're talking about the dummy descriptor set.
+			if (descriptorSet == m_DummyDescriptorSet)
+				return;
+
 			const auto bindingHash = GenerateHash(ToBytes(bindingInfo.data()), bindingInfo.size() * sizeof(DescriptorBindingInfo));
 			auto& storage = m_DescriptorSetStorages[bindingHash];
 

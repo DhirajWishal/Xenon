@@ -470,10 +470,10 @@ namespace /* anonymous */
 
 					// Copy the image data to the image.
 					{
-						const auto copySize = image.width * image.height * image.component;
+						const auto copySize = loadedMaterial.m_pImage->getWidth() * loadedMaterial.m_pImage->getHeight() * image.component;
 						auto pStagingBuffer = instance.getFactory()->createBuffer(instance.getBackendDevice(), copySize, Xenon::Backend::BufferType::Staging);
 
-						pStagingBuffer->write(Xenon::ToBytes(image.image.data()), copySize);
+						pStagingBuffer->write(Xenon::ToBytes(image.image.data()), image.image.size());
 						loadedMaterial.m_pImage->copyFrom(pStagingBuffer.get());
 					}
 

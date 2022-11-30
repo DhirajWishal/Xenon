@@ -72,6 +72,7 @@ namespace Xenon
 		void DX12CommandRecorder::begin(CommandRecorder* pParent)
 		{
 			XENON_TODO_NOW("(Dhiraj) Implement this function {}", __FUNCSIG__);
+			begin();
 		}
 
 		void DX12CommandRecorder::copy(Buffer* pSource, uint64_t srcOffset, Buffer* pDestination, uint64_t dstOffset, uint64_t size)
@@ -96,20 +97,64 @@ namespace Xenon
 			CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(dxRasterizer->getRenderTargetHeap()->GetCPUDescriptorHandleForHeapStart(), dxRasterizer->getFrameIndex(), dxRasterizer->getRenderTargetDescriptorSize());
 
 			m_pCurrentCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
-			// m_pCurrentCommandList->ClearRenderTargetView(rtvHandle, glm::value_ptr(std::get<glm::vec4>(clearValues.front())), 0, nullptr);
 
 			m_IsRenderTargetBound = true;
 		}
 
 		void DX12CommandRecorder::bind(RasterizingPipeline* pPipeline, const VertexSpecification& vertexSpecification)
 		{
+			m_pCurrentCommandList->SetGraphicsRootSignature(pPipeline->as<DX12RasterizingPipeline>()->getRootSignature());
 			m_pCurrentCommandList->SetPipelineState(pPipeline->as<DX12RasterizingPipeline>()->getPipeline(vertexSpecification).m_PipelineState.Get());
 		}
 
 		void DX12CommandRecorder::bind(RasterizingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pCameraDescriptor)
 		{
-			XENON_TODO_NOW("(Dhiraj) Implement this function {}", __FUNCSIG__);
-			// m_pCurrentCommandList->SetGraphicsRootDescriptorTable(0, pUserDefinedDescriptor->as<DX12Descriptor>());
+			auto pDx12UserDefinedDescriptor = pUserDefinedDescriptor->as<DX12Descriptor>();
+			auto pDx12MaterialDescriptor = pMaterialDescriptor->as<DX12Descriptor>();
+			auto pDx12CameraDescriptor = pCameraDescriptor->as<DX12Descriptor>();
+
+			std::vector<ID3D12DescriptorHeap*> descriptorHeaps;
+			if (pDx12UserDefinedDescriptor)
+			{
+				if (pDx12UserDefinedDescriptor->getCbvSrvUavDescriptorHeap()) descriptorHeaps.emplace_back(pDx12UserDefinedDescriptor->getCbvSrvUavDescriptorHeap());
+				if (pDx12UserDefinedDescriptor->getSamplerDescriptorHeap()) descriptorHeaps.emplace_back(pDx12UserDefinedDescriptor->getSamplerDescriptorHeap());
+			}
+
+			if (pDx12MaterialDescriptor)
+			{
+				if (pDx12MaterialDescriptor->getCbvSrvUavDescriptorHeap()) descriptorHeaps.emplace_back(pDx12MaterialDescriptor->getCbvSrvUavDescriptorHeap());
+				if (pDx12MaterialDescriptor->getSamplerDescriptorHeap()) descriptorHeaps.emplace_back(pDx12MaterialDescriptor->getSamplerDescriptorHeap());
+			}
+
+			if (pDx12CameraDescriptor)
+			{
+				if (pDx12CameraDescriptor->getCbvSrvUavDescriptorHeap()) descriptorHeaps.emplace_back(pDx12CameraDescriptor->getCbvSrvUavDescriptorHeap());
+				if (pDx12CameraDescriptor->getSamplerDescriptorHeap()) descriptorHeaps.emplace_back(pDx12CameraDescriptor->getSamplerDescriptorHeap());
+			}
+
+			m_pCurrentCommandList->SetDescriptorHeaps(static_cast<UINT>(descriptorHeaps.size()), descriptorHeaps.data());
+
+			UINT index = 0;
+			if (pDx12UserDefinedDescriptor)
+			{
+				if (pDx12UserDefinedDescriptor->getCbvSrvUavDescriptorHeap()) m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index, pDx12UserDefinedDescriptor->getCbvSrvUavDescriptorHeap()->GetGPUDescriptorHandleForHeapStart());
+				if (pDx12UserDefinedDescriptor->getSamplerDescriptorHeap()) m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index, pDx12UserDefinedDescriptor->getSamplerDescriptorHeap()->GetGPUDescriptorHandleForHeapStart());
+				index++;
+			}
+
+			if (pDx12MaterialDescriptor)
+			{
+				if (pDx12MaterialDescriptor->getCbvSrvUavDescriptorHeap()) m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index, pDx12MaterialDescriptor->getCbvSrvUavDescriptorHeap()->GetGPUDescriptorHandleForHeapStart());
+				if (pDx12MaterialDescriptor->getSamplerDescriptorHeap()) m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index, pDx12MaterialDescriptor->getSamplerDescriptorHeap()->GetGPUDescriptorHandleForHeapStart());
+				index++;
+			}
+
+			if (pDx12CameraDescriptor)
+			{
+				if (pDx12CameraDescriptor->getCbvSrvUavDescriptorHeap()) m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index, pDx12CameraDescriptor->getCbvSrvUavDescriptorHeap()->GetGPUDescriptorHandleForHeapStart());
+				if (pDx12CameraDescriptor->getSamplerDescriptorHeap()) m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index, pDx12CameraDescriptor->getSamplerDescriptorHeap()->GetGPUDescriptorHandleForHeapStart());
+				index++;
+			}
 		}
 
 		void DX12CommandRecorder::bind(Buffer* pVertexBuffer, uint32_t vertexStride)

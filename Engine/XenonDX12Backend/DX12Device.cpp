@@ -186,7 +186,7 @@ namespace Xenon
 			queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 			XENON_DX12_ASSERT(m_Device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_DirectQueue)), "Failed to create the direct queue!");
 
-			queueDesc.Type = D3D12_COMMAND_LIST_TYPE_BUNDLE;
+			queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 			XENON_DX12_ASSERT(m_Device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_BundleQueue)), "Failed to create the bundle queue!");
 
 			queueDesc.Type = D3D12_COMMAND_LIST_TYPE_COPY;

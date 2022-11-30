@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "VulkanDevice.hpp"
+#include "VulkanDeviceBoundObject.hpp"
 
 #include <unordered_map>
 
@@ -14,7 +14,7 @@ namespace Xenon
 		/**
 		 * Vulkan descriptor set manager.
 		 */
-		class VulkanDescriptorSetManager final
+		class VulkanDescriptorSetManager : public VulkanDeviceBoundObject
 		{
 			/**
 			 * Vulkan descriptor storage structure.
@@ -38,7 +38,7 @@ namespace Xenon
 			/**
 			 * Destructor.
 			 */
-			~VulkanDescriptorSetManager();
+			virtual ~VulkanDescriptorSetManager() override;
 
 			/**
 			 * Get the descriptor set layout.
@@ -71,7 +71,9 @@ namespace Xenon
 		private:
 			std::unordered_map<uint64_t, VulkanDescriptorStorage> m_DescriptorSetStorages;
 
-			VulkanDevice* m_pDevice = nullptr;
+			VkDescriptorSetLayout m_DummyDescriptorSetLayout = VK_NULL_HANDLE;
+			VkDescriptorPool m_DummyDescriptorPool = VK_NULL_HANDLE;
+			VkDescriptorSet m_DummyDescriptorSet = VK_NULL_HANDLE;
 		};
 	}
 }

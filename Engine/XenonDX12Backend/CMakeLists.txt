@@ -39,6 +39,8 @@ set(
 	"DX12ImageSampler.hpp"
 	"DX12RasterizingPipeline.cpp"
 	"DX12RasterizingPipeline.hpp"
+	"DX12DescriptorHeapManager.cpp"
+	"DX12DescriptorHeapManager.hpp"
 )
 
 # Add the source group.

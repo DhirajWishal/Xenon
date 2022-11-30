@@ -105,6 +105,13 @@ namespace Xenon
 			 */
 			[[nodiscard]] const ID3D12Resource* getResource() const { return m_pAllocation->GetResource(); }
 
+			/**
+			 * Get the current resource state.
+			 *
+			 * @return The resource state.
+			 */
+			[[nodiscard]] D3D12_RESOURCE_STATES getResourceState() const noexcept { return m_CurrentState; }
+
 		private:
 			D3D12MA::Allocation* m_pAllocation = nullptr;
 

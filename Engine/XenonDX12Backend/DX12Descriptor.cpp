@@ -73,11 +73,11 @@ namespace Xenon
 			UINT viewCount = 0;
 			for (const auto& info : bindingInfo)
 			{
-				if (info.m_Type == ResourceType::Sampler || info.m_Type == ResourceType::CombinedImageSampler)
-					samplerCount++;
-
 				viewCount++;
 				m_SamplerIndex.emplace_back(samplerCount);
+
+				if (info.m_Type == ResourceType::Sampler || info.m_Type == ResourceType::CombinedImageSampler)
+					samplerCount++;
 
 				auto range = m_Ranges.emplace_back();
 				range.Init(GetDescriptorRangeType(info.m_Type), 1, 0);

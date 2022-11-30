@@ -120,7 +120,8 @@ namespace Xenon
 			m_Descriptor.AddressV = GetAddressMode(specification.m_AddressModeV);
 			m_Descriptor.AddressW = GetAddressMode(specification.m_AddressModeW);
 			m_Descriptor.MipLODBias = specification.m_MipLevelOfDetailBias;
-			m_Descriptor.MaxAnisotropy = static_cast<UINT>(specification.m_MaxAnisotrophy);
+			// m_Descriptor.MaxAnisotropy = specification.m_MaxAnisotrophy == 0.0f ? UINT_MAX : static_cast<UINT>(specification.m_MaxAnisotrophy);
+			m_Descriptor.MaxAnisotropy = specification.m_MaxAnisotrophy == 0.0f ? 1 : static_cast<UINT>(specification.m_MaxAnisotrophy);
 			m_Descriptor.ComparisonFunc = GetComparisonFunction(specification.m_CompareOperator);
 			m_Descriptor.MinLOD = specification.m_MinLevelOfDetail;
 			m_Descriptor.MaxLOD = specification.m_MaxLevelOfDetail;

@@ -42,6 +42,14 @@ namespace Xenon
 			~DX12RasterizingPipeline() override;
 
 			/**
+			 * Create a new descriptor.
+			 *
+			 * @param type The descriptor type to create.
+			 * @return The descriptor pointer. It will return nullptr if the descriptor type is not present in the pipeline.
+			 */
+			[[nodiscard]] std::unique_ptr<Descriptor> createDescriptor(DescriptorType type) override;
+
+			/**
 			 * Get a pipeline using the vertex specification.
 			 * If a pipeline does not exist for the given vertex specification, it'll create a new one.
 			 *
@@ -50,7 +58,26 @@ namespace Xenon
 			 */
 			[[nodiscard]] const PipelineStorage& getPipeline(const VertexSpecification& vertexSpecification);
 
+			/**
+			 * Get the root signature.
+			 *
+			 * @return The root signature.
+			 */
+			[[nodiscard]] ID3D12RootSignature* getRootSignature() { return m_RootSignature.Get(); }
+
+			/**
+			 * Get the root signature.
+			 *
+			 * @return The root signature.
+			 */
+			[[nodiscard]] const ID3D12RootSignature* getRootSignature() const { return m_RootSignature.Get(); }
+
 		private:
+			/**
+			 * Setup the descriptor heaps.
+			 */
+			void setupDescriptorHeaps();
+
 			/**
 			 * Create the root signature.
 			 *
@@ -82,14 +109,24 @@ namespace Xenon
 		private:
 			D3D12_GRAPHICS_PIPELINE_STATE_DESC m_PipelineStateDescriptor = {};
 
+			std::unordered_map<DescriptorType, std::vector<DescriptorBindingInfo>> m_BindingMap;
 			std::unordered_map<uint64_t, PipelineStorage> m_Pipelines;
 			std::vector<D3D12_INPUT_ELEMENT_DESC> m_Inputs;
+
+			std::vector<UINT> m_SamplerIndex;
+			std::vector<CD3DX12_DESCRIPTOR_RANGE1> m_Ranges;
+
+			ComPtr<ID3D12DescriptorHeap> m_CbvSrvUavDescriptorHeap;
+			ComPtr<ID3D12DescriptorHeap> m_SamplerDescriptorHeap;
 
 			ComPtr<ID3D12RootSignature> m_RootSignature;
 			ComPtr<ID3DBlob> m_VertexShader;
 			ComPtr<ID3DBlob> m_PixelShader;
 
 			DX12Rasterizer* m_pRasterizer = nullptr;
+
+			UINT m_CbvSrvUavDescriptorHeapSize = 0;
+			UINT m_SamplerDescriptorHeapSize = 0;
 		};
 	}
 }

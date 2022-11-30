@@ -45,6 +45,34 @@ namespace Xenon
 			 */
 			void attach(uint32_t binding, Image* pImage, ImageView* pView, ImageSampler* pSampler, ImageUsage usage) override;
 
+			/**
+			 * Get the CBV, SRV and UAV descriptor heap.
+			 *
+			 * @return The descriptor heap.
+			 */
+			[[nodiscard]] ID3D12DescriptorHeap* getCbvSrvUavDescriptorHeap() { return m_CbvSrvUavDescriptorHeap.Get(); }
+
+			/**
+			 * Get the CBV, SRV and UAV descriptor heap.
+			 *
+			 * @return The descriptor heap.
+			 */
+			[[nodiscard]] const ID3D12DescriptorHeap* getCbvSrvUavDescriptorHeap() const { return m_CbvSrvUavDescriptorHeap.Get(); }
+
+			/**
+			 * Get the sampler descriptor heap.
+			 *
+			 * @return The descriptor heap.
+			 */
+			[[nodiscard]] ID3D12DescriptorHeap* getSamplerDescriptorHeap() { return m_SamplerDescriptorHeap.Get(); }
+
+			/**
+			 * Get the sampler descriptor heap.
+			 *
+			 * @return The descriptor heap.
+			 */
+			[[nodiscard]] const ID3D12DescriptorHeap* getSamplerDescriptorHeap() const { return m_SamplerDescriptorHeap.Get(); }
+
 		public:
 			std::vector<UINT> m_SamplerIndex;
 

@@ -3,6 +3,83 @@
 
 #include "DX12Image.hpp"
 #include "DX12Macros.hpp"
+#include "DX12Buffer.hpp"
+
+namespace /* anonymous */
+{
+	/**
+	 * Get the byte size of a format.
+	 *
+	 * @param format The format to get the size of.
+	 * @return The byte size.
+	 */
+	[[nodiscard]] constexpr uint8_t GetFormatSize(DXGI_FORMAT format) noexcept
+	{
+		switch (format)
+		{
+		case DXGI_FORMAT_UNKNOWN:
+			return 0;
+
+		case DXGI_FORMAT_R8_SINT:
+			return sizeof(int8_t);
+
+		case DXGI_FORMAT_R8G8_SINT:
+			return sizeof(int8_t[2]);
+
+		case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
+			return sizeof(uint8_t[4]);
+
+		case DXGI_FORMAT_R8_UNORM:
+			return sizeof(uint8_t);
+
+		case DXGI_FORMAT_R8G8_UNORM:
+			return sizeof(uint8_t[2]);
+
+		case DXGI_FORMAT_R8G8B8A8_UNORM:
+			return sizeof(uint8_t[4]);
+
+		case DXGI_FORMAT_B8G8R8A8_UNORM:
+			return sizeof(uint8_t[4]);
+
+		case DXGI_FORMAT_R16_FLOAT:
+			return sizeof(int16_t);
+
+		case DXGI_FORMAT_R16G16_FLOAT:
+			return sizeof(int16_t[2]);
+
+		case DXGI_FORMAT_R16G16B16A16_FLOAT:
+			return sizeof(int16_t[4]);
+
+		case DXGI_FORMAT_R32_FLOAT:
+			return sizeof(float);
+
+		case DXGI_FORMAT_R32G32_FLOAT:
+			return sizeof(float[2]);
+
+		case DXGI_FORMAT_R32G32B32_FLOAT:
+			return sizeof(float[3]);
+
+		case DXGI_FORMAT_R32G32B32A32_FLOAT:
+			return sizeof(float[4]);
+
+		case DXGI_FORMAT_D16_UNORM:
+			return sizeof(uint16_t);
+
+		case DXGI_FORMAT_D32_FLOAT:
+			return sizeof(float);
+
+		case DXGI_FORMAT_D24_UNORM_S8_UINT:
+			return (24 / 8) + sizeof(int8_t);
+
+		case DXGI_FORMAT_D32_FLOAT_S8X24_UINT:
+			return 1 + (24 / 8) + sizeof(float);
+
+		default:
+			XENON_LOG_ERROR("Invalid or unsupported data format! Defaulting to Undefined.");
+			return 0;
+		}
+	}
+}
 
 namespace Xenon
 {
@@ -11,10 +88,17 @@ namespace Xenon
 		DX12Image::DX12Image(DX12Device* pDevice, const ImageSpecification& specification, D3D12_RESOURCE_STATES resourceStates /*= D3D12_RESOURCE_STATE_COPY_DEST*/, D3D12_HEAP_TYPE heapType /*= D3D12_HEAP_TYPE_DEFAULT*/, D3D12_HEAP_FLAGS heapFlags /*= D3D12_HEAP_FLAG_NONE*/)
 			: Image(pDevice, specification)
 			, DX12DeviceBoundObject(pDevice)
+			, m_CurrentState(resourceStates)
 		{
 			// Setup the flags.
 			D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE;
-			if (specification.m_Usage & ImageUsage::Graphics) /* Do nothing here. */;
+			if (specification.m_Usage & ImageUsage::Graphics)
+			{
+				const auto formatSize = GetFormatSize(pDevice->convertFormat(specification.m_Format));
+				const auto dataPitch = static_cast<uint32_t>(std::ceil(static_cast<float>(getWidth() * formatSize) / D3D12_TEXTURE_DATA_PITCH_ALIGNMENT) * D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
+				m_Specification.m_Width = dataPitch / formatSize;
+			}
+
 			if (specification.m_Usage & ImageUsage::Storage) /* Do nothing here. */;
 
 			if (specification.m_Usage & ImageUsage::ColorAttachment)
@@ -51,16 +135,16 @@ namespace Xenon
 
 			D3D12_RESOURCE_DESC resourceDescriptor = {};
 			resourceDescriptor.MipLevels = 1;	XENON_TODO_NOW("(Dhiraj) Find a better system.");
-			resourceDescriptor.Width = specification.m_Width;
-			resourceDescriptor.Height = specification.m_Height;
-			resourceDescriptor.DepthOrArraySize = static_cast<UINT16>(specification.m_Depth);
+			resourceDescriptor.Width = m_Specification.m_Width;
+			resourceDescriptor.Height = m_Specification.m_Height;
+			resourceDescriptor.DepthOrArraySize = static_cast<UINT16>(m_Specification.m_Depth);
 			resourceDescriptor.Flags = flags;
-			resourceDescriptor.SampleDesc.Count = EnumToInt(specification.m_MultiSamplingCount);
+			resourceDescriptor.SampleDesc.Count = EnumToInt(m_Specification.m_MultiSamplingCount);
 			resourceDescriptor.SampleDesc.Quality = 1;	XENON_TODO_NOW("(Dhiraj) Find a better system.");
 			resourceDescriptor.Dimension = dimension;
 
 			// Try and create the image using the candidates.
-			const auto candidates = GetCandidateFormats(specification.m_Format);
+			const auto candidates = GetCandidateFormats(m_Specification.m_Format);
 			for (const auto candidate : candidates)
 			{
 				resourceDescriptor.Format = m_pDevice->convertFormat(candidate);
@@ -85,6 +169,15 @@ namespace Xenon
 
 			// Validate if we were able to create an image or not.
 			XENON_DX12_ASSERT(m_pAllocation == nullptr ? -1 : S_OK, "Failed to create the image!");
+
+			// Create the allocator.
+			XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_CommandAllocator)), "Failed to create the copy command allocator!");
+
+			// Create the command list.
+			XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_CommandAllocator.Get(), nullptr, IID_PPV_ARGS(&m_CommandList)), "Failed to create the copy command list!");
+
+			// End the command list.
+			XENON_DX12_ASSERT(m_CommandList->Close(), "Failed to stop the current command list!");
 		}
 
 		DX12Image::DX12Image(DX12Image&& other) noexcept
@@ -108,7 +201,94 @@ namespace Xenon
 
 		void DX12Image::copyFrom(Buffer* pSrcBuffer)
 		{
+			auto pSourceBuffer = pSrcBuffer->as<DX12Buffer>();
 
+			// Begin the command list.
+			XENON_DX12_ASSERT(m_CommandAllocator->Reset(), "Failed to reset the current command allocator!");
+			XENON_DX12_ASSERT(m_CommandList->Reset(m_CommandAllocator.Get(), nullptr), "Failed to reset the current command list!");
+
+			// Set the proper resource states.
+			// Destination (this)
+			if (m_CurrentState != D3D12_RESOURCE_STATE_COPY_DEST)
+			{
+				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(m_pAllocation->GetResource(), m_CurrentState, D3D12_RESOURCE_STATE_COPY_DEST);
+				m_CommandList->ResourceBarrier(1, &barrier);
+			}
+
+			// Source
+			if (pSourceBuffer->getResourceState() != D3D12_RESOURCE_STATE_GENERIC_READ)
+			{
+				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pSourceBuffer->getResource(), pSourceBuffer->getResourceState(), D3D12_RESOURCE_STATE_COPY_SOURCE);
+				m_CommandList->ResourceBarrier(1, &barrier);
+			}
+
+			// Copy the buffer to the image.
+			D3D12_TEXTURE_COPY_LOCATION sourceLocation = {};
+			sourceLocation.pResource = pSourceBuffer->getResource();
+			sourceLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+			sourceLocation.PlacedFootprint.Offset = 0;
+			sourceLocation.PlacedFootprint.Footprint.Format = m_pDevice->convertFormat(m_Specification.m_Format);
+			sourceLocation.PlacedFootprint.Footprint.Depth = 1;
+			sourceLocation.PlacedFootprint.Footprint.Width = getWidth();
+			sourceLocation.PlacedFootprint.Footprint.Height = getHeight();
+			// sourceLocation.PlacedFootprint.Footprint.RowPitch = static_cast<UINT>(std::ceil(static_cast<float>(getWidth() * GetFormatSize(sourceLocation.PlacedFootprint.Footprint.Format)) / D3D12_TEXTURE_DATA_PITCH_ALIGNMENT) * D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
+			sourceLocation.PlacedFootprint.Footprint.RowPitch = static_cast<UINT>(getWidth() * GetFormatSize(sourceLocation.PlacedFootprint.Footprint.Format));
+
+			D3D12_TEXTURE_COPY_LOCATION destinationLocation = {};
+			destinationLocation.pResource = getResource();
+			destinationLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+			destinationLocation.SubresourceIndex = 0;
+
+			m_CommandList->CopyTextureRegion(&destinationLocation, 0, 0, 0, &sourceLocation, nullptr);
+
+			// Change the state back to previous.
+			// Destination (this)
+			if (getUsage() & ImageUsage::Graphics)
+			{
+				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(m_pAllocation->GetResource(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+				m_CommandList->ResourceBarrier(1, &barrier);
+
+				m_CurrentState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+			}
+			else
+			{
+				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(m_pAllocation->GetResource(), D3D12_RESOURCE_STATE_COPY_DEST, m_CurrentState);
+				m_CommandList->ResourceBarrier(1, &barrier);
+			}
+
+			// Source
+			if (pSourceBuffer->getResourceState() != D3D12_RESOURCE_STATE_GENERIC_READ)
+			{
+				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pSourceBuffer->getResource(), D3D12_RESOURCE_STATE_COPY_SOURCE, pSourceBuffer->getResourceState());
+				m_CommandList->ResourceBarrier(1, &barrier);
+			}
+
+			// End the command list.
+			XENON_DX12_ASSERT(m_CommandList->Close(), "Failed to stop the current command list!");
+
+			// Submit the command list to be executed.
+			std::array<ID3D12CommandList*, 1> ppCommandLists = { m_CommandList.Get() };
+			m_pDevice->getDirectQueue()->ExecuteCommandLists(ppCommandLists.size(), ppCommandLists.data());
+
+			// Wait till the command is done executing.
+			ComPtr<ID3D12Fence> fence;
+			XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence)), "Failed to create the fence!");
+			XENON_DX12_ASSERT(m_pDevice->getDirectQueue()->Signal(fence.Get(), 1), "Failed to signal the fence!");
+
+			// Setup synchronization.
+			auto fenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+
+			// Validate the event.
+			if (fenceEvent == nullptr)
+			{
+				XENON_LOG_ERROR("Failed to wait till the command list execution!");
+				return;
+			}
+
+			// Set the event and wait.
+			XENON_DX12_ASSERT(fence->SetEventOnCompletion(1, fenceEvent), "Failed to set the fence event on completion event!");
+			WaitForSingleObjectEx(fenceEvent, std::numeric_limits<DWORD>::max(), FALSE);
+			CloseHandle(fenceEvent);
 		}
 
 		Xenon::Backend::DX12Image& DX12Image::operator=(DX12Image&& other) noexcept

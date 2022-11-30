@@ -80,8 +80,8 @@ namespace Xenon
 			{
 			case Xenon::Backend::ImageType::OneDimensional:
 				m_ShaderResouceView.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE1D;
-				m_ShaderResouceView.Texture1D.MostDetailedMip = specification.m_LevelCount;
-				m_ShaderResouceView.Texture1D.MipLevels = specification.m_BaseMipLevel;
+				m_ShaderResouceView.Texture1D.MostDetailedMip = specification.m_BaseMipLevel;
+				m_ShaderResouceView.Texture1D.MipLevels = specification.m_LevelCount;
 
 				m_UnorderedAccessView.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE1D;
 				m_UnorderedAccessView.Texture2D.MipSlice = specification.m_BaseMipLevel;
@@ -90,8 +90,8 @@ namespace Xenon
 
 			case Xenon::Backend::ImageType::TwoDimensional:
 				m_ShaderResouceView.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-				m_ShaderResouceView.Texture2D.MostDetailedMip = specification.m_LevelCount;
-				m_ShaderResouceView.Texture2D.MipLevels = specification.m_BaseMipLevel;
+				m_ShaderResouceView.Texture2D.MostDetailedMip = specification.m_BaseMipLevel;
+				m_ShaderResouceView.Texture2D.MipLevels = specification.m_LevelCount;
 				m_ShaderResouceView.Texture2D.PlaneSlice = specification.m_BaseArrayLayer;
 
 				m_UnorderedAccessView.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
@@ -101,8 +101,8 @@ namespace Xenon
 
 			case Xenon::Backend::ImageType::ThreeDImentional:
 				m_ShaderResouceView.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE3D;
-				m_ShaderResouceView.Texture3D.MostDetailedMip = specification.m_LevelCount;
-				m_ShaderResouceView.Texture3D.MipLevels = specification.m_BaseMipLevel;
+				m_ShaderResouceView.Texture3D.MostDetailedMip = specification.m_BaseMipLevel;
+				m_ShaderResouceView.Texture3D.MipLevels = specification.m_LevelCount;
 
 				m_UnorderedAccessView.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE3D;
 				m_UnorderedAccessView.Texture3D.MipSlice = specification.m_BaseMipLevel;
@@ -112,8 +112,8 @@ namespace Xenon
 
 			case Xenon::Backend::ImageType::CubeMap:
 				m_ShaderResouceView.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
-				m_ShaderResouceView.TextureCube.MostDetailedMip = specification.m_LevelCount;
-				m_ShaderResouceView.TextureCube.MipLevels = specification.m_BaseMipLevel;
+				m_ShaderResouceView.TextureCube.MostDetailedMip = specification.m_BaseMipLevel;
+				m_ShaderResouceView.TextureCube.MipLevels = specification.m_LevelCount;
 
 				m_UnorderedAccessView.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
 				m_UnorderedAccessView.Texture2D.MipSlice = specification.m_BaseMipLevel;
