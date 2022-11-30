@@ -27,6 +27,15 @@ namespace Xenon
 		XENON_DEFINE_ENUM_AND(CommandRecorderUsage);
 
 		/**
+		 * Index buffer stride enum.
+		 */
+		enum class IndexBufferStride : uint8_t
+		{
+			Uint16 = sizeof(uint16_t),
+			Uint32 = sizeof(uint32_t)
+		};
+
+		/**
 		 * Command recorder class.
 		 * This is used to record and submit commands to the GPU and execute them.
 		 */
@@ -103,16 +112,20 @@ namespace Xenon
 			virtual void bind(RasterizingPipeline* pPipeline, const VertexSpecification& vertexSpecification) = 0;
 
 			/**
-			 * Bind a vertex and an index buffer if provided.
-			 * If only the vertex buffer is provided, it'll draw using these vertex data.
-			 * If both the vertex and index buffers are provided it'll use the index data to draw.
-			 *
+			 * Bind a vertex buffer to the command recorder.
+			 * 
 			 * @param pVertexBuffer The vertex buffer pointer.
 			 * @param vertexStride The vertex stride.
-			 * @param pIndexBuffer The index buffer pointer. Default is nullptr.
-			 * @param indexStride The stride of a single index. Default is 0.
 			 */
-			virtual void bind(Buffer* pVertexBuffer, uint32_t vertexStride, Buffer* pIndexBuffer = nullptr, uint8_t indexStride = 0) = 0;
+			virtual void bind(Buffer* pVertexBuffer, uint32_t vertexStride) = 0;
+
+			/**
+			 * Bind an index buffer to the command recorder.
+			 * 
+			 * @param pIndexBuffer The index buffer pointer.
+			 * @param indexStride The stride of a single index.
+			 */
+			virtual void bind(Buffer* pIndexBuffer, IndexBufferStride indexStride) = 0;
 
 			/**
 			 * Bind descriptors to the command recorder.

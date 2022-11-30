@@ -103,8 +103,6 @@ namespace Xenon
 			std::vector<VulkanImage> m_ImageAttachments;
 
 			std::vector<VulkanRasterizingPipeline*> m_pPipelines;
-
-			uint32_t m_FrameIndex = 0;
 		};
 	}
 }

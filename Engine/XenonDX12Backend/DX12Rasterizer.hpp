@@ -92,8 +92,6 @@ namespace Xenon
 			UINT m_RenderTargetDescriptorSize = 0;
 
 			DX12Device* m_pDevice = nullptr;
-
-			uint32_t m_FrameIndex = 0;
 		};
 	}
 }

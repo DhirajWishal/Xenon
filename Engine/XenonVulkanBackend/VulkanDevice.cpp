@@ -86,20 +86,69 @@ namespace /* anonymous */
 
 		// If the extension count is more than 0, that means it supports a few of those required extensions.
 		if (!requiredExtensions.empty())
-			XENON_LOG_INFORMATION("The physical device {} supports only some of the required extensions.");
+			XENON_LOG_INFORMATION("The physical device {} supports only some of the required extensions.", fmt::ptr(physicalDevice));
 
 		// Set the supported types if required.
-		if (supportedTypes)
+		if (supportedTypes && !requiredExtensions.contains(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME)
+			&& !requiredExtensions.contains(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME)
+			/* && requiredExtensions.contains(VK_KHR_RAY_QUERY_EXTENSION_NAME)*/)
 		{
-			if (requiredExtensions.contains(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME)
-				&& requiredExtensions.contains(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME)
-				/* && requiredExtensions.contains(VK_KHR_RAY_QUERY_EXTENSION_NAME)*/)
-			{
-				*supportedTypes = Xenon::RenderTargetType::All;
-			}
+			*supportedTypes = Xenon::RenderTargetType::All;
 		}
 
 		return true;
+	}
+
+	/**
+	 * Get the unsupported device extension support.
+	 *
+	 * @param physicalDevice The physical device to check.
+	 * @param deviceExtensions The extension to check.
+	 * @param supportedTypes The variable to store the supported render target types.
+	 * @return True if the device supports at least one of the device extensions.
+	 * @return False if the device does not support any of the required extensions.
+	 */
+	std::set<std::string_view> GetUnsupportedDeviceExtensions(VkPhysicalDevice physicalDevice, const std::vector<const char*>& deviceExtensions, Xenon::RenderTargetType* supportedTypes = nullptr)
+	{
+		// If there are no extension to check, we can just return true.
+		if (deviceExtensions.empty())
+			return {};
+
+		// Get the extension count.
+		uint32_t extensionCount = 0;
+		XENON_VK_ASSERT(vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, nullptr), "Failed to enumerate physical device extension property count!");
+
+		// Load the extensions.
+		std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+		XENON_VK_ASSERT(vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, availableExtensions.data()), "Failed to enumerate physical device extension properties!");
+
+		std::set<std::string_view> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
+
+		// Iterate and check if it contains the extensions we need. If it does, remove them from the set so we can later check if 
+		// all the required extensions exist.
+		for (const auto& extension : availableExtensions)
+			requiredExtensions.erase(extension.extensionName);
+
+		// If the required extension count did not change, we don't support any of those required extensions.
+		if (requiredExtensions.size() == deviceExtensions.size())
+		{
+			XENON_LOG_INFORMATION("The physical device {} does not support any of the required extensions.", fmt::ptr(physicalDevice));
+			return requiredExtensions;
+		}
+
+		// If the extension count is more than 0, that means it supports a few of those required extensions.
+		if (!requiredExtensions.empty())
+			XENON_LOG_INFORMATION("The physical device {} supports only some of the required extensions.", fmt::ptr(physicalDevice));
+
+		// Set the supported types if required.
+		if (supportedTypes && !requiredExtensions.contains(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME)
+			&& !requiredExtensions.contains(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME)
+			/* && requiredExtensions.contains(VK_KHR_RAY_QUERY_EXTENSION_NAME)*/)
+		{
+			*supportedTypes = Xenon::RenderTargetType::All;
+		}
+
+		return requiredExtensions;
 	}
 }
 
@@ -121,7 +170,7 @@ namespace Xenon
 				m_DeviceExtensions.emplace_back(VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME);
 				m_DeviceExtensions.emplace_back(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME);
 				m_DeviceExtensions.emplace_back(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME);
-				// m_DeviceExtensions.emplace_back(VK_KHR_RAY_QUERY_EXTENSION_NAME);
+				m_DeviceExtensions.emplace_back(VK_KHR_RAY_QUERY_EXTENSION_NAME);
 			}
 
 			// Select the physical device.
@@ -152,11 +201,11 @@ namespace Xenon
 					graphicsCommandPool = m_GraphicsCommandPool.getUnsafe(), transferCommandPool = m_TransferCommandPool.getUnsafe(), allocator = m_Allocator]
 					{
 						deviceTable.vkDestroyCommandPool(device, computeCommandPool, nullptr);
-						deviceTable.vkDestroyCommandPool(device, graphicsCommandPool, nullptr);
-						deviceTable.vkDestroyCommandPool(device, transferCommandPool, nullptr);
+					deviceTable.vkDestroyCommandPool(device, graphicsCommandPool, nullptr);
+					deviceTable.vkDestroyCommandPool(device, transferCommandPool, nullptr);
 
-						vmaDestroyAllocator(allocator);
-						deviceTable.vkDestroyDevice(device, nullptr);
+					vmaDestroyAllocator(allocator);
+					deviceTable.vkDestroyDevice(device, nullptr);
 					}
 					);
 			}
@@ -325,7 +374,7 @@ namespace Xenon
 			for (const auto& candidate : candidates)
 			{
 				// Check if the device is suitable for our use.
-				if (CheckDeviceExtensionSupport(candidate, m_DeviceExtensions) &&
+				if (CheckDeviceExtensionSupport(candidate, m_DeviceExtensions, &m_SupportedRenderTargetTypes) &&
 					CheckQueueSupport(candidate, VK_QUEUE_GRAPHICS_BIT) &&
 					CheckQueueSupport(candidate, VK_QUEUE_COMPUTE_BIT) &&
 					CheckQueueSupport(candidate, VK_QUEUE_TRANSFER_BIT))
@@ -385,8 +434,15 @@ namespace Xenon
 				return;
 			}
 
-			// Get the supported render target types.
-			CheckDeviceExtensionSupport(m_PhysicalDevice, m_DeviceExtensions, &m_SupportedRenderTargetTypes);
+			// Get the unsupported render target types.
+			const auto unsupportedExtensions = GetUnsupportedDeviceExtensions(m_PhysicalDevice, m_DeviceExtensions, &m_SupportedRenderTargetTypes);
+			for (const auto& extension : unsupportedExtensions)
+			{
+				XENON_LOG_INFORMATION("The {} extension is not supported and therefore will not be used.", extension.data());
+
+				auto ret = std::ranges::remove(m_DeviceExtensions, extension);
+				m_DeviceExtensions.erase(ret.begin());
+			}
 
 			// Setup the queue families.
 			const auto computeFamily = VulkanQueue::FindFamily(m_PhysicalDevice, VK_QUEUE_COMPUTE_BIT);

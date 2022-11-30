@@ -23,12 +23,16 @@ namespace Xenon
 		: m_Worker([this] { worker(); })
 		, m_pSwapChain(instance.getFactory()->createSwapchain(instance.getBackendDevice(), title, pCamera->getWidth(), pCamera->getHeight()))
 		, m_pCommandRecorder(instance.getFactory()->createCommandRecorder(instance.getBackendDevice(), Backend::CommandRecorderUsage::Graphics, 3))
-		, m_pCameraDescriptor(instance.getFactory()->createDescriptor(instance.getBackendDevice(), GetCameraBindingInfo(), Backend::DescriptorType::Camera))
 		, m_pCamera(pCamera)
 		, m_Instance(instance)
 	{
 		m_Latch.count_down();
-		m_pCameraDescriptor->attach(0, m_pCamera->getViewports().front().m_pUniformBuffer);
+		m_pCameraDescriptors.resize(3);
+		for (auto& pDescriptor : m_pCameraDescriptors)
+		{
+			pDescriptor = instance.getFactory()->createDescriptor(instance.getBackendDevice(), GetCameraBindingInfo(), Backend::DescriptorType::Camera);
+			pDescriptor->attach(0, m_pCamera->getViewports().front().m_pUniformBuffer);
+		}
 	}
 
 	Renderer::~Renderer()

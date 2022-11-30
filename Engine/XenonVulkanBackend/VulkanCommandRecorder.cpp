@@ -543,30 +543,6 @@ namespace Xenon
 			m_pDevice->getDeviceTable().vkCmdBindPipeline(*m_pCurrentBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pPipeline->as<VulkanRasterizingPipeline>()->getPipeline(vertexSpecification).m_Pipeline);
 		}
 
-		void VulkanCommandRecorder::bind(Buffer* pVertexBuffer, uint32_t vertexStride, Buffer* pIndexBuffer /*= nullptr*/, uint8_t indexStride /*= 0*/)
-		{
-			const auto pVkVertexBuffer = pVertexBuffer->as<VulkanBuffer>();
-
-			VkBuffer vertexBuffer = pVkVertexBuffer->getBuffer();
-			VkDeviceSize offset = 0;
-			m_pDevice->getDeviceTable().vkCmdBindVertexBuffers(*m_pCurrentBuffer, 0, 1, &vertexBuffer, &offset);
-
-			if (pIndexBuffer)
-			{
-				auto indexType = VK_INDEX_TYPE_NONE_KHR;
-				if (indexStride == sizeof(uint16_t))
-					indexType = VK_INDEX_TYPE_UINT16;
-
-				else if (indexStride == sizeof(uint32_t))
-					indexType = VK_INDEX_TYPE_UINT32;
-
-				else
-					XENON_LOG_ERROR("Invalid or unsupported index stride!");
-
-				m_pDevice->getDeviceTable().vkCmdBindIndexBuffer(*m_pCurrentBuffer, pIndexBuffer->as<VulkanBuffer>()->getBuffer(), 0, indexType);
-			}
-		}
-
 		void VulkanCommandRecorder::bind(RasterizingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pCameraDescriptor)
 		{
 			std::vector<VkDescriptorSet> descriptorSets;
@@ -587,6 +563,28 @@ namespace Xenon
 				0,
 				nullptr
 			);
+		}
+
+		void VulkanCommandRecorder::bind(Buffer* pVertexBuffer, uint32_t vertexStride)
+		{
+			VkDeviceSize offset = 0;
+			VkBuffer vertexBuffer = pVertexBuffer->as<VulkanBuffer>()->getBuffer();
+			m_pDevice->getDeviceTable().vkCmdBindVertexBuffers(*m_pCurrentBuffer, 0, 1, &vertexBuffer, &offset);
+		}
+
+		void VulkanCommandRecorder::bind(Buffer* pIndexBuffer, IndexBufferStride indexStride)
+		{
+			auto indexType = VK_INDEX_TYPE_NONE_KHR;
+			if (indexStride == IndexBufferStride::Uint16)
+				indexType = VK_INDEX_TYPE_UINT16;
+
+			else if (indexStride == IndexBufferStride::Uint32)
+				indexType = VK_INDEX_TYPE_UINT32;
+
+			else
+				XENON_LOG_ERROR("Invalid or unsupported index stride!");
+
+			m_pDevice->getDeviceTable().vkCmdBindIndexBuffer(*m_pCurrentBuffer, pIndexBuffer->as<VulkanBuffer>()->getBuffer(), 0, indexType);
 		}
 
 		void VulkanCommandRecorder::drawIndexed(uint64_t vertexOffset, uint64_t indexOffset, uint64_t indexCount, uint32_t instanceCount /*= 1*/, uint32_t firstInstance /*= 0*/)

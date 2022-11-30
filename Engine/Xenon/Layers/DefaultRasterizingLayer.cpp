@@ -43,13 +43,14 @@ namespace Xenon
 	{
 		drawData.m_pCommandRecorder->begin(pCommandRecorder);
 		drawData.m_pCommandRecorder->bind(drawData.m_pPipeline, drawData.m_Storage.getVertexSpecification());
+		drawData.m_pCommandRecorder->bind(drawData.m_Storage.getVertexBuffer(), drawData.m_Storage.getVertexSpecification().getSize());
 
 		for (const auto& mesh : drawData.m_Storage.getMeshes())
 		{
 			for (const auto& subMesh : mesh.m_SubMeshes)
 			{
-				drawData.m_pCommandRecorder->bind(drawData.m_Storage.getVertexBuffer(), drawData.m_Storage.getVertexSpecification().getSize(), drawData.m_Storage.getIndexBuffer(), subMesh.m_IndexSize);
-				drawData.m_pCommandRecorder->bind(drawData.m_pPipeline, nullptr, subMesh.m_pMaterial->m_pDescriptor.get(), m_Renderer.getCameraDescriptor());
+				drawData.m_pCommandRecorder->bind(drawData.m_Storage.getIndexBuffer(), static_cast<Backend::IndexBufferStride>(subMesh.m_IndexSize));
+				drawData.m_pCommandRecorder->bind(drawData.m_pPipeline, nullptr, subMesh.m_pMaterial->m_pDescriptor.get(), m_Renderer.getCameraDescriptor(m_pRasterizer->getFrameIndex()));
 				drawData.m_pCommandRecorder->drawIndexed(subMesh.m_VertexOffset, subMesh.m_IndexOffset, subMesh.m_IndexCount);
 			}
 		}

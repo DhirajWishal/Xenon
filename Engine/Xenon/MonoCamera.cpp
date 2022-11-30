@@ -17,6 +17,8 @@ namespace Xenon
 		m_Viewport.m_pUniformBuffer = m_pUniformBuffer.get();
 		m_Viewport.m_Width = static_cast<float>(width);
 		m_Viewport.m_Height = static_cast<float>(height);
+
+		m_AspectRatio = static_cast<float>(width) / static_cast<float>(height);
 	}
 
 	void MonoCamera::update()

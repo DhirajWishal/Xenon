@@ -83,16 +83,18 @@ namespace Xenon
 		/**
 		 * Get the attached camera descriptor pointer.
 		 *
+		 * @param frameIndex The frame's index.
 		 * @return The descriptor pointer.
 		 */
-		[[nodiscard]] Backend::Descriptor* getCameraDescriptor() { return m_pCameraDescriptor.get(); }
+		[[nodiscard]] Backend::Descriptor* getCameraDescriptor(uint32_t frameIndex) { return m_pCameraDescriptors[frameIndex].get(); }
 
 		/**
 		 * Get the attached camera descriptor pointer.
 		 *
+		 * @param frameIndex The frame's index.
 		 * @return The descriptor pointer.
 		 */
-		[[nodiscard]] const Backend::Descriptor* getCameraDescriptor() const { return m_pCameraDescriptor.get(); }
+		[[nodiscard]] const Backend::Descriptor* getCameraDescriptor(uint32_t frameIndex) const { return m_pCameraDescriptors[frameIndex].get(); }
 
 		/**
 		 * Get the instance to which the renderer is bound to.
@@ -122,6 +124,20 @@ namespace Xenon
 		 */
 		[[nodsicard]] const TaskGraph& getTaskGraph() const { return m_TaskGraph; }
 
+		/**
+		 * Get the mouse from the associated window.
+		 *
+		 * @return The mouse inputs.
+		 */
+		[[nodiscard]] const Mouse& getMouse() const { return m_pSwapChain->getWindow()->getMouse(); }
+
+		/**
+		 * Get the keyboard from the associated window.
+		 *
+		 * @return The keyboard inputs.
+		 */
+		[[nodiscard]] const Keyboard& getKeyboard() const { return m_pSwapChain->getWindow()->getKeyboard(); }
+
 	private:
 		/**
 		 * Worker function.
@@ -142,7 +158,7 @@ namespace Xenon
 
 		std::unique_ptr<Backend::Swapchain> m_pSwapChain = nullptr;
 		std::unique_ptr<Backend::CommandRecorder> m_pCommandRecorder = nullptr;
-		std::unique_ptr<Backend::Descriptor> m_pCameraDescriptor = nullptr;
+		std::vector<std::unique_ptr<Backend::Descriptor>> m_pCameraDescriptors;
 
 		Backend::Camera* m_pCamera = nullptr;
 

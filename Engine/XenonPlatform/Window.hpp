@@ -6,6 +6,9 @@
 #include "../XenonCore/Common.hpp"
 #include "../XenonCore/XObject.hpp"
 
+#include "../XenonEvents/Mouse.hpp"
+#include "../XenonEvents/Keyboard.hpp"
+
 #include <string>
 
 namespace Xenon
@@ -75,11 +78,28 @@ namespace Xenon
 			 */
 			[[nodiscard]] uint32_t getHeight() const { return m_Height; }
 
+			/**
+			 * Get the mouse inputs.
+			 *
+			 * @return The mouse input container.
+			 */
+			[[nodiscard]] const Mouse& getMouse() const { return m_Mouse; }
+
+			/**
+			 * Get the keyboard inputs.
+			 *
+			 * @return The keyboard input container.
+			 */
+			[[nodiscard]] const Keyboard& getKeyboard() const { return m_Keyboard; }
+
 		protected:
 			std::string m_Title;
 
 			uint32_t m_Width = 0;
 			uint32_t m_Height = 0;
+
+			Mouse m_Mouse;
+			Keyboard m_Keyboard;
 		};
 	}
 }

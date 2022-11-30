@@ -39,7 +39,7 @@ namespace Xenon
 			 * @param enableTripleBuffering Whether to enable triple-buffering. Default is false.
 			 * @param multiSampleCount Multi-sampling count to use. Default is x1.
 			 */
-			explicit Rasterizer(Device* pDevice, Camera* pCamera, AttachmentType attachmentTypes, bool enableTripleBuffering = false, MultiSamplingCount multiSampleCount = MultiSamplingCount::x1)
+			explicit Rasterizer(const Device* pDevice, Camera* pCamera, AttachmentType attachmentTypes, bool enableTripleBuffering = false, MultiSamplingCount multiSampleCount = MultiSamplingCount::x1)
 				: RenderTarget(pDevice, pCamera, attachmentTypes), m_bEnableTripleBuffering(enableTripleBuffering), m_MultiSamplingCount(multiSampleCount) {}
 
 		public:
@@ -58,7 +58,16 @@ namespace Xenon
 			 */
 			[[nodiscard]] MultiSamplingCount getMultiSamplingCount() const { return m_MultiSamplingCount; }
 
+			/**
+			 * Get the current frame index.
+			 *
+			 * @return The frame index.
+			 */
+			[[nodiscard]] uint32_t getFrameIndex() const { return m_FrameIndex; }
+
 		protected:
+			uint32_t m_FrameIndex = 0;
+
 			bool m_bEnableTripleBuffering = false;
 			MultiSamplingCount m_MultiSamplingCount = MultiSamplingCount::x1;
 		};

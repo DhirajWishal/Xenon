@@ -104,16 +104,20 @@ namespace Xenon
 			void bind(RasterizingPipeline* pPipeline, const VertexSpecification& vertexSpecification) override;
 
 			/**
-			 * Bind a vertex and an index buffer if provided.
-			 * If only the vertex buffer is provided, it'll draw using these vertex data.
-			 * If both the vertex and index buffers are provided it'll use the index data to draw.
+			 * Bind a vertex buffer to the command recorder.
 			 *
 			 * @param pVertexBuffer The vertex buffer pointer.
 			 * @param vertexStride The vertex stride.
-			 * @param pIndexBuffer The index buffer pointer. Default is nullptr.
-			 * @param indexStride The stride of a single index. Default is 0.
 			 */
-			void bind(Buffer* pVertexBuffer, uint32_t vertexStride, Buffer* pIndexBuffer = nullptr, uint8_t indexStride = 0) override;
+			void bind(Buffer* pVertexBuffer, uint32_t vertexStride) override;
+
+			/**
+			 * Bind an index buffer to the command recorder.
+			 *
+			 * @param pIndexBuffer The index buffer pointer.
+			 * @param indexStride The stride of a single index.
+			 */
+			void bind(Buffer* pIndexBuffer, IndexBufferStride indexStride) override;
 
 			/**
 			 * Bind descriptors to the command recorder.

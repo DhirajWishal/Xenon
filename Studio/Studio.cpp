@@ -52,16 +52,6 @@ Studio::Studio(Xenon::BackendType type /*= Xenon::BackendType::Any*/)
 	, m_Renderer(m_Instance, &m_Camera, GetRendererTitle(type))
 {
 	XENON_LOG_INFORMATION("Starting the {}", GetRendererTitle(m_Instance.getBackendType()));
-
-	std::vector<Xenon::Backend::DescriptorBindingInfo> bindingInfo;
-	auto& info = bindingInfo.emplace_back();
-	info.m_ApplicableShaders = Xenon::Backend::ShaderType::Vertex;
-	info.m_Type = Xenon::Backend::ResourceType::UniformBuffer;
-
-	auto pUniformBuffer = m_Instance.getFactory()->createBuffer(m_Instance.getBackendDevice(), sizeof(float[4][4]), Xenon::Backend::BufferType::Uniform);
-
-	auto pDescriptor = m_Instance.getFactory()->createDescriptor(m_Instance.getBackendDevice(), bindingInfo, Xenon::Backend::DescriptorType::UserDefined);
-	pDescriptor->attach(0, pUniformBuffer.get());
 }
 
 void Studio::run()
@@ -89,6 +79,33 @@ void Studio::run()
 		{
 			pLayer->addDrawData(storage.get(), pPipeline.get());
 			dataLoaded = true;
+		}
+
+		// Move the camera.
+		switch (m_Renderer.getKeyboard().m_Character)
+		{
+		case 'w':
+		case 'W':
+			m_Camera.moveForward(delta);
+			break;
+
+		case 'a':
+		case 'A':
+			m_Camera.moveLeft(delta);
+			break;
+
+		case 's':
+		case 'S':
+			m_Camera.moveDown(delta);
+			break;
+
+		case 'd':
+		case 'D':
+			m_Camera.moveRight(delta);
+			break;
+
+		default:
+			break;
 		}
 
 		m_Camera.update();

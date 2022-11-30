@@ -277,8 +277,9 @@ namespace Xenon
 			createInfo.ppEnabledExtensionNames = requiredExtensions.data();
 
 #ifdef XENON_DEBUG
-			// Emplace the required validation layer.
+			// Emplace the required validation layer(s).
 			m_pValidationLayers.emplace_back("VK_LAYER_KHRONOS_validation");
+			// m_pValidationLayers.emplace_back("VK_LAYER_LUNARG_api_dump");
 
 			// Create the debug messenger create info structure.
 			const auto debugCreateInfo = CreateDebugMessengerCreateInfo(this);

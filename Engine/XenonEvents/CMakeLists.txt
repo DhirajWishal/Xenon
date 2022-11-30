@@ -3,18 +3,20 @@
 
 # Set the basic project information.
 project(
-	XenonPlatform
+	XenonEvents
 	VERSION 1.0.0
-	DESCRIPTION "The platform library."
+	DESCRIPTION "The core events library."
 )
 
 # Set the sources.
 set(
 	SOURCES
 
-	"IFactory.cpp"
-	"IFactory.hpp"
-	"Window.hpp"
+	"Common.hpp"
+	"Mouse.hpp"
+	"Keyboard.hpp"
+	"GlobalEvents.cpp"
+	"GlobalEvents.hpp"
 )
 
 # Add the source group.
@@ -22,19 +24,16 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCES})
 
 # Add the library.
 add_library(
-	XenonPlatform
+	XenonEvents
 	STATIC
 
 	${SOURCES}
 )
 
-# Set the target links.
-target_link_libraries(XenonPlatform XenonCore XenonEvents)
-
 # Make sure to specify the C++ standard to C++20.
-set_property(TARGET XenonPlatform PROPERTY CXX_STANDARD 20)
+set_property(TARGET XenonEvents PROPERTY CXX_STANDARD 20)
 
 # If we are on MSVC, we can use the Multi Processor Compilation option.
 if (MSVC)
-	target_compile_options(XenonPlatform PRIVATE "/MP")	
+	target_compile_options(XenonEvents PRIVATE "/MP")	
 endif ()
