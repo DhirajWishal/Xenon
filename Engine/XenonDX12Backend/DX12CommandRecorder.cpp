@@ -78,6 +78,7 @@ namespace Xenon
 		void DX12CommandRecorder::begin(CommandRecorder* pParent)
 		{
 			begin();
+			pParent->as<DX12CommandRecorder>()->setBundle(m_pCurrentCommandList);
 		}
 
 		void DX12CommandRecorder::copy(Buffer* pSource, uint64_t srcOffset, Buffer* pDestination, uint64_t dstOffset, uint64_t size)
@@ -97,10 +98,18 @@ namespace Xenon
 
 		void DX12CommandRecorder::bind(Rasterizer* pRasterizer, const std::vector<Rasterizer::ClearValueType>& clearValues, bool usingSecondaryCommandRecorders /*= false*/)
 		{
-			const auto dxRasterizer = pRasterizer->as<DX12Rasterizer>();
-			CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(dxRasterizer->getRenderTargetHeap()->GetCPUDescriptorHandleForHeapStart(), dxRasterizer->getFrameIndex(), dxRasterizer->getRenderTargetDescriptorSize());
+			const auto pDxRasterizer = pRasterizer->as<DX12Rasterizer>();
+			const auto colorTargetHeapStart = pDxRasterizer->getColorTargetHeapStartCPU();
 
-			m_pCurrentCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
+			if (pDxRasterizer->hasTarget(AttachmentType::Depth | AttachmentType::Stencil))
+			{
+				const auto depthTargetHeapStart = pDxRasterizer->getDepthTargetHeapStartCPU();
+				m_pCurrentCommandList->OMSetRenderTargets(static_cast<UINT>(pDxRasterizer->getColorTargetCount()), &colorTargetHeapStart, TRUE, &depthTargetHeapStart);
+			}
+			else
+			{
+				m_pCurrentCommandList->OMSetRenderTargets(static_cast<UINT>(pDxRasterizer->getColorTargetCount()), &colorTargetHeapStart, TRUE, nullptr);
+			}
 
 			m_IsRenderTargetBound = true;
 		}
@@ -191,17 +200,40 @@ namespace Xenon
 		{
 			m_pCurrentCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			m_pCurrentCommandList->DrawIndexedInstanced(static_cast<UINT>(indexCount), instanceCount, static_cast<UINT>(indexOffset), static_cast<UINT>(vertexOffset), firstInstance);
-			XENON_LOG_INFORMATION("Draw call issued!");
 		}
 
 		void DX12CommandRecorder::executeChildren()
 		{
-			// m_pCurrentCommandList->ExecuteBundle(m_pBundleCommandList);
+			if (m_pBundleCommandList != nullptr)
+			{
+				m_pCurrentCommandList->ExecuteBundle(m_pBundleCommandList);
+				m_pBundleCommandList = nullptr;
+			}
 		}
 
 		void DX12CommandRecorder::end()
 		{
-			XENON_DX12_ASSERT(m_pCurrentCommandList->Close(), "Failed to stop the current command list!");
+			const auto result = m_pCurrentCommandList->Close();
+
+			if (FAILED(result))
+			{
+				ID3D12InfoQueue* pQueue = nullptr;
+				if (SUCCEEDED(m_pDevice->getDevice()->QueryInterface(__uuidof(ID3D12InfoQueue), (void**)&pQueue)))
+				{
+					const auto count = pQueue->GetNumStoredMessages();
+
+					D3D12_MESSAGE message;
+					SIZE_T messageSize;
+					pQueue->GetMessageW(count - 1, &message, &messageSize);
+
+					XENON_LOG_ERROR("Failed to stop the current command list! {}", message.pDescription);
+				}
+				else
+				{
+					XENON_DX12_ASSERT(result, "Failed to stop the current command list!");
+				}
+			}
+
 			m_IsRecording = false;
 		}
 

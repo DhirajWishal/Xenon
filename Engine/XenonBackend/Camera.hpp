@@ -44,7 +44,7 @@ namespace Xenon
 			 * @param width The width of the camera frame.
 			 * @param height The height of the camera frame.
 			 */
-			explicit Camera(uint32_t width, uint32_t height) : m_Width(width), m_Height(height) {}
+			explicit Camera(uint32_t width, uint32_t height) : m_Width(width), m_Height(height), m_AspectRatio(static_cast<float>(width) / static_cast<float>(height)) {}
 
 			/**
 			 * Update the camera.

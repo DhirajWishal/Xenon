@@ -140,7 +140,6 @@ namespace Xenon
 			resourceDescriptor.DepthOrArraySize = static_cast<UINT16>(m_Specification.m_Depth);
 			resourceDescriptor.Flags = flags;
 			resourceDescriptor.SampleDesc.Count = EnumToInt(m_Specification.m_MultiSamplingCount);
-			resourceDescriptor.SampleDesc.Quality = 1;	XENON_TODO_NOW("(Dhiraj) Find a better system.");
 			resourceDescriptor.Dimension = dimension;
 
 			// Try and create the image using the candidates.
@@ -148,6 +147,16 @@ namespace Xenon
 			for (const auto candidate : candidates)
 			{
 				resourceDescriptor.Format = m_pDevice->convertFormat(candidate);
+
+				// Get the best multisample quality level.
+				D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS msLevels = {};
+				msLevels.Format = resourceDescriptor.Format;
+				msLevels.SampleCount = resourceDescriptor.SampleDesc.Count;
+				msLevels.Flags = D3D12_MULTISAMPLE_QUALITY_LEVELS_FLAG_NONE;
+
+				XENON_DX12_ASSERT(m_pDevice->getDevice()->CheckFeatureSupport(D3D12_FEATURE_MULTISAMPLE_QUALITY_LEVELS, &msLevels, sizeof(msLevels)), "Failed to get the best multisample quality level!");
+				resourceDescriptor.SampleDesc.Count = msLevels.SampleCount;
+				resourceDescriptor.SampleDesc.Quality = msLevels.NumQualityLevels > 0 ? msLevels.NumQualityLevels - 1 : 0;
 
 				// Try and create the image.
 				const auto result = pDevice->getAllocator()->CreateResource(
@@ -163,6 +172,8 @@ namespace Xenon
 				if (SUCCEEDED(result))
 				{
 					m_Specification.m_Format = candidate;
+					m_QualityLevel = resourceDescriptor.SampleDesc.Quality;
+					m_Specification.m_MultiSamplingCount = static_cast<MultiSamplingCount>(resourceDescriptor.SampleDesc.Count);
 					break;
 				}
 			}
@@ -184,6 +195,7 @@ namespace Xenon
 			: Image(std::move(other))
 			, DX12DeviceBoundObject(std::move(other))
 			, m_pAllocation(std::exchange(other.m_pAllocation, nullptr))
+			, m_CurrentState(std::exchange(other.m_CurrentState, D3D12_RESOURCE_STATE_COMMON))
 		{
 		}
 
@@ -191,7 +203,8 @@ namespace Xenon
 		{
 			try
 			{
-				m_pDevice->getInstance()->getDeletionQueue().insert([allocation = m_pAllocation] { allocation->Release(); });
+				if (m_pDevice)
+					m_pDevice->getInstance()->getDeletionQueue().insert([allocation = m_pAllocation] { allocation->Release(); });
 			}
 			catch (...)
 			{
@@ -231,7 +244,6 @@ namespace Xenon
 			sourceLocation.PlacedFootprint.Footprint.Depth = 1;
 			sourceLocation.PlacedFootprint.Footprint.Width = getWidth();
 			sourceLocation.PlacedFootprint.Footprint.Height = getHeight();
-			// sourceLocation.PlacedFootprint.Footprint.RowPitch = static_cast<UINT>(std::ceil(static_cast<float>(getWidth() * GetFormatSize(sourceLocation.PlacedFootprint.Footprint.Format)) / D3D12_TEXTURE_DATA_PITCH_ALIGNMENT) * D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
 			sourceLocation.PlacedFootprint.Footprint.RowPitch = static_cast<UINT>(getWidth() * GetFormatSize(sourceLocation.PlacedFootprint.Footprint.Format));
 
 			D3D12_TEXTURE_COPY_LOCATION destinationLocation = {};
@@ -245,10 +257,10 @@ namespace Xenon
 			// Destination (this)
 			if (getUsage() & ImageUsage::Graphics)
 			{
-				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(m_pAllocation->GetResource(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-				m_CommandList->ResourceBarrier(1, &barrier);
+				m_CurrentState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
 
-				m_CurrentState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(m_pAllocation->GetResource(), D3D12_RESOURCE_STATE_COPY_DEST, m_CurrentState);
+				m_CommandList->ResourceBarrier(1, &barrier);
 			}
 			else
 			{
@@ -296,6 +308,7 @@ namespace Xenon
 			Image::operator=(std::move(other));
 			DX12DeviceBoundObject::operator=(std::move(other));
 			m_pAllocation = std::exchange(other.m_pAllocation, nullptr);
+			m_CurrentState = std::exchange(other.m_CurrentState, D3D12_RESOURCE_STATE_COMMON);
 
 			return *this;
 		}

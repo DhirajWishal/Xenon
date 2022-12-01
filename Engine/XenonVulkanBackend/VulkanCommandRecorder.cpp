@@ -25,53 +25,94 @@ namespace /* anonymous */
 		std::vector<VkClearValue> vkClearValues;
 		if (attachmentTypes & Xenon::Backend::AttachmentType::Color)
 		{
-			const auto& clearColor = std::get<glm::vec4>(*itr);
+			try
+			{
+				const auto& clearColor = std::get<glm::vec4>(*(itr++));
 
-			auto& clearValue = vkClearValues.emplace_back();
-			clearValue.color.float32[0] = clearColor.x;
-			clearValue.color.float32[1] = clearColor.y;
-			clearValue.color.float32[2] = clearColor.z;
-			clearValue.color.float32[3] = clearColor.w;
-
-			++itr;
+				auto& clearValue = vkClearValues.emplace_back();
+				clearValue.color.float32[0] = clearColor.x;
+				clearValue.color.float32[1] = clearColor.y;
+				clearValue.color.float32[2] = clearColor.z;
+				clearValue.color.float32[3] = clearColor.w;
+			}
+			catch (const std::exception& e)
+			{
+				XENON_LOG_ERROR("Clear color value error: {}", e.what());
+			}
 		}
 
 		if (attachmentTypes & Xenon::Backend::AttachmentType::EntityID)
 		{
-			const auto& clearColor = std::get<glm::vec3>(*itr);
+			try
+			{
+				const auto& clearColor = std::get<glm::vec3>(*(itr++));
 
-			auto& clearValue = vkClearValues.emplace_back();
-			clearValue.color.float32[0] = clearColor.x;
-			clearValue.color.float32[1] = clearColor.y;
-			clearValue.color.float32[2] = clearColor.z;
-			clearValue.color.float32[3] = 0.0f;
-
-			++itr;
+				auto& clearValue = vkClearValues.emplace_back();
+				clearValue.color.float32[0] = clearColor.x;
+				clearValue.color.float32[1] = clearColor.y;
+				clearValue.color.float32[2] = clearColor.z;
+				clearValue.color.float32[3] = 0.0f;
+			}
+			catch (const std::exception& e)
+			{
+				XENON_LOG_ERROR("Clear entity ID value error: {}", e.what());
+			}
 		}
 
 		if (attachmentTypes & Xenon::Backend::AttachmentType::Normal)
 		{
-			const auto clearColor = std::get<float>(*itr);
+			try
+			{
+				const auto clearColor = std::get<float>(*(itr++));
 
-			auto& clearValue = vkClearValues.emplace_back();
-			clearValue.color.float32[0] = clearColor;
-			clearValue.color.float32[1] = 0.0f;
-			clearValue.color.float32[2] = 0.0f;
-			clearValue.color.float32[3] = 0.0f;
-
-			++itr;
+				auto& clearValue = vkClearValues.emplace_back();
+				clearValue.color.float32[0] = clearColor;
+				clearValue.color.float32[1] = 0.0f;
+				clearValue.color.float32[2] = 0.0f;
+				clearValue.color.float32[3] = 0.0f;
+			}
+			catch (const std::exception& e)
+			{
+				XENON_LOG_ERROR("Clear normal value error: {}", e.what());
+			}
 		}
 
-		if (attachmentTypes & Xenon::Backend::AttachmentType::Depth)
+		if (attachmentTypes & Xenon::Backend::AttachmentType::Depth && attachmentTypes & Xenon::Backend::AttachmentType::Stencil)
 		{
-			vkClearValues.emplace_back().depthStencil.depth = std::get<float>(*itr);
-			++itr;
+			try
+			{
+				auto& clearValue = vkClearValues.emplace_back();
+				clearValue.depthStencil.depth = std::get<float>(*(itr++));
+				clearValue.depthStencil.stencil = std::get<uint32_t>(*(itr++));
+			}
+			catch (const std::exception& e)
+			{
+				XENON_LOG_ERROR("Clear depth and stencil value error: {}", e.what());
+			}
 		}
 
-		if (attachmentTypes & Xenon::Backend::AttachmentType::Stencil)
+		else if (attachmentTypes & Xenon::Backend::AttachmentType::Depth)
 		{
-			vkClearValues.emplace_back().depthStencil.stencil = std::get<uint32_t>(*itr);
-			++itr;
+			try
+			{
+				vkClearValues.emplace_back().depthStencil.depth = std::get<float>(*(itr++));
+			}
+			catch (const std::exception& e)
+			{
+				XENON_LOG_ERROR("Clear depth value error: {}", e.what());
+			}
+		}
+
+		else if (attachmentTypes & Xenon::Backend::AttachmentType::Stencil)
+		{
+			try
+			{
+				vkClearValues.emplace_back().depthStencil.stencil = std::get<uint32_t>(*(itr++));
+			}
+			catch (const std::exception& e)
+			{
+				XENON_LOG_ERROR("Clear stencil value error: {}", e.what());
+			}
 		}
 
 		return vkClearValues;
@@ -615,6 +656,7 @@ namespace Xenon
 
 		void VulkanCommandRecorder::drawIndexed(uint64_t vertexOffset, uint64_t indexOffset, uint64_t indexCount, uint32_t instanceCount /*= 1*/, uint32_t firstInstance /*= 0*/)
 		{
+			// m_pDevice->getDeviceTable().vkCmdSetPrimitiveTopology(*m_pCurrentBuffer, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
 			m_pDevice->getDeviceTable().vkCmdDrawIndexed(*m_pCurrentBuffer, static_cast<uint32_t>(indexCount), instanceCount, static_cast<uint32_t>(indexOffset), static_cast<uint32_t>(vertexOffset), firstInstance);
 		}
 

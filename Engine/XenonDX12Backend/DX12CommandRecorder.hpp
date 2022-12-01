@@ -159,6 +159,13 @@ namespace Xenon
 			 */
 			void wait(uint64_t timeout = UINT64_MAX) override;
 
+			/**
+			 * Set the current command list's bundle command list.
+			 *
+			 * @param pCommandList The command list pointer.
+			 */
+			void setBundle(ID3D12GraphicsCommandList* pCommandList) { m_pBundleCommandList = pCommandList; }
+
 		private:
 			DX12Device* m_pDevice = nullptr;
 			std::vector<ComPtr<ID3D12CommandAllocator>> m_pCommandAllocators;
@@ -168,6 +175,8 @@ namespace Xenon
 			ID3D12CommandAllocator* m_pCurrentCommandAllocator = nullptr;
 			ID3D12GraphicsCommandList* m_pCurrentCommandList = nullptr;
 			ID3D12Fence* m_pCurrentCommandListFence = nullptr;
+
+			ID3D12GraphicsCommandList* m_pBundleCommandList = nullptr;
 
 			bool m_IsRecording = false;
 		};

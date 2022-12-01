@@ -687,18 +687,6 @@ namespace Xenon
 			if (specification.m_FragmentShader.isValid())
 				m_PixelShader = SetupShaderData(specification.m_FragmentShader, bindingMap, indexToBindingMap, rangeMap, m_Inputs, "ps_5_0", ShaderType::Fragment);
 
-			// Setup any bindings that are not available.
-			// if (!bindingMap.contains(DescriptorType::UserDefined)) bindingMap[DescriptorType::UserDefined];
-			// if (!bindingMap.contains(DescriptorType::Material)) bindingMap[DescriptorType::Material];
-			// if (!bindingMap.contains(DescriptorType::Camera)) bindingMap[DescriptorType::Camera];
-			// 
-			// if (!rangeMap.contains(0)) rangeMap[0]; // User defined CBV, SRV, UAV
-			// if (!rangeMap.contains(1)) rangeMap[1]; // User defined sampler
-			// if (!rangeMap.contains(2)) rangeMap[2]; // Material CBV, SRV, UAV
-			// if (!rangeMap.contains(3)) rangeMap[3]; // Material sampler
-			// if (!rangeMap.contains(4)) rangeMap[4]; // Camera CBV, SRV, UAV
-			// if (!rangeMap.contains(5)) rangeMap[5]; // Camera sampler
-
 			// Sort the ranges to the correct binding order.
 			auto sortedranges = std::vector<std::pair<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>>(rangeMap.begin(), rangeMap.end());
 			std::ranges::sort(sortedranges, [](const auto& lhs, const auto& rhs) { return lhs.first < rhs.first; });
@@ -767,7 +755,15 @@ namespace Xenon
 				pipelineState.CachedPSO.pCachedBlob = cache.data();
 				pipelineState.CachedPSO.CachedBlobSizeInBytes = cache.size();
 
-				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateGraphicsPipelineState(&pipelineState, IID_PPV_ARGS(&pipeline.m_PipelineState)), "Failed to create the pipeline state!");
+				// Try and create the pipeline.
+				// If failed, create the pipeline without the cache and try again.
+				if (FAILED(m_pDevice->getDevice()->CreateGraphicsPipelineState(&pipelineState, IID_PPV_ARGS(&pipeline.m_PipelineState))))
+				{
+					pipelineState.CachedPSO.pCachedBlob = nullptr;
+					pipelineState.CachedPSO.CachedBlobSizeInBytes = 0;
+
+					XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateGraphicsPipelineState(&pipelineState, IID_PPV_ARGS(&pipeline.m_PipelineState)), "Failed to create the pipeline state!");
+				}
 
 				// Save the pipeline cache.
 				storePipelineStateCache(hash, pipeline);
@@ -854,13 +850,24 @@ namespace Xenon
 			m_PipelineStateDescriptor.SampleMask = UINT_MAX;
 			m_PipelineStateDescriptor.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 
+			m_PipelineStateDescriptor.NumRenderTargets = static_cast<UINT>(m_pRasterizer->getColorTargetCount());
 			const auto& renderTargets = m_pRasterizer->getRenderTargets();
-			m_PipelineStateDescriptor.NumRenderTargets = static_cast<UINT>(renderTargets.size());
-			for (uint8_t i = 0; i < renderTargets.size(); i++)
-				m_PipelineStateDescriptor.RTVFormats[i] = m_pDevice->convertFormat(renderTargets[i].getDataFormat());
 
-			m_PipelineStateDescriptor.SampleDesc.Count = 1;
-			m_PipelineStateDescriptor.SampleDesc.Quality = 0;
+			for (uint8_t i = 0; i < m_PipelineStateDescriptor.NumRenderTargets; i++)
+			{
+				const auto& image = renderTargets[i];
+				m_PipelineStateDescriptor.RTVFormats[i] = m_pDevice->convertFormat(image.getDataFormat());
+
+				// Get the color image's sample count and quality.
+				if (i == 0)
+				{
+					m_PipelineStateDescriptor.SampleDesc.Count = EnumToInt(image.getSpecification().m_MultiSamplingCount);
+					m_PipelineStateDescriptor.SampleDesc.Quality = image.getQualityLevel();
+				}
+			}
+
+			if (m_pRasterizer->hasTarget(AttachmentType::Depth | AttachmentType::Stencil))
+				m_PipelineStateDescriptor.DSVFormat = m_pDevice->convertFormat(renderTargets.back().getDataFormat());
 		}
 
 		std::vector<std::byte> DX12RasterizingPipeline::loadPipelineStateCache(uint64_t hash) const

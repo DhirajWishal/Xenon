@@ -66,6 +66,13 @@ namespace Xenon
 			 */
 			[[nodiscard]] const ID3D12Resource* getResource() const { return m_pAllocation->GetResource(); }
 
+			/**
+			 * Get the image's quality levels.
+			 * 
+			 * @return The quality levels.
+			 */
+			[[nodiscard]] UINT getQualityLevel() const { return m_QualityLevel; }
+
 		public:
 			/**
 			 * Move assign operator.
@@ -82,6 +89,7 @@ namespace Xenon
 			ComPtr<ID3D12GraphicsCommandList> m_CommandList;
 
 			D3D12_RESOURCE_STATES m_CurrentState;
+			UINT m_QualityLevel = 0;
 		};
 	}
 }

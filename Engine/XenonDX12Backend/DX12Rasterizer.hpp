@@ -43,55 +43,126 @@ namespace Xenon
 			[[nodiscard]] Image* getImageAttachment(AttachmentType type) override;
 
 			/**
-			 * Get the frame index.
-			 *
-			 * @return The frame index.
-			 */
-			[[nodiscard]] uint32_t getFrameIndex() const { return m_FrameIndex; }
-
-			/**
-			 * Get the render target heap pointer.
+			 * Get the color target heap pointer.
 			 *
 			 * @return The pointer.
 			 */
-			[[nodiscard]] ID3D12DescriptorHeap* getRenderTargetHeap() { return m_RenderTargetHeap.Get(); }
+			[[nodiscard]] ID3D12DescriptorHeap* getColorTargetHeap() { return m_ColorTargetHeap.Get(); }
 
 			/**
-			 * Get the render target heap pointer.
+			 * Get the color target heap pointer.
 			 *
 			 * @return The pointer.
 			 */
-			[[nodiscard]] const ID3D12DescriptorHeap* getRenderTargetHeap() const { return m_RenderTargetHeap.Get(); }
+			[[nodiscard]] const ID3D12DescriptorHeap* getColorTargetHeap() const { return m_ColorTargetHeap.Get(); }
 
 			/**
-			 * Get the render target descriptor size.
+			 * Get the CPU color target heap start.
 			 *
+			 * @return The pointer.
+			 */
+			[[nodiscard]] D3D12_CPU_DESCRIPTOR_HANDLE getColorTargetHeapStartCPU();
+
+			/**
+			 * Get the CPU color target heap start.
+			 *
+			 * @return The CPU handle.
+			 */
+			[[nodiscard]] D3D12_CPU_DESCRIPTOR_HANDLE getColorTargetHeapStartCPU() const;
+
+			/**
+			 * Get the depth target heap pointer.
+			 *
+			 * @return The pointer.
+			 */
+			[[nodiscard]] ID3D12DescriptorHeap* getDepthTargetHeap() { return m_DepthTargetHeap.Get(); }
+
+			/**
+			 * Get the depth target heap pointer.
+			 *
+			 * @return The pointer.
+			 */
+			[[nodiscard]] const ID3D12DescriptorHeap* getDepthTargetHeap() const { return m_DepthTargetHeap.Get(); }
+
+			/**
+			 * Get the CPU depth target heap start.
+			 *
+			 * @return The CPU handle.
+			 */
+			[[nodiscard]] D3D12_CPU_DESCRIPTOR_HANDLE getDepthTargetHeapStartCPU();
+
+			/**
+			 * Get the CPU depth target heap start.
+			 *
+			 * @return The CPU handle.
+			 */
+			[[nodiscard]] D3D12_CPU_DESCRIPTOR_HANDLE getDepthTargetHeapStartCPU() const;
+
+			/**
+			 * Get the color target descriptor size.
+			 *
+			 * @param type The attachment type.
 			 * @return The size.
 			 */
-			[[nodiscard]] UINT getRenderTargetDescriptorSize() const { return m_RenderTargetDescriptorSize; }
+			[[nodiscard]] UINT getColorTargetDescriptorSize() const { return m_ColorHeapSize; }
 
 			/**
-			 * Get the number of render targets stored.
+			 * Get the number of color targets stored.
 			 *
-			 * @return The render target count.
+			 * @return The color target count.
 			 */
-			[[nodiscard]] uint64_t getRenderTargetCount() const noexcept { return m_RenderTargets.size(); }
+			[[nodiscard]] uint64_t getColorTargetCount() const noexcept { return m_RenderTargets.size() - (hasTarget(AttachmentType::Depth | AttachmentType::Stencil) ? 1 : 0); }
 
 			/**
 			 * Get the render targets.
 			 *
 			 * @return The render targets.
 			 */
-			[[nodiscard]] const std::vector<DX12Image>& getRenderTargets() const noexcept { return m_RenderTargets; }
+			[[nodiscard]] const std::vector<DX12Image>& getRenderTargets() const { return m_RenderTargets; }
+
+			/**
+			 * Check if the given attachment type is present in the target.
+			 *
+			 * @param type The attachment type.
+			 * @return True if the attachment type exists.
+			 * @return False if the attachment type does not exists.
+			 */
+			[[nodiscard]] bool hasTarget(AttachmentType type) const noexcept { return m_AttachmentTypes & type; }
+
+		private:
+			/**
+			 * Get the attachment index for the given type.
+			 *
+			 * @param type The attachment type.
+			 * @return The index.
+			 */
+			[[nodiscard]] uint8_t getAttachmentIndex(AttachmentType type) const;
+
+			/**
+			 * Setup the render target images.
+			 */
+			void setupRenderTargets();
+
+			/**
+			 * Get the best data format from the candidate list.
+			 *
+			 * @param candidates The candidate formats to choose from.
+			 * @param formatSupport The format support to check.
+			 * @return The best format.
+			 */
+			[[nodiscard]] DataFormat getBestFormat(const std::vector<DataFormat>& candidates, D3D12_FORMAT_SUPPORT1 formatSupport) const;
 
 		private:
 			std::vector<DX12Image> m_RenderTargets;
-			ComPtr<ID3D12DescriptorHeap> m_RenderTargetHeap;
-			ComPtr<ID3D12DescriptorHeap> m_RenderTargetShaderViewHeap;
 
-			UINT m_RenderTargetDescriptorSize = 0;
+			ComPtr<ID3D12DescriptorHeap> m_ColorTargetHeap;
+			ComPtr<ID3D12DescriptorHeap> m_ColorShaderViewHeap;
 
-			DX12Device* m_pDevice = nullptr;
+			ComPtr<ID3D12DescriptorHeap> m_DepthTargetHeap;
+			ComPtr<ID3D12DescriptorHeap> m_DepthShaderViewHeap;
+
+			UINT m_ColorHeapSize = 0;
+			UINT m_DepthHeapSize = 0;
 		};
 	}
 }
