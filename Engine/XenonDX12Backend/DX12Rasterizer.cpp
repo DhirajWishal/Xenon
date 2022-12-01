@@ -187,6 +187,12 @@ namespace Xenon
 			specification.m_Height = m_pCamera->getHeight();
 			specification.m_EnableMipMaps = false;
 
+			D3D12_CLEAR_VALUE colorOptimizedClearValue = {};
+			colorOptimizedClearValue.Color[0] = 0.0f;
+			colorOptimizedClearValue.Color[1] = 0.0f;
+			colorOptimizedClearValue.Color[2] = 0.0f;
+			colorOptimizedClearValue.Color[3] = 1.0f;
+
 			if (m_AttachmentTypes & AttachmentType::Color)
 			{
 				specification.m_Usage = ImageUsage::ColorAttachment | ImageUsage::Storage;
@@ -199,7 +205,8 @@ namespace Xenon
 					return;
 				}
 
-				m_RenderTargets.emplace_back(m_pDevice, specification, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_HEAP_TYPE_DEFAULT, D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES);
+				colorOptimizedClearValue.Format = m_pDevice->convertFormat(specification.m_Format);
+				m_RenderTargets.emplace_back(m_pDevice, specification, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_HEAP_TYPE_DEFAULT, D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES, &colorOptimizedClearValue);
 				specification.m_MultiSamplingCount = MultiSamplingCount::x1;
 			}
 
@@ -214,7 +221,8 @@ namespace Xenon
 					return;
 				}
 
-				m_RenderTargets.emplace_back(m_pDevice, specification, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_HEAP_TYPE_DEFAULT, D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES);
+				colorOptimizedClearValue.Format = m_pDevice->convertFormat(specification.m_Format);
+				m_RenderTargets.emplace_back(m_pDevice, specification, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_HEAP_TYPE_DEFAULT, D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES, &colorOptimizedClearValue);
 			}
 
 			if (m_AttachmentTypes & AttachmentType::Normal)
@@ -228,8 +236,13 @@ namespace Xenon
 					return;
 				}
 
-				m_RenderTargets.emplace_back(m_pDevice, specification, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_HEAP_TYPE_DEFAULT, D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES);
+				colorOptimizedClearValue.Format = m_pDevice->convertFormat(specification.m_Format);
+				m_RenderTargets.emplace_back(m_pDevice, specification, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_HEAP_TYPE_DEFAULT, D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES, &colorOptimizedClearValue);
 			}
+
+			D3D12_CLEAR_VALUE depthOptimizedClearValue = {};
+			depthOptimizedClearValue.DepthStencil.Depth = 1.0f;
+			depthOptimizedClearValue.DepthStencil.Stencil = 0;
 
 			if (m_AttachmentTypes & AttachmentType::Depth && m_AttachmentTypes & AttachmentType::Stencil)
 			{
@@ -242,7 +255,8 @@ namespace Xenon
 					return;
 				}
 
-				m_RenderTargets.emplace_back(m_pDevice, specification, D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_HEAP_TYPE_DEFAULT, D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES);
+				depthOptimizedClearValue.Format = m_pDevice->convertFormat(specification.m_Format);
+				m_RenderTargets.emplace_back(m_pDevice, specification, D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_HEAP_TYPE_DEFAULT, D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES, &depthOptimizedClearValue);
 			}
 
 			else if (m_AttachmentTypes & AttachmentType::Depth)
@@ -256,7 +270,8 @@ namespace Xenon
 					return;
 				}
 
-				m_RenderTargets.emplace_back(m_pDevice, specification, D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_HEAP_TYPE_DEFAULT, D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES);
+				depthOptimizedClearValue.Format = m_pDevice->convertFormat(specification.m_Format);
+				m_RenderTargets.emplace_back(m_pDevice, specification, D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_HEAP_TYPE_DEFAULT, D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES, &depthOptimizedClearValue);
 			}
 
 			else if (m_AttachmentTypes & AttachmentType::Stencil)
@@ -270,7 +285,8 @@ namespace Xenon
 					return;
 				}
 
-				m_RenderTargets.emplace_back(m_pDevice, specification, D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_HEAP_TYPE_DEFAULT, D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES);
+				depthOptimizedClearValue.Format = m_pDevice->convertFormat(specification.m_Format);
+				m_RenderTargets.emplace_back(m_pDevice, specification, D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_HEAP_TYPE_DEFAULT, D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES, &depthOptimizedClearValue);
 			}
 		}
 

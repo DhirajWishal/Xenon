@@ -101,10 +101,16 @@ namespace Xenon
 			/**
 			 * Get the color target descriptor size.
 			 *
-			 * @param type The attachment type.
 			 * @return The size.
 			 */
 			[[nodiscard]] UINT getColorTargetDescriptorSize() const { return m_ColorHeapSize; }
+
+			/**
+			 * Get the depth target descriptor size.
+			 *
+			 * @return The size.
+			 */
+			[[nodiscard]] UINT getDepthTargetDescriptorSize() const { return m_DepthHeapSize; }
 
 			/**
 			 * Get the number of color targets stored.

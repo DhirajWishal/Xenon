@@ -10,6 +10,124 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
+namespace /* anonymous */
+{
+	/**
+	 * Clear the render targets.
+	 *
+	 * @param pCommandList The command list to record the command to.
+	 * @param clearValues The clear values to clear with.
+	 * @param colorDescriptorStart The start of the color descriptor.
+	 * @param colorDescriptorIncrementSize The color descriptor increment size.
+	 * @param depthDescriptorStart The start of the depth descriptor.
+	 * @param depthDescriptorIncrementSize The depth descriptor increment size.
+	 * @param attachmentTypes The attachment types.
+	 */
+	void ClearRenderTargets(
+		ID3D12GraphicsCommandList* pCommandList,
+		const std::vector<Xenon::Backend::Rasterizer::ClearValueType>& clearValues,
+		D3D12_CPU_DESCRIPTOR_HANDLE colorDescriptorStart,
+		UINT colorDescriptorIncrementSize,
+		D3D12_CPU_DESCRIPTOR_HANDLE depthDescriptorStart,
+		UINT depthDescriptorIncrementSize,
+		Xenon::Backend::AttachmentType attachmentTypes)
+	{
+		auto itr = clearValues.begin();
+		auto colorDescriptorHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(colorDescriptorStart);
+		auto depthDescriptorHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(depthDescriptorStart);
+
+		if (attachmentTypes & Xenon::Backend::AttachmentType::Color)
+		{
+			try
+			{
+				pCommandList->ClearRenderTargetView(colorDescriptorHandle, glm::value_ptr(std::get<glm::vec4>(*(itr++))), 0, nullptr);
+			}
+			catch (const std::exception& e)
+			{
+				XENON_LOG_ERROR("Clear color value error: {}", e.what());
+			}
+
+			colorDescriptorHandle.Offset(1, colorDescriptorIncrementSize);
+		}
+
+		if (attachmentTypes & Xenon::Backend::AttachmentType::EntityID)
+		{
+			try
+			{
+				auto color = glm::vec4(std::get<glm::vec3>(*(itr++)), 0.0f);
+				pCommandList->ClearRenderTargetView(colorDescriptorHandle, glm::value_ptr(color), 0, nullptr);
+			}
+			catch (const std::exception& e)
+			{
+				XENON_LOG_ERROR("Clear entity ID value error: {}", e.what());
+			}
+
+			colorDescriptorHandle.Offset(1, colorDescriptorIncrementSize);
+		}
+
+		if (attachmentTypes & Xenon::Backend::AttachmentType::Normal)
+		{
+			try
+			{
+				auto color = glm::vec4(std::get<float>(*(itr++)), 0.0f, 0.0f, 0.0f);
+				pCommandList->ClearRenderTargetView(colorDescriptorHandle, glm::value_ptr(color), 0, nullptr);
+			}
+			catch (const std::exception& e)
+			{
+				XENON_LOG_ERROR("Clear normal value error: {}", e.what());
+			}
+
+			colorDescriptorHandle.Offset(1, colorDescriptorIncrementSize);
+		}
+
+		if (attachmentTypes & Xenon::Backend::AttachmentType::Depth && attachmentTypes & Xenon::Backend::AttachmentType::Stencil)
+		{
+			try
+			{
+				const auto depthValue = std::get<float>(*(itr++));
+				const auto stencilValue = std::get<uint32_t>(*(itr++));
+
+				pCommandList->ClearDepthStencilView(depthDescriptorHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, depthValue, static_cast<UINT8>(stencilValue), 0, nullptr);
+
+			}
+			catch (const std::exception& e)
+			{
+				XENON_LOG_ERROR("Clear depth and stencil value error: {}", e.what());
+			}
+
+			depthDescriptorHandle.Offset(1, depthDescriptorIncrementSize);
+		}
+
+		else if (attachmentTypes & Xenon::Backend::AttachmentType::Depth)
+		{
+			try
+			{
+				pCommandList->ClearDepthStencilView(depthDescriptorHandle, D3D12_CLEAR_FLAG_DEPTH, std::get<float>(*(itr++)), 0, 0, nullptr);
+			}
+			catch (const std::exception& e)
+			{
+				XENON_LOG_ERROR("Clear depth value error: {}", e.what());
+			}
+
+			depthDescriptorHandle.Offset(1, depthDescriptorIncrementSize);
+		}
+
+		else if (attachmentTypes & Xenon::Backend::AttachmentType::Stencil)
+		{
+			try
+			{
+				pCommandList->ClearDepthStencilView(depthDescriptorHandle, D3D12_CLEAR_FLAG_STENCIL, 1.0f, static_cast<UINT8>(std::get<uint32_t>(*(itr++))), 0, nullptr);
+			}
+			catch (const std::exception& e)
+			{
+				XENON_LOG_ERROR("Clear stencil value error: {}", e.what());
+			}
+
+			depthDescriptorHandle.Offset(1, depthDescriptorIncrementSize);
+		}
+	}
+}
+
 namespace Xenon
 {
 	namespace Backend
@@ -105,11 +223,14 @@ namespace Xenon
 			{
 				const auto depthTargetHeapStart = pDxRasterizer->getDepthTargetHeapStartCPU();
 				m_pCurrentCommandList->OMSetRenderTargets(static_cast<UINT>(pDxRasterizer->getColorTargetCount()), &colorTargetHeapStart, TRUE, &depthTargetHeapStart);
+				ClearRenderTargets(m_pCurrentCommandList, clearValues, colorTargetHeapStart, pDxRasterizer->getColorTargetDescriptorSize(), depthTargetHeapStart, pDxRasterizer->getDepthTargetDescriptorSize(), pDxRasterizer->getAttachmentTypes());
 			}
 			else
 			{
 				m_pCurrentCommandList->OMSetRenderTargets(static_cast<UINT>(pDxRasterizer->getColorTargetCount()), &colorTargetHeapStart, TRUE, nullptr);
+				ClearRenderTargets(m_pCurrentCommandList, clearValues, colorTargetHeapStart, pDxRasterizer->getColorTargetDescriptorSize(), {}, 0, pDxRasterizer->getAttachmentTypes());
 			}
+
 
 			m_IsRenderTargetBound = true;
 		}

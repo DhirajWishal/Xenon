@@ -85,7 +85,7 @@ namespace Xenon
 {
 	namespace Backend
 	{
-		DX12Image::DX12Image(DX12Device* pDevice, const ImageSpecification& specification, D3D12_RESOURCE_STATES resourceStates /*= D3D12_RESOURCE_STATE_COPY_DEST*/, D3D12_HEAP_TYPE heapType /*= D3D12_HEAP_TYPE_DEFAULT*/, D3D12_HEAP_FLAGS heapFlags /*= D3D12_HEAP_FLAG_NONE*/)
+		DX12Image::DX12Image(DX12Device* pDevice, const ImageSpecification& specification, D3D12_RESOURCE_STATES resourceStates /*= D3D12_RESOURCE_STATE_COPY_DEST*/, D3D12_HEAP_TYPE heapType /*= D3D12_HEAP_TYPE_DEFAULT*/, D3D12_HEAP_FLAGS heapFlags /*= D3D12_HEAP_FLAG_NONE*/, D3D12_CLEAR_VALUE* pClearValue /*= nullptr*/)
 			: Image(pDevice, specification)
 			, DX12DeviceBoundObject(pDevice)
 			, m_CurrentState(resourceStates)
@@ -163,7 +163,7 @@ namespace Xenon
 					&allocationDesc,
 					&resourceDescriptor,
 					resourceStates,
-					nullptr,
+					pClearValue,
 					&m_pAllocation,
 					IID_NULL,
 					nullptr);

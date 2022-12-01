@@ -25,13 +25,15 @@ namespace Xenon
 			 * @param resourceStates The image's resource states. Default is copy destination.
 			 * @param heapType The memory heap type. Default is default.
 			 * @param heapFlags The heap flags. Default is none.
+			 * @param pClearValue The clear value pointer. This is used when the image is used as a render target (color or depth). Default is nullptr.
 			 */
 			explicit DX12Image(
 				DX12Device* pDevice,
 				const ImageSpecification& specification,
 				D3D12_RESOURCE_STATES resourceStates = D3D12_RESOURCE_STATE_COPY_DEST,
 				D3D12_HEAP_TYPE heapType = D3D12_HEAP_TYPE_DEFAULT,
-				D3D12_HEAP_FLAGS heapFlags = D3D12_HEAP_FLAG_NONE);
+				D3D12_HEAP_FLAGS heapFlags = D3D12_HEAP_FLAG_NONE,
+				D3D12_CLEAR_VALUE* pClearValue = nullptr);
 
 			/**
 			 * Move constructor.
@@ -68,7 +70,7 @@ namespace Xenon
 
 			/**
 			 * Get the image's quality levels.
-			 * 
+			 *
 			 * @return The quality levels.
 			 */
 			[[nodiscard]] UINT getQualityLevel() const { return m_QualityLevel; }
