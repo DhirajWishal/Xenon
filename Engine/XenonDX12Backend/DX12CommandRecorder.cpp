@@ -14,7 +14,6 @@ namespace Xenon
 {
 	namespace Backend
 	{
-
 		DX12CommandRecorder::DX12CommandRecorder(DX12Device* pDevice, CommandRecorderUsage usage, uint32_t bufferCount /*= 1*/)
 			: CommandRecorder(pDevice, usage, bufferCount)
 			, DX12DeviceBoundObject(pDevice)
@@ -61,17 +60,23 @@ namespace Xenon
 			m_pCurrentCommandListFence = m_pCommandListFences[m_CurrentIndex].Get();
 		}
 
+		DX12CommandRecorder::~DX12CommandRecorder()
+		{
+			if (m_IsRecording)
+				end();
+		}
+
 		void DX12CommandRecorder::begin()
 		{
 			wait();
 
 			XENON_DX12_ASSERT(m_pCurrentCommandAllocator->Reset(), "Failed to reset the command list allocator!");
 			XENON_DX12_ASSERT(m_pCurrentCommandList->Reset(m_pCurrentCommandAllocator, nullptr), "Failed to reset the command list!");
+			m_IsRecording = true;
 		}
 
 		void DX12CommandRecorder::begin(CommandRecorder* pParent)
 		{
-			XENON_TODO_NOW("(Dhiraj) Implement this function {}", __FUNCSIG__);
 			begin();
 		}
 
@@ -82,7 +87,6 @@ namespace Xenon
 
 		void DX12CommandRecorder::copy(Image* pSource, Swapchain* pDestination)
 		{
-			XENON_TODO_NOW("(Dhiraj) Implement this function {}", __FUNCSIG__);
 			// m_pCurrentCommandList->CopyResource(pDestination->as<DX12Swapchain>()->getCurrentSwapchainImageResource(), pSource->as<DX12Image>()->getResource());
 		}
 
@@ -109,44 +113,50 @@ namespace Xenon
 
 		void DX12CommandRecorder::bind(RasterizingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pCameraDescriptor)
 		{
-			m_pCurrentCommandList->SetDescriptorHeaps(2, pPipeline->as<DX12RasterizingPipeline>()->getDescriptorHeapStorage().data());
+			const auto& heaps = pPipeline->as<DX12RasterizingPipeline>()->getDescriptorHeapStorage();
+			m_pCurrentCommandList->SetDescriptorHeaps(static_cast<UINT>(heaps.size()), heaps.data());
 
-			auto pDx12UserDefinedDescriptor = pUserDefinedDescriptor->as<DX12Descriptor>();
-			auto pDx12MaterialDescriptor = pMaterialDescriptor->as<DX12Descriptor>();
-			auto pDx12CameraDescriptor = pCameraDescriptor->as<DX12Descriptor>();
+			const auto cbvSrvUavIncementSize = m_pDevice->getDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+			const auto smaplerIncementSize = m_pDevice->getDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
 
 			UINT index = 0;
-			if (pDx12UserDefinedDescriptor)
+			if (pUserDefinedDescriptor)
 			{
-				const auto cbvSrvUavHandle = pDx12UserDefinedDescriptor->getCbvSrvUavDescriptorHeapHandleGPU();
-				const auto samplerHandle = pDx12UserDefinedDescriptor->getSamplerDescriptorHeapHandleGPU();
+				auto pDx12UserDefinedDescriptor = pUserDefinedDescriptor->as<DX12Descriptor>();
+				const auto cbvSrvUavStart = pDx12UserDefinedDescriptor->getCbvSrvUavDescriptorHeapStart();
+				const auto samplerStart = pDx12UserDefinedDescriptor->getSamplerescriptorHeapStart();
 
-				if (cbvSrvUavHandle.ptr) m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index, cbvSrvUavHandle);
-				if (samplerHandle.ptr)m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index, samplerHandle);
+				if (pDx12UserDefinedDescriptor->hasBuffers())
+					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[0]->GetGPUDescriptorHandleForHeapStart(), cbvSrvUavStart, cbvSrvUavIncementSize));
 
-				index++;
+				if (pDx12UserDefinedDescriptor->hasSampler())
+					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[1]->GetGPUDescriptorHandleForHeapStart(), samplerStart, smaplerIncementSize));
 			}
 
-			if (pDx12MaterialDescriptor)
+			if (pMaterialDescriptor)
 			{
-				const auto cbvSrvUavHandle = pDx12MaterialDescriptor->getCbvSrvUavDescriptorHeapHandleGPU();
-				const auto samplerHandle = pDx12MaterialDescriptor->getSamplerDescriptorHeapHandleGPU();
+				auto pDx12MaterialDescriptor = pMaterialDescriptor->as<DX12Descriptor>();
+				const auto cbvSrvUavStart = pDx12MaterialDescriptor->getCbvSrvUavDescriptorHeapStart();
+				const auto samplerStart = pDx12MaterialDescriptor->getSamplerescriptorHeapStart();
 
-				if (cbvSrvUavHandle.ptr) m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index, cbvSrvUavHandle);
-				if (samplerHandle.ptr)m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index, samplerHandle);
+				if (pDx12MaterialDescriptor->hasBuffers())
+					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[0]->GetGPUDescriptorHandleForHeapStart(), cbvSrvUavStart, cbvSrvUavIncementSize));
 
-				index++;
+				if (pDx12MaterialDescriptor->hasSampler())
+					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[1]->GetGPUDescriptorHandleForHeapStart(), samplerStart, smaplerIncementSize));
 			}
 
-			if (pDx12CameraDescriptor)
+			if (pCameraDescriptor)
 			{
-				const auto cbvSrvUavHandle = pDx12CameraDescriptor->getCbvSrvUavDescriptorHeapHandleGPU();
-				const auto samplerHandle = pDx12CameraDescriptor->getSamplerDescriptorHeapHandleGPU();
+				auto pDx12CameraDescriptor = pCameraDescriptor->as<DX12Descriptor>();
+				const auto cbvSrvUavStart = pDx12CameraDescriptor->getCbvSrvUavDescriptorHeapStart();
+				const auto samplerStart = pDx12CameraDescriptor->getSamplerescriptorHeapStart();
 
-				if (cbvSrvUavHandle.ptr) m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index, cbvSrvUavHandle);
-				if (samplerHandle.ptr)m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index, samplerHandle);
+				if (pDx12CameraDescriptor->hasBuffers())
+					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[0]->GetGPUDescriptorHandleForHeapStart(), cbvSrvUavStart, cbvSrvUavIncementSize));
 
-				index++;
+				if (pDx12CameraDescriptor->hasSampler())
+					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[1]->GetGPUDescriptorHandleForHeapStart(), samplerStart, smaplerIncementSize));
 			}
 		}
 
@@ -179,17 +189,20 @@ namespace Xenon
 
 		void DX12CommandRecorder::drawIndexed(uint64_t vertexOffset, uint64_t indexOffset, uint64_t indexCount, uint32_t instanceCount /*= 1*/, uint32_t firstInstance /*= 0*/)
 		{
-			XENON_TODO_NOW("(Dhiraj) Implement this function {}", __FUNCSIG__);
+			m_pCurrentCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			m_pCurrentCommandList->DrawIndexedInstanced(static_cast<UINT>(indexCount), instanceCount, static_cast<UINT>(indexOffset), static_cast<UINT>(vertexOffset), firstInstance);
+			XENON_LOG_INFORMATION("Draw call issued!");
 		}
 
 		void DX12CommandRecorder::executeChildren()
 		{
-			XENON_TODO_NOW("(Dhiraj) Implement this function {}", __FUNCSIG__);
+			// m_pCurrentCommandList->ExecuteBundle(m_pBundleCommandList);
 		}
 
 		void DX12CommandRecorder::end()
 		{
 			XENON_DX12_ASSERT(m_pCurrentCommandList->Close(), "Failed to stop the current command list!");
+			m_IsRecording = false;
 		}
 
 		void DX12CommandRecorder::next()

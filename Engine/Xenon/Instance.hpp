@@ -178,11 +178,19 @@ namespace Xenon
 		 */
 		[[nodiscard]] const MaterialDatabase& getMaterialDatabase() const { return m_MaterialDatabase; }
 
+		/**
+		 * Get the default material identifier.
+		 *
+		 * @return The default material identifier.
+		 */
+		[[nodiscard]] MaterialIdentifier getDefaultMaterial() const { return m_DefaultMaterialIdentifier; }
+
 	private:
 		std::string m_ApplicationName;
 		uint32_t m_ApplicationVersion;
 
 		MaterialDatabase m_MaterialDatabase;
+		MaterialIdentifier m_DefaultMaterialIdentifier;
 
 		std::unique_ptr<Backend::IFactory> m_pFactory = nullptr;
 		std::unique_ptr<Backend::Instance> m_pInstance = nullptr;

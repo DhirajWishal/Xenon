@@ -51,7 +51,7 @@ namespace Xenon
 		m_pDevice = m_pFactory->createDevice(m_pInstance.get(), renderTargets);
 
 		// Setup the default material.
-		m_MaterialDatabase.create<DefaultMaterial>("Default", *this);
+		m_DefaultMaterialIdentifier = m_MaterialDatabase.create<DefaultMaterial>(0, *this);
 	}
 
 	Instance::~Instance()

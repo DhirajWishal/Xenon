@@ -29,7 +29,7 @@ namespace Xenon
 			/**
 			 * Destructor.
 			 */
-			~DX12CommandRecorder() override = default;
+			~DX12CommandRecorder() override;
 
 			/**
 			 * Set the command recorder state to recording.
@@ -168,6 +168,8 @@ namespace Xenon
 			ID3D12CommandAllocator* m_pCurrentCommandAllocator = nullptr;
 			ID3D12GraphicsCommandList* m_pCurrentCommandList = nullptr;
 			ID3D12Fence* m_pCurrentCommandListFence = nullptr;
+
+			bool m_IsRecording = false;
 		};
 	}
 }

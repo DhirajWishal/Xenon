@@ -27,12 +27,6 @@ namespace Xenon
 		, m_Instance(instance)
 	{
 		m_Latch.count_down();
-		m_pCameraDescriptors.resize(3);
-		for (auto& pDescriptor : m_pCameraDescriptors)
-		{
-			pDescriptor = instance.getFactory()->createDescriptor(instance.getBackendDevice(), GetCameraBindingInfo(), Backend::DescriptorType::Camera);
-			pDescriptor->attach(0, m_pCamera->getViewports().front().m_pUniformBuffer);
-		}
 	}
 
 	Renderer::~Renderer()

@@ -77,9 +77,9 @@ namespace Xenon
 			/**
 			 * Create the root signature.
 			 *
-			 * @param rangeMap The descriptor range map.
+			 * @param rangePairs The descriptor range pairs.
 			 */
-			void createRootSignature(std::unordered_map<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>&& rangeMap);
+			void createRootSignature(std::vector<std::pair<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>>&& rangePairs);
 
 			/**
 			 * Setup the pipeline state descriptor for future use.

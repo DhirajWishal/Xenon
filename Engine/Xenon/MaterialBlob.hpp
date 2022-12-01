@@ -42,4 +42,14 @@ namespace Xenon
 	protected:
 		Instance& m_Instance;
 	};
+
+	/**
+	 * Material identifier structure.
+	 * This structure can be used to uniquely identify a single material in the database.
+	 */
+	struct MaterialIdentifier final
+	{
+		MaterialBlob* m_pMaterial = nullptr;
+		std::type_index m_MaterialTypeIndex = typeid(void);
+	};
 }

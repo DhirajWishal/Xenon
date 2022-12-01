@@ -3,6 +3,8 @@
 
 #include "MeshStorage.hpp"
 #include "../XenonCore/Logging.hpp"
+
+#include "Materials/DefaultMaterial.hpp"
 #include "Materials/PBRMetallicRoughnessMaterial.hpp"
 
 #define TINYGLTF_IMPLEMENTATION
@@ -389,7 +391,7 @@ namespace /* anonymous */
 			workers.insert([&subMesh, &model, &storage, &gltfPrimitive, vertexItr, indexItr, &synchronization]
 				{
 					LoadSubMesh(subMesh, storage.getVertexSpecification(), model, gltfPrimitive, vertexItr, indexItr);
-			synchronization.count_down();
+					synchronization.count_down();
 				}
 			);
 
@@ -422,7 +424,8 @@ namespace /* anonymous */
 				const auto& image = model.images[texture.source];
 				const auto& sampler = model.samplers[texture.sampler];
 
-				if (!instance.getMaterialDatabase().contains("PBRMetallicRoughness"))
+				const auto imageHash = Xenon::GenerateHash(Xenon::ToBytes(image.image.data()), image.image.size());
+				if (!instance.getMaterialDatabase().contains<Xenon::PBRMetallicRoughnessMaterial>(imageHash))
 				{
 					// Setup the image.
 					Xenon::Backend::ImageSpecification imageSpecification = {};
@@ -449,15 +452,16 @@ namespace /* anonymous */
 					Xenon::Backend::ImageSamplerSpecification imageSamplerSpecification = {};
 					auto pSampler = instance.getFactory()->createImageSampler(instance.getBackendDevice(), imageSamplerSpecification);
 
-					instance.getMaterialDatabase().create<Xenon::PBRMetallicRoughnessMaterial>("PBRMetallicRoughness", instance, std::move(pImage), std::move(pImageView), std::move(pSampler));
+					// Set the material.
+					subMesh.m_MaterialIdentifier = instance.getMaterialDatabase().create<Xenon::PBRMetallicRoughnessMaterial>(imageHash, instance, std::move(pImage), std::move(pImageView), std::move(pSampler));;
 				}
 
 				// Set the material.
-				subMesh.m_MaterialIdentifier = "PBRMetallicRoughness";
+				subMesh.m_MaterialIdentifier = instance.getMaterialDatabase().get<Xenon::PBRMetallicRoughnessMaterial>(imageHash);
 			}
 			else
 			{
-				subMesh.m_MaterialIdentifier = "Default";
+				subMesh.m_MaterialIdentifier = instance.getDefaultMaterial();
 			}
 		}
 

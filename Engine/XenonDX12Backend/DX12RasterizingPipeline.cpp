@@ -74,7 +74,7 @@ namespace /* anonymous */
 	 */
 	[[nodiscard]] ComPtr<ID3DBlob> SetupShaderData(
 		const Xenon::Backend::ShaderSource& shader,
-		std::unordered_map<Xenon::Backend::DescriptorType, std::vector<Xenon::Backend::DescriptorBindingInfo>> bindingMap,
+		std::unordered_map<Xenon::Backend::DescriptorType, std::vector<Xenon::Backend::DescriptorBindingInfo>>& bindingMap,
 		std::unordered_map<uint32_t, std::unordered_map<uint32_t, size_t>>& indexToBindingMap,
 		std::unordered_map<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>& rangeMap,
 		std::vector<D3D12_INPUT_ELEMENT_DESC>& inputs,
@@ -688,15 +688,26 @@ namespace Xenon
 				m_PixelShader = SetupShaderData(specification.m_FragmentShader, bindingMap, indexToBindingMap, rangeMap, m_Inputs, "ps_5_0", ShaderType::Fragment);
 
 			// Setup any bindings that are not available.
-			if (!bindingMap.contains(DescriptorType::UserDefined)) bindingMap[DescriptorType::UserDefined];
-			if (!bindingMap.contains(DescriptorType::Material)) bindingMap[DescriptorType::Material];
-			if (!bindingMap.contains(DescriptorType::Camera)) bindingMap[DescriptorType::Camera];
+			// if (!bindingMap.contains(DescriptorType::UserDefined)) bindingMap[DescriptorType::UserDefined];
+			// if (!bindingMap.contains(DescriptorType::Material)) bindingMap[DescriptorType::Material];
+			// if (!bindingMap.contains(DescriptorType::Camera)) bindingMap[DescriptorType::Camera];
+			// 
+			// if (!rangeMap.contains(0)) rangeMap[0]; // User defined CBV, SRV, UAV
+			// if (!rangeMap.contains(1)) rangeMap[1]; // User defined sampler
+			// if (!rangeMap.contains(2)) rangeMap[2]; // Material CBV, SRV, UAV
+			// if (!rangeMap.contains(3)) rangeMap[3]; // Material sampler
+			// if (!rangeMap.contains(4)) rangeMap[4]; // Camera CBV, SRV, UAV
+			// if (!rangeMap.contains(5)) rangeMap[5]; // Camera sampler
+
+			// Sort the ranges to the correct binding order.
+			auto sortedranges = std::vector<std::pair<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>>(rangeMap.begin(), rangeMap.end());
+			std::ranges::sort(sortedranges, [](const auto& lhs, const auto& rhs) { return lhs.first < rhs.first; });
 
 			// Setup the descriptor heap manager.
 			setupDescriptorHeapManager(std::move(bindingMap));
 
 			// Create the root signature.
-			createRootSignature(std::move(rangeMap));
+			createRootSignature(std::move(sortedranges));
 
 			// Setup the pipeline descriptor.
 			setupPipelineStateDescriptor();
@@ -765,10 +776,10 @@ namespace Xenon
 			return m_Pipelines[hash];
 		}
 
-		void DX12RasterizingPipeline::createRootSignature(std::unordered_map<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>&& rangeMap)
+		void DX12RasterizingPipeline::createRootSignature(std::vector<std::pair<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>>&& rangePairs)
 		{
 			std::vector<CD3DX12_ROOT_PARAMETER1> rootParameters;
-			for (const auto& [set, ranges] : rangeMap)
+			for (const auto& [set, ranges] : rangePairs)
 				rootParameters.emplace_back().InitAsDescriptorTable(static_cast<UINT>(ranges.size()), ranges.data(), D3D12_SHADER_VISIBILITY_ALL);
 
 			D3D12_FEATURE_DATA_ROOT_SIGNATURE featureData = {};

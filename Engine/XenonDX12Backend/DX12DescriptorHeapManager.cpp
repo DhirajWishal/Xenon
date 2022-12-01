@@ -69,7 +69,12 @@ namespace Xenon
 		void DX12DescriptorHeapManager::setupDescriptorHeapManager(std::unordered_map<DescriptorType, std::vector<DescriptorBindingInfo>>&& bindingMap)
 		{
 			m_BindingMap = std::move(bindingMap);
-			for (const auto& [type, bindingInfos] : m_BindingMap)
+
+			// Sort the bindings.
+			auto sortedBindings = std::vector<std::pair<DescriptorType, std::vector<DescriptorBindingInfo>>>(m_BindingMap.begin(), m_BindingMap.end());
+			std::ranges::sort(sortedBindings, [](const auto& lhs, const auto& rhs) { return EnumToInt(lhs.first) < EnumToInt(rhs.first); });
+
+			for (const auto& [type, bindingInfos] : sortedBindings)
 			{
 				for (const auto& info : bindingInfos)
 				{

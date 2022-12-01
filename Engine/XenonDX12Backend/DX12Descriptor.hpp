@@ -47,38 +47,40 @@ namespace Xenon
 			void attach(uint32_t binding, Image* pImage, ImageView* pView, ImageSampler* pSampler, ImageUsage usage) override;
 
 			/**
-			 * Get the CPU CBV, SRV and UAV descriptor heap handle.
+			 * Get the CBV, SRV and UAV descriptor heap start.
 			 *
-			 * @return The descriptor handle.
+			 * @return The heap start.
 			 */
-			[[nodiscard]] D3D12_CPU_DESCRIPTOR_HANDLE getCbvSrvUavDescriptorHeapHandleCPU() const;
+			[[nodiscard]] UINT getCbvSrvUavDescriptorHeapStart() const { return m_CbvSrvUavDescriptorHeapStart; }
 
 			/**
-			 * Get the GPU CBV, SRV and UAV descriptor heap handle.
+			 * Get the sampler descriptor heap start.
 			 *
-			 * @return The descriptor handle.
+			 * @return The heap start.
 			 */
-			[[nodiscard]] D3D12_GPU_DESCRIPTOR_HANDLE getCbvSrvUavDescriptorHeapHandleGPU() const;
+			[[nodiscard]] UINT getSamplerescriptorHeapStart() const { return m_SamplerDescriptorHeapStart; }
 
 			/**
-			 * Get the CPU sampler descriptor heap handle.
+			 * Check if the descriptor has buffers.
 			 *
-			 * @return The descriptor handle.
+			 * @return True if the descriptor has buffers.
+			 * @return False if the descriptor does not have buffers.
 			 */
-			[[nodiscard]] D3D12_CPU_DESCRIPTOR_HANDLE getSamplerDescriptorHeapHandleCPU() const;
+			[[nodiscard]] bool hasBuffers() const { return m_pManager->getGroupSize(m_Type).first > 0; }
 
 			/**
-			 * Get the GPU sampler descriptor heap handle.
+			 * Check if the descriptor has samplers.
 			 *
-			 * @return The descriptor handle.
+			 * @return True if the descriptor has samplers.
+			 * @return False if the descriptor does not have samplers.
 			 */
-			[[nodiscard]] D3D12_GPU_DESCRIPTOR_HANDLE getSamplerDescriptorHeapHandleGPU() const;
+			[[nodiscard]] bool hasSampler() const { return m_pManager->getGroupSize(m_Type).second > 0; }
 
 		public:
 			DX12DescriptorHeapManager* m_pManager = nullptr;
 
-			UINT m_CbvSrvUavDescriptorHeapBegin = 0;
-			UINT m_SamplerDescriptorHeapBegin = 0;
+			UINT m_CbvSrvUavDescriptorHeapStart = 0;
+			UINT m_SamplerDescriptorHeapStart = 0;
 		};
 	}
 }

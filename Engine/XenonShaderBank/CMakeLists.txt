@@ -8,12 +8,25 @@ project(
 	DESCRIPTION "This project contains all the shaders used by the engine internally."
 )
 
+# Add the shaders.
+file(GLOB SHADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+	${CMAKE_CURRENT_SOURCE_DIR}/**/*.vert
+	${CMAKE_CURRENT_SOURCE_DIR}/**/*.frag
+	${CMAKE_CURRENT_SOURCE_DIR}/**/*.comp
+	${CMAKE_CURRENT_SOURCE_DIR}/**/*.geom
+	${CMAKE_CURRENT_SOURCE_DIR}/**/*.tesc
+	${CMAKE_CURRENT_SOURCE_DIR}/**/*.tese
+	${CMAKE_CURRENT_SOURCE_DIR}/**/*.mesh
+	${CMAKE_CURRENT_SOURCE_DIR}/**/*.task
+	${CMAKE_CURRENT_SOURCE_DIR}/**/*.rgen
+	${CMAKE_CURRENT_SOURCE_DIR}/**/*.rchit
+	${CMAKE_CURRENT_SOURCE_DIR}/**/*.rmiss
+)
+
 # Set the sources.
 set(
 	SOURCES
-
-	"Debugging/Shader.vert"
-	"Debugging/Shader.frag"
+	${SHADERS}
 )
 
 # Add the source group.

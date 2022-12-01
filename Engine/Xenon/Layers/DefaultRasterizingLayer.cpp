@@ -33,12 +33,26 @@ namespace Xenon
 
 	void DefaultRasterizingLayer::addDrawData(MeshStorage&& storage, Backend::RasterizingPipeline* pPipeline)
 	{
-		XENON_TODO_NOW("(Dhiraj) Find a way to do materials.");
-		m_DrawData.emplace_back(
+		// Create a new draw entry.
+		auto& drawEntry = m_DrawData.emplace_back(
 			std::move(storage),
 			pPipeline,
 			m_Renderer.getInstance().getFactory()->createCommandRecorder(m_Renderer.getInstance().getBackendDevice(), Backend::CommandRecorderUsage::Secondary, 3)
 		);
+
+		// Setup the camera descriptor.
+		drawEntry.m_pCameraDescriptor = pPipeline->createDescriptor(Backend::DescriptorType::Camera);
+		drawEntry.m_pCameraDescriptor->attach(0, m_Renderer.getCamera()->getViewports().front().m_pUniformBuffer);
+
+		// Setup the material descriptors.
+		for (const auto& mesh : drawEntry.m_Storage.getMeshes())
+		{
+			for (const auto& subMesh : mesh.m_SubMeshes)
+			{
+				drawEntry.m_pMaterialDescriptors.emplace_back(subMesh.m_MaterialIdentifier.m_pMaterial->createDescriptor(pPipeline));
+
+			}
+		}
 	}
 
 	void DefaultRasterizingLayer::bindDrawData(DrawData& drawData, Backend::CommandRecorder* pCommandRecorder) const
@@ -47,13 +61,15 @@ namespace Xenon
 		drawData.m_pCommandRecorder->bind(drawData.m_pPipeline, drawData.m_Storage.getVertexSpecification());
 		drawData.m_pCommandRecorder->bind(drawData.m_Storage.getVertexBuffer(), drawData.m_Storage.getVertexSpecification().getSize());
 
+		uint32_t materialIndex = 0;
 		for (const auto& mesh : drawData.m_Storage.getMeshes())
 		{
 			for (const auto& subMesh : mesh.m_SubMeshes)
 			{
 				drawData.m_pCommandRecorder->bind(drawData.m_Storage.getIndexBuffer(), static_cast<Backend::IndexBufferStride>(subMesh.m_IndexSize));
-				drawData.m_pCommandRecorder->bind(drawData.m_pPipeline, nullptr, drawData.m_pMaterialDescriptor.get(), m_Renderer.getCameraDescriptor(m_pRasterizer->getFrameIndex()));
+				drawData.m_pCommandRecorder->bind(drawData.m_pPipeline, nullptr, drawData.m_pMaterialDescriptors[materialIndex].get(), drawData.m_pCameraDescriptor.get());
 				drawData.m_pCommandRecorder->drawIndexed(subMesh.m_VertexOffset, subMesh.m_IndexOffset, subMesh.m_IndexCount);
+				materialIndex++;
 			}
 		}
 

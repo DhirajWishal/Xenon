@@ -31,7 +31,7 @@ namespace Xenon
 	 */
 	struct SubMesh final
 	{
-		std::string m_MaterialIdentifier;
+		MaterialIdentifier m_MaterialIdentifier;
 
 		uint64_t m_VertexOffset = 0;
 		uint64_t m_VertexCount = 0;

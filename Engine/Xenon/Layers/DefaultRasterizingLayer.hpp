@@ -24,7 +24,9 @@ namespace Xenon
 			MeshStorage m_Storage;
 			Backend::RasterizingPipeline* m_pPipeline = nullptr;
 			std::unique_ptr<Backend::CommandRecorder> m_pCommandRecorder = nullptr;
-			std::unique_ptr<Backend::Descriptor> m_pMaterialDescriptor = nullptr;
+
+			std::unique_ptr<Backend::Descriptor> m_pCameraDescriptor = nullptr;
+			std::vector<std::unique_ptr<Backend::Descriptor>> m_pMaterialDescriptors;
 		};
 
 	public:
