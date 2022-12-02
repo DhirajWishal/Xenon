@@ -11,7 +11,7 @@ void run(Xenon::BackendType backend)
 
 int main()
 {
-	// run(Xenon::BackendType::Vulkan);
+	run(Xenon::BackendType::Vulkan);
 	run(Xenon::BackendType::DirectX_12);
 
 	return 0;

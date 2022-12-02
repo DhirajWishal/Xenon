@@ -135,7 +135,6 @@ namespace Xenon
 		DX12CommandRecorder::DX12CommandRecorder(DX12Device* pDevice, CommandRecorderUsage usage, uint32_t bufferCount /*= 1*/)
 			: CommandRecorder(pDevice, usage, bufferCount)
 			, DX12DeviceBoundObject(pDevice)
-			, m_pDevice(pDevice)
 		{
 			D3D12_COMMAND_LIST_TYPE type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 			if (usage & CommandRecorderUsage::Secondary)
@@ -206,7 +205,37 @@ namespace Xenon
 
 		void DX12CommandRecorder::copy(Image* pSource, Swapchain* pDestination)
 		{
-			// m_pCurrentCommandList->CopyResource(pDestination->as<DX12Swapchain>()->getCurrentSwapchainImageResource(), pSource->as<DX12Image>()->getResource());
+			auto pDxSource = pSource->as<DX12Image>();
+			auto pDestinationResource = pDestination->as<DX12Swapchain>()->getCurrentSwapchainImageResource();
+
+			// Change the source resource state if needed.
+			if (pDxSource->getCurrentState() != D3D12_RESOURCE_STATE_COPY_DEST)
+			{
+				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pDxSource->getResource(), pDxSource->getCurrentState(), D3D12_RESOURCE_STATE_COPY_DEST);
+				m_pCurrentCommandList->ResourceBarrier(1, &barrier);
+			}
+
+			// Change the destination resource state.
+			{
+				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pDestinationResource, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_COPY_DEST);
+				m_pCurrentCommandList->ResourceBarrier(1, &barrier);
+			}
+
+			// Copy the resources as needed.
+			m_pCurrentCommandList->CopyResource(pDestination->as<DX12Swapchain>()->getCurrentSwapchainImageResource(), pSource->as<DX12Image>()->getResource());
+
+			// Change the source resource state if needed.
+			if (pDxSource->getCurrentState() != D3D12_RESOURCE_STATE_COPY_DEST)
+			{
+				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pDxSource->getResource(), D3D12_RESOURCE_STATE_COPY_DEST, pDxSource->getCurrentState());
+				m_pCurrentCommandList->ResourceBarrier(1, &barrier);
+			}
+
+			// Change the destination resource state.
+			{
+				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pDestinationResource, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PRESENT);
+				m_pCurrentCommandList->ResourceBarrier(1, &barrier);
+			}
 		}
 
 		void DX12CommandRecorder::copy(Buffer* pSource, uint64_t bufferOffset, Image* pImage, glm::vec3 imageSize, glm::vec3 imageOffset /*= glm::vec3(0)*/)
@@ -231,7 +260,7 @@ namespace Xenon
 				ClearRenderTargets(m_pCurrentCommandList, clearValues, colorTargetHeapStart, pDxRasterizer->getColorTargetDescriptorSize(), {}, 0, pDxRasterizer->getAttachmentTypes());
 			}
 
-			D3D12_RECT scissor = CD3DX12_RECT(0,0, pDxRasterizer->getCamera()->getWidth(), pDxRasterizer->getCamera()->getHeight());
+			D3D12_RECT scissor = CD3DX12_RECT(0, 0, pDxRasterizer->getCamera()->getWidth(), pDxRasterizer->getCamera()->getHeight());
 			m_pCurrentCommandList->RSSetScissorRects(1, &scissor);
 
 			D3D12_VIEWPORT viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(pDxRasterizer->getCamera()->getWidth()), static_cast<float>(pDxRasterizer->getCamera()->getHeight()), 0.0f, 1.0f);

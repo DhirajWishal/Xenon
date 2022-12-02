@@ -125,6 +125,16 @@ namespace Xenon
 			 * @return The pipeline pointer.
 			 */
 			[[nodiscard]] std::unique_ptr<RasterizingPipeline> createRasterizingPipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, Rasterizer* pRasterizer, const RasterizingPipelineSpecification& specification) override;
+
+			/**
+			 * Create a new compute pipeline.
+			 *
+			 * @param pDevice The device pointer.
+			 * @param pCacheHandler The cache handler pointer. This can be null in which case the pipeline creation might get slow.
+			 * @param computeShader The compute shader source.
+			 * @return The pipeline pointer.
+			 */
+			[[nodiscard]] std::unique_ptr<ComputePipeline> createComputePipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const ShaderSource& computeShader) override;
 		};
 	}
 }

@@ -167,7 +167,6 @@ namespace Xenon
 			void setBundle(ID3D12GraphicsCommandList* pCommandList) { m_pBundleCommandList = pCommandList; }
 
 		private:
-			DX12Device* m_pDevice = nullptr;
 			std::vector<ComPtr<ID3D12CommandAllocator>> m_pCommandAllocators;
 			std::vector<ComPtr<ID3D12GraphicsCommandList>> m_pCommandLists;
 			std::vector<ComPtr<ID3D12Fence>> m_pCommandListFences;

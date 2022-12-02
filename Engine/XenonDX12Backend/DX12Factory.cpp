@@ -11,8 +11,7 @@
 #include "DX12Swapchain.hpp"
 #include "DX12ImageSampler.hpp"
 #include "DX12RasterizingPipeline.hpp"
-
-#include "../XenonCore/Logging.hpp"
+#include "DX12ComputePipeline.hpp"
 
 namespace Xenon
 {
@@ -66,6 +65,11 @@ namespace Xenon
 		std::unique_ptr<Xenon::Backend::RasterizingPipeline> DX12Factory::createRasterizingPipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, Rasterizer* pRasterizer, const RasterizingPipelineSpecification& specification)
 		{
 			return std::make_unique<DX12RasterizingPipeline>(pDevice->as<DX12Device>(), std::move(pCacheHandler), pRasterizer->as<DX12Rasterizer>(), specification);
+		}
+
+		std::unique_ptr<Xenon::Backend::ComputePipeline> DX12Factory::createComputePipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const ShaderSource& computeShader)
+		{
+			return std::make_unique<DX12ComputePipeline>(pDevice->as<DX12Device>(), std::move(pCacheHandler), computeShader);
 		}
 	}
 }

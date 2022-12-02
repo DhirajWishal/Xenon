@@ -68,6 +68,9 @@ namespace /* anonymous */
 	 * @param shader The shader to get the bindings from.
 	 * @param bindingMap The binding map contains set-binding info.
 	 * @param indexToBindingMap The map to go from the binding index to binding information.
+	 * @param pushConstants The push constants vector to load the data.
+	 * @param inputDescriptions The input descriptions vector. It will only add data to the vector if we're in the vertex shader.
+	 * @param inputAttributeDescriptions The input attributes vector. It will only add data to the vector if we're in the vertex shader.
 	 * @param type The shader type.
 	 */
 	void GetShaderBindings(
@@ -911,16 +914,16 @@ namespace Xenon
 					{
 						pDevice->waitIdle();
 
-				for (const auto& info : createInfos)
-					pDevice->getDeviceTable().vkDestroyShaderModule(pDevice->getLogicalDevice(), info.module, nullptr);
+						for (const auto& info : createInfos)
+							pDevice->getDeviceTable().vkDestroyShaderModule(pDevice->getLogicalDevice(), info.module, nullptr);
 
-				for (const auto& [hash, pipeline] : pipelines)
-				{
-					pDevice->getDeviceTable().vkDestroyPipelineCache(pDevice->getLogicalDevice(), pipeline.m_PipelineCache, nullptr);
-					pDevice->getDeviceTable().vkDestroyPipeline(pDevice->getLogicalDevice(), pipeline.m_Pipeline, nullptr);
-				}
+						for (const auto& [hash, pipeline] : pipelines)
+						{
+							pDevice->getDeviceTable().vkDestroyPipelineCache(pDevice->getLogicalDevice(), pipeline.m_PipelineCache, nullptr);
+							pDevice->getDeviceTable().vkDestroyPipeline(pDevice->getLogicalDevice(), pipeline.m_Pipeline, nullptr);
+						}
 
-				pDevice->getDeviceTable().vkDestroyPipelineLayout(pDevice->getLogicalDevice(), layout, nullptr);
+						pDevice->getDeviceTable().vkDestroyPipelineLayout(pDevice->getLogicalDevice(), layout, nullptr);
 					}
 				);
 			}

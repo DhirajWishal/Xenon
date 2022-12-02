@@ -41,6 +41,8 @@ set(
 	"DX12RasterizingPipeline.hpp"
 	"DX12DescriptorHeapManager.cpp"
 	"DX12DescriptorHeapManager.hpp"
+	"DX12ComputePipeline.cpp"
+	"DX12ComputePipeline.hpp"
 )
 
 # Add the source group.

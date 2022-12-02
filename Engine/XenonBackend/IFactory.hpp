@@ -11,6 +11,7 @@
 #include "ImageView.hpp"
 #include "ImageSampler.hpp"
 #include "RasterizingPipeline.hpp"
+#include "ComputePipeline.hpp"
 
 namespace Xenon
 {
@@ -132,6 +133,16 @@ namespace Xenon
 			 * @return The pipeline pointer.
 			 */
 			[[nodiscard]] virtual std::unique_ptr<RasterizingPipeline> createRasterizingPipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, [[maybe_unused]] Rasterizer* pRasterizer, const RasterizingPipelineSpecification& specification) = 0;
+
+			/**
+			 * Create a new compute pipeline.
+			 *
+			 * @param pDevice The device pointer.
+			 * @param pCacheHandler The cache handler pointer. This can be null in which case the pipeline creation might get slow.
+			 * @param computeShader The compute shader source.
+			 * @return The pipeline pointer.
+			 */
+			[[nodiscard]] virtual std::unique_ptr<ComputePipeline> createComputePipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const ShaderSource& computeShader) = 0;
 		};
 	}
 }

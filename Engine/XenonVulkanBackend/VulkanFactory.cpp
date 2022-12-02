@@ -12,6 +12,7 @@
 #include "VulkanImageView.hpp"
 #include "VulkanImageSampler.hpp"
 #include "VulkanRasterizingPipeline.hpp"
+#include "VulkanComputePipeline.hpp"
 
 namespace Xenon
 {
@@ -44,27 +45,32 @@ namespace Xenon
 
 		std::unique_ptr<Xenon::Backend::Rasterizer> VulkanFactory::createRasterizer(Device* pDevice, Camera* pCamera, AttachmentType attachmentTypes, bool enableTripleBuffering /*= false*/, MultiSamplingCount multiSampleCount /*= MultiSamplingCount::x1*/)
 		{
-			return std::make_unique<Xenon::Backend::VulkanRasterizer>(pDevice->as<VulkanDevice>(), pCamera, attachmentTypes, enableTripleBuffering, multiSampleCount);
+			return std::make_unique<VulkanRasterizer>(pDevice->as<VulkanDevice>(), pCamera, attachmentTypes, enableTripleBuffering, multiSampleCount);
 		}
 
 		std::unique_ptr<Xenon::Backend::Swapchain> VulkanFactory::createSwapchain(Device* pDevice, const std::string& title, uint32_t width, uint32_t height)
 		{
-			return std::make_unique<Xenon::Backend::VulkanSwapchain>(pDevice->as<VulkanDevice>(), title, width, height);
+			return std::make_unique<VulkanSwapchain>(pDevice->as<VulkanDevice>(), title, width, height);
 		}
 
 		std::unique_ptr<Xenon::Backend::ImageView> VulkanFactory::createImageView(Device* pDevice, Image* pImage, const ImageViewSpecification& specification)
 		{
-			return std::make_unique<Xenon::Backend::VulkanImageView>(pDevice->as<VulkanDevice>(), pImage->as<VulkanImage>(), specification);
+			return std::make_unique<VulkanImageView>(pDevice->as<VulkanDevice>(), pImage->as<VulkanImage>(), specification);
 		}
 
 		std::unique_ptr<Xenon::Backend::ImageSampler> VulkanFactory::createImageSampler(Device* pDevice, const ImageSamplerSpecification& specification)
 		{
-			return std::make_unique<Xenon::Backend::VulkanImageSampler>(pDevice->as<VulkanDevice>(), specification);
+			return std::make_unique<VulkanImageSampler>(pDevice->as<VulkanDevice>(), specification);
 		}
 
 		std::unique_ptr<Xenon::Backend::RasterizingPipeline> VulkanFactory::createRasterizingPipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, Rasterizer* pRasterizer, const RasterizingPipelineSpecification& specification)
 		{
 			return std::make_unique<VulkanRasterizingPipeline>(pDevice->as<VulkanDevice>(), std::move(pCacheHandler), pRasterizer->as<VulkanRasterizer>(), specification);
+		}
+
+		std::unique_ptr<Xenon::Backend::ComputePipeline> VulkanFactory::createComputePipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const ShaderSource& computeShader)
+		{
+			return std::make_unique<VulkanComputePipeline>(pDevice->as<VulkanDevice>(), std::move(pCacheHandler), computeShader);
 		}
 	}
 }

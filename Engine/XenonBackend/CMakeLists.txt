@@ -34,6 +34,7 @@ set(
 	"Descriptor.hpp"
 	"ImageView.hpp"
 	"ImageSampler.hpp"
+	"ComputePipeline.hpp"
 )
 
 # Add the source group.

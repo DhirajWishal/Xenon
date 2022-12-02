@@ -75,6 +75,13 @@ namespace Xenon
 			 */
 			[[nodiscard]] UINT getQualityLevel() const { return m_QualityLevel; }
 
+			/**
+			 * Get the current resource state.
+			 *
+			 * @return The current resource state.
+			 */
+			[[nodiscard]] D3D12_RESOURCE_STATES getCurrentState() const { return m_CurrentState; }
+
 		public:
 			/**
 			 * Move assign operator.
