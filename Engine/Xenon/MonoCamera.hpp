@@ -53,6 +53,7 @@ namespace Xenon
 		[[nodiscard]] std::vector<Backend::Viewport> getViewports() override { return { m_Viewport }; }
 
 	private:
+		BackendType m_BackendType = BackendType::Any;
 		CameraBuffer m_CameraBuffer;
 		Backend::Viewport m_Viewport;
 

@@ -9,6 +9,7 @@ namespace Xenon
 {
 	MonoCamera::MonoCamera(Instance& instance, uint32_t width, uint32_t height)
 		: Camera(width, height)
+		, m_BackendType(instance.getBackendType())
 	{
 		// Create the uniform buffer.
 		m_pUniformBuffer = instance.getFactory()->createBuffer(instance.getBackendDevice(), sizeof(CameraBuffer), Backend::BufferType::Uniform);
@@ -30,9 +31,17 @@ namespace Xenon
 		m_Up = glm::normalize(glm::cross(m_Right, m_Front));
 
 		// Calculate the matrices.
-		m_CameraBuffer.m_View = glm::lookAt(m_Position, m_Position + m_Front, m_Up);
-		m_CameraBuffer.m_Projection = glm::perspective(glm::radians(m_FieldOfView), m_AspectRatio, m_NearPlane, m_FarPlane);
-		m_CameraBuffer.m_Projection[1][1] *= -1.0f;
+		if (m_BackendType == BackendType::DirectX_12)
+		{
+			m_CameraBuffer.m_View = glm::lookAt(m_Position, m_Position + m_Front, m_Up);
+			m_CameraBuffer.m_Projection = glm::perspective(glm::radians(m_FieldOfView), m_AspectRatio, m_NearPlane, m_FarPlane);
+		}
+		else
+		{
+			m_CameraBuffer.m_View = glm::lookAt(m_Position, m_Position + m_Front, m_Up);
+			m_CameraBuffer.m_Projection = glm::perspective(glm::radians(m_FieldOfView), m_AspectRatio, m_NearPlane, m_FarPlane);
+			m_CameraBuffer.m_Projection[1][1] *= -1.0f;
+		}
 
 		// Copy the data to the uniform buffer.
 		m_pUniformBuffer->write(ToBytes(&m_CameraBuffer), sizeof(CameraBuffer));

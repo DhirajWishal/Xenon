@@ -96,7 +96,7 @@ void Studio::run()
 
 		case 's':
 		case 'S':
-			m_Camera.moveDown(delta);
+			m_Camera.moveBackward(delta);
 			break;
 
 		case 'd':
