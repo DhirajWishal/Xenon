@@ -231,6 +231,11 @@ namespace Xenon
 				ClearRenderTargets(m_pCurrentCommandList, clearValues, colorTargetHeapStart, pDxRasterizer->getColorTargetDescriptorSize(), {}, 0, pDxRasterizer->getAttachmentTypes());
 			}
 
+			D3D12_RECT scissor = CD3DX12_RECT(0,0, pDxRasterizer->getCamera()->getWidth(), pDxRasterizer->getCamera()->getHeight());
+			m_pCurrentCommandList->RSSetScissorRects(1, &scissor);
+
+			D3D12_VIEWPORT viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(pDxRasterizer->getCamera()->getWidth()), static_cast<float>(pDxRasterizer->getCamera()->getHeight()), 0.0f, 1.0f);
+			m_pCurrentCommandList->RSSetViewports(1, &viewport);
 
 			m_IsRenderTargetBound = true;
 		}
@@ -296,6 +301,8 @@ namespace Xenon
 			vertexView.BufferLocation = pVertexBuffer->as<DX12Buffer>()->getResource()->GetGPUVirtualAddress();
 			vertexView.SizeInBytes = static_cast<UINT>(pVertexBuffer->getSize());
 			vertexView.StrideInBytes = vertexStride;
+
+			m_pCurrentCommandList->IASetVertexBuffers(0, 1, &vertexView);
 		}
 
 		void DX12CommandRecorder::bind(Buffer* pIndexBuffer, IndexBufferStride indexStride)

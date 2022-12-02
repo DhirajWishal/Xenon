@@ -134,7 +134,7 @@ namespace Xenon
 			allocationDesc.ExtraHeapFlags = heapFlags;
 
 			D3D12_RESOURCE_DESC resourceDescriptor = {};
-			resourceDescriptor.MipLevels = 1;	XENON_TODO_NOW("(Dhiraj) Find a better system.");
+			resourceDescriptor.MipLevels = 1;
 			resourceDescriptor.Width = m_Specification.m_Width;
 			resourceDescriptor.Height = m_Specification.m_Height;
 			resourceDescriptor.DepthOrArraySize = static_cast<UINT16>(m_Specification.m_Depth);
@@ -143,8 +143,7 @@ namespace Xenon
 			resourceDescriptor.Dimension = dimension;
 
 			// Try and create the image using the candidates.
-			const auto candidates = GetCandidateFormats(m_Specification.m_Format);
-			for (const auto candidate : candidates)
+			for (const auto candidate : GetCandidateFormats(m_Specification.m_Format))
 			{
 				resourceDescriptor.Format = m_pDevice->convertFormat(candidate);
 
@@ -166,7 +165,8 @@ namespace Xenon
 					pClearValue,
 					&m_pAllocation,
 					IID_NULL,
-					nullptr);
+					nullptr
+				);
 
 				// If successful we can return from the loop.
 				if (SUCCEEDED(result))
@@ -244,7 +244,7 @@ namespace Xenon
 			sourceLocation.PlacedFootprint.Footprint.Depth = 1;
 			sourceLocation.PlacedFootprint.Footprint.Width = getWidth();
 			sourceLocation.PlacedFootprint.Footprint.Height = getHeight();
-			sourceLocation.PlacedFootprint.Footprint.RowPitch = static_cast<UINT>(getWidth() * GetFormatSize(sourceLocation.PlacedFootprint.Footprint.Format));
+			sourceLocation.PlacedFootprint.Footprint.RowPitch = getWidth() * GetFormatSize(sourceLocation.PlacedFootprint.Footprint.Format);
 
 			D3D12_TEXTURE_COPY_LOCATION destinationLocation = {};
 			destinationLocation.pResource = getResource();
