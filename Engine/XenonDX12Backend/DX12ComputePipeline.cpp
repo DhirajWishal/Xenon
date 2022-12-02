@@ -75,30 +75,7 @@ namespace /* anonymous */
 		std::vector<CD3DX12_DESCRIPTOR_RANGE1>& descriptorRanges)
 	{
 		// Compile the shader.
-		ComPtr<ID3DBlob> shaderBlob;
-
-		try
-		{
-			// Remove the end padding and create the compiler.
-			auto compiler = spirv_cross::CompilerHLSL(shader.getBinaryWithoutPadding());
-
-			// Set the options.
-			spirv_cross::CompilerHLSL::Options options;
-			options.shader_model = 50;	// cs_5_0
-			compiler.set_hlsl_options(options);
-
-			// Cross-compile the binary.
-			const auto hlsl = compiler.compile();
-
-			// Compile the shader.
-			ComPtr<ID3DBlob> error;
-			XENON_DX12_ASSERT(D3DCompile(hlsl.data(), hlsl.size(), nullptr, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "cs_5_0", 0, 0, &shaderBlob, &error), "Failed to compile the compute shader!");
-			XENON_DX12_ASSERT_BLOB(error);
-		}
-		catch (const std::exception& e)
-		{
-			XENON_LOG_FATAL("An exception was thrown when cross-compiling SPI-V to HLSL! {}", e.what());
-		}
+		ComPtr<ID3DBlob> shaderBlob = Xenon::Backend::DX12Device::CompileShader(shader, Xenon::Backend::ShaderType::Compute);
 
 		// Load the data if we were able to compile the shader.
 		if (shaderBlob)

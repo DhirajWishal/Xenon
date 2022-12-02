@@ -124,6 +124,13 @@ namespace Xenon
 			 *
 			 * @return The render targets.
 			 */
+			[[nodiscard]] std::vector<DX12Image>& getRenderTargets() { return m_RenderTargets; }
+
+			/**
+			 * Get the render targets.
+			 *
+			 * @return The render targets.
+			 */
 			[[nodiscard]] const std::vector<DX12Image>& getRenderTargets() const { return m_RenderTargets; }
 
 			/**

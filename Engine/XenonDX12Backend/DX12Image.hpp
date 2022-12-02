@@ -82,6 +82,14 @@ namespace Xenon
 			 */
 			[[nodiscard]] D3D12_RESOURCE_STATES getCurrentState() const { return m_CurrentState; }
 
+			/**
+			 * Set the current image state.
+			 * This must be set after updating the resource state externally or internally.
+			 * 
+			 * @param state The state to set.
+			 */
+			void setCurrentState(D3D12_RESOURCE_STATES state) { m_CurrentState = state; }
+
 		public:
 			/**
 			 * Move assign operator.

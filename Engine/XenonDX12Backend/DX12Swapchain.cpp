@@ -6,6 +6,8 @@
 
 #include "../XenonPlatformWindows/WindowsWindow.hpp"
 
+#include <glm/vec2.hpp>
+
 namespace Xenon
 {
 	namespace Backend
@@ -15,13 +17,14 @@ namespace Xenon
 			, DX12DeviceBoundObject(pDevice)
 		{
 			m_FrameCount = 3;	XENON_TODO(0, 0, 0, "(Dhiraj) Find a better system.");
+			m_SwapChainFormat = getBestSwapchainFormat();
 
 			// Create the swapchain.
 			DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
 			swapChainDesc.BufferCount = m_FrameCount;
 			swapChainDesc.Width = width;
 			swapChainDesc.Height = height;
-			swapChainDesc.Format = getBestSwapchainFormat();
+			swapChainDesc.Format = m_SwapChainFormat;
 			swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 			swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 			swapChainDesc.SampleDesc.Count = 1;
@@ -69,6 +72,9 @@ namespace Xenon
 			// Create the fence.
 			XENON_DX12_ASSERT(pDevice->getDevice()->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_FrameFence)), "Failed to create the frame fence!");
 			m_FenceValues.resize(m_FrameCount);
+
+			// Setup the image copy container.
+			setupImageCopyContainer();
 		}
 
 		uint32_t DX12Swapchain::prepare()
@@ -109,6 +115,21 @@ namespace Xenon
 			XENON_TODO_NOW("(Dhiraj) Implement this function.");
 		}
 
+		D3D12_CPU_DESCRIPTOR_HANDLE DX12Swapchain::getCPUDescriptorHandle() const
+		{
+			return CD3DX12_CPU_DESCRIPTOR_HANDLE(m_SwapchainImageHeap->GetCPUDescriptorHandleForHeapStart(), m_ImageIndex, m_SwapchainImageHeapDescriptorSize);
+		}
+
+		void DX12Swapchain::prepareDescriptorForImageCopy(DX12Image* pImage)
+		{
+			D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+			srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+			srvDesc.Format = m_pDevice->convertFormat(pImage->getDataFormat());
+			srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+			srvDesc.Texture2D.MipLevels = 1;
+			m_pDevice->getDevice()->CreateShaderResourceView(pImage->getResource(), &srvDesc, m_ImageCopyContainer.m_DescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+		}
+
 		DXGI_FORMAT DX12Swapchain::getBestSwapchainFormat() const
 		{
 			constexpr auto candidates = std::array{
@@ -138,6 +159,137 @@ namespace Xenon
 
 			XENON_LOG_FATAL("No suitable swapchain formats found!");
 			return DXGI_FORMAT_UNKNOWN;
+		}
+
+		void DX12Swapchain::setupImageCopyContainer()
+		{
+			// Setup the descriptor heap for the incoming image.
+			{
+				D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
+				srvHeapDesc.NumDescriptors = 1;
+				srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+				srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&m_ImageCopyContainer.m_DescriptorHeap)), "Failed to create the image-to-swapchain copy descriptor!");
+			}
+
+			// Setup the root signature.
+			{
+				D3D12_FEATURE_DATA_ROOT_SIGNATURE featureData = {};
+
+				// This is the highest version the sample supports. If CheckFeatureSupport succeeds, the HighestVersion returned will not be greater than this.
+				featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_1;
+
+				if (FAILED(m_pDevice->getDevice()->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &featureData, sizeof(featureData))))
+					featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
+
+				CD3DX12_DESCRIPTOR_RANGE1 range = {};
+				range.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC);
+
+				CD3DX12_ROOT_PARAMETER1 rootParameter = {};
+				rootParameter.InitAsDescriptorTable(1, &range, D3D12_SHADER_VISIBILITY_PIXEL);
+
+				D3D12_STATIC_SAMPLER_DESC sampler = {};
+				sampler.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
+				sampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+				sampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+				sampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+				sampler.MipLODBias = 0;
+				sampler.MaxAnisotropy = 0;
+				sampler.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+				sampler.BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;
+				sampler.MinLOD = 0.0f;
+				sampler.MaxLOD = D3D12_FLOAT32_MAX;
+				sampler.ShaderRegister = 0;
+				sampler.RegisterSpace = 0;
+				sampler.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+				CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc = {};
+				rootSignatureDesc.Init_1_1(1, &rootParameter, 1, &sampler, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+
+				ComPtr<ID3DBlob> signature;
+				ComPtr<ID3DBlob> error;
+				XENON_DX12_ASSERT(D3DX12SerializeVersionedRootSignature(&rootSignatureDesc, featureData.HighestVersion, &signature, &error), "Failed to serialize the version-ed root signature for the I2SC root signature!");
+				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&m_ImageCopyContainer.m_RootSignature)), "Failed to create the I2SC root signature!");
+			}
+
+			/**
+			 * Vertex structure.
+			 */
+			struct Vertex final
+			{
+				glm::vec2 m_Position;
+				glm::vec2 m_UV;
+			};
+
+			// Setup the pipeline state.
+			{
+				ComPtr<ID3DBlob> vertexShader = DX12Device::CompileShader(ShaderSource::FromFile(XENON_SHADER_DIR "Internal/DX12SwapchainCopy/Shader.vert.spv"), ShaderType::Vertex);
+				ComPtr<ID3DBlob> pixelShader = DX12Device::CompileShader(ShaderSource::FromFile(XENON_SHADER_DIR "Internal/DX12SwapchainCopy/Shader.frag.spv"), ShaderType::Fragment);
+
+				// Define the vertex input layout.
+				constexpr std::array<D3D12_INPUT_ELEMENT_DESC, 2> inputElementDescs = {
+					D3D12_INPUT_ELEMENT_DESC{ "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(Vertex, m_Position), D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+					D3D12_INPUT_ELEMENT_DESC{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(Vertex, m_UV), D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+				};
+
+				// Describe and create the graphics pipeline state object (PSO).
+				D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
+				psoDesc.InputLayout = { inputElementDescs.data(), inputElementDescs.size() };
+				psoDesc.pRootSignature = m_ImageCopyContainer.m_RootSignature.Get();
+				psoDesc.VS = CD3DX12_SHADER_BYTECODE(vertexShader.Get());
+				psoDesc.PS = CD3DX12_SHADER_BYTECODE(pixelShader.Get());
+				psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+				psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+				psoDesc.DepthStencilState.DepthEnable = FALSE;
+				psoDesc.DepthStencilState.StencilEnable = FALSE;
+				psoDesc.SampleMask = UINT_MAX;
+				psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+				psoDesc.NumRenderTargets = 1;
+				psoDesc.RTVFormats[0] = m_SwapChainFormat;
+				psoDesc.SampleDesc.Count = 1;
+
+				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_ImageCopyContainer.m_PipelineState)), "Failed to create the I2SC pipeline state object!");
+			}
+
+			// Setup the vertex data.
+			{
+				// Define the geometry for a triangle.
+				const std::array<Vertex, 6> triangleVertices =
+				{
+					Vertex{.m_Position = glm::vec2(1.0f, 1.0f), .m_UV = glm::vec2(1.0f, 0.0f)},
+					Vertex{.m_Position = glm::vec2(1.0f, -1.0f), .m_UV = glm::vec2(1.0f, 1.0f)},
+					Vertex{.m_Position = glm::vec2(-1.0f, -1.0f), .m_UV = glm::vec2(0.0f, 1.0f)},
+
+					Vertex{.m_Position = glm::vec2(-1.0f, -1.0f), .m_UV = glm::vec2(0.0f, 1.0f)},
+					Vertex{.m_Position = glm::vec2(-1.0f, 1.0f), .m_UV = glm::vec2(0.0f, 0.0f)},
+					Vertex{.m_Position = glm::vec2(1.0f, 1.0f), .m_UV = glm::vec2(1.0f, 0.0f)},
+				};
+
+				const UINT vertexBufferSize = sizeof(Vertex) * triangleVertices.size();
+
+				const D3D12_HEAP_PROPERTIES heapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
+				const D3D12_RESOURCE_DESC resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(vertexBufferSize);
+
+				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommittedResource(
+					&heapProperties,
+					D3D12_HEAP_FLAG_NONE,
+					&resourceDescriptor,
+					D3D12_RESOURCE_STATE_GENERIC_READ,
+					nullptr,
+					IID_PPV_ARGS(&m_ImageCopyContainer.m_VertexBuffer)), "Failed to create the I2SC vertex buffer!");
+
+				// Copy the triangle data to the vertex buffer.
+				UINT8* pVertexDataBegin = nullptr;
+				CD3DX12_RANGE readRange(0, 0);
+				XENON_DX12_ASSERT(m_ImageCopyContainer.m_VertexBuffer->Map(0, &readRange, reinterpret_cast<void**>(&pVertexDataBegin)), "Failed to map the I2SC vertex buffer!");
+				memcpy(pVertexDataBegin, triangleVertices.data(), vertexBufferSize);
+				m_ImageCopyContainer.m_VertexBuffer->Unmap(0, nullptr);
+
+				// Initialize the vertex buffer view.
+				m_ImageCopyContainer.m_VertexBufferView.BufferLocation = m_ImageCopyContainer.m_VertexBuffer->GetGPUVirtualAddress();
+				m_ImageCopyContainer.m_VertexBufferView.StrideInBytes = sizeof(Vertex);
+				m_ImageCopyContainer.m_VertexBufferView.SizeInBytes = vertexBufferSize;
+			}
 		}
 	}
 }

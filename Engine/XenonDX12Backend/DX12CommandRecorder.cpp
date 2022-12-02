@@ -126,6 +126,79 @@ namespace /* anonymous */
 			depthDescriptorHandle.Offset(1, depthDescriptorIncrementSize);
 		}
 	}
+
+	/**
+	 * Get the byte size of a format.
+	 *
+	 * @param format The format to get the size of.
+	 * @return The byte size.
+	 */
+	[[nodiscard]] constexpr uint8_t GetFormatSize(DXGI_FORMAT format) noexcept
+	{
+		switch (format)
+		{
+		case DXGI_FORMAT_UNKNOWN:
+			return 0;
+
+		case DXGI_FORMAT_R8_SINT:
+			return sizeof(int8_t);
+
+		case DXGI_FORMAT_R8G8_SINT:
+			return sizeof(int8_t[2]);
+
+		case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
+			return sizeof(uint8_t[4]);
+
+		case DXGI_FORMAT_R8_UNORM:
+			return sizeof(uint8_t);
+
+		case DXGI_FORMAT_R8G8_UNORM:
+			return sizeof(uint8_t[2]);
+
+		case DXGI_FORMAT_R8G8B8A8_UNORM:
+			return sizeof(uint8_t[4]);
+
+		case DXGI_FORMAT_B8G8R8A8_UNORM:
+			return sizeof(uint8_t[4]);
+
+		case DXGI_FORMAT_R16_FLOAT:
+			return sizeof(int16_t);
+
+		case DXGI_FORMAT_R16G16_FLOAT:
+			return sizeof(int16_t[2]);
+
+		case DXGI_FORMAT_R16G16B16A16_FLOAT:
+			return sizeof(int16_t[4]);
+
+		case DXGI_FORMAT_R32_FLOAT:
+			return sizeof(float);
+
+		case DXGI_FORMAT_R32G32_FLOAT:
+			return sizeof(float[2]);
+
+		case DXGI_FORMAT_R32G32B32_FLOAT:
+			return sizeof(float[3]);
+
+		case DXGI_FORMAT_R32G32B32A32_FLOAT:
+			return sizeof(float[4]);
+
+		case DXGI_FORMAT_D16_UNORM:
+			return sizeof(uint16_t);
+
+		case DXGI_FORMAT_D32_FLOAT:
+			return sizeof(float);
+
+		case DXGI_FORMAT_D24_UNORM_S8_UINT:
+			return (24 / 8) + sizeof(int8_t);
+
+		case DXGI_FORMAT_D32_FLOAT_S8X24_UINT:
+			return 1 + (24 / 8) + sizeof(float);
+
+		default:
+			XENON_LOG_ERROR("Invalid or unsupported data format! Defaulting to Undefined.");
+			return 0;
+		}
+	}
 }
 
 namespace Xenon
@@ -206,63 +279,156 @@ namespace Xenon
 		void DX12CommandRecorder::copy(Image* pSource, Swapchain* pDestination)
 		{
 			auto pDxSource = pSource->as<DX12Image>();
-			auto pDestinationResource = pDestination->as<DX12Swapchain>()->getCurrentSwapchainImageResource();
-
-			// Change the source resource state if needed.
-			if (pDxSource->getCurrentState() != D3D12_RESOURCE_STATE_COPY_DEST)
-			{
-				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pDxSource->getResource(), pDxSource->getCurrentState(), D3D12_RESOURCE_STATE_COPY_DEST);
-				m_pCurrentCommandList->ResourceBarrier(1, &barrier);
-			}
+			auto pDxSwapchin = pDestination->as<DX12Swapchain>();
+			auto pDestinationResource = pDxSwapchin->getCurrentSwapchainImageResource();
 
 			// Change the destination resource state.
 			{
-				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pDestinationResource, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_COPY_DEST);
+				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pDestinationResource, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 				m_pCurrentCommandList->ResourceBarrier(1, &barrier);
 			}
 
-			// Copy the resources as needed.
-			m_pCurrentCommandList->CopyResource(pDestination->as<DX12Swapchain>()->getCurrentSwapchainImageResource(), pSource->as<DX12Image>()->getResource());
-
-			// Change the source resource state if needed.
-			if (pDxSource->getCurrentState() != D3D12_RESOURCE_STATE_COPY_DEST)
+			// Change the source resource state.
 			{
-				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pDxSource->getResource(), D3D12_RESOURCE_STATE_COPY_DEST, pDxSource->getCurrentState());
+				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pDxSource->getResource(), pDxSource->getCurrentState(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 				m_pCurrentCommandList->ResourceBarrier(1, &barrier);
+				pDxSource->setCurrentState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 			}
+
+			// Bind the swapchain, scissor and view port.
+			auto swpchainHandle = pDxSwapchin->getCPUDescriptorHandle();
+			m_pCurrentCommandList->OMSetRenderTargets(1, &swpchainHandle, FALSE, nullptr);
+
+			D3D12_RECT scissor = CD3DX12_RECT(0, 0, pDxSwapchin->getWindow()->getWidth(), pDxSwapchin->getWindow()->getHeight());
+			m_pCurrentCommandList->RSSetScissorRects(1, &scissor);
+
+			D3D12_VIEWPORT viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(pDxSwapchin->getWindow()->getWidth()), static_cast<float>(pDxSwapchin->getWindow()->getHeight()), 0.0f, 1.0f);
+			m_pCurrentCommandList->RSSetViewports(1, &viewport);
+
+			// Prepare the descriptor heap.
+			pDxSwapchin->prepareDescriptorForImageCopy(pDxSource);
+			const auto& container = pDxSwapchin->getImageToSwapchainCopyContainer();
+
+			// Set the root signature and the pipeline.
+			m_pCurrentCommandList->SetGraphicsRootSignature(container.m_RootSignature.Get());
+			m_pCurrentCommandList->SetPipelineState(container.m_PipelineState.Get());
+
+			// Bind the descriptor heap.
+			const auto descriptor = container.m_DescriptorHeap.Get();
+			m_pCurrentCommandList->SetDescriptorHeaps(1, &descriptor);
+			m_pCurrentCommandList->SetGraphicsRootDescriptorTable(0, descriptor->GetGPUDescriptorHandleForHeapStart());
+
+			// Bind the vertex buffer and set the primitive topology.
+			m_pCurrentCommandList->IASetVertexBuffers(0, 1, &container.m_VertexBufferView);
+			m_pCurrentCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+			// Let's draw!.. By that I mean convert!.. I mean copy!
+			m_pCurrentCommandList->DrawInstanced(6, 1, 0, 0);
 
 			// Change the destination resource state.
 			{
-				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pDestinationResource, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PRESENT);
+				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pDestinationResource, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 				m_pCurrentCommandList->ResourceBarrier(1, &barrier);
 			}
 		}
 
 		void DX12CommandRecorder::copy(Buffer* pSource, uint64_t bufferOffset, Image* pImage, glm::vec3 imageSize, glm::vec3 imageOffset /*= glm::vec3(0)*/)
 		{
-			XENON_TODO_NOW("(Dhiraj) Implement this function {}", __FUNCSIG__);
+			const auto pDxImage = pImage->as<DX12Image>();
+			const auto pDxBuffer = pSource->as<DX12Buffer>();
+
+			// Change the destination image state.
+			if (pDxImage->getCurrentState() != D3D12_RESOURCE_STATE_COPY_DEST)
+			{
+				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pDxImage->getResource(), pDxImage->getCurrentState(), D3D12_RESOURCE_STATE_COPY_DEST);
+				m_pCurrentCommandList->ResourceBarrier(1, &barrier);
+			}
+
+			// Change the source buffer state.
+			if (pDxBuffer->getResourceState() != D3D12_RESOURCE_STATE_GENERIC_READ)
+			{
+				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pDxBuffer->getResource(), pDxBuffer->getResourceState(), D3D12_RESOURCE_STATE_COPY_SOURCE);
+				m_pCurrentCommandList->ResourceBarrier(1, &barrier);
+			}
+
+			// Copy the buffer to the image.
+			D3D12_TEXTURE_COPY_LOCATION sourceLocation = {};
+			sourceLocation.pResource = pDxBuffer->getResource();
+			sourceLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+			sourceLocation.PlacedFootprint.Offset = 0;
+			sourceLocation.PlacedFootprint.Footprint.Format = m_pDevice->convertFormat(pDxImage->getDataFormat());
+			sourceLocation.PlacedFootprint.Footprint.Depth = 1;
+			sourceLocation.PlacedFootprint.Footprint.Width = pDxImage->getWidth();
+			sourceLocation.PlacedFootprint.Footprint.Height = pDxImage->getHeight();
+			sourceLocation.PlacedFootprint.Footprint.RowPitch = pDxImage->getWidth() * GetFormatSize(sourceLocation.PlacedFootprint.Footprint.Format);
+
+			D3D12_TEXTURE_COPY_LOCATION destinationLocation = {};
+			destinationLocation.pResource = pDxImage->getResource();
+			destinationLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+			destinationLocation.SubresourceIndex = 0;
+
+			m_pCurrentCommandList->CopyTextureRegion(&destinationLocation, 0, 0, 0, &sourceLocation, nullptr);
+
+			// Change the destination image state.
+			if (pDxImage->getUsage() & ImageUsage::Graphics)
+			{
+				pDxImage->setCurrentState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+
+				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pDxImage->getResource(), D3D12_RESOURCE_STATE_COPY_DEST, pDxImage->getCurrentState());
+				m_pCurrentCommandList->ResourceBarrier(1, &barrier);
+			}
+			else
+			{
+				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pDxImage->getResource(), D3D12_RESOURCE_STATE_COPY_DEST, pDxImage->getCurrentState());
+				m_pCurrentCommandList->ResourceBarrier(1, &barrier);
+			}
+
+			// Change the source buffer state.
+			if (pDxBuffer->getResourceState() != D3D12_RESOURCE_STATE_GENERIC_READ)
+			{
+				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pDxBuffer->getResource(), D3D12_RESOURCE_STATE_COPY_SOURCE, pDxBuffer->getResourceState());
+				m_pCurrentCommandList->ResourceBarrier(1, &barrier);
+			}
 		}
 
 		void DX12CommandRecorder::bind(Rasterizer* pRasterizer, const std::vector<Rasterizer::ClearValueType>& clearValues, bool usingSecondaryCommandRecorders /*= false*/)
 		{
 			const auto pDxRasterizer = pRasterizer->as<DX12Rasterizer>();
-			const auto colorTargetHeapStart = pDxRasterizer->getColorTargetHeapStartCPU();
+			const auto hasDepthAttachment = pDxRasterizer->hasTarget(AttachmentType::Depth | AttachmentType::Stencil);
+			const auto colorAttachmentCount = pDxRasterizer->getColorTargetCount();
 
-			if (pDxRasterizer->hasTarget(AttachmentType::Depth | AttachmentType::Stencil))
+			// Set the proper color image state if needed.
+			if (colorAttachmentCount > 0)
 			{
-				const auto depthTargetHeapStart = pDxRasterizer->getDepthTargetHeapStartCPU();
-				m_pCurrentCommandList->OMSetRenderTargets(static_cast<UINT>(pDxRasterizer->getColorTargetCount()), &colorTargetHeapStart, TRUE, &depthTargetHeapStart);
-				ClearRenderTargets(m_pCurrentCommandList, clearValues, colorTargetHeapStart, pDxRasterizer->getColorTargetDescriptorSize(), depthTargetHeapStart, pDxRasterizer->getDepthTargetDescriptorSize(), pDxRasterizer->getAttachmentTypes());
-			}
-			else
-			{
-				m_pCurrentCommandList->OMSetRenderTargets(static_cast<UINT>(pDxRasterizer->getColorTargetCount()), &colorTargetHeapStart, TRUE, nullptr);
-				ClearRenderTargets(m_pCurrentCommandList, clearValues, colorTargetHeapStart, pDxRasterizer->getColorTargetDescriptorSize(), {}, 0, pDxRasterizer->getAttachmentTypes());
+				auto& colorTarget = pDxRasterizer->getRenderTargets().front();
+
+				if (colorTarget.getCurrentState() != D3D12_RESOURCE_STATE_RENDER_TARGET)
+				{
+					auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(colorTarget.getResource(), colorTarget.getCurrentState(), D3D12_RESOURCE_STATE_RENDER_TARGET);
+					m_pCurrentCommandList->ResourceBarrier(1, &barrier);
+					colorTarget.setCurrentState(D3D12_RESOURCE_STATE_RENDER_TARGET);
+				}
 			}
 
+			// Setup the color target heap.
+			D3D12_CPU_DESCRIPTOR_HANDLE colorTargetHeapStart = {};
+			if (colorAttachmentCount > 0)
+				colorTargetHeapStart = pDxRasterizer->getColorTargetHeapStartCPU();
+
+			// Setup the depth target heap.
+			D3D12_CPU_DESCRIPTOR_HANDLE depthTargetHeapStart = {};
+			if (hasDepthAttachment)
+				depthTargetHeapStart = pDxRasterizer->getDepthTargetHeapStartCPU();
+
+			// Bind the render targets and clear their value.
+			m_pCurrentCommandList->OMSetRenderTargets(static_cast<UINT>(colorAttachmentCount), &colorTargetHeapStart, TRUE, hasDepthAttachment ? &depthTargetHeapStart : nullptr);
+			ClearRenderTargets(m_pCurrentCommandList, clearValues, colorTargetHeapStart, pDxRasterizer->getColorTargetDescriptorSize(), depthTargetHeapStart, pDxRasterizer->getDepthTargetDescriptorSize(), pDxRasterizer->getAttachmentTypes());
+
+			// Set the scissor.
 			D3D12_RECT scissor = CD3DX12_RECT(0, 0, pDxRasterizer->getCamera()->getWidth(), pDxRasterizer->getCamera()->getHeight());
 			m_pCurrentCommandList->RSSetScissorRects(1, &scissor);
 
+			// Set the view port.
 			D3D12_VIEWPORT viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(pDxRasterizer->getCamera()->getWidth()), static_cast<float>(pDxRasterizer->getCamera()->getHeight()), 0.0f, 1.0f);
 			m_pCurrentCommandList->RSSetViewports(1, &viewport);
 
@@ -370,26 +536,7 @@ namespace Xenon
 
 		void DX12CommandRecorder::end()
 		{
-			const auto result = m_pCurrentCommandList->Close();
-
-			if (FAILED(result))
-			{
-				ID3D12InfoQueue* pQueue = nullptr;
-				if (SUCCEEDED(m_pDevice->getDevice()->QueryInterface(__uuidof(ID3D12InfoQueue), (void**)&pQueue)))
-				{
-					const auto count = pQueue->GetNumStoredMessages();
-
-					D3D12_MESSAGE message;
-					SIZE_T messageSize;
-					pQueue->GetMessageW(count - 1, &message, &messageSize);
-
-					XENON_LOG_ERROR("Failed to stop the current command list! {}", message.pDescription);
-				}
-				else
-				{
-					XENON_DX12_ASSERT(result, "Failed to stop the current command list!");
-				}
-			}
+			XENON_DX12_ASSERT(m_pCurrentCommandList->Close(), "Failed to stop the current command list!");
 
 			m_IsRecording = false;
 		}
@@ -444,6 +591,14 @@ namespace Xenon
 				WaitForSingleObject(eventHandle, static_cast<DWORD>(timeout));
 				CloseHandle(eventHandle);
 			}
+		}
+
+		std::unique_ptr<Xenon::Backend::DX12RasterizingPipeline> DX12CommandRecorder::createSwapchainCopyPipeline() const
+		{
+			RasterizingPipelineSpecification specification = {};
+			specification.m_VertexShader = ShaderSource::FromFile(XENON_SHADER_DIR "Internal/DX12SwapchainCopy/Shader.vert.spv");
+			specification.m_FragmentShader = ShaderSource::FromFile(XENON_SHADER_DIR "Internal/DX12SwapchainCopy/Shader.frag.spv");
+			return std::make_unique<DX12RasterizingPipeline>(m_pDevice, nullptr, nullptr, specification);
 		}
 	}
 }

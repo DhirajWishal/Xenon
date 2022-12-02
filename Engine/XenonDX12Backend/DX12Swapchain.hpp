@@ -5,17 +5,33 @@
 
 #include "../XenonBackend/Swapchain.hpp"
 
-#include "DX12DeviceBoundObject.hpp"
+#include "DX12Image.hpp"
 
 namespace Xenon
 {
 	namespace Backend
 	{
+		class DX12RasterizingPipeline;
+
 		/**
 		 * DirectX 12 swapchain class.
 		 */
 		class DX12Swapchain final : public Swapchain, public DX12DeviceBoundObject
 		{
+			/**
+			 * Image to swapchain container.
+			 * This structure contains the pipelines and vertex data along with descriptor heaps to copy data from any incoming
+			 * texture (with any dimension and format) to the swapchain.
+			 */
+			struct ImageToSwapchainContainer final
+			{
+				ComPtr<ID3D12RootSignature> m_RootSignature;
+				ComPtr<ID3D12PipelineState> m_PipelineState;
+				ComPtr<ID3D12DescriptorHeap> m_DescriptorHeap;
+				ComPtr<ID3D12Resource> m_VertexBuffer;
+				D3D12_VERTEX_BUFFER_VIEW m_VertexBufferView;
+			};
+
 		public:
 			/**
 			 * Explicit constructor.
@@ -64,6 +80,27 @@ namespace Xenon
 			 */
 			[[nodiscard]] const ID3D12Resource* getCurrentSwapchainImageResource() const { return m_SwapchainImages[m_ImageIndex].Get(); }
 
+			/**
+			 * Get the current CPU descriptor handle.
+			 *
+			 * @return The descriptor handle.
+			 */
+			[[nodiscard]] D3D12_CPU_DESCRIPTOR_HANDLE getCPUDescriptorHandle() const;
+
+			/**
+			 * Prepare the internal descriptor to copy the incoming image.
+			 *
+			 * @parm pImage The image to copy.
+			 */
+			void prepareDescriptorForImageCopy(DX12Image* pImage);
+
+			/**
+			 * Get the image to swapchain copy container.
+			 *
+			 * @return The container.
+			 */
+			[[nodiscard]] const ImageToSwapchainContainer& getImageToSwapchainCopyContainer() const { return m_ImageCopyContainer; }
+
 		private:
 			/**
 			 * Get the best supported swapchain format.
@@ -72,15 +109,24 @@ namespace Xenon
 			 */
 			[[nodiscard]] DXGI_FORMAT getBestSwapchainFormat() const;
 
+			/**
+			 * Setup the image copy container.
+			 */
+			void setupImageCopyContainer();
+
 		private:
 			std::vector<UINT64> m_FenceValues;
 			std::vector<ComPtr<ID3D12Resource>> m_SwapchainImages;
+
+			ImageToSwapchainContainer m_ImageCopyContainer;
 
 			ComPtr<ID3D12DescriptorHeap> m_SwapchainImageHeap;
 			ComPtr<IDXGISwapChain3> m_SwapChain;
 
 			ComPtr<ID3D12Fence> m_FrameFence;
 			HANDLE m_FenceEvent = nullptr;
+
+			DXGI_FORMAT m_SwapChainFormat = DXGI_FORMAT_UNKNOWN;
 
 			UINT m_SwapchainImageHeapDescriptorSize = 0;
 		};

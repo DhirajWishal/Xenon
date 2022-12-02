@@ -4,6 +4,7 @@
 #pragma once
 
 #include "../XenonBackend/Device.hpp"
+#include "../XenonBackend/ShaderSource.hpp"
 
 #include "DX12Instance.hpp"
 
@@ -55,6 +56,16 @@ namespace Xenon
 			 * @return The format support pair. The first one is for the support 1 and second is for support 2.
 			 */
 			[[nodiscard]] std::pair<bool, bool> getFormatSupport(DXGI_FORMAT format, D3D12_FORMAT_SUPPORT1 support1 = D3D12_FORMAT_SUPPORT1_NONE, D3D12_FORMAT_SUPPORT2 support2 = D3D12_FORMAT_SUPPORT2_NONE) const;
+
+			/**
+			 * Compile a shader to DirectX format.
+			 *
+			 * @param shader The shader to compile.
+			 * @param type The shader type.
+			 * @param entryPoint The entry point name. Default is "main".
+			 * @return The compiled shader blob.
+			 */
+			[[nodiscard]] static ComPtr<ID3DBlob> CompileShader(const ShaderSource& shader, ShaderType type, const std::string_view& entryPoint = "main");
 
 		public:
 			/**

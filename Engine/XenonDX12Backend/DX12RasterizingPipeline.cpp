@@ -82,49 +82,7 @@ namespace /* anonymous */
 		Xenon::Backend::ShaderType type)
 	{
 		// Compile the shader.
-		ComPtr<ID3DBlob> shaderBlob;
-
-		try
-		{
-			// Remove the end padding and create the compiler.
-			auto compiler = spirv_cross::CompilerHLSL(shader.getBinaryWithoutPadding());
-
-			// Set the options.
-			spirv_cross::CompilerHLSL::Options options;
-			options.shader_model = 50;	// [vs/ps]_5_0
-			compiler.set_hlsl_options(options);
-
-			// If we're in the vertex shader set the correct semantics.
-			if (type & Xenon::Backend::ShaderType::Vertex)
-			{
-				compiler.add_vertex_attribute_remap({ .location = Xenon::EnumToInt(Xenon::Backend::InputElement::VertexPosition), .semantic = "POSITION0" });
-				compiler.add_vertex_attribute_remap({ .location = Xenon::EnumToInt(Xenon::Backend::InputElement::VertexNormal), .semantic = "NORMAL0" });
-				compiler.add_vertex_attribute_remap({ .location = Xenon::EnumToInt(Xenon::Backend::InputElement::VertexTangent), .semantic = "TANGENT0" });
-
-				for (uint32_t i = Xenon::EnumToInt(Xenon::Backend::InputElement::VertexColor_0); i <= Xenon::EnumToInt(Xenon::Backend::InputElement::VertexColor_7); i++)
-					compiler.add_vertex_attribute_remap({ .location = i, .semantic = fmt::format("COLOR{}", i - Xenon::EnumToInt(Xenon::Backend::InputElement::VertexColor_0)) });
-
-				for (uint32_t i = Xenon::EnumToInt(Xenon::Backend::InputElement::VertexTextureCoordinate_0); i <= Xenon::EnumToInt(Xenon::Backend::InputElement::VertexTextureCoordinate_7); i++)
-					compiler.add_vertex_attribute_remap({ .location = i, .semantic = fmt::format("TEXCOORD{}", i - Xenon::EnumToInt(Xenon::Backend::InputElement::VertexTextureCoordinate_0)) });
-
-				compiler.add_vertex_attribute_remap({ .location = Xenon::EnumToInt(Xenon::Backend::InputElement::InstancePosition), .semantic = "POSITION1" });
-				compiler.add_vertex_attribute_remap({ .location = Xenon::EnumToInt(Xenon::Backend::InputElement::InstanceRotation), .semantic = "POSITION2" });
-				compiler.add_vertex_attribute_remap({ .location = Xenon::EnumToInt(Xenon::Backend::InputElement::InstanceScale), .semantic = "POSITION3" });
-				compiler.add_vertex_attribute_remap({ .location = Xenon::EnumToInt(Xenon::Backend::InputElement::InstanceID), .semantic = "PSIZE1" });
-			}
-
-			// Cross-compile the binary.
-			const auto hlsl = compiler.compile();
-
-			// Compile the shader.
-			ComPtr<ID3DBlob> error;
-			XENON_DX12_ASSERT(D3DCompile(hlsl.data(), hlsl.size(), nullptr, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", target.data(), 0, 0, &shaderBlob, &error), "Failed to compile the shader!");
-			XENON_DX12_ASSERT_BLOB(error);
-		}
-		catch (const std::exception& e)
-		{
-			XENON_LOG_FATAL("An exception was thrown when cross-compiling SPI-V to HLSL! {}", e.what());
-		}
+		ComPtr<ID3DBlob> shaderBlob = Xenon::Backend::DX12Device::CompileShader(shader, type);
 
 		// Load the data if we were able to compile the shader.
 		if (shaderBlob)

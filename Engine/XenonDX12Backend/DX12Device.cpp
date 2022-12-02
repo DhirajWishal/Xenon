@@ -4,6 +4,8 @@
 #include "DX12Device.hpp"
 #include "DX12Macros.hpp"
 
+#include <spirv_hlsl.hpp>
+
 namespace Xenon
 {
 	namespace Backend
@@ -123,6 +125,63 @@ namespace Xenon
 				(formatSupport.Support1 & support1) == support1,
 				(formatSupport.Support2 & support2) == support2
 			);
+		}
+
+		ComPtr<ID3DBlob> DX12Device::CompileShader(const ShaderSource& shader, ShaderType type, const std::string_view& entryPoint /*= "main"*/)
+		{
+			// Remove the end padding and create the compiler.
+			auto compiler = spirv_cross::CompilerHLSL(shader.getBinaryWithoutPadding());
+
+			// Set the options.
+			spirv_cross::CompilerHLSL::Options options;
+			options.shader_model = 50;	// 
+			compiler.set_hlsl_options(options);
+
+			// If we're in the vertex shader set the correct semantics.
+			if (type & ShaderType::Vertex)
+			{
+				compiler.add_vertex_attribute_remap({ .location = Xenon::EnumToInt(Xenon::Backend::InputElement::VertexPosition), .semantic = "POSITION0" });
+				compiler.add_vertex_attribute_remap({ .location = Xenon::EnumToInt(Xenon::Backend::InputElement::VertexNormal), .semantic = "NORMAL0" });
+				compiler.add_vertex_attribute_remap({ .location = Xenon::EnumToInt(Xenon::Backend::InputElement::VertexTangent), .semantic = "TANGENT0" });
+
+				for (uint32_t i = Xenon::EnumToInt(Xenon::Backend::InputElement::VertexColor_0); i <= Xenon::EnumToInt(Xenon::Backend::InputElement::VertexColor_7); i++)
+					compiler.add_vertex_attribute_remap({ .location = i, .semantic = fmt::format("COLOR{}", i - Xenon::EnumToInt(Xenon::Backend::InputElement::VertexColor_0)) });
+
+				for (uint32_t i = Xenon::EnumToInt(Xenon::Backend::InputElement::VertexTextureCoordinate_0); i <= Xenon::EnumToInt(Xenon::Backend::InputElement::VertexTextureCoordinate_7); i++)
+					compiler.add_vertex_attribute_remap({ .location = i, .semantic = fmt::format("TEXCOORD{}", i - Xenon::EnumToInt(Xenon::Backend::InputElement::VertexTextureCoordinate_0)) });
+
+				compiler.add_vertex_attribute_remap({ .location = Xenon::EnumToInt(Xenon::Backend::InputElement::InstancePosition), .semantic = "POSITION1" });
+				compiler.add_vertex_attribute_remap({ .location = Xenon::EnumToInt(Xenon::Backend::InputElement::InstanceRotation), .semantic = "POSITION2" });
+				compiler.add_vertex_attribute_remap({ .location = Xenon::EnumToInt(Xenon::Backend::InputElement::InstanceScale), .semantic = "POSITION3" });
+				compiler.add_vertex_attribute_remap({ .location = Xenon::EnumToInt(Xenon::Backend::InputElement::InstanceID), .semantic = "PSIZE1" });
+			}
+
+			// Cross-compile the binary.
+			const auto hlsl = compiler.compile();
+
+			// Resolve the target.
+			std::string_view target;
+			switch (type)
+			{
+			case Xenon::Backend::ShaderType::Vertex:
+				target = "vs_5_0";
+				break;
+			case Xenon::Backend::ShaderType::Fragment:
+				target = "ps_5_0";
+				break;
+			case Xenon::Backend::ShaderType::Compute:
+				target = "cs_5_0";
+				break;
+
+			default:
+				break;
+			}
+
+			// Compile the shader.
+			ComPtr<ID3DBlob> shaderBlob;
+			XENON_DX12_ASSERT(D3DCompile(hlsl.data(), hlsl.size(), nullptr, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entryPoint.data(), target.data(), 0, 0, &shaderBlob, nullptr), "Failed to compile the shader!");
+
+			return shaderBlob;
 		}
 
 		void DX12Device::createFactory()
