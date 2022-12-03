@@ -6,6 +6,8 @@
 #include "VulkanCommandRecorder.hpp"
 #include "VulkanBuffer.hpp"
 
+#include <optick.h>
+
 namespace Xenon
 {
 	namespace Backend
@@ -163,6 +165,8 @@ namespace Xenon
 
 		void VulkanImage::copyFrom(Buffer* pSrcBuffer)
 		{
+			OPTICK_EVENT();
+
 			auto commandBuffers = VulkanCommandRecorder(m_pDevice, CommandRecorderUsage::Transfer);
 			commandBuffers.begin();
 

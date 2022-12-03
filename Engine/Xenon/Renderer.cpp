@@ -4,18 +4,7 @@
 #include "Renderer.hpp"
 #include "../XenonCore/Logging.hpp"
 
-namespace /* anonymous */
-{
-	std::vector<Xenon::Backend::DescriptorBindingInfo> GetCameraBindingInfo()
-	{
-		std::vector<Xenon::Backend::DescriptorBindingInfo> bindingInfo;
-		auto& info = bindingInfo.emplace_back();
-		info.m_ApplicableShaders = Xenon::Backend::ShaderType::Vertex;
-		info.m_Type = Xenon::Backend::ResourceType::UniformBuffer;
-
-		return bindingInfo;
-	}
-}
+#include <optick.h>
 
 namespace Xenon
 {
@@ -43,6 +32,8 @@ namespace Xenon
 
 	bool Renderer::update()
 	{
+		OPTICK_FRAME("Renderer Update");
+
 		m_pSwapChain->getWindow()->update();
 		m_WorkerSynchronization.notify_one();
 		return m_pSwapChain->getWindow()->isOpen();
@@ -50,6 +41,8 @@ namespace Xenon
 
 	void Renderer::worker()
 	{
+		OPTICK_THREAD("Renderer Worker Thread");
+
 		m_Latch.wait();
 		auto locker = std::unique_lock(m_SynchronizationMutex);
 

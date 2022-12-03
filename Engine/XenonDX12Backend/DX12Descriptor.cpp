@@ -7,6 +7,8 @@
 #include "DX12ImageView.hpp"
 #include "DX12ImageSampler.hpp"
 
+#include <optick.h>
+
 namespace /* anonymous */
 {
 	/**
@@ -76,6 +78,8 @@ namespace Xenon
 
 		void DX12Descriptor::attach(uint32_t binding, Buffer* pBuffer)
 		{
+			OPTICK_EVENT();
+
 			auto pDx12Buffer = pBuffer->as<DX12Buffer>();
 			const auto type = m_BindingInformation[binding].m_Type;
 			auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(m_pManager->getCbvSrvUavHeapStartCPU(), m_CbvSrvUavDescriptorHeapStart + binding, m_pManager->getCbvSrvUavHeapIncrementSize());
@@ -111,6 +115,8 @@ namespace Xenon
 
 		void DX12Descriptor::attach(uint32_t binding, Image* pImage, ImageView* pView, ImageSampler* pSampler, ImageUsage usage)
 		{
+			OPTICK_EVENT();
+
 			CD3DX12_CPU_DESCRIPTOR_HANDLE handle(m_pManager->getCbvSrvUavHeapStartCPU(), m_CbvSrvUavDescriptorHeapStart + binding, m_pManager->getCbvSrvUavHeapIncrementSize());
 
 			if (usage & ImageUsage::Graphics || usage & ImageUsage::ColorAttachment || usage & ImageUsage::DepthAttachment)

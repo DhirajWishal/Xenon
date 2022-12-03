@@ -6,6 +6,8 @@
 #include "VulkanDescriptorSetManager.hpp"
 #include "VulkanDescriptor.hpp"
 
+#include <optick.h>
+
 constexpr auto g_MagicNumber = 0b0110010000111101101100100010100110111011101010111010111010000001;
 
 namespace /* anonymous */
@@ -78,6 +80,8 @@ namespace Xenon
 
 		std::unique_ptr<Xenon::Backend::Descriptor> VulkanComputePipeline::createDescriptor(DescriptorType type)
 		{
+			OPTICK_EVENT();
+
 			return std::make_unique<VulkanDescriptor>(m_pDevice, m_BindingInfos, DescriptorType::UserDefined);
 		}
 

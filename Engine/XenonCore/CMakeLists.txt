@@ -44,7 +44,11 @@ target_include_directories(
 
 	PUBLIC ${SPDLOG_INCLUDE_DIR}
 	PRIVATE ${XXHASH_INCLUDE_DIR}
+	PUBLIC ${OPTICK_INCLUDE_DIR}
 )
+
+# Set the target links.
+target_link_libraries(XenonCore XenonThirdParty_Optick)
 
 # Make sure to specify the C++ standard to C++20.
 set_property(TARGET XenonCore PROPERTY CXX_STANDARD 20)

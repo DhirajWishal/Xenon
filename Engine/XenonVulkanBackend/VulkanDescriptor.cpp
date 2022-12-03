@@ -8,6 +8,8 @@
 #include "VulkanImageView.hpp"
 #include "VulkanImageSampler.hpp"
 
+#include <optick.h>
+
 namespace Xenon
 {
 	namespace Backend
@@ -41,6 +43,8 @@ namespace Xenon
 
 		void VulkanDescriptor::attach(uint32_t binding, Buffer* pBuffer)
 		{
+			OPTICK_EVENT();
+
 			const auto& bufferInfo = pBuffer->as<VulkanBuffer>()->getDescriptorBufferInfo();
 
 			VkWriteDescriptorSet writeDescriptorSet = {};
@@ -60,6 +64,8 @@ namespace Xenon
 
 		void VulkanDescriptor::attach(uint32_t binding, Image* pImage, ImageView* pView, ImageSampler* pSampler, ImageUsage usage)
 		{
+			OPTICK_EVENT();
+
 			VkDescriptorImageInfo imageInfo = {};
 			imageInfo.sampler = pSampler->as<VulkanImageSampler>()->getSampler();
 			imageInfo.imageView = pView->as<VulkanImageView>()->getView();

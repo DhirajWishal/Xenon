@@ -5,6 +5,8 @@
 #include "VulkanMacros.hpp"
 #include "VulkanCommandRecorder.hpp"
 
+#include <optick.h>
+
 namespace Xenon
 {
 	namespace Backend
@@ -99,6 +101,8 @@ namespace Xenon
 
 		void VulkanBuffer::copy(Buffer* pBuffer, uint64_t size, uint64_t srcOffset /*= 0*/, uint64_t dstOffset /*= 0*/)
 		{
+			OPTICK_EVENT();
+
 			auto commandBuffers = VulkanCommandRecorder(m_pDevice, CommandRecorderUsage::Transfer);
 			commandBuffers.begin();
 			commandBuffers.copy(pBuffer, srcOffset, this, dstOffset, size);
@@ -109,6 +113,8 @@ namespace Xenon
 
 		void VulkanBuffer::write(const std::byte* pData, uint64_t size, uint64_t offset /*= 0*/)
 		{
+			OPTICK_EVENT();
+
 			// If the buffer is either index of vertex, copy to a staging buffer before writing.
 			if (m_Type == BufferType::Index || m_Type == BufferType::Vertex)
 			{
@@ -126,6 +132,8 @@ namespace Xenon
 
 		const std::byte* VulkanBuffer::beginRead()
 		{
+			OPTICK_EVENT();
+
 			// If the buffer is either index of vertex, copy to a staging buffer before reading.
 			if (m_Type == BufferType::Index || m_Type == BufferType::Vertex)
 			{
@@ -139,6 +147,8 @@ namespace Xenon
 
 		void VulkanBuffer::endRead()
 		{
+			OPTICK_EVENT();
+
 			if (m_Type == BufferType::Index || m_Type == BufferType::Vertex)
 				m_pTemporaryBuffer->unmap();
 
@@ -148,6 +158,8 @@ namespace Xenon
 
 		std::byte* VulkanBuffer::map()
 		{
+			OPTICK_EVENT();
+
 			void* pDataStore = nullptr;
 
 			XENON_VK_ASSERT(vmaMapMemory(m_pDevice->getAllocator(), m_Allocation, &pDataStore), "Failed to map the staging buffer memory!");
@@ -156,6 +168,8 @@ namespace Xenon
 
 		void VulkanBuffer::unmap()
 		{
+			OPTICK_EVENT();
+
 			vmaUnmapMemory(m_pDevice->getAllocator(), m_Allocation);
 		}
 	}

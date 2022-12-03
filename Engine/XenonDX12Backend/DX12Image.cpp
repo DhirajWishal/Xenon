@@ -5,6 +5,8 @@
 #include "DX12Macros.hpp"
 #include "DX12Buffer.hpp"
 
+#include <optick.h>
+
 namespace /* anonymous */
 {
 	/**
@@ -214,6 +216,8 @@ namespace Xenon
 
 		void DX12Image::copyFrom(Buffer* pSrcBuffer)
 		{
+			OPTICK_EVENT();
+
 			auto pSourceBuffer = pSrcBuffer->as<DX12Buffer>();
 
 			// Begin the command list.

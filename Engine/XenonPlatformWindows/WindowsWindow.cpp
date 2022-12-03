@@ -5,6 +5,7 @@
 
 #include "../XenonCore/Logging.hpp"
 
+#include <optick.h>
 #include <windowsx.h>
 
 constexpr const auto* g_ClassName = TEXT("Xenon Windows Window Class");
@@ -118,6 +119,8 @@ namespace Xenon
 
 		void WindowsWindow::update()
 		{
+			OPTICK_EVENT();
+
 			m_Keyboard.m_Character = 0;
 
 			if (MSG message = {}; PeekMessage(&message, m_WindowHandle, NULL, NULL, PM_REMOVE))

@@ -4,6 +4,8 @@
 #include "DX12DescriptorHeapManager.hpp"
 #include "DX12Macros.hpp"
 
+#include <optick.h>
+
 namespace /* anonymous */
 {
 	/**
@@ -98,6 +100,8 @@ namespace Xenon
 
 		Xenon::Backend::DX12PipelineDescriptorHeapStorage& DX12DescriptorHeapManager::getDescriptorHeapStorage()
 		{
+			OPTICK_EVENT();
+
 			if (m_IsUpdated)
 			{
 				D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
@@ -150,6 +154,8 @@ namespace Xenon
 
 		std::pair<UINT, UINT> DX12DescriptorHeapManager::setupDescriptor(DescriptorType type)
 		{
+			OPTICK_EVENT();
+
 			auto newPair = std::make_pair(m_CbvSrvUavDescriptorCount, m_SamplerDescriptorCount);
 
 			const auto& [bufferCount, samplerCount] = m_GroupSizes[type];
@@ -162,6 +168,8 @@ namespace Xenon
 
 		UINT DX12DescriptorHeapManager::getNextSize(UINT newSize, UINT oldSize) const
 		{
+			OPTICK_EVENT();
+
 			const auto nextSize = oldSize + oldSize / 2;
 			if (nextSize < newSize)
 				return newSize;
@@ -171,6 +179,8 @@ namespace Xenon
 
 		void DX12DescriptorHeapManager::incrementHeaps()
 		{
+			OPTICK_EVENT();
+
 			D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
 			heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 

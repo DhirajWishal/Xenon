@@ -5,6 +5,8 @@
 #include "VulkanMacros.hpp"
 #include "VulkanRasterizingPipeline.hpp"
 
+#include <optick.h>
+
 namespace Xenon
 {
 	namespace Backend
@@ -38,11 +40,15 @@ namespace Xenon
 
 		void VulkanRasterizer::attachPipeline(VulkanRasterizingPipeline* pPipeline)
 		{
+			OPTICK_EVENT();
+
 			m_pPipelines.emplace_back(pPipeline);
 		}
 
 		void VulkanRasterizer::detachPipeline(const VulkanRasterizingPipeline* pPipeline)
 		{
+			OPTICK_EVENT();
+
 			for (auto itr = m_pPipelines.begin(); itr != m_pPipelines.end(); ++itr)
 			{
 				if (*itr == pPipeline)
@@ -55,6 +61,8 @@ namespace Xenon
 
 		Xenon::Backend::Image* VulkanRasterizer::getImageAttachment(AttachmentType type)
 		{
+			OPTICK_EVENT();
+
 			if (m_AttachmentTypes & type)
 			{
 				uint8_t index = 0;

@@ -9,6 +9,8 @@
 
 #endif // defined(XENON_PLATFORM_WINDOWS)
 
+#include <optick.h>
+
 namespace Xenon
 {
 	namespace Backend
@@ -40,6 +42,8 @@ namespace Xenon
 
 		uint32_t VulkanSwapchain::prepare()
 		{
+			OPTICK_EVENT();
+
 			// If the application is minimized, return the previous image index.
 			if (!isRenderable())
 			{
@@ -64,6 +68,8 @@ namespace Xenon
 
 		void VulkanSwapchain::present()
 		{
+			OPTICK_EVENT();
+
 			// Present if the application isn't minimized.
 			if (isRenderable())
 			{
@@ -97,6 +103,8 @@ namespace Xenon
 
 		void VulkanSwapchain::recreate()
 		{
+			OPTICK_EVENT();
+
 			clear();
 
 			createSurface();
@@ -105,6 +113,8 @@ namespace Xenon
 
 		void VulkanSwapchain::createSurface()
 		{
+			OPTICK_EVENT();
+
 #if defined(XENON_PLATFORM_WINDOWS)
 			VkWin32SurfaceCreateInfoKHR createInfo = {};
 			createInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
@@ -123,6 +133,8 @@ namespace Xenon
 
 		void VulkanSwapchain::createSwapchain()
 		{
+			OPTICK_EVENT();
+
 			// Get the surface capabilities.
 			const auto surfaceCapabilities = getSurfaceCapabilities();
 
@@ -243,6 +255,8 @@ namespace Xenon
 
 		void VulkanSwapchain::setupImageViews()
 		{
+			OPTICK_EVENT();
+
 			VkImageViewCreateInfo createInfo = {};
 			createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 			createInfo.pNext = VK_NULL_HANDLE;
@@ -269,6 +283,8 @@ namespace Xenon
 
 		void VulkanSwapchain::clear()
 		{
+			OPTICK_EVENT();
+
 			m_pDevice->getDeviceTable().vkDeviceWaitIdle(m_pDevice->getLogicalDevice());
 
 			for (const auto view : m_SwapchainImageViews)

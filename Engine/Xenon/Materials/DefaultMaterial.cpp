@@ -4,6 +4,8 @@
 #include "DefaultMaterial.hpp"
 #include "../Instance.hpp"
 
+#include <optick.h>
+
 namespace Xenon
 {
 	DefaultMaterial::DefaultMaterial(Instance& instance)
@@ -36,6 +38,8 @@ namespace Xenon
 
 	std::unique_ptr<Xenon::Backend::Descriptor> DefaultMaterial::createDescriptor(Backend::Pipeline* pPipeline)
 	{
+		OPTICK_EVENT();
+
 		auto pDescriptor = pPipeline->createDescriptor(Backend::DescriptorType::Material);
 		pDescriptor->attach(0, m_pImage.get(), m_pImageView.get(), m_pSampler.get(), Xenon::Backend::ImageUsage::Graphics);
 

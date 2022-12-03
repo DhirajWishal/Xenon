@@ -2,6 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "JobSystem.hpp"
+#include "Logging.hpp"
+
+#include <optick.h>
 
 #include <latch>
 
@@ -79,6 +82,9 @@ namespace Xenon
 
 	void JobSystem::worker(uint32_t index)
 	{
+		const auto threadTitle = fmt::format("Worker thread ({}) number ({})", fmt::ptr(this), index);
+		OPTICK_THREAD(threadTitle.c_str());
+
 		auto locker = std::unique_lock(m_JobMutex);
 
 		do

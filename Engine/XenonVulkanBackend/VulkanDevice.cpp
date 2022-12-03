@@ -5,6 +5,8 @@
 #include "VulkanMacros.hpp"
 #include "VulkanDescriptorSetManager.hpp"
 
+#include <optick.h>
+
 #include <set>
 
 namespace /* anonymous */
@@ -217,6 +219,8 @@ namespace Xenon
 
 		void VulkanDevice::waitIdle()
 		{
+			OPTICK_EVENT();
+
 			m_DeviceTable.vkDeviceWaitIdle(m_LogicalDevice);
 
 			for (auto& queue : m_Queues)

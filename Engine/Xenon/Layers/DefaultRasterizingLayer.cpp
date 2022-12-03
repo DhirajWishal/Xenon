@@ -5,6 +5,7 @@
 #include "../Renderer.hpp"
 #include "../../XenonCore/Logging.hpp"
 
+#include <optick.h>
 #include <glm/vec4.hpp>
 
 namespace Xenon
@@ -16,6 +17,8 @@ namespace Xenon
 
 	void DefaultRasterizingLayer::bind(Layer* pPreviousLayer, Backend::CommandRecorder* pCommandRecorder)
 	{
+		OPTICK_EVENT();
+
 		pCommandRecorder->bind(m_pRasterizer.get(), { glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), 1.0f, static_cast<uint32_t>(0) }, !m_DrawData.empty());
 
 		for (auto& drawData : m_DrawData)
@@ -33,6 +36,8 @@ namespace Xenon
 
 	void DefaultRasterizingLayer::addDrawData(MeshStorage&& storage, Backend::RasterizingPipeline* pPipeline)
 	{
+		OPTICK_EVENT();
+
 		// Create a new draw entry.
 		auto& drawEntry = m_DrawData.emplace_back(
 			std::move(storage),
@@ -57,6 +62,8 @@ namespace Xenon
 
 	void DefaultRasterizingLayer::bindDrawData(DrawData& drawData, Backend::CommandRecorder* pCommandRecorder) const
 	{
+		OPTICK_EVENT();
+
 		drawData.m_pCommandRecorder->begin(pCommandRecorder);
 		drawData.m_pCommandRecorder->bind(drawData.m_pPipeline, drawData.m_Storage.getVertexSpecification());
 		drawData.m_pCommandRecorder->bind(drawData.m_Storage.getVertexBuffer(), drawData.m_Storage.getVertexSpecification().getSize());

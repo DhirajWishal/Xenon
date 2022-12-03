@@ -5,7 +5,7 @@
 
 #include "../XenonBackend/CommandRecorder.hpp"
 
-#include "DX12RasterizingPipeline.hpp"
+#include "DX12DeviceBoundObject.hpp"
 
 namespace Xenon
 {
@@ -167,21 +167,9 @@ namespace Xenon
 			void setBundle(ID3D12GraphicsCommandList* pCommandList) { m_pBundleCommandList = pCommandList; }
 
 		private:
-			/**
-			 * Create the pipeline that is used to copy the incoming image to the swapchain.
-			 * This pipeline uses rasterization to project an image of any color format and size to the swapchain image
-			 * in a single pass.
-			 *
-			 * @return The created pipeline.
-			 */
-			std::unique_ptr<DX12RasterizingPipeline> createSwapchainCopyPipeline() const;
-
-		private:
 			std::vector<ComPtr<ID3D12CommandAllocator>> m_pCommandAllocators;
 			std::vector<ComPtr<ID3D12GraphicsCommandList>> m_pCommandLists;
 			std::vector<ComPtr<ID3D12Fence>> m_pCommandListFences;
-
-			std::unique_ptr<DX12RasterizingPipeline> m_pSwapchainCopyPipeline = nullptr;
 
 			ID3D12CommandAllocator* m_pCurrentCommandAllocator = nullptr;
 			ID3D12GraphicsCommandList* m_pCurrentCommandList = nullptr;

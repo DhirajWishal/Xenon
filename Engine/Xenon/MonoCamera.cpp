@@ -3,6 +3,7 @@
 
 #include "MonoCamera.hpp"
 
+#include <optick.h>
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace Xenon
@@ -22,6 +23,8 @@ namespace Xenon
 
 	void MonoCamera::update()
 	{
+		OPTICK_EVENT();
+
 		glm::vec3 front = {};
 		front.x = cos(glm::radians(m_Yaw)) * cos(glm::radians(m_Pitch));
 		front.y = sin(glm::radians(m_Pitch));

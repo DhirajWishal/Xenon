@@ -7,6 +7,8 @@
 #include "VulkanDescriptorSetManager.hpp"
 #include "VulkanDescriptor.hpp"
 
+#include <optick.h>
+
 #include <algorithm>
 
 #ifdef XENON_PLATFORM_WINDOWS
@@ -935,11 +937,15 @@ namespace Xenon
 
 		std::unique_ptr<Xenon::Backend::Descriptor> VulkanRasterizingPipeline::createDescriptor(DescriptorType type)
 		{
+			OPTICK_EVENT();
+
 			return std::make_unique<VulkanDescriptor>(m_pDevice, m_BindingMap[type], type);
 		}
 
 		const VulkanRasterizingPipeline::PipelineStorage& VulkanRasterizingPipeline::getPipeline(const VertexSpecification& vertexSpecification)
 		{
+			OPTICK_EVENT();
+
 			const auto hash = GenerateHashFor(vertexSpecification);
 
 			if (!m_Pipelines.contains(hash))
@@ -994,6 +1000,8 @@ namespace Xenon
 
 		void VulkanRasterizingPipeline::recreate()
 		{
+			OPTICK_EVENT();
+
 			for (auto& [hash, pipeline] : m_Pipelines)
 			{
 				createPipeline(pipeline);

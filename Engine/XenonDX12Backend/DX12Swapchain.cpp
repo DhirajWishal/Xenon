@@ -6,6 +6,7 @@
 
 #include "../XenonPlatformWindows/WindowsWindow.hpp"
 
+#include <optick.h>
 #include <glm/vec2.hpp>
 
 namespace Xenon
@@ -79,11 +80,15 @@ namespace Xenon
 
 		uint32_t DX12Swapchain::prepare()
 		{
+			OPTICK_EVENT();
+
 			return m_ImageIndex;
 		}
 
 		void DX12Swapchain::present()
 		{
+			OPTICK_EVENT();
+
 			// Present the swapchain.
 			DXGI_PRESENT_PARAMETERS parameters = { 0 };
 			XENON_DX12_ASSERT(m_SwapChain->Present1(1, 0, &parameters), "Failed to present the swapchain!");

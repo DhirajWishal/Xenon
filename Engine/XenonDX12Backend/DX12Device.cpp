@@ -4,6 +4,7 @@
 #include "DX12Device.hpp"
 #include "DX12Macros.hpp"
 
+#include <optick.h>
 #include <spirv_hlsl.hpp>
 
 namespace Xenon
@@ -42,6 +43,8 @@ namespace Xenon
 
 		void DX12Device::waitIdle()
 		{
+			OPTICK_EVENT();
+
 			// Wait for the direct queue.
 			{
 				ComPtr<ID3D12Fence> fence;
@@ -129,6 +132,8 @@ namespace Xenon
 
 		ComPtr<ID3DBlob> DX12Device::CompileShader(const ShaderSource& shader, ShaderType type, const std::string_view& entryPoint /*= "main"*/)
 		{
+			OPTICK_EVENT();
+
 			// Remove the end padding and create the compiler.
 			auto compiler = spirv_cross::CompilerHLSL(shader.getBinaryWithoutPadding());
 

@@ -6,6 +6,7 @@
 #include "DX12Descriptor.hpp"
 
 #include <spirv_hlsl.hpp>
+#include <optick.h>
 
 constexpr auto g_MagicNumber = 0b0111100101110000101100010000110010100010001110011100010100011001;
 
@@ -142,6 +143,8 @@ namespace Xenon
 
 		std::unique_ptr<Xenon::Backend::Descriptor> DX12ComputePipeline::createDescriptor(DescriptorType type)
 		{
+			OPTICK_EVENT();
+
 			return std::make_unique<DX12Descriptor>(m_pDevice, m_BindingInfos, DescriptorType::UserDefined, this);
 		}
 

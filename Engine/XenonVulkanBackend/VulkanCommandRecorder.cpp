@@ -9,6 +9,8 @@
 #include "VulkanRasterizingPipeline.hpp"
 #include "VulkanDescriptor.hpp"
 
+#include <optick.h>
+
 namespace /* anonymous */
 {
 	/**
@@ -20,6 +22,8 @@ namespace /* anonymous */
 	 */
 	std::vector<VkClearValue> GetClearValues(Xenon::Backend::AttachmentType attachmentTypes, const std::vector<Xenon::Backend::Rasterizer::ClearValueType>& clearValues)
 	{
+		OPTICK_EVENT();
+
 		auto itr = clearValues.begin();
 
 		std::vector<VkClearValue> vkClearValues;
@@ -330,6 +334,8 @@ namespace Xenon
 
 		void VulkanCommandRecorder::begin()
 		{
+			OPTICK_EVENT();
+
 			VkCommandBufferBeginInfo beginInfo = {};
 			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 			beginInfo.pNext = VK_NULL_HANDLE;
@@ -342,6 +348,8 @@ namespace Xenon
 
 		void VulkanCommandRecorder::begin(CommandRecorder* pParent)
 		{
+			OPTICK_EVENT();
+
 			auto pVkParent = pParent->as<VulkanCommandRecorder>();
 
 			VkCommandBufferBeginInfo beginInfo = {};
@@ -359,6 +367,8 @@ namespace Xenon
 
 		void VulkanCommandRecorder::changeImageLayout(VkImage image, VkImageLayout currentLayout, VkImageLayout newLayout, VkImageAspectFlags aspectFlags, uint32_t mipLevels /*= 1*/, uint32_t layers /*= 1*/)
 		{
+			OPTICK_EVENT();
+
 			// Unbind the previous render pass if we need to.
 			if (m_IsRenderTargetBound)
 			{
@@ -478,6 +488,8 @@ namespace Xenon
 
 		void VulkanCommandRecorder::copy(Buffer* pSource, uint64_t srcOffset, Buffer* pDestination, uint64_t dstOffset, uint64_t size)
 		{
+			OPTICK_EVENT();
+
 			VkBufferCopy bufferCopy = {};
 			bufferCopy.size = size;
 			bufferCopy.srcOffset = srcOffset;
@@ -488,6 +500,8 @@ namespace Xenon
 
 		void VulkanCommandRecorder::copy(Image* pSource, Swapchain* pDestination)
 		{
+			OPTICK_EVENT();
+
 			auto pVkImage = pSource->as<VulkanImage>();
 			auto pVkSwapchain = pDestination->as<VulkanSwapchain>();
 
@@ -529,6 +543,8 @@ namespace Xenon
 
 		void VulkanCommandRecorder::copy(Buffer* pSource, uint64_t bufferOffset, Image* pImage, glm::vec3 imageSize, glm::vec3 imageOffset /*= glm::vec3(0)*/)
 		{
+			OPTICK_EVENT();
+
 			VkBufferImageCopy imageCopy = {};
 			imageCopy.bufferOffset = bufferOffset;
 			imageCopy.bufferRowLength = static_cast<uint32_t>(imageSize.x);
@@ -549,6 +565,8 @@ namespace Xenon
 
 		void VulkanCommandRecorder::bind(Rasterizer* pRasterizer, const std::vector<Rasterizer::ClearValueType>& clearValues, bool usingSecondaryCommandRecorders /*= false*/)
 		{
+			OPTICK_EVENT();
+
 			// Unbind the previous render pass if we need to.
 			if (m_IsRenderTargetBound)
 				m_pDevice->getDeviceTable().vkCmdEndRenderPass(*m_pCurrentBuffer);
@@ -581,11 +599,15 @@ namespace Xenon
 
 		void VulkanCommandRecorder::bind(RasterizingPipeline* pPipeline, const VertexSpecification& vertexSpecification)
 		{
+			OPTICK_EVENT();
+
 			m_pDevice->getDeviceTable().vkCmdBindPipeline(*m_pCurrentBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pPipeline->as<VulkanRasterizingPipeline>()->getPipeline(vertexSpecification).m_Pipeline);
 		}
 
 		void VulkanCommandRecorder::bind(RasterizingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pCameraDescriptor)
 		{
+			OPTICK_EVENT();
+
 			if (pUserDefinedDescriptor)
 			{
 				auto descriptorSet = pUserDefinedDescriptor->as<VulkanDescriptor>()->getDescriptorSet();
@@ -634,6 +656,8 @@ namespace Xenon
 
 		void VulkanCommandRecorder::bind(Buffer* pVertexBuffer, uint32_t vertexStride)
 		{
+			OPTICK_EVENT();
+
 			VkDeviceSize offset = 0;
 			VkBuffer vertexBuffer = pVertexBuffer->as<VulkanBuffer>()->getBuffer();
 			m_pDevice->getDeviceTable().vkCmdBindVertexBuffers(*m_pCurrentBuffer, 0, 1, &vertexBuffer, &offset);
@@ -641,6 +665,8 @@ namespace Xenon
 
 		void VulkanCommandRecorder::bind(Buffer* pIndexBuffer, IndexBufferStride indexStride)
 		{
+			OPTICK_EVENT();
+
 			auto indexType = VK_INDEX_TYPE_NONE_KHR;
 			if (indexStride == IndexBufferStride::Uint16)
 				indexType = VK_INDEX_TYPE_UINT16;
@@ -656,12 +682,16 @@ namespace Xenon
 
 		void VulkanCommandRecorder::drawIndexed(uint64_t vertexOffset, uint64_t indexOffset, uint64_t indexCount, uint32_t instanceCount /*= 1*/, uint32_t firstInstance /*= 0*/)
 		{
+			OPTICK_EVENT();
+
 			// m_pDevice->getDeviceTable().vkCmdSetPrimitiveTopology(*m_pCurrentBuffer, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
 			m_pDevice->getDeviceTable().vkCmdDrawIndexed(*m_pCurrentBuffer, static_cast<uint32_t>(indexCount), instanceCount, static_cast<uint32_t>(indexOffset), static_cast<uint32_t>(vertexOffset), firstInstance);
 		}
 
 		void VulkanCommandRecorder::executeChildren()
 		{
+			OPTICK_EVENT();
+
 			// Skip if we don't have any children :(
 			if (m_ChildCommandBuffers.empty())
 				return;
@@ -672,6 +702,8 @@ namespace Xenon
 
 		void VulkanCommandRecorder::end()
 		{
+			OPTICK_EVENT();
+
 			// Unbind the previous render pass if we need to.
 			if (m_IsRenderTargetBound)
 			{
@@ -684,11 +716,15 @@ namespace Xenon
 
 		void VulkanCommandRecorder::next()
 		{
+			OPTICK_EVENT();
+
 			m_pCurrentBuffer = &m_CommandBuffers[incrementIndex()];
 		}
 
 		void VulkanCommandRecorder::submit(Swapchain* pSwapchain /*= nullptr*/)
 		{
+			OPTICK_EVENT();
+
 			switch (m_Usage)
 			{
 			case Xenon::Backend::CommandRecorderUsage::Compute:
@@ -715,6 +751,8 @@ namespace Xenon
 
 		void VulkanCommandRecorder::wait(uint64_t timeout /*= UINT64_MAX*/)
 		{
+			OPTICK_EVENT();
+
 			m_pCurrentBuffer->wait(timeout);
 		}
 	}

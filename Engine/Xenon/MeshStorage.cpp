@@ -12,6 +12,8 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <tiny_gltf.h>
 
+#include <optick.h>
+
 #include <latch>
 #include <fstream>
 
@@ -58,6 +60,8 @@ namespace /* anonymous */
 		Xenon::Backend::InputElement element,
 		Xenon::Backend::VertexSpecification& specification)
 	{
+		OPTICK_EVENT();
+
 		if (!primitive.attributes.contains(attribute))
 			return 0;
 
@@ -181,6 +185,8 @@ namespace /* anonymous */
 	 */
 	decltype(auto) GetAttributeView(const tinygltf::Model& model, const tinygltf::Primitive& primitive, Xenon::Backend::InputElement element)
 	{
+		OPTICK_EVENT();
+
 		AttributeView view;
 		view.m_Element = element;
 
@@ -255,6 +261,8 @@ namespace /* anonymous */
 		std::vector<unsigned char>::iterator vertexBegin,
 		std::vector<unsigned char>::iterator indexBegin)
 	{
+		OPTICK_EVENT();
+
 		// Setup the primitive mode.
 		switch (primitive.mode)
 		{
@@ -368,6 +376,8 @@ namespace /* anonymous */
 		std::vector<unsigned char>::iterator& indexItr,
 		std::latch& synchronization)
 	{
+		OPTICK_EVENT();
+
 		static auto workers = Xenon::JobSystem(std::thread::hardware_concurrency() - 1);	// Keep one thread free for other purposes.
 
 		// Get the mesh and initialize everything.
@@ -475,6 +485,8 @@ namespace Xenon
 {
 	Xenon::MeshStorage MeshStorage::FromFile(Instance& instance, const std::filesystem::path& file)
 	{
+		OPTICK_EVENT();
+
 		MeshStorage storage;
 
 		// Load the model data.

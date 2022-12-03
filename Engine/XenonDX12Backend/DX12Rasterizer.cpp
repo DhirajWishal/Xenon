@@ -4,6 +4,8 @@
 #include "DX12Rasterizer.hpp"
 #include "DX12Macros.hpp"
 
+#include <optick.h>
+
 namespace Xenon
 {
 	namespace Backend
@@ -93,6 +95,8 @@ namespace Xenon
 
 		Xenon::Backend::Image* DX12Rasterizer::getImageAttachment(AttachmentType type)
 		{
+			OPTICK_EVENT();
+
 			const auto index = getAttachmentIndex(type);
 			if (index < m_RenderTargets.size())
 				return &m_RenderTargets[index];
@@ -123,6 +127,8 @@ namespace Xenon
 
 		uint8_t DX12Rasterizer::getAttachmentIndex(AttachmentType type) const
 		{
+			OPTICK_EVENT();
+
 			if (m_AttachmentTypes & type)
 			{
 				uint8_t index = 0;

@@ -37,3 +37,6 @@
 [submodule "ThirdParty/optick"]
 	path = ThirdParty/optick
 	url = https://github.com/bombomby/optick
+[submodule "ThirdParty/imgui"]
+	path = ThirdParty/imgui
+	url = https://github.com/ocornut/imgui

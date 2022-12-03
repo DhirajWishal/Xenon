@@ -33,8 +33,48 @@ set(GLM_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/glm)
 set(SPIRV_REFLECT_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/SPIRV-Reflect)
 set(XXHASH_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/xxHash)
 set(SPIRV_CROSS_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/SPIRV-Cross)
+set(OPTICK_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/optick/src)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/SPIRV-Cross)
+
+# Add the Optick library as a third party static link.
+add_library(
+	XenonThirdParty_Optick
+	STATIC
+
+	"${OPTICK_INCLUDE_DIR}/optick.config.h"
+	"${OPTICK_INCLUDE_DIR}/optick.h"
+	"${OPTICK_INCLUDE_DIR}/optick_capi.cpp"
+	"${OPTICK_INCLUDE_DIR}/optick_capi.h"
+	"${OPTICK_INCLUDE_DIR}/optick_common.h"
+	"${OPTICK_INCLUDE_DIR}/optick_core.cpp"
+	"${OPTICK_INCLUDE_DIR}/optick_core.freebsd.h"
+	"${OPTICK_INCLUDE_DIR}/optick_core.h"
+	"${OPTICK_INCLUDE_DIR}/optick_core.linux.h"
+	"${OPTICK_INCLUDE_DIR}/optick_core.macos.h"
+	"${OPTICK_INCLUDE_DIR}/optick_core.platform.h"
+	"${OPTICK_INCLUDE_DIR}/optick_core.win.h"
+	"${OPTICK_INCLUDE_DIR}/optick_gpu.cpp"
+	"${OPTICK_INCLUDE_DIR}/optick_gpu.d3d12.cpp"
+	"${OPTICK_INCLUDE_DIR}/optick_gpu.h"
+	"${OPTICK_INCLUDE_DIR}/optick_gpu.vulkan.cpp"
+	"${OPTICK_INCLUDE_DIR}/optick_memory.h"
+	"${OPTICK_INCLUDE_DIR}/optick_message.cpp"
+	"${OPTICK_INCLUDE_DIR}/optick_message.h"
+	"${OPTICK_INCLUDE_DIR}/optick_miniz.cpp"
+	"${OPTICK_INCLUDE_DIR}/optick_miniz.h"
+	"${OPTICK_INCLUDE_DIR}/optick_serialization.cpp"
+	"${OPTICK_INCLUDE_DIR}/optick_serialization.h"
+	"${OPTICK_INCLUDE_DIR}/optick_server.cpp"
+	"${OPTICK_INCLUDE_DIR}/optick_server.h"
+)
+
+# Set the include directories.
+target_include_directories(
+	XenonThirdParty_Optick 
+
+	PRIVATE ${VULKAN_HEADERS_INCLUDE_DIR}
+)
 
 # Include the shader bank and it's information.
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonShaderBank)
@@ -99,5 +139,6 @@ if (MSVC)
 	set_target_properties(spirv-cross-msl PROPERTIES FOLDER "ThirdParty")
 	set_target_properties(spirv-cross-reflect PROPERTIES FOLDER "ThirdParty")
 	set_target_properties(spirv-cross-util PROPERTIES FOLDER "ThirdParty")
+	set_target_properties(XenonThirdParty_Optick PROPERTIES FOLDER "ThirdParty")
 
 endif ()

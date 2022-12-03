@@ -8,6 +8,7 @@
 #include "DX12RasterizingPipeline.hpp"
 #include "DX12Descriptor.hpp"
 
+#include <optick.h>
 #include <glm/gtc/type_ptr.hpp>
 
 namespace /* anonymous */
@@ -32,6 +33,8 @@ namespace /* anonymous */
 		UINT depthDescriptorIncrementSize,
 		Xenon::Backend::AttachmentType attachmentTypes)
 	{
+		OPTICK_EVENT();
+
 		auto itr = clearValues.begin();
 		auto colorDescriptorHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(colorDescriptorStart);
 		auto depthDescriptorHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(depthDescriptorStart);
@@ -258,6 +261,8 @@ namespace Xenon
 
 		void DX12CommandRecorder::begin()
 		{
+			OPTICK_EVENT();
+
 			wait();
 
 			XENON_DX12_ASSERT(m_pCurrentCommandAllocator->Reset(), "Failed to reset the command list allocator!");
@@ -267,17 +272,23 @@ namespace Xenon
 
 		void DX12CommandRecorder::begin(CommandRecorder* pParent)
 		{
+			OPTICK_EVENT();
+
 			begin();
 			pParent->as<DX12CommandRecorder>()->setBundle(m_pCurrentCommandList);
 		}
 
 		void DX12CommandRecorder::copy(Buffer* pSource, uint64_t srcOffset, Buffer* pDestination, uint64_t dstOffset, uint64_t size)
 		{
+			OPTICK_EVENT();
+
 			m_pCurrentCommandList->CopyBufferRegion(pDestination->as<DX12Buffer>()->getResource(), dstOffset, pSource->as<DX12Buffer>()->getResource(), srcOffset, size);
 		}
 
 		void DX12CommandRecorder::copy(Image* pSource, Swapchain* pDestination)
 		{
+			OPTICK_EVENT();
+
 			auto pDxSource = pSource->as<DX12Image>();
 			auto pDxSwapchin = pDestination->as<DX12Swapchain>();
 			auto pDestinationResource = pDxSwapchin->getCurrentSwapchainImageResource();
@@ -334,6 +345,8 @@ namespace Xenon
 
 		void DX12CommandRecorder::copy(Buffer* pSource, uint64_t bufferOffset, Image* pImage, glm::vec3 imageSize, glm::vec3 imageOffset /*= glm::vec3(0)*/)
 		{
+			OPTICK_EVENT();
+
 			const auto pDxImage = pImage->as<DX12Image>();
 			const auto pDxBuffer = pSource->as<DX12Buffer>();
 
@@ -393,6 +406,8 @@ namespace Xenon
 
 		void DX12CommandRecorder::bind(Rasterizer* pRasterizer, const std::vector<Rasterizer::ClearValueType>& clearValues, bool usingSecondaryCommandRecorders /*= false*/)
 		{
+			OPTICK_EVENT();
+
 			const auto pDxRasterizer = pRasterizer->as<DX12Rasterizer>();
 			const auto hasDepthAttachment = pDxRasterizer->hasTarget(AttachmentType::Depth | AttachmentType::Stencil);
 			const auto colorAttachmentCount = pDxRasterizer->getColorTargetCount();
@@ -437,12 +452,16 @@ namespace Xenon
 
 		void DX12CommandRecorder::bind(RasterizingPipeline* pPipeline, const VertexSpecification& vertexSpecification)
 		{
+			OPTICK_EVENT();
+
 			m_pCurrentCommandList->SetGraphicsRootSignature(pPipeline->as<DX12RasterizingPipeline>()->getRootSignature());
 			m_pCurrentCommandList->SetPipelineState(pPipeline->as<DX12RasterizingPipeline>()->getPipeline(vertexSpecification).m_PipelineState.Get());
 		}
 
 		void DX12CommandRecorder::bind(RasterizingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pCameraDescriptor)
 		{
+			OPTICK_EVENT();
+
 			const auto& heaps = pPipeline->as<DX12RasterizingPipeline>()->getDescriptorHeapStorage();
 			m_pCurrentCommandList->SetDescriptorHeaps(static_cast<UINT>(heaps.size()), heaps.data());
 
@@ -492,6 +511,8 @@ namespace Xenon
 
 		void DX12CommandRecorder::bind(Buffer* pVertexBuffer, uint32_t vertexStride)
 		{
+			OPTICK_EVENT();
+
 			D3D12_VERTEX_BUFFER_VIEW vertexView = {};
 			vertexView.BufferLocation = pVertexBuffer->as<DX12Buffer>()->getResource()->GetGPUVirtualAddress();
 			vertexView.SizeInBytes = static_cast<UINT>(pVertexBuffer->getSize());
@@ -502,6 +523,8 @@ namespace Xenon
 
 		void DX12CommandRecorder::bind(Buffer* pIndexBuffer, IndexBufferStride indexStride)
 		{
+			OPTICK_EVENT();
+
 			D3D12_INDEX_BUFFER_VIEW indexView = {};
 			indexView.BufferLocation = pIndexBuffer->as<DX12Buffer>()->getResource()->GetGPUVirtualAddress();
 			indexView.SizeInBytes = static_cast<UINT>(pIndexBuffer->getSize());
@@ -521,12 +544,16 @@ namespace Xenon
 
 		void DX12CommandRecorder::drawIndexed(uint64_t vertexOffset, uint64_t indexOffset, uint64_t indexCount, uint32_t instanceCount /*= 1*/, uint32_t firstInstance /*= 0*/)
 		{
+			OPTICK_EVENT();
+
 			m_pCurrentCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			m_pCurrentCommandList->DrawIndexedInstanced(static_cast<UINT>(indexCount), instanceCount, static_cast<UINT>(indexOffset), static_cast<UINT>(vertexOffset), firstInstance);
 		}
 
 		void DX12CommandRecorder::executeChildren()
 		{
+			OPTICK_EVENT();
+
 			if (m_pBundleCommandList != nullptr)
 			{
 				m_pCurrentCommandList->ExecuteBundle(m_pBundleCommandList);
@@ -536,6 +563,8 @@ namespace Xenon
 
 		void DX12CommandRecorder::end()
 		{
+			OPTICK_EVENT();
+
 			XENON_DX12_ASSERT(m_pCurrentCommandList->Close(), "Failed to stop the current command list!");
 
 			m_IsRecording = false;
@@ -543,6 +572,8 @@ namespace Xenon
 
 		void DX12CommandRecorder::next()
 		{
+			OPTICK_EVENT();
+
 			const auto index = incrementIndex();
 			m_pCurrentCommandAllocator = m_pCommandAllocators[index].Get();
 			m_pCurrentCommandList = m_pCommandLists[index].Get();
@@ -551,6 +582,8 @@ namespace Xenon
 
 		void DX12CommandRecorder::submit(Swapchain* pSawpchain /*= nullptr*/)
 		{
+			OPTICK_EVENT();
+
 			ID3D12CommandQueue* pQueue = m_pDevice->getDirectQueue();
 			if (m_Usage & CommandRecorderUsage::Secondary)
 				pQueue = m_pDevice->getBundleQueue();
@@ -565,6 +598,8 @@ namespace Xenon
 
 		void DX12CommandRecorder::wait(uint64_t timeout /*= UINT64_MAX*/)
 		{
+			OPTICK_EVENT();
+
 			const auto nextFence = m_pCurrentCommandListFence->GetCompletedValue() + 1;
 
 			ID3D12CommandQueue* pQueue = m_pDevice->getDirectQueue();
@@ -591,14 +626,6 @@ namespace Xenon
 				WaitForSingleObject(eventHandle, static_cast<DWORD>(timeout));
 				CloseHandle(eventHandle);
 			}
-		}
-
-		std::unique_ptr<Xenon::Backend::DX12RasterizingPipeline> DX12CommandRecorder::createSwapchainCopyPipeline() const
-		{
-			RasterizingPipelineSpecification specification = {};
-			specification.m_VertexShader = ShaderSource::FromFile(XENON_SHADER_DIR "Internal/DX12SwapchainCopy/Shader.vert.spv");
-			specification.m_FragmentShader = ShaderSource::FromFile(XENON_SHADER_DIR "Internal/DX12SwapchainCopy/Shader.frag.spv");
-			return std::make_unique<DX12RasterizingPipeline>(m_pDevice, nullptr, nullptr, specification);
 		}
 	}
 }

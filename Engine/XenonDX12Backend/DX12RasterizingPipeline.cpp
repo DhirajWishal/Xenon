@@ -5,6 +5,7 @@
 #include "DX12Macros.hpp"
 #include "DX12Descriptor.hpp"
 
+#include <optick.h>
 #include <spirv_hlsl.hpp>
 
 // This magic number is used by the rasterizing pipeline to uniquely identify it's pipeline caches.
@@ -666,11 +667,15 @@ namespace Xenon
 
 		std::unique_ptr<Xenon::Backend::Descriptor> DX12RasterizingPipeline::createDescriptor(DescriptorType type)
 		{
+			OPTICK_EVENT();
+
 			return std::make_unique<DX12Descriptor>(m_pDevice, getBindingInfo(type), type, this);
 		}
 
 		const Xenon::Backend::DX12RasterizingPipeline::PipelineStorage& DX12RasterizingPipeline::getPipeline(const VertexSpecification& vertexSpecification)
 		{
+			OPTICK_EVENT();
+
 			const auto hash = GenerateHashFor(vertexSpecification);
 
 			if (!m_Pipelines.contains(hash))

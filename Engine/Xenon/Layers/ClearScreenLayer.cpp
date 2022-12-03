@@ -4,6 +4,8 @@
 #include "ClearScreenLayer.hpp"
 #include "../Renderer.hpp"
 
+#include <optick.h>
+
 namespace Xenon
 {
 	ClearScreenLayer::ClearScreenLayer(Renderer& renderer, Backend::Camera* pCamera, const glm::vec4& color)
@@ -14,6 +16,8 @@ namespace Xenon
 
 	void ClearScreenLayer::bind(Layer* pPreviousLayer, Backend::CommandRecorder* pCommandRecorder)
 	{
+		OPTICK_EVENT();
+
 		pCommandRecorder->bind(m_pRasterizer.get(), { m_ClearColor });
 	}
 }

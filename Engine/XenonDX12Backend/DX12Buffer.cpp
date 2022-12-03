@@ -4,6 +4,8 @@
 #include "DX12Buffer.hpp"
 #include "DX12Macros.hpp"
 
+#include <optick.h>
+
 namespace Xenon
 {
 	namespace Backend
@@ -119,6 +121,8 @@ namespace Xenon
 
 		void DX12Buffer::copy(Buffer* pBuffer, uint64_t size, uint64_t srcOffset /*= 0*/, uint64_t dstOffset /*= 0*/)
 		{
+			OPTICK_EVENT();
+
 			auto pSourceBuffer = pBuffer->as<DX12Buffer>();
 
 			// Begin the command list.
@@ -182,6 +186,8 @@ namespace Xenon
 
 		void DX12Buffer::write(const std::byte* pData, uint64_t size, uint64_t offset /*= 0*/)
 		{
+			OPTICK_EVENT();
+
 			// First, create the copy buffer.
 			auto copyBuffer = DX12Buffer(m_pDevice, size, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
 
@@ -201,16 +207,22 @@ namespace Xenon
 
 		const std::byte* DX12Buffer::beginRead()
 		{
+			OPTICK_EVENT();
+
 			return map();
 		}
 
 		void DX12Buffer::endRead()
 		{
+			OPTICK_EVENT();
+
 			unmap();
 		}
 
 		const std::byte* DX12Buffer::map()
 		{
+			OPTICK_EVENT();
+
 			m_pTemporaryBuffer = std::make_unique<DX12Buffer>(m_pDevice, m_Size, D3D12_HEAP_TYPE_READBACK, D3D12_RESOURCE_STATE_COPY_DEST);
 			m_pTemporaryBuffer->copy(this, m_Size, 0, 0);
 
@@ -221,6 +233,8 @@ namespace Xenon
 
 		void DX12Buffer::unmap()
 		{
+			OPTICK_EVENT();
+
 			m_pTemporaryBuffer->getResource()->Unmap(0, nullptr);
 		}
 	}

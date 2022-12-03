@@ -4,6 +4,8 @@
 #include "VulkanDescriptorSetManager.hpp"
 #include "VulkanMacros.hpp"
 
+#include <optick.h>
+
 namespace /* anonymous */
 {
 	/**
@@ -81,6 +83,8 @@ namespace Xenon
 
 		VkDescriptorSetLayout VulkanDescriptorSetManager::getDescriptorSetLayout(const std::vector<DescriptorBindingInfo>& bindingInfo)
 		{
+			OPTICK_EVENT();
+
 			// If the binding info is empty, return the dummy descriptor set layout.
 			if (bindingInfo.empty())
 				return m_DummyDescriptorSetLayout;
@@ -147,6 +151,8 @@ namespace Xenon
 
 		std::pair<VkDescriptorPool, VkDescriptorSet> VulkanDescriptorSetManager::createDescriptorSet(const std::vector<DescriptorBindingInfo>& bindingInfo)
 		{
+			OPTICK_EVENT();
+
 			// If the binding info is empty, return the dummy descriptor set layout.
 			if (bindingInfo.empty())
 				return std::make_pair(m_DummyDescriptorPool, m_DummyDescriptorSet);
@@ -263,6 +269,8 @@ namespace Xenon
 
 		void VulkanDescriptorSetManager::freeDescriptorSet(VkDescriptorPool pool, VkDescriptorSet descriptorSet, const std::vector<DescriptorBindingInfo>& bindingInfo)
 		{
+			OPTICK_EVENT();
+
 			// Skip if we're talking about the dummy descriptor set.
 			if (descriptorSet == m_DummyDescriptorSet)
 				return;

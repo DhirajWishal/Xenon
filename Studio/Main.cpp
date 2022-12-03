@@ -11,9 +11,11 @@ void run(Xenon::BackendType backend)
 
 int main()
 {
-	std::vector<std::future<void>> workers;
-	workers.emplace_back(std::async(std::launch::async, run, Xenon::BackendType::Vulkan));
-	workers.emplace_back(std::async(std::launch::async, run, Xenon::BackendType::DirectX_12));
+	// std::vector<std::future<void>> workers;
+	// workers.emplace_back(std::async(std::launch::async, run, Xenon::BackendType::Vulkan));
+	// workers.emplace_back(std::async(std::launch::async, run, Xenon::BackendType::DirectX_12));
+
+	run(Xenon::BackendType::Vulkan);
 
 	return 0;
 }

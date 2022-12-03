@@ -5,6 +5,8 @@
 #include "VulkanMacros.hpp"
 #include "VulkanSwapchain.hpp"
 
+#include <optick.h>
+
 namespace Xenon
 {
 	namespace Backend
@@ -64,6 +66,8 @@ namespace Xenon
 
 		void VulkanCommandBuffer::wait(uint64_t timeout /*= std::numeric_limits<uint64_t>::max()*/)
 		{
+			OPTICK_EVENT();
+
 			if (!m_IsFenceFree)
 			{
 				XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkWaitForFences(m_pDevice->getLogicalDevice(), 1, &m_Fence, VK_TRUE, timeout), "Failed to wait for the fence!");
@@ -74,6 +78,8 @@ namespace Xenon
 
 		void VulkanCommandBuffer::submit(VkPipelineStageFlags pipelineStageFlags, VkQueue queue, VulkanSwapchain* pSwapchain /*= nullptr*/)
 		{
+			OPTICK_EVENT();
+
 			// Create the submit info structure.
 			VkSubmitInfo submitInfo = {};
 			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
