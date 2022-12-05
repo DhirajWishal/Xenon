@@ -41,7 +41,7 @@ namespace Xenon
 			 * @param pInstance The instance pointer.
 			 * @param requiredRenderTargets The render targets the device must support.
 			 */
-			explicit Device([[maybe_unused]] Instance* pInstance, RenderTargetType requiredRenderTargets) : m_SupportedRenderTargetTypes(requiredRenderTargets) {}
+			explicit Device([[maybe_unused]] const Instance* pInstance, RenderTargetType requiredRenderTargets) : m_SupportedRenderTargetTypes(requiredRenderTargets) {}
 
 			/**
 			 * Finish all device operations and wait idle.

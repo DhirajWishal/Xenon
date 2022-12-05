@@ -39,8 +39,6 @@ set(
 	"VulkanSwapchain.hpp"
 	"VulkanRasterizingPipeline.cpp"
 	"VulkanRasterizingPipeline.hpp"
-	"VulkanShader.cpp"
-	"VulkanShader.hpp"
 	"VulkanDescriptor.cpp"
 	"VulkanDescriptor.hpp"
 	"VulkanImageView.cpp"

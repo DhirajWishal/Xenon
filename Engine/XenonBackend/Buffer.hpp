@@ -42,7 +42,7 @@ namespace Xenon
 			 * @param size The size of the buffer in bytes.
 			 * @param type The buffer type.
 			 */
-			explicit Buffer([[maybe_unused]] Device* pDevice, uint64_t size, BufferType type) : m_Size(size), m_Type(type) {}
+			explicit Buffer([[maybe_unused]] const Device* pDevice, uint64_t size, BufferType type) : m_Size(size), m_Type(type) {}
 
 			/**
 			 * Copy data from another buffer to this buffer.
