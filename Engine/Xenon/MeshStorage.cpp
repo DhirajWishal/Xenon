@@ -378,8 +378,6 @@ namespace /* anonymous */
 	{
 		OPTICK_EVENT();
 
-		static auto workers = Xenon::JobSystem(std::thread::hardware_concurrency() - 1);	// Keep one thread free for other purposes.
-
 		// Get the mesh and initialize everything.
 		const auto& gltfMesh = model.meshes[node.mesh];
 		auto& mesh = storage.getMeshes().emplace_back();
@@ -398,7 +396,7 @@ namespace /* anonymous */
 				subMesh.m_VertexOffset /= storage.getVertexSpecification().getSize();
 
 			// Insert the job.
-			workers.insert([&subMesh, &model, &storage, &gltfPrimitive, vertexItr, indexItr, &synchronization]
+			Xenon::XObject::GetJobSystem().insert([&subMesh, &model, &storage, &gltfPrimitive, vertexItr, indexItr, &synchronization]
 				{
 					LoadSubMesh(subMesh, storage.getVertexSpecification(), model, gltfPrimitive, vertexItr, indexItr);
 					synchronization.count_down();

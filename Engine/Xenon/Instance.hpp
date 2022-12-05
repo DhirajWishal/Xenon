@@ -189,12 +189,12 @@ namespace Xenon
 		std::string m_ApplicationName;
 		uint32_t m_ApplicationVersion;
 
-		MaterialDatabase m_MaterialDatabase;
-		MaterialIdentifier m_DefaultMaterialIdentifier;
-
 		std::unique_ptr<Backend::IFactory> m_pFactory = nullptr;
 		std::unique_ptr<Backend::Instance> m_pInstance = nullptr;
 		std::unique_ptr<Backend::Device> m_pDevice = nullptr;
+
+		MaterialDatabase m_MaterialDatabase;
+		MaterialIdentifier m_DefaultMaterialIdentifier;
 
 		std::unique_ptr<Backend::Image> m_pDefaultImage = nullptr;
 		std::unique_ptr<Backend::ImageView> m_pDefaultImageView = nullptr;

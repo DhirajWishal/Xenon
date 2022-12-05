@@ -203,15 +203,8 @@ namespace Xenon
 
 		DX12Image::~DX12Image()
 		{
-			try
-			{
-				if (m_pDevice)
-					m_pDevice->getInstance()->getDeletionQueue().insert([allocation = m_pAllocation] { allocation->Release(); });
-			}
-			catch (...)
-			{
-				XENON_DX12_ASSERT(-1, "Failed to push the image deletion function to the deletion queue!");
-			}
+			if (m_pDevice)
+				m_pAllocation->Release();
 		}
 
 		void DX12Image::copyFrom(Buffer* pSrcBuffer)

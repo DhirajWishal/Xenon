@@ -97,6 +97,9 @@ namespace Xenon
 
 			VkBuffer m_Buffer = VK_NULL_HANDLE;
 			VmaAllocation m_Allocation = nullptr;
+
+			std::byte* m_MappedMemory = nullptr;
+			bool m_IsMapped = false;
 		};
 	}
 }

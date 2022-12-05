@@ -125,6 +125,7 @@ void Studio::run()
 	if (!dataLoaded)
 		storage.wait();
 
+	m_Renderer.cleanup();
 	m_Instance.cleanup();
 
 	XENON_LOG_INFORMATION("Exiting the {}", GetRendererTitle(m_Instance.getBackendType()));

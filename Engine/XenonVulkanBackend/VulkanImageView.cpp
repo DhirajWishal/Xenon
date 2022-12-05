@@ -97,18 +97,7 @@ namespace Xenon
 
 		VulkanImageView::~VulkanImageView()
 		{
-			try
-			{
-				m_pDevice->getInstance()->getDeletionQueue().insert([pDevice = m_pDevice, view = m_View]
-					{
-						pDevice->getDeviceTable().vkDestroyImageView(pDevice->getLogicalDevice(), view, nullptr);
-					}
-				);
-			}
-			catch (...)
-			{
-				XENON_VK_ASSERT(VK_ERROR_UNKNOWN, "Failed to push the image view deletion function to the deletion queue!");
-			}
+			m_pDevice->getDeviceTable().vkDestroyImageView(m_pDevice->getLogicalDevice(), m_View, nullptr);
 		}
 	}
 }

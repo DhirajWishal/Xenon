@@ -85,18 +85,11 @@ namespace Xenon
 
 		VulkanBuffer::~VulkanBuffer()
 		{
-			try
-			{
-				m_pDevice->getInstance()->getDeletionQueue().insert([pDevice = m_pDevice, buffer = m_Buffer, allocation = m_Allocation]
-					{
-						vmaDestroyBuffer(pDevice->getAllocator(), buffer, allocation);
-					}
-				);
-			}
-			catch (...)
-			{
-				XENON_VK_ASSERT(VK_ERROR_UNKNOWN, "Failed to push the buffer deletion function to the deletion queue!");
-			}
+			// Unmap the buffer if it's already mapped.
+			if (m_IsMapped)
+				unmap();
+
+			vmaDestroyBuffer(m_pDevice->getAllocator(), m_Buffer, m_Allocation);
 		}
 
 		void VulkanBuffer::copy(Buffer* pBuffer, uint64_t size, uint64_t srcOffset /*= 0*/, uint64_t dstOffset /*= 0*/)
@@ -171,17 +164,30 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
-			void* pDataStore = nullptr;
+			// Return if we are mapped already.
+			if (m_IsMapped)
+				return m_MappedMemory;
 
-			XENON_VK_ASSERT(vmaMapMemory(m_pDevice->getAllocator(), m_Allocation, &pDataStore), "Failed to map the staging buffer memory!");
-			return ToBytes(pDataStore);
+			void* pMemory = nullptr;
+			XENON_VK_ASSERT(vmaMapMemory(m_pDevice->getAllocator(), m_Allocation, &pMemory), "Failed to map the staging buffer memory!");
+			m_MappedMemory = ToBytes(pMemory);
+
+			m_IsMapped = true;
+			return m_MappedMemory;
 		}
 
 		void VulkanBuffer::unmap()
 		{
 			OPTICK_EVENT();
 
+			// Return if we are not mapped.
+			if (!m_IsMapped)
+				return;
+
 			vmaUnmapMemory(m_pDevice->getAllocator(), m_Allocation);
+
+			m_MappedMemory = nullptr;
+			m_IsMapped = false;
 		}
 	}
 }

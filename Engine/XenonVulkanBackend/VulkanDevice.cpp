@@ -193,23 +193,16 @@ namespace Xenon
 
 		VulkanDevice::~VulkanDevice()
 		{
+			m_DeviceTable.vkDestroyCommandPool(m_LogicalDevice, m_ComputeCommandPool.getUnsafe(), nullptr);
+			m_DeviceTable.vkDestroyCommandPool(m_LogicalDevice, m_GraphicsCommandPool.getUnsafe(), nullptr);
+			m_DeviceTable.vkDestroyCommandPool(m_LogicalDevice, m_TransferCommandPool.getUnsafe(), nullptr);
+
+			vmaDestroyAllocator(m_Allocator);
+			m_DeviceTable.vkDestroyDevice(m_LogicalDevice, nullptr);
+
 			try
 			{
 				delete m_pDescriptorSetManager;
-
-				getInstance()->getDeletionQueue().wait();
-				getInstance()->getDeletionQueue().insert(
-					[deviceTable = m_DeviceTable, device = m_LogicalDevice, computeCommandPool = m_ComputeCommandPool.getUnsafe(),
-					graphicsCommandPool = m_GraphicsCommandPool.getUnsafe(), transferCommandPool = m_TransferCommandPool.getUnsafe(), allocator = m_Allocator]
-					{
-						deviceTable.vkDestroyCommandPool(device, computeCommandPool, nullptr);
-					deviceTable.vkDestroyCommandPool(device, graphicsCommandPool, nullptr);
-					deviceTable.vkDestroyCommandPool(device, transferCommandPool, nullptr);
-
-					vmaDestroyAllocator(allocator);
-					deviceTable.vkDestroyDevice(device, nullptr);
-					}
-					);
 			}
 			catch (...)
 			{

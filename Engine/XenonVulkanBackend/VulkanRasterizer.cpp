@@ -3,7 +3,6 @@
 
 #include "VulkanRasterizer.hpp"
 #include "VulkanMacros.hpp"
-#include "VulkanRasterizingPipeline.hpp"
 
 #include <optick.h>
 
@@ -36,27 +35,6 @@ namespace Xenon
 				m_pDevice->getDeviceTable().vkDestroyFramebuffer(m_pDevice->getLogicalDevice(), framebuffer, nullptr);
 
 			m_pDevice->getDeviceTable().vkDestroyRenderPass(m_pDevice->getLogicalDevice(), m_RenderPass, nullptr);
-		}
-
-		void VulkanRasterizer::attachPipeline(VulkanRasterizingPipeline* pPipeline)
-		{
-			OPTICK_EVENT();
-
-			m_pPipelines.emplace_back(pPipeline);
-		}
-
-		void VulkanRasterizer::detachPipeline(const VulkanRasterizingPipeline* pPipeline)
-		{
-			OPTICK_EVENT();
-
-			for (auto itr = m_pPipelines.begin(); itr != m_pPipelines.end(); ++itr)
-			{
-				if (*itr == pPipeline)
-				{
-					m_pPipelines.erase(itr);
-					break;
-				}
-			}
 		}
 
 		Xenon::Backend::Image* VulkanRasterizer::getImageAttachment(AttachmentType type)

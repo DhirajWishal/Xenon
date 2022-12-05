@@ -900,37 +900,22 @@ namespace Xenon
 
 			// Setup the initial pipeline data.
 			setupPipelineInfo();
-
-			// Attach the pipeline to the render target.
-			m_pRasterizer->attachPipeline(this);
 		}
 
 		VulkanRasterizingPipeline::~VulkanRasterizingPipeline()
 		{
-			try
+			m_pDevice->waitIdle();
+
+			for (const auto& info : m_ShaderStageCreateInfo)
+				m_pDevice->getDeviceTable().vkDestroyShaderModule(m_pDevice->getLogicalDevice(), info.module, nullptr);
+
+			for (const auto& [hash, pipeline] : m_Pipelines)
 			{
-				m_pRasterizer->detachPipeline(this);
-				m_pDevice->getInstance()->getDeletionQueue().insert([pDevice = m_pDevice, layout = m_PipelineLayout, createInfos = m_ShaderStageCreateInfo, pipelines = m_Pipelines]
-					{
-						pDevice->waitIdle();
-
-				for (const auto& info : createInfos)
-					pDevice->getDeviceTable().vkDestroyShaderModule(pDevice->getLogicalDevice(), info.module, nullptr);
-
-				for (const auto& [hash, pipeline] : pipelines)
-				{
-					pDevice->getDeviceTable().vkDestroyPipelineCache(pDevice->getLogicalDevice(), pipeline.m_PipelineCache, nullptr);
-					pDevice->getDeviceTable().vkDestroyPipeline(pDevice->getLogicalDevice(), pipeline.m_Pipeline, nullptr);
-				}
-
-				pDevice->getDeviceTable().vkDestroyPipelineLayout(pDevice->getLogicalDevice(), layout, nullptr);
-					}
-				);
+				m_pDevice->getDeviceTable().vkDestroyPipelineCache(m_pDevice->getLogicalDevice(), pipeline.m_PipelineCache, nullptr);
+				m_pDevice->getDeviceTable().vkDestroyPipeline(m_pDevice->getLogicalDevice(), pipeline.m_Pipeline, nullptr);
 			}
-			catch (...)
-			{
-				XENON_VK_ASSERT(VK_ERROR_UNKNOWN, "Failed to push the rasterizing pipeline deletion function to the deletion queue!");
-			}
+
+			m_pDevice->getDeviceTable().vkDestroyPipelineLayout(m_pDevice->getLogicalDevice(), m_PipelineLayout, nullptr);
 		}
 
 		std::unique_ptr<Xenon::Backend::Descriptor> VulkanRasterizingPipeline::createDescriptor(DescriptorType type)

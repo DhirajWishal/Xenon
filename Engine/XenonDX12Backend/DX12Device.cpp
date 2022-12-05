@@ -30,15 +30,7 @@ namespace Xenon
 
 		DX12Device::~DX12Device()
 		{
-			try
-			{
-				getInstance()->getDeletionQueue().wait();
-				getInstance()->getDeletionQueue().insert([allocator = m_pAllocator] { allocator->Release(); });
-			}
-			catch (...)
-			{
-				XENON_DX12_ASSERT(-1, "Failed to push the device deletion function to the deletion queue!");
-			}
+			m_pAllocator->Release();
 		}
 
 		void DX12Device::waitIdle()

@@ -11,16 +11,13 @@
 #include "../XenonBackend/Swapchain.hpp"
 #include "../XenonBackend/CommandRecorder.hpp"
 
-#include <algorithm>
-#include <latch>
-
 namespace Xenon
 {
 	/**
 	 * Renderer class.
 	 * This class renders a scene using its camera.
 	 */
-	class Renderer final
+	class Renderer final : public XObject
 	{
 	public:
 		/**
@@ -32,11 +29,6 @@ namespace Xenon
 		 * @param title The title of the renderer window.
 		 */
 		explicit Renderer(Instance& instance, Backend::Camera* pCamera, const std::string& title);
-
-		/**
-		 * Destructor.
-		 */
-		~Renderer();
 
 		/**
 		 * Update the renderer.
@@ -57,13 +49,17 @@ namespace Xenon
 		template<class LayerType, class... Arguments>
 		LayerType* createLayer(Arguments&&... arguments)
 		{
-			auto lock = std::scoped_lock(m_SynchronizationMutex);
 			auto pLayer = std::make_unique<LayerType>(*this, std::forward<Arguments>(arguments)...);
 			auto pRawPointer = pLayer.get();
 			m_pLayers.emplace_back(std::move(pLayer));
 
 			return pRawPointer;
 		}
+
+		/**
+		 * Clean everything to finish rendering.
+		 */
+		void cleanup();
 
 	public:
 		/**
@@ -137,19 +133,6 @@ namespace Xenon
 		[[nodiscard]] const Backend::CommandRecorder* getCommandRecorder() const { return m_pCommandRecorder.get(); }
 
 	private:
-		/**
-		 * Worker function.
-		 * This function is called by the worker thread to update the attached systems.
-		 */
-		void worker();
-
-	private:
-		std::jthread m_Worker;
-		std::latch m_Latch = std::latch(1);
-		std::atomic_bool m_bShouldRun = true;
-		std::condition_variable m_WorkerSynchronization;
-		std::mutex m_SynchronizationMutex;
-
 		TaskGraph m_TaskGraph = TaskGraph(std::thread::hardware_concurrency());
 
 		std::vector<std::unique_ptr<Layer>> m_pLayers;

@@ -226,25 +226,14 @@ namespace Xenon
 
 		VulkanInstance::~VulkanInstance()
 		{
-			try
-			{
-				getDeletionQueue().insert([instance = m_Instance, debugger = m_DebugMessenger]
-					{
 #ifdef XENON_DEBUG
-						// Destroy the debugger.
-						const auto vkDestroyDebugUtilsMessengerEXT = std::bit_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT"));
-				vkDestroyDebugUtilsMessengerEXT(instance, debugger, nullptr);
+			// Destroy the debugger.
+			const auto vkDestroyDebugUtilsMessengerEXT = std::bit_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(m_Instance, "vkDestroyDebugUtilsMessengerEXT"));
+			vkDestroyDebugUtilsMessengerEXT(m_Instance, m_DebugMessenger, nullptr);
 
 #endif // XENON_DEBUG
 
-				vkDestroyInstance(instance, nullptr);
-					}
-				);
-			}
-			catch (...)
-			{
-				XENON_VK_ASSERT(VK_ERROR_UNKNOWN, "Failed to push the instance deletion function to the deletion queue!");
-			}
+			vkDestroyInstance(m_Instance, nullptr);
 		}
 
 		std::ofstream& VulkanInstance::getLogFile()

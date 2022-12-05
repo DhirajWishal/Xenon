@@ -27,18 +27,7 @@ namespace Xenon
 
 		VulkanDescriptor::~VulkanDescriptor()
 		{
-			try
-			{
-				m_pDevice->getInstance()->getDeletionQueue().insert([pDevice = m_pDevice, pool = m_Pool, set = m_DescriptorSet, bindingInfo = std::move(m_BindingInformation)]
-					{
-						pDevice->getDescriptorSetManager()->freeDescriptorSet(pool, set, bindingInfo);
-					}
-				);
-			}
-			catch (...)
-			{
-				XENON_VK_ASSERT(VK_ERROR_UNKNOWN, "Failed to push the descriptor deletion function to the deletion queue!");
-			}
+			m_pDevice->getDescriptorSetManager()->freeDescriptorSet(m_Pool, m_DescriptorSet, m_BindingInformation);
 		}
 
 		void VulkanDescriptor::attach(uint32_t binding, Buffer* pBuffer)

@@ -50,7 +50,7 @@ namespace Xenon
 			VkDescriptorPoolCreateInfo dummyPoolCreateInfo = {};
 			dummyPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 			dummyPoolCreateInfo.pNext = nullptr;
-			dummyPoolCreateInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+			dummyPoolCreateInfo.flags = 0;
 			dummyPoolCreateInfo.maxSets = 1;
 			dummyPoolCreateInfo.poolSizeCount = 0;
 			dummyPoolCreateInfo.pPoolSizes = nullptr;
@@ -244,7 +244,7 @@ namespace Xenon
 				VkDescriptorPoolCreateInfo poolCreateInfo = {};
 				poolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 				poolCreateInfo.pNext = nullptr;
-				poolCreateInfo.flags = 0;
+				poolCreateInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 				poolCreateInfo.maxSets = XENON_VK_MAX_DESCRIPTOR_SETS_COUNT;
 				poolCreateInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 				poolCreateInfo.pPoolSizes = poolSizes.data();
@@ -284,6 +284,11 @@ namespace Xenon
 			for (uint32_t i = 0; i < storage.m_Pools.size(); i++)
 			{
 				auto& [descriptorPool, count] = storage.m_Pools[i];
+
+				// If we're not in the correct pool, just skip.
+				if (descriptorPool != pool)
+					continue;
+
 				count--;
 
 				// Deallocate the pool and remove it from the list.
@@ -291,8 +296,9 @@ namespace Xenon
 				{
 					m_pDevice->getDeviceTable().vkDestroyDescriptorPool(m_pDevice->getLogicalDevice(), pool, nullptr);
 					storage.m_Pools.erase(storage.m_Pools.begin() + i);
-					return;
 				}
+
+				return;
 			}
 		}
 	}

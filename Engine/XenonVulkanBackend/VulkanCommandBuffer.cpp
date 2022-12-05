@@ -40,27 +40,16 @@ namespace Xenon
 		{
 			if (m_pDevice)
 			{
-				try
-				{
-					m_pDevice->getInstance()->getDeletionQueue().insert([pDevice = m_pDevice, commandPool = m_CommandPool, buffer = m_CommandBuffer, fence = m_Fence]
-						{
-							if (pDevice->getComputeCommandPool().getUnsafe() == commandPool)
-								pDevice->getComputeCommandPool().access([pDevice, buffer](VkCommandPool pool) { pDevice->getDeviceTable().vkFreeCommandBuffers(pDevice->getLogicalDevice(), pool, 1, &buffer); });
+				if (m_pDevice->getComputeCommandPool().getUnsafe() == m_CommandPool)
+					m_pDevice->getComputeCommandPool().access([this](VkCommandPool pool) { m_pDevice->getDeviceTable().vkFreeCommandBuffers(m_pDevice->getLogicalDevice(), pool, 1, &m_CommandBuffer); });
 
-							else if (pDevice->getGraphicsCommandPool().getUnsafe() == commandPool)
-								pDevice->getGraphicsCommandPool().access([pDevice, buffer](VkCommandPool pool) { pDevice->getDeviceTable().vkFreeCommandBuffers(pDevice->getLogicalDevice(), pool, 1, &buffer); });
-							
-							else if (pDevice->getTransferCommandPool().getUnsafe() == commandPool)
-								pDevice->getTransferCommandPool().access([pDevice, buffer](VkCommandPool pool) { pDevice->getDeviceTable().vkFreeCommandBuffers(pDevice->getLogicalDevice(), pool, 1, &buffer); });
+				else if (m_pDevice->getGraphicsCommandPool().getUnsafe() == m_CommandPool)
+					m_pDevice->getGraphicsCommandPool().access([this](VkCommandPool pool) { m_pDevice->getDeviceTable().vkFreeCommandBuffers(m_pDevice->getLogicalDevice(), pool, 1, &m_CommandBuffer); });
 
-							pDevice->getDeviceTable().vkDestroyFence(pDevice->getLogicalDevice(), fence, nullptr);
-						}
-					);
-				}
-				catch (...)
-				{
-					XENON_VK_ASSERT(VK_ERROR_UNKNOWN, "Failed to push the command buffer deletion function to the deletion queue!");
-				}
+				else if (m_pDevice->getTransferCommandPool().getUnsafe() == m_CommandPool)
+					m_pDevice->getTransferCommandPool().access([this](VkCommandPool pool) { m_pDevice->getDeviceTable().vkFreeCommandBuffers(m_pDevice->getLogicalDevice(), pool, 1, &m_CommandBuffer); });
+
+				m_pDevice->getDeviceTable().vkDestroyFence(m_pDevice->getLogicalDevice(), m_Fence, nullptr);
 			}
 		}
 
