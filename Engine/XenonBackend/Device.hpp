@@ -25,6 +25,9 @@ namespace Xenon
 
 	namespace Backend
 	{
+		class CommandRecorder;
+		class Swapchain;
+
 		/**
 		 * Device class.
 		 * This represents information about a single GPU.

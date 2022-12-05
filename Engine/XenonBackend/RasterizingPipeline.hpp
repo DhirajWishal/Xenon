@@ -225,12 +225,10 @@ namespace Xenon
 		enum class DynamicStateFlags : uint8_t
 		{
 			Undefined,
-			ViewPort = XENON_BIT_SHIFT(0),
-			Scissor = XENON_BIT_SHIFT(1),
-			LineWidth = XENON_BIT_SHIFT(2),
-			DepthBias = XENON_BIT_SHIFT(3),
-			BlendConstants = XENON_BIT_SHIFT(4),
-			DepthBounds = XENON_BIT_SHIFT(5)
+			LineWidth = XENON_BIT_SHIFT(1),
+			DepthBias = XENON_BIT_SHIFT(2),
+			BlendConstants = XENON_BIT_SHIFT(3),
+			DepthBounds = XENON_BIT_SHIFT(4)
 		};
 
 		XENON_DEFINE_ENUM_AND(DynamicStateFlags);

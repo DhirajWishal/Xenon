@@ -2,8 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "Layer.hpp"
+#include "Renderer.hpp"
 
 namespace Xenon
 {
-
+	Layer::Layer(Renderer& renderer)
+		: m_Renderer(renderer)
+	{
+	}
 }

@@ -58,8 +58,8 @@ function(CompileShaders SHADER_TARGET SHADER_SOURCE_DIR SHADER_BINARY_DIR)
 
 		endforeach()
 
-		add_custom_target(COMPILED_SHADERS ALL DEPENDS ${SPV_SHADERS})
-		add_dependencies(${SHADER_TARGET} COMPILED_SHADERS)
+		add_custom_target(${SHADER_TARGET}_ShaderCompiler ALL DEPENDS ${SPV_SHADERS})
+		add_dependencies(${SHADER_TARGET} ${SHADER_TARGET}_ShaderCompiler)
 	
 	else()
 		message(WARNING "The VULKAN_SDK environment variable is not set! Automatic shader compilation is disabled.")

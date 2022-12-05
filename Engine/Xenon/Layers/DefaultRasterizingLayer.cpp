@@ -19,19 +19,43 @@ namespace Xenon
 	{
 		OPTICK_EVENT();
 
-		pCommandRecorder->bind(m_pRasterizer.get(), { glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), 1.0f, static_cast<uint32_t>(0) }, !m_DrawData.empty());
+		// pCommandRecorder->bind(m_pRasterizer.get(), { glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), 1.0f, static_cast<uint32_t>(0) }, !m_DrawData.empty());
+		// 
+		// for (auto& drawData : m_DrawData)
+		// {
+		// 	auto pchild = m_Renderer.getTaskGraph().create([this, &drawData, pCommandRecorder]
+		// 		{
+		// 			bindDrawData(drawData, pCommandRecorder);
+		// 		}
+		// 	);
+		// }
+		// 
+		// m_Renderer.getTaskGraph().complete();
+		// pCommandRecorder->executeChildren();
 
+
+		pCommandRecorder->bind(m_pRasterizer.get(), { glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), 1.0f, static_cast<uint32_t>(0) });
 		for (auto& drawData : m_DrawData)
 		{
-			auto pchild = m_Renderer.getTaskGraph().create([this, &drawData, pCommandRecorder]
-				{
-					bindDrawData(drawData, pCommandRecorder);
-				}
-			);
-		}
+			pCommandRecorder->bind(drawData.m_pPipeline, drawData.m_Storage.getVertexSpecification());
+			pCommandRecorder->bind(drawData.m_Storage.getVertexBuffer(), drawData.m_Storage.getVertexSpecification().getSize());
 
-		m_Renderer.getTaskGraph().complete();
-		pCommandRecorder->executeChildren();
+			uint32_t materialIndex = 0;
+			for (const auto& mesh : drawData.m_Storage.getMeshes())
+			{
+				for (const auto& subMesh : mesh.m_SubMeshes)
+				{
+					pCommandRecorder->bind(drawData.m_Storage.getIndexBuffer(), static_cast<Backend::IndexBufferStride>(subMesh.m_IndexSize));
+					pCommandRecorder->bind(drawData.m_pPipeline, nullptr, drawData.m_pMaterialDescriptors[materialIndex].get(), drawData.m_pCameraDescriptor.get());
+
+					pCommandRecorder->setViewport(0.0f, 0.0f, static_cast<float>(m_Renderer.getCamera()->getWidth()), static_cast<float>(m_Renderer.getCamera()->getHeight()), 0.0f, 1.0f);
+					pCommandRecorder->setScissor(0, 0, m_Renderer.getCamera()->getWidth(), m_Renderer.getCamera()->getHeight());
+
+					pCommandRecorder->drawIndexed(subMesh.m_VertexOffset, subMesh.m_IndexOffset, subMesh.m_IndexCount);
+					materialIndex++;
+				}
+			}
+		}
 	}
 
 	void DefaultRasterizingLayer::addDrawData(MeshStorage&& storage, Backend::RasterizingPipeline* pPipeline)
@@ -75,6 +99,10 @@ namespace Xenon
 			{
 				drawData.m_pCommandRecorder->bind(drawData.m_Storage.getIndexBuffer(), static_cast<Backend::IndexBufferStride>(subMesh.m_IndexSize));
 				drawData.m_pCommandRecorder->bind(drawData.m_pPipeline, nullptr, drawData.m_pMaterialDescriptors[materialIndex].get(), drawData.m_pCameraDescriptor.get());
+
+				drawData.m_pCommandRecorder->setViewport(0.0f, 0.0f, static_cast<float>(m_Renderer.getCamera()->getWidth()), static_cast<float>(m_Renderer.getCamera()->getHeight()), 0.0f, 1.0f);
+				drawData.m_pCommandRecorder->setScissor(0, 0, m_Renderer.getCamera()->getWidth(), m_Renderer.getCamera()->getHeight());
+
 				drawData.m_pCommandRecorder->drawIndexed(subMesh.m_VertexOffset, subMesh.m_IndexOffset, subMesh.m_IndexCount);
 				materialIndex++;
 			}

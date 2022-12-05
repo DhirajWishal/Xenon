@@ -47,8 +47,9 @@ namespace Xenon
 			 * @param pData The data pointer to copy the data from.
 			 * @param size The size of the data to copy in bytes.
 			 * @param offset The buffer's offset to copy to. Default is 0.
+			 * @param pCommandRecorder The command recorder used for internal transfer. Default is nullptr.
 			 */
-			void write(const std::byte* pData, uint64_t size, uint64_t offset = 0) override;
+			void write(const std::byte* pData, uint64_t size, uint64_t offset = 0, CommandRecorder* pCommandRecorder = nullptr) override;
 
 			/**
 			 * Begin reading data from the GPU.

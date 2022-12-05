@@ -401,9 +401,7 @@ namespace /* anonymous */
 	 */
 	[[nodiscard]] constexpr std::vector<VkDynamicState> GetDynamicStates(Xenon::Backend::DynamicStateFlags flags) noexcept
 	{
-		std::vector<VkDynamicState> states;
-		if (flags & Xenon::Backend::DynamicStateFlags::ViewPort) states.emplace_back(VK_DYNAMIC_STATE_VIEWPORT);
-		if (flags & Xenon::Backend::DynamicStateFlags::Scissor) states.emplace_back(VK_DYNAMIC_STATE_SCISSOR);
+		std::vector<VkDynamicState> states = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
 		if (flags & Xenon::Backend::DynamicStateFlags::LineWidth) states.emplace_back(VK_DYNAMIC_STATE_LINE_WIDTH);
 		if (flags & Xenon::Backend::DynamicStateFlags::DepthBias) states.emplace_back(VK_DYNAMIC_STATE_DEPTH_BIAS);
 		if (flags & Xenon::Backend::DynamicStateFlags::BlendConstants) states.emplace_back(VK_DYNAMIC_STATE_BLEND_CONSTANTS);
@@ -790,7 +788,7 @@ namespace /* anonymous */
 			switch (dataType)
 			{
 			case Xenon::Backend::ComponentDataType::Uint8:
-				return VK_FORMAT_R8G8B8A8_UINT;
+				return VK_FORMAT_R8G8B8A8_UNORM;
 
 			case Xenon::Backend::ComponentDataType::Uint16:
 				return VK_FORMAT_R16G16B16A16_UINT;
@@ -916,16 +914,16 @@ namespace Xenon
 					{
 						pDevice->waitIdle();
 
-						for (const auto& info : createInfos)
-							pDevice->getDeviceTable().vkDestroyShaderModule(pDevice->getLogicalDevice(), info.module, nullptr);
+				for (const auto& info : createInfos)
+					pDevice->getDeviceTable().vkDestroyShaderModule(pDevice->getLogicalDevice(), info.module, nullptr);
 
-						for (const auto& [hash, pipeline] : pipelines)
-						{
-							pDevice->getDeviceTable().vkDestroyPipelineCache(pDevice->getLogicalDevice(), pipeline.m_PipelineCache, nullptr);
-							pDevice->getDeviceTable().vkDestroyPipeline(pDevice->getLogicalDevice(), pipeline.m_Pipeline, nullptr);
-						}
+				for (const auto& [hash, pipeline] : pipelines)
+				{
+					pDevice->getDeviceTable().vkDestroyPipelineCache(pDevice->getLogicalDevice(), pipeline.m_PipelineCache, nullptr);
+					pDevice->getDeviceTable().vkDestroyPipeline(pDevice->getLogicalDevice(), pipeline.m_Pipeline, nullptr);
+				}
 
-						pDevice->getDeviceTable().vkDestroyPipelineLayout(pDevice->getLogicalDevice(), layout, nullptr);
+				pDevice->getDeviceTable().vkDestroyPipelineLayout(pDevice->getLogicalDevice(), layout, nullptr);
 					}
 				);
 			}
@@ -1069,6 +1067,15 @@ namespace Xenon
 			m_InputAssemblyStateCreateInfo.primitiveRestartEnable = XENON_VK_BOOL(m_Specification.m_EnablePrimitiveRestart);
 			m_InputAssemblyStateCreateInfo.topology = GetPrimitiveTopology(m_Specification.m_PrimitiveTopology);
 
+			// Viewport state.
+			m_ViewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+			m_ViewportStateCreateInfo.pNext = nullptr;
+			m_ViewportStateCreateInfo.flags = 0;
+			m_ViewportStateCreateInfo.scissorCount = 0;
+			m_ViewportStateCreateInfo.pScissors = nullptr;
+			m_ViewportStateCreateInfo.viewportCount = 0;
+			m_ViewportStateCreateInfo.pViewports = nullptr;
+
 			// Tessellation state.
 			m_TessellationStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
 			m_TessellationStateCreateInfo.pNext = nullptr;
@@ -1165,28 +1172,6 @@ namespace Xenon
 			inputState.vertexAttributeDescriptionCount = static_cast<uint32_t>(pipeline.m_InputAttributeDescriptions.size());
 			inputState.pVertexAttributeDescriptions = pipeline.m_InputAttributeDescriptions.data();
 
-			VkRect2D rect2D = {};
-			rect2D.extent.width = m_pRasterizer->getCamera()->getWidth();
-			rect2D.extent.height = m_pRasterizer->getCamera()->getHeight();
-			rect2D.offset = { 0, 0 };
-
-			VkViewport viewport = {};
-			viewport.width = static_cast<float>(rect2D.extent.width);
-			viewport.height = static_cast<float>(rect2D.extent.height);
-			viewport.maxDepth = 1.0f;
-			viewport.minDepth = 0.0f;
-			viewport.x = 0.0f;
-			viewport.y = 0.0f;
-
-			VkPipelineViewportStateCreateInfo viewportStateCreateInfo = {};
-			viewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-			viewportStateCreateInfo.pNext = nullptr;
-			viewportStateCreateInfo.flags = 0;
-			viewportStateCreateInfo.scissorCount = 1;
-			viewportStateCreateInfo.pScissors = &rect2D;
-			viewportStateCreateInfo.viewportCount = 1;
-			viewportStateCreateInfo.pViewports = &viewport;
-
 			// Pipeline create info.
 			VkGraphicsPipelineCreateInfo createInfo = {};
 			createInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -1197,7 +1182,7 @@ namespace Xenon
 			createInfo.pVertexInputState = &inputState;
 			createInfo.pInputAssemblyState = &m_InputAssemblyStateCreateInfo;
 			createInfo.pTessellationState = &m_TessellationStateCreateInfo;
-			createInfo.pViewportState = &viewportStateCreateInfo;
+			createInfo.pViewportState = &m_ViewportStateCreateInfo;
 			createInfo.pRasterizationState = &m_RasterizationStateCreateInfo;
 			createInfo.pMultisampleState = &m_MultisampleStateCreateInfo;
 			createInfo.pDepthStencilState = &m_DepthStencilStateCreateInfo;

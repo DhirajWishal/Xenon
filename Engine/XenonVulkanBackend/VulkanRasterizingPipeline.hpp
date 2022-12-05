@@ -118,6 +118,7 @@ namespace Xenon
 		private:
 			VkPipelineInputAssemblyStateCreateInfo m_InputAssemblyStateCreateInfo = {};
 			VkPipelineTessellationStateCreateInfo m_TessellationStateCreateInfo = {};
+			VkPipelineViewportStateCreateInfo m_ViewportStateCreateInfo = {};
 			VkPipelineColorBlendStateCreateInfo m_ColorBlendStateCreateInfo = {};
 			VkPipelineRasterizationStateCreateInfo m_RasterizationStateCreateInfo = {};
 			VkPipelineMultisampleStateCreateInfo m_MultisampleStateCreateInfo = {};

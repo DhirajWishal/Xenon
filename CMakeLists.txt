@@ -34,6 +34,7 @@ set(SPIRV_REFLECT_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/SPIRV-Refle
 set(XXHASH_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/xxHash)
 set(SPIRV_CROSS_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/SPIRV-Cross)
 set(OPTICK_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/optick/src)
+set(IMGUI_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/imgui)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/SPIRV-Cross)
 
@@ -74,6 +75,24 @@ target_include_directories(
 	XenonThirdParty_Optick 
 
 	PRIVATE ${VULKAN_HEADERS_INCLUDE_DIR}
+)
+
+# Add the ImGui library as a third party static link.
+add_library(
+	XenonThirdParty_ImGui
+	STATIC 
+
+	"${IMGUI_INCLUDE_DIR}/imconfig.h"
+	"${IMGUI_INCLUDE_DIR}/imgui.cpp"
+	"${IMGUI_INCLUDE_DIR}/imgui.h"
+	"${IMGUI_INCLUDE_DIR}/imgui_demo.cpp"
+	"${IMGUI_INCLUDE_DIR}/imgui_draw.cpp"
+	"${IMGUI_INCLUDE_DIR}/imgui_internal.h"
+	"${IMGUI_INCLUDE_DIR}/imgui_tables.cpp"
+	"${IMGUI_INCLUDE_DIR}/imgui_widgets.cpp"
+	"${IMGUI_INCLUDE_DIR}/imstb_rectpack.h"
+	"${IMGUI_INCLUDE_DIR}/imstb_textedit.h"
+	"${IMGUI_INCLUDE_DIR}/imstb_truetype.h"
 )
 
 # Include the shader bank and it's information.
@@ -140,5 +159,6 @@ if (MSVC)
 	set_target_properties(spirv-cross-reflect PROPERTIES FOLDER "ThirdParty")
 	set_target_properties(spirv-cross-util PROPERTIES FOLDER "ThirdParty")
 	set_target_properties(XenonThirdParty_Optick PROPERTIES FOLDER "ThirdParty")
+	set_target_properties(XenonThirdParty_ImGui PROPERTIES FOLDER "ThirdParty")
 
 endif ()

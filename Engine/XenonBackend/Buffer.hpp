@@ -10,6 +10,8 @@ namespace Xenon
 {
 	namespace Backend
 	{
+		class CommandRecorder;
+
 		/**
 		 * Buffer type enum.
 		 */
@@ -58,8 +60,9 @@ namespace Xenon
 			 * @param pData The data pointer to copy the data from.
 			 * @param size The size of the data to copy in bytes.
 			 * @param offset The buffer's offset to copy to. Default is 0.
+			 * @param pCommandRecorder The command recorder used for internal transfer. Default is nullptr.
 			 */
-			virtual void write(const std::byte* pData, uint64_t size, uint64_t offset = 0) = 0;
+			virtual void write(const std::byte* pData, uint64_t size, uint64_t offset = 0, CommandRecorder* pCommandRecorder = nullptr) = 0;
 
 			/**
 			 * Read data from the buffer.

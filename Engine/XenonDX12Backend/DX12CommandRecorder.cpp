@@ -439,14 +439,6 @@ namespace Xenon
 			m_pCurrentCommandList->OMSetRenderTargets(static_cast<UINT>(colorAttachmentCount), &colorTargetHeapStart, TRUE, hasDepthAttachment ? &depthTargetHeapStart : nullptr);
 			ClearRenderTargets(m_pCurrentCommandList, clearValues, colorTargetHeapStart, pDxRasterizer->getColorTargetDescriptorSize(), depthTargetHeapStart, pDxRasterizer->getDepthTargetDescriptorSize(), pDxRasterizer->getAttachmentTypes());
 
-			// Set the scissor.
-			D3D12_RECT scissor = CD3DX12_RECT(0, 0, pDxRasterizer->getCamera()->getWidth(), pDxRasterizer->getCamera()->getHeight());
-			m_pCurrentCommandList->RSSetScissorRects(1, &scissor);
-
-			// Set the view port.
-			D3D12_VIEWPORT viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(pDxRasterizer->getCamera()->getWidth()), static_cast<float>(pDxRasterizer->getCamera()->getHeight()), 0.0f, 1.0f);
-			m_pCurrentCommandList->RSSetViewports(1, &viewport);
-
 			m_IsRenderTargetBound = true;
 		}
 
@@ -540,6 +532,18 @@ namespace Xenon
 				XENON_LOG_ERROR("Invalid index stride!");
 
 			m_pCurrentCommandList->IASetIndexBuffer(&indexView);
+		}
+
+		void DX12CommandRecorder::setViewport(float x, float y, float width, float height, float minDepth, float maxDepth)
+		{
+			D3D12_VIEWPORT viewport = CD3DX12_VIEWPORT(x, y, width, height, minDepth, maxDepth);
+			m_pCurrentCommandList->RSSetViewports(1, &viewport);
+		}
+
+		void DX12CommandRecorder::setScissor(int32_t x, int32_t y, uint32_t width, uint32_t height)
+		{
+			D3D12_RECT scissor = CD3DX12_RECT(x, y, width, height);
+			m_pCurrentCommandList->RSSetScissorRects(1, &scissor);
 		}
 
 		void DX12CommandRecorder::drawIndexed(uint64_t vertexOffset, uint64_t indexOffset, uint64_t indexCount, uint32_t instanceCount /*= 1*/, uint32_t firstInstance /*= 0*/)

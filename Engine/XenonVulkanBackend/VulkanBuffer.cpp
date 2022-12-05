@@ -111,9 +111,16 @@ namespace Xenon
 			commandBuffers.wait();
 		}
 
-		void VulkanBuffer::write(const std::byte* pData, uint64_t size, uint64_t offset /*= 0*/)
+		void VulkanBuffer::write(const std::byte* pData, uint64_t size, uint64_t offset /*= 0*/, CommandRecorder* pCommandRecorder /*= nullptr*/)
 		{
 			OPTICK_EVENT();
+
+			// Validate the copy size.
+			if (size == 0 || size > getSize())
+			{
+				XENON_LOG_ERROR("Invalid data write size! Write data size: {} Buffer's actual size: {}", size, getSize());
+				return;
+			}
 
 			// If the buffer is either index of vertex, copy to a staging buffer before writing.
 			if (m_Type == BufferType::Index || m_Type == BufferType::Vertex)
@@ -121,7 +128,11 @@ namespace Xenon
 				auto buffer = VulkanBuffer(m_pDevice, size, BufferType::Staging);
 				buffer.write(pData, size, 0);
 
-				copy(&buffer, size, offset);
+				if (pCommandRecorder)
+					pCommandRecorder->as<VulkanCommandRecorder>()->copy(&buffer, 0, this, offset, size);
+
+				else
+					copy(&buffer, size, offset);
 			}
 			else
 			{

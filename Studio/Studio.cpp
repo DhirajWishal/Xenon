@@ -3,6 +3,7 @@
 
 #include "Studio.hpp"
 #include "CacheHandler.hpp"
+#include "Layers/ImGuiLayer.hpp"
 
 #include "Xenon/MeshStorage.hpp"
 #include "Xenon/FrameTimer.hpp"
@@ -12,6 +13,8 @@
 
 #include "Xenon/Layers/ClearScreenLayer.hpp"
 #include "Xenon/Layers/DefaultRasterizingLayer.hpp"
+
+#include <imgui.h>
 
 namespace /* anonymous */
 {
@@ -56,8 +59,8 @@ Studio::Studio(Xenon::BackendType type /*= Xenon::BackendType::Any*/)
 
 void Studio::run()
 {
-	m_Renderer.createLayer<Xenon::ClearScreenLayer>(&m_Camera, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
 	auto pLayer = m_Renderer.createLayer<Xenon::DefaultRasterizingLayer>(&m_Camera);
+	auto pImGui = m_Renderer.createLayer<ImGuiLayer>(&m_Camera);
 
 	auto storage = Xenon::XObject::GetJobSystem().insert([this] { return Xenon::MeshStorage::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"); });
 
@@ -70,8 +73,11 @@ void Studio::run()
 	bool dataLoaded = false;
 
 	Xenon::FrameTimer timer;
-	while (m_Renderer.update())
+	do
 	{
+		// Begin the ImGui scene.
+		pImGui->beginFrame();
+
 		const auto delta = timer.tick();
 
 		// Add the draw data when the model has been loaded.
@@ -80,6 +86,8 @@ void Studio::run()
 			pLayer->addDrawData(storage.get(), pPipeline.get());
 			dataLoaded = true;
 		}
+
+		ImGui::ShowDemoWindow();
 
 		// Move the camera.
 		switch (m_Renderer.getKeyboard().m_Character)
@@ -109,7 +117,10 @@ void Studio::run()
 		}
 
 		m_Camera.update();
-	}
+
+		// End the ImGui scene and render everything.
+		pImGui->endFrame();
+	} while (m_Renderer.update());
 
 	if (!dataLoaded)
 		storage.wait();

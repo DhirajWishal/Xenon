@@ -122,6 +122,20 @@ namespace Xenon
 		 */
 		[[nodiscard]] const Keyboard& getKeyboard() const { return m_pSwapChain->getWindow()->getKeyboard(); }
 
+		/**
+		 * Get the command recorder pointer.
+		 *
+		 * @return The pointer.
+		 */
+		[[nodiscard]] Backend::CommandRecorder* getCommandRecorder() { return m_pCommandRecorder.get(); }
+
+		/**
+		 * Get the command recorder pointer.
+		 *
+		 * @return The pointer.
+		 */
+		[[nodiscard]] const Backend::CommandRecorder* getCommandRecorder() const { return m_pCommandRecorder.get(); }
+
 	private:
 		/**
 		 * Worker function.

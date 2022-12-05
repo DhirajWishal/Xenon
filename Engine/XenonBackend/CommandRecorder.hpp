@@ -113,7 +113,7 @@ namespace Xenon
 
 			/**
 			 * Bind a vertex buffer to the command recorder.
-			 * 
+			 *
 			 * @param pVertexBuffer The vertex buffer pointer.
 			 * @param vertexStride The vertex stride.
 			 */
@@ -121,7 +121,7 @@ namespace Xenon
 
 			/**
 			 * Bind an index buffer to the command recorder.
-			 * 
+			 *
 			 * @param pIndexBuffer The index buffer pointer.
 			 * @param indexStride The stride of a single index.
 			 */
@@ -137,6 +137,28 @@ namespace Xenon
 			 * @param pCameraDescriptor The camera descriptor. Default is nullptr.
 			 */
 			virtual void bind(RasterizingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pCameraDescriptor) = 0;
+
+			/**
+			 * Set the viewport.
+			 *
+			 * @param x The x offset.
+			 * @param y The y offset.
+			 * @param width The width to viewport.
+			 * @param height The height to viewport.
+			 * @param minDepth The minimum depth.
+			 * @param maxDepth The maximum depth.
+			 */
+			virtual void setViewport(float x, float y, float width, float height, float minDepth, float maxDepth) = 0;
+
+			/**
+			 * Set the scissor to draw.
+			 *
+			 * @param x The x offset.
+			 * @param y The y offset.
+			 * @param width The width to scissor.
+			 * @param height The height to scissor.
+			 */
+			virtual void setScissor(int32_t x, int32_t y, uint32_t width, uint32_t height) = 0;
 
 			/**
 			 * Draw using the bound index buffers.
@@ -186,6 +208,13 @@ namespace Xenon
 			 * @return The buffer count.
 			 */
 			[[nodiscard]] uint32_t getBufferCount() const { return m_BufferCount; }
+
+			/**
+			 * Get the current buffer index.
+			 *
+			 * @return The buffer index.
+			 */
+			[[nodiscard]] uint32_t getCurrentIndex() const { return m_CurrentIndex; }
 
 		protected:
 			/**

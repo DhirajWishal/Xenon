@@ -119,6 +119,28 @@ namespace Xenon
 			void bind(RasterizingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pCameraDescriptor) override;
 
 			/**
+			 * Set the viewport.
+			 *
+			 * @param x The x offset.
+			 * @param y The y offset.
+			 * @param width The width to viewport.
+			 * @param height The height to viewport.
+			 * @param minDepth The minimum depth.
+			 * @param maxDepth The maximum depth.
+			 */
+			void setViewport(float x, float y, float width, float height, float minDepth, float maxDepth) override;
+
+			/**
+			 * Set the scissor to draw.
+			 *
+			 * @param x The x offset.
+			 * @param y The y offset.
+			 * @param width The width to scissor.
+			 * @param height The height to scissor.
+			 */
+			void setScissor(int32_t x, int32_t y, uint32_t width, uint32_t height) override;
+
+			/**
 			 * Draw using the bound index buffers.
 			 *
 			 * @param vertexOffset The vertex offset.
@@ -165,6 +187,21 @@ namespace Xenon
 			 * @param pCommandList The command list pointer.
 			 */
 			void setBundle(ID3D12GraphicsCommandList* pCommandList) { m_pBundleCommandList = pCommandList; }
+
+		public:
+			/**
+			 * Get the current command list.
+			 *
+			 * @return The command list pointer.
+			 */
+			[[nodiscard]] ID3D12GraphicsCommandList* getCurrentCommandList() noexcept { return m_pCurrentCommandList; }
+
+			/**
+			 * Get the current command list.
+			 *
+			 * @return The command list pointer.
+			 */
+			[[nodiscard]] const ID3D12GraphicsCommandList* getCurrentCommandList() const noexcept { return m_pCurrentCommandList; }
 
 		private:
 			std::vector<ComPtr<ID3D12CommandAllocator>> m_pCommandAllocators;

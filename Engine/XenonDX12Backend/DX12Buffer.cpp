@@ -3,6 +3,7 @@
 
 #include "DX12Buffer.hpp"
 #include "DX12Macros.hpp"
+#include "DX12CommandRecorder.hpp"
 
 #include <optick.h>
 
@@ -123,38 +124,12 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
-			auto pSourceBuffer = pBuffer->as<DX12Buffer>();
-
 			// Begin the command list.
 			XENON_DX12_ASSERT(m_CommandAllocator->Reset(), "Failed to reset the current command allocator!");
 			XENON_DX12_ASSERT(m_CommandList->Reset(m_CommandAllocator.Get(), nullptr), "Failed to reset the current command list!");
 
-			// Set the proper resource states.
-			// Destination (this)
-			auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(m_pAllocation->GetResource(), m_CurrentState, D3D12_RESOURCE_STATE_COPY_DEST);
-			m_CommandList->ResourceBarrier(1, &barrier);
-
-			// Source
-			if (pSourceBuffer->m_CurrentState != D3D12_RESOURCE_STATE_GENERIC_READ)
-			{
-				barrier = CD3DX12_RESOURCE_BARRIER::Transition(pSourceBuffer->getResource(), pSourceBuffer->m_CurrentState, D3D12_RESOURCE_STATE_COPY_SOURCE);
-				m_CommandList->ResourceBarrier(1, &barrier);
-			}
-
-			// Copy the buffer region.
-			m_CommandList->CopyBufferRegion(m_pAllocation->GetResource(), dstOffset, pSourceBuffer->getResource(), srcOffset, size);
-
-			// Change the state back to previous.
-			// Destination (this)
-			barrier = CD3DX12_RESOURCE_BARRIER::Transition(m_pAllocation->GetResource(), D3D12_RESOURCE_STATE_COPY_DEST, m_CurrentState);
-			m_CommandList->ResourceBarrier(1, &barrier);
-
-			// Source
-			if (pSourceBuffer->m_CurrentState != D3D12_RESOURCE_STATE_GENERIC_READ)
-			{
-				barrier = CD3DX12_RESOURCE_BARRIER::Transition(pSourceBuffer->getResource(), D3D12_RESOURCE_STATE_COPY_SOURCE, pSourceBuffer->m_CurrentState);
-				m_CommandList->ResourceBarrier(1, &barrier);
-			}
+			// Perform the copy.
+			performCopy(m_CommandList.Get(), pBuffer, size, srcOffset, dstOffset);
 
 			// End the command list.
 			XENON_DX12_ASSERT(m_CommandList->Close(), "Failed to stop the current command list!");
@@ -184,7 +159,7 @@ namespace Xenon
 			CloseHandle(fenceEvent);
 		}
 
-		void DX12Buffer::write(const std::byte* pData, uint64_t size, uint64_t offset /*= 0*/)
+		void DX12Buffer::write(const std::byte* pData, uint64_t size, uint64_t offset /*= 0*/, CommandRecorder* pCommandRecorder /*= nullptr*/)
 		{
 			OPTICK_EVENT();
 
@@ -202,7 +177,11 @@ namespace Xenon
 			copyBuffer.getResource()->Unmap(0, nullptr);
 
 			// Finally copy everything to this.
-			copy(&copyBuffer, size, 0, offset);
+			if (pCommandRecorder)
+				performCopy(pCommandRecorder->as<DX12CommandRecorder>()->getCurrentCommandList(), &copyBuffer, size, 0, offset);
+
+			else
+				copy(&copyBuffer, size, 0, offset);
 		}
 
 		const std::byte* DX12Buffer::beginRead()
@@ -236,6 +215,38 @@ namespace Xenon
 			OPTICK_EVENT();
 
 			m_pTemporaryBuffer->getResource()->Unmap(0, nullptr);
+		}
+
+		void DX12Buffer::performCopy(ID3D12GraphicsCommandList* pCommandlist, Buffer* pBuffer, uint64_t size, uint64_t srcOffset /*= 0*/, uint64_t dstOffset /*= 0*/)
+		{
+			auto pSourceBuffer = pBuffer->as<DX12Buffer>();
+
+			// Set the proper resource states.
+			// Destination (this)
+			auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(m_pAllocation->GetResource(), m_CurrentState, D3D12_RESOURCE_STATE_COPY_DEST);
+			pCommandlist->ResourceBarrier(1, &barrier);
+
+			// Source
+			if (pSourceBuffer->m_CurrentState != D3D12_RESOURCE_STATE_GENERIC_READ)
+			{
+				barrier = CD3DX12_RESOURCE_BARRIER::Transition(pSourceBuffer->getResource(), pSourceBuffer->m_CurrentState, D3D12_RESOURCE_STATE_COPY_SOURCE);
+				pCommandlist->ResourceBarrier(1, &barrier);
+			}
+
+			// Copy the buffer region.
+			pCommandlist->CopyBufferRegion(m_pAllocation->GetResource(), dstOffset, pSourceBuffer->getResource(), srcOffset, size);
+
+			// Change the state back to previous.
+			// Destination (this)
+			barrier = CD3DX12_RESOURCE_BARRIER::Transition(m_pAllocation->GetResource(), D3D12_RESOURCE_STATE_COPY_DEST, m_CurrentState);
+			pCommandlist->ResourceBarrier(1, &barrier);
+
+			// Source
+			if (pSourceBuffer->m_CurrentState != D3D12_RESOURCE_STATE_GENERIC_READ)
+			{
+				barrier = CD3DX12_RESOURCE_BARRIER::Transition(pSourceBuffer->getResource(), D3D12_RESOURCE_STATE_COPY_SOURCE, pSourceBuffer->m_CurrentState);
+				pCommandlist->ResourceBarrier(1, &barrier);
+			}
 		}
 	}
 }

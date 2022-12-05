@@ -490,6 +490,13 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
+			// Unbind a render target if one is already bound.
+			if (m_IsRenderTargetBound)
+			{
+				m_IsRenderTargetBound = false;
+				m_pDevice->getDeviceTable().vkCmdEndRenderPass(*m_pCurrentBuffer);
+			}
+
 			VkBufferCopy bufferCopy = {};
 			bufferCopy.size = size;
 			bufferCopy.srcOffset = srcOffset;
@@ -678,6 +685,28 @@ namespace Xenon
 				XENON_LOG_ERROR("Invalid or unsupported index stride!");
 
 			m_pDevice->getDeviceTable().vkCmdBindIndexBuffer(*m_pCurrentBuffer, pIndexBuffer->as<VulkanBuffer>()->getBuffer(), 0, indexType);
+		}
+
+		void VulkanCommandRecorder::setViewport(float x, float y, float width, float height, float minDepth, float maxDepth)
+		{
+			VkViewport viewport = {};
+			viewport.x = x;
+			viewport.y = y;
+			viewport.width = width;
+			viewport.height = height;
+			viewport.minDepth = minDepth;
+			viewport.maxDepth = maxDepth;
+			m_pDevice->getDeviceTable().vkCmdSetViewport(*m_pCurrentBuffer, 0, 1, &viewport);
+		}
+
+		void VulkanCommandRecorder::setScissor(int32_t x, int32_t y, uint32_t width, uint32_t height)
+		{
+			VkRect2D scissorRect = {};
+			scissorRect.offset.x = x;
+			scissorRect.offset.y = y;
+			scissorRect.extent.width = width;
+			scissorRect.extent.height = height;
+			m_pDevice->getDeviceTable().vkCmdSetScissor(*m_pCurrentBuffer, 0, 1, &scissorRect);
 		}
 
 		void VulkanCommandRecorder::drawIndexed(uint64_t vertexOffset, uint64_t indexOffset, uint64_t indexCount, uint32_t instanceCount /*= 1*/, uint32_t firstInstance /*= 0*/)
