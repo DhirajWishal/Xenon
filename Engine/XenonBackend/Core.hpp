@@ -411,6 +411,20 @@ namespace Xenon
 		 */
 		class VertexSpecification final
 		{
+			/**
+			 * Vertex element structure.
+			 */
+			struct VertexElement final
+			{
+				InputElement m_Element = InputElement::Undefined;
+
+				uint8_t m_Size = 0;
+				uint8_t m_Offset = 0;
+
+				AttributeDataType m_AttributeDataType = AttributeDataType::Vec2;
+				ComponentDataType m_ComponentDataType = ComponentDataType::Void;
+			};
+
 		public:
 			/**
 			 * Default constructor.
@@ -427,15 +441,19 @@ namespace Xenon
 			 */
 			VertexSpecification& addElement(InputElement element, AttributeDataType dataType, ComponentDataType componentSize = ComponentDataType::Float)
 			{
-				const auto size = GetComponentTypeSize(componentSize) * GetAttributeDataTypeComponentCount(dataType);
 
 				// Update the information only if it's needed.
-				if (!isAvailable(element) || m_ElementSizes[EnumToInt(element)] != size)
+				if (!isAvailable(element))
 				{
+					m_ElementIndexMap[EnumToInt(element)] = static_cast<uint8_t>(m_Elements.size());
+
+					uint8_t offset = 0;
+					if (!m_Elements.empty())
+						offset = m_Elements.back().m_Offset + m_Elements.back().m_Size;
+
+					m_Elements.emplace_back(element, GetComponentTypeSize(componentSize) * GetAttributeDataTypeComponentCount(dataType), offset, dataType, componentSize);
+
 					m_VertexElements |= 1 << EnumToInt(element);
-					m_ElementSizes[EnumToInt(element)] = static_cast<uint8_t>(size);
-					m_ElementComponentType[EnumToInt(element)] = componentSize;
-					m_ElementAttributeType[EnumToInt(element)] = dataType;
 				}
 
 				return *this;
@@ -447,14 +465,7 @@ namespace Xenon
 			 * @param element The element to get the offset of.
 			 * @return The offset in bytes.
 			 */
-			[[nodiscard]] uint8_t offsetOf(InputElement element) const
-			{
-				uint8_t offset = 0;
-				for (uint8_t i = 0; i < EnumToInt(element); i++)
-					offset += m_ElementSizes[i];
-
-				return offset;
-			}
+			[[nodiscard]] uint8_t offsetOf(InputElement element) const { return m_Elements[m_ElementIndexMap[EnumToInt(element)]].m_Offset; }
 
 			/**
 			 * Get the size of a single element.
@@ -462,7 +473,7 @@ namespace Xenon
 			 * @param element The element to get the size of.
 			 * @return The element's size.
 			 */
-			[[nodiscard]] uint8_t getElementSize(InputElement element) const { return m_ElementSizes[EnumToInt(element)]; }
+			[[nodiscard]] uint8_t getElementSize(InputElement element) const { return m_Elements[m_ElementIndexMap[EnumToInt(element)]].m_Size; }
 
 			/**
 			 * Get the element component data type of a given element.
@@ -470,7 +481,7 @@ namespace Xenon
 			 * @param element The element type.
 			 * @return The component data type.
 			 */
-			[[nodsicard]] ComponentDataType getElementComponentDataType(InputElement element) const { return m_ElementComponentType[EnumToInt(element)]; }
+			[[nodsicard]] ComponentDataType getElementComponentDataType(InputElement element) const { return m_Elements[m_ElementIndexMap[EnumToInt(element)]].m_ComponentDataType; }
 
 			/**
 			 * Get the element attribute data type of a given element.
@@ -478,7 +489,7 @@ namespace Xenon
 			 * @param element The element type.
 			 * @return The attribute data type.
 			 */
-			[[nodsicard]] AttributeDataType getElementAttributeDataType(InputElement element) const { return m_ElementAttributeType[EnumToInt(element)]; }
+			[[nodsicard]] AttributeDataType getElementAttributeDataType(InputElement element) const { return m_Elements[m_ElementIndexMap[EnumToInt(element)]].m_AttributeDataType; }
 
 			/**
 			 * Get the size of the vertex.
@@ -488,8 +499,8 @@ namespace Xenon
 			[[nodiscard]] uint32_t getSize() const noexcept
 			{
 				uint32_t size = 0;
-				for (const auto elementSize : m_ElementSizes)
-					size += elementSize;
+				for (const auto& element : m_Elements)
+					size += element.m_Size;
 
 				return size;
 			}
@@ -503,11 +514,17 @@ namespace Xenon
 			 */
 			[[nodiscard]] bool isAvailable(InputElement element) const noexcept { return m_VertexElements & (1 << EnumToInt(element)); }
 
+			/**
+			 * Generate hash for the vertex specification.
+			 *
+			 * @return The hash value.
+			 */
+			[[nodiscard]] uint64_t generateHash() const { return GenerateHash(ToBytes(m_Elements.data()), sizeof(VertexElement) * m_Elements.size(), m_VertexElements); }
+
 		private:
 			uint32_t m_VertexElements = 0;
-			std::array<uint8_t, EnumToInt(InputElement::VertexElementCount)> m_ElementSizes = { 0 };
-			std::array<AttributeDataType, EnumToInt(InputElement::VertexElementCount)> m_ElementAttributeType = {};
-			std::array<ComponentDataType, EnumToInt(InputElement::VertexElementCount)> m_ElementComponentType = {};
+			std::array<uint8_t, EnumToInt(InputElement::VertexElementCount)> m_ElementIndexMap = { 0 };
+			std::vector<VertexElement> m_Elements;
 		};
 
 		/**

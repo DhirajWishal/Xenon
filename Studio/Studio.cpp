@@ -11,7 +11,6 @@
 #include "XenonCore/Logging.hpp"
 #include "XenonBackend/ShaderSource.hpp"
 
-#include "Xenon/Layers/ClearScreenLayer.hpp"
 #include "Xenon/Layers/DefaultRasterizingLayer.hpp"
 
 #include <imgui.h>
@@ -24,7 +23,7 @@ namespace /* anonymous */
 	 * @param type The type of the backend.
 	 * @return The renderer title.
 	 */
-	std::string GetRendererTitle(Xenon::BackendType type)
+	[[nodiscard]] constexpr std::string GetRendererTitle(Xenon::BackendType type)
 	{
 		switch (type)
 		{
@@ -42,8 +41,16 @@ namespace /* anonymous */
 		}
 	}
 
+	/**
+	 * Check if the future is ready to be read from.
+	 *
+	 * @tparam R The future's value type.
+	 * @param f The future.
+	 * @return True if the future is ready to be read from.
+	 * @return False if the future is not ready to be read from.
+	 */
 	template<typename R>
-	bool is_ready(std::future<R> const& f)
+	[[nodiscard]] bool is_ready(std::future<R> const& f)
 	{
 		return f.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
 	}
@@ -67,7 +74,6 @@ void Studio::run()
 	Xenon::Backend::RasterizingPipelineSpecification specification;
 	specification.m_VertexShader = Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Debugging/Shader.vert.spv");
 	specification.m_FragmentShader = Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Debugging/Shader.frag.spv");
-
 	auto pPipeline = m_Instance.getFactory()->createRasterizingPipeline(m_Instance.getBackendDevice(), std::make_unique<CacheHandler>(), pLayer->getRasterizer(), specification);
 
 	bool dataLoaded = false;
@@ -77,8 +83,6 @@ void Studio::run()
 	{
 		// Begin the ImGui scene.
 		pImGui->beginFrame();
-
-		const auto delta = timer.tick();
 
 		// Add the draw data when the model has been loaded.
 		if (!dataLoaded && is_ready(storage))
@@ -90,6 +94,7 @@ void Studio::run()
 		ImGui::ShowDemoWindow();
 
 		// Move the camera.
+		const auto delta = timer.tick();
 		switch (m_Renderer.getKeyboard().m_Character)
 		{
 		case 'w':

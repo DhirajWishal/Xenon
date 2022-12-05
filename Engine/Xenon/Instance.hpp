@@ -123,48 +123,6 @@ namespace Xenon
 		[[nodiscard]] const Backend::Device* getBackendDevice() const noexcept { return m_pDevice.get(); }
 
 		/**
-		 * Get the default backend image.
-		 *
-		 * @return The image pointer.
-		 */
-		[[nodiscard]] Backend::Image* getDefaultImage() noexcept { return m_pDefaultImage.get(); }
-
-		/**
-		 * Get the default backend image.
-		 *
-		 * @return The image pointer.
-		 */
-		[[nodiscard]] const Backend::Image* getDefaultImage() const noexcept { return m_pDefaultImage.get(); }
-
-		/**
-		 * Get the default backend image view.
-		 *
-		 * @return The image view pointer.
-		 */
-		[[nodiscard]] Backend::ImageView* getDefaultImageView() noexcept { return m_pDefaultImageView.get(); }
-
-		/**
-		 * Get the default backend image view.
-		 *
-		 * @return The image view pointer.
-		 */
-		[[nodiscard]] const Backend::ImageView* getDefaultImageView() const noexcept { return m_pDefaultImageView.get(); }
-
-		/**
-		 * Get the default backend sampler.
-		 *
-		 * @return The sampler pointer.
-		 */
-		[[nodiscard]] Backend::ImageSampler* getDefaultSampler() noexcept { return m_pDefaultSampler.get(); }
-
-		/**
-		 * Get the default backend sampler.
-		 *
-		 * @return The sampler pointer.
-		 */
-		[[nodiscard]] const Backend::ImageSampler* getDefaultSampler() const noexcept { return m_pDefaultSampler.get(); }
-
-		/**
 		 * Get the material database.
 		 *
 		 * @return The database reference.
@@ -195,10 +153,6 @@ namespace Xenon
 
 		MaterialDatabase m_MaterialDatabase;
 		MaterialIdentifier m_DefaultMaterialIdentifier;
-
-		std::unique_ptr<Backend::Image> m_pDefaultImage = nullptr;
-		std::unique_ptr<Backend::ImageView> m_pDefaultImageView = nullptr;
-		std::unique_ptr<Backend::ImageSampler> m_pDefaultSampler = nullptr;
 
 		BackendType m_BackendType = BackendType::Any;
 	};

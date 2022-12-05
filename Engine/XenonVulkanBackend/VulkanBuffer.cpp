@@ -118,14 +118,13 @@ namespace Xenon
 			// If the buffer is either index of vertex, copy to a staging buffer before writing.
 			if (m_Type == BufferType::Index || m_Type == BufferType::Vertex)
 			{
-				auto buffer = VulkanBuffer(m_pDevice, size, BufferType::Staging);
-				buffer.write(pData, size, 0);
+				m_pTemporaryBuffer->write(pData, size, 0);
 
 				if (pCommandRecorder)
-					pCommandRecorder->as<VulkanCommandRecorder>()->copy(&buffer, 0, this, offset, size);
+					pCommandRecorder->as<VulkanCommandRecorder>()->copy(m_pTemporaryBuffer.get(), 0, this, offset, size);
 
 				else
-					copy(&buffer, size, offset);
+					copy(m_pTemporaryBuffer.get(), size, offset);
 			}
 			else
 			{

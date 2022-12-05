@@ -106,13 +106,13 @@ namespace /* anonymous */
 		}
 
 		// Get the buffers.
-		for (const auto& buffer : shader.getConstantBuffers())
-		{
-			auto& range = pushConstants.emplace_back();
-			range.offset = buffer.m_Offset;
-			range.size = buffer.m_Size;
-			range.stageFlags = shaderStage;
-		}
+		// for (const auto& buffer : shader.getConstantBuffers())
+		// {
+		// 	auto& range = pushConstants.emplace_back();
+		// 	range.offset = buffer.m_Offset;
+		// 	range.size = buffer.m_Size;
+		// 	range.stageFlags = shaderStage;
+		// }
 
 		// Setup the input bindings if we're on the vertex shader.
 		if (type & Xenon::Backend::ShaderType::Vertex)
@@ -904,8 +904,6 @@ namespace Xenon
 
 		VulkanRasterizingPipeline::~VulkanRasterizingPipeline()
 		{
-			m_pDevice->waitIdle();
-
 			for (const auto& info : m_ShaderStageCreateInfo)
 				m_pDevice->getDeviceTable().vkDestroyShaderModule(m_pDevice->getLogicalDevice(), info.module, nullptr);
 
@@ -921,7 +919,6 @@ namespace Xenon
 		std::unique_ptr<Xenon::Backend::Descriptor> VulkanRasterizingPipeline::createDescriptor(DescriptorType type)
 		{
 			OPTICK_EVENT();
-
 			return std::make_unique<VulkanDescriptor>(m_pDevice, m_BindingMap[type], type);
 		}
 
@@ -929,7 +926,7 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
-			const auto hash = GenerateHashFor(vertexSpecification);
+			const auto hash = vertexSpecification.generateHash();
 
 			if (!m_Pipelines.contains(hash))
 			{
@@ -1134,7 +1131,7 @@ namespace Xenon
 			m_DepthStencilStateCreateInfo.depthCompareOp = GetCompareOp(m_Specification.m_DepthCompareLogic);
 
 			// Dynamic state.
-			m_DynamicStates = std::move(GetDynamicStates(m_Specification.m_DynamicStateFlags));
+			m_DynamicStates = GetDynamicStates(m_Specification.m_DynamicStateFlags);
 
 			m_DynamicStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 			m_DynamicStateCreateInfo.pNext = VK_NULL_HANDLE;

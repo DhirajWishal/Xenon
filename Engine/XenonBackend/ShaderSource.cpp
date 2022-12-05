@@ -204,23 +204,6 @@ namespace Xenon
 					resource.m_Type = GetResourceType(pResource->descriptor_type);
 				}
 			}
-
-			// Resolve push constants.
-			{
-				uint32_t variableCount = 0;
-				ValidateReflection(spvReflectEnumeratePushConstantBlocks(&reflectionModule, &variableCount, nullptr));
-
-				std::vector<SpvReflectBlockVariable*> pPushConstants(variableCount);
-				ValidateReflection(spvReflectEnumeratePushConstantBlocks(&reflectionModule, &variableCount, pPushConstants.data()));
-
-				// Iterate over the push constants and setup.
-				for (const auto& resource : pPushConstants)
-				{
-					auto& pushConstant = m_ConstantBuffers.emplace_back();
-					pushConstant.m_Size = resource->size;
-					pushConstant.m_Offset = resource->offset;
-				}
-			}
 		}
 	}
 }

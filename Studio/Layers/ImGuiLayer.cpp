@@ -3,81 +3,13 @@
 
 #include "ImGuiLayer.hpp"
 #include "../CacheHandler.hpp"
+#include "../Materials/ImGuiMaterial.hpp"
 
 #include "Xenon/Renderer.hpp"
 
 #include <imgui.h>
 
 constexpr auto g_DefaultMaterialHash = 0;
-
-ImGuiMaterial::ImGuiMaterial(Xenon::Instance& instance)
-	: Xenon::MaterialBlob(instance)
-	, m_pSampler(instance.getFactory()->createImageSampler(instance.getBackendDevice(), {}))
-{
-	ImGuiIO& io = ImGui::GetIO();
-
-	// Get the pixel data.
-	unsigned char* pPixelData = nullptr;
-	int32_t width = 0;
-	int32_t height = 0;
-	io.Fonts->GetTexDataAsRGBA32(&pPixelData, &width, &height);
-
-	// Create the staging buffer.
-	const auto imageSize = static_cast<uint64_t>(width) * height * sizeof(unsigned char[4]);
-	auto pBuffer = instance.getFactory()->createBuffer(instance.getBackendDevice(), imageSize, Xenon::Backend::BufferType::Staging);
-
-	// Copy the data to it.
-	pBuffer->write(Xenon::ToBytes(pPixelData), imageSize);
-
-	// Create the image.
-	Xenon::Backend::ImageSpecification imageSpecification = {};
-	imageSpecification.m_Width = width;
-	imageSpecification.m_Height = height;
-	imageSpecification.m_Format = Xenon::Backend::DataFormat::R8G8B8A8_SRGB;
-
-	m_pImage = instance.getFactory()->createImage(instance.getBackendDevice(), imageSpecification);
-
-	// Copy the image data from the buffer to the image.
-	m_pImage->copyFrom(pBuffer.get());
-
-	// Create the image view.
-	m_pImageView = instance.getFactory()->createImageView(instance.getBackendDevice(), m_pImage.get(), {});
-}
-
-ImGuiMaterial::ImGuiMaterial(Xenon::Instance& instance, Xenon::Backend::Image* pImage)
-	: Xenon::MaterialBlob(instance)
-	, m_pSampler(instance.getFactory()->createImageSampler(instance.getBackendDevice(), {}))
-{
-
-}
-
-Xenon::Backend::RasterizingPipelineSpecification ImGuiMaterial::getRasterizingSpecification()
-{
-	Xenon::Backend::ColorBlendAttachment attachment = {};
-	attachment.m_EnableBlend = true;
-	attachment.m_SrcBlendFactor = Xenon::Backend::ColorBlendFactor::SourceAlpha;
-	attachment.m_DstBlendFactor = Xenon::Backend::ColorBlendFactor::OneMinusSourceAlpha;
-	attachment.m_BlendOperator = Xenon::Backend::ColorBlendOperator::Add;
-	attachment.m_SrcAlphaBlendFactor = Xenon::Backend::ColorBlendFactor::OneMinusSourceAlpha;
-	attachment.m_DstAlphaBlendFactor = Xenon::Backend::ColorBlendFactor::Zero;
-	attachment.m_AlphaBlendOperator = Xenon::Backend::ColorBlendOperator::Add;
-
-	Xenon::Backend::RasterizingPipelineSpecification specification = {};
-	specification.m_VertexShader = Xenon::Backend::ShaderSource::FromFile("Shaders/ImGuiLayer/Shader.vert.spv");
-	specification.m_FragmentShader = Xenon::Backend::ShaderSource::FromFile("Shaders/ImGuiLayer/Shader.frag.spv");
-	specification.m_ColorBlendAttachments = { attachment };
-	specification.m_DepthCompareLogic = Xenon::Backend::DepthCompareLogic::Always;
-
-	return specification;
-}
-
-std::unique_ptr<Xenon::Backend::Descriptor> ImGuiMaterial::createDescriptor(Xenon::Backend::Pipeline* pPipeline)
-{
-	auto pDescriptor = pPipeline->createDescriptor(Xenon::Backend::DescriptorType::Material);
-	pDescriptor->attach(0, m_pImage.get(), m_pImageView.get(), m_pSampler.get(), Xenon::Backend::ImageUsage::Graphics);
-
-	return pDescriptor;
-}
 
 ImGuiLayer::ImGuiLayer(Xenon::Renderer& renderer, Xenon::Backend::Camera* pCamera)
 	: RasterizingLayer(renderer, pCamera, Xenon::Backend::AttachmentType::Color)
@@ -98,19 +30,71 @@ ImGuiLayer::~ImGuiLayer()
 void ImGuiLayer::beginFrame() const
 {
 	ImGui::NewFrame();
+
+	// Process the ImGui events.
+	auto& io = ImGui::GetIO();
+	switch (m_Renderer.getMouse().m_ButtonLeft)
+	{
+	case Xenon::MouseButtonEvent::Release:
+		io.AddMouseButtonEvent(ImGuiMouseButton_Left, false);
+		break;
+
+	case Xenon::MouseButtonEvent::Press:
+		io.AddMouseButtonEvent(ImGuiMouseButton_Left, true);
+		break;
+
+	case Xenon::MouseButtonEvent::DoublePress:
+		io.AddMouseButtonEvent(ImGuiMouseButton_Left, true);
+		break;
+
+	default:
+		break;
+	}
+
+	switch (m_Renderer.getMouse().m_ButtonMiddle)
+	{
+	case Xenon::MouseButtonEvent::Release:
+		io.AddMouseButtonEvent(ImGuiMouseButton_Middle, false);
+		break;
+
+	case Xenon::MouseButtonEvent::Press:
+		io.AddMouseButtonEvent(ImGuiMouseButton_Middle, true);
+		break;
+
+	case Xenon::MouseButtonEvent::DoublePress:
+		io.AddMouseButtonEvent(ImGuiMouseButton_Middle, true);
+		break;
+
+	default:
+		break;
+	}
+
+	switch (m_Renderer.getMouse().m_ButtonRight)
+	{
+	case Xenon::MouseButtonEvent::Release:
+		io.AddMouseButtonEvent(ImGuiMouseButton_Right, false);
+		break;
+
+	case Xenon::MouseButtonEvent::Press:
+		io.AddMouseButtonEvent(ImGuiMouseButton_Right, true);
+		break;
+
+	case Xenon::MouseButtonEvent::DoublePress:
+		io.AddMouseButtonEvent(ImGuiMouseButton_Right, true);
+		break;
+
+	default:
+		break;
+	}
+
+	io.AddMouseWheelEvent(m_Renderer.getMouse().m_HScroll, m_Renderer.getMouse().m_VScroll);
+	io.AddMousePosEvent(m_Renderer.getMouse().m_MousePosition.m_XAxis, m_Renderer.getMouse().m_MousePosition.m_YAxis);
+	io.AddInputCharacter(m_Renderer.getKeyboard().m_Character);
 }
 
-void ImGuiLayer::endFrame()
+void ImGuiLayer::endFrame() const
 {
 	ImGui::Render();
-
-	// // Create the task to prepare the resources if we haven't already.
-	// if (m_pTaskNode == nullptr)
-	// 	m_pTaskNode = m_Renderer.getTaskGraph().create([this] { prepareResources(); });
-	// 
-	// // If we do, just reset it.
-	// else
-	// 	m_pTaskNode->reset();
 }
 
 void ImGuiLayer::bind(Xenon::Layer* pPreviousLayer, Xenon::Backend::CommandRecorder* pCommandRecorder)
@@ -123,11 +107,10 @@ void ImGuiLayer::bind(Xenon::Layer* pPreviousLayer, Xenon::Backend::CommandRecor
 	if (!pDrawData || pDrawData->CmdListsCount == 0)
 		return;
 
-	const auto& io = ImGui::GetIO();
-
 	pCommandRecorder->bind(m_pRasterizer.get(), { glm::vec4(0.0f, 0.0f, 0.0f, 1.0f) });
 	pCommandRecorder->bind(m_pPipeline.get(), m_VertexSpecification);
 
+	const auto& io = ImGui::GetIO();
 	m_UserData.m_Scale = glm::vec2(2.0f / io.DisplaySize.x, 2.0f / io.DisplaySize.y);
 	m_UserData.m_Translate = glm::vec2(-1.0f);
 	m_pUniformBuffer->write(Xenon::ToBytes(&m_UserData), sizeof(UserData), 0, pCommandRecorder);
@@ -135,29 +118,30 @@ void ImGuiLayer::bind(Xenon::Layer* pPreviousLayer, Xenon::Backend::CommandRecor
 	const auto frameIndex = pCommandRecorder->getCurrentIndex();
 	pCommandRecorder->bind(m_pVertexBuffers[frameIndex].get(), sizeof(ImDrawVert));
 	pCommandRecorder->bind(m_pIndexBuffers[frameIndex].get(), static_cast<Xenon::Backend::IndexBufferStride>(sizeof(ImDrawIdx)));
+	pCommandRecorder->setViewport(0.0f, 0.0f, static_cast<float>(m_Renderer.getCamera()->getWidth()), static_cast<float>(m_Renderer.getCamera()->getHeight()), 0.0f, 1.0f);
 
-	uint32_t vertexOffset = 0;
 	uint32_t indexOffset = 0;
+	uint32_t vertexOffset = 0;
 	for (uint32_t i = 0; i < pDrawData->CmdListsCount; i++)
 	{
-		const auto* cmd_list = pDrawData->CmdLists[i];
-		for (uint32_t j = 0; j < cmd_list->CmdBuffer.Size; j++)
+		const auto* pCommandList = pDrawData->CmdLists[i];
+		for (uint32_t j = 0; j < pCommandList->CmdBuffer.Size; j++)
 		{
-			const auto* pcmd = &cmd_list->CmdBuffer[j];
+			const auto* pCommandBuffer = &pCommandList->CmdBuffer[j];
 
-			pCommandRecorder->setViewport(0.0f, 0.0f, static_cast<float>(m_Renderer.getCamera()->getWidth()), static_cast<float>(m_Renderer.getCamera()->getHeight()), 0.0f, 1.0f);
 			pCommandRecorder->setScissor(
-				std::max(static_cast<int32_t>(pcmd->ClipRect.x), 0),
-				std::max(static_cast<int32_t>(pcmd->ClipRect.y), 0),
-				static_cast<uint32_t>(pcmd->ClipRect.z - pcmd->ClipRect.x),
-				static_cast<uint32_t>(pcmd->ClipRect.w - pcmd->ClipRect.y)
+				std::max(static_cast<int32_t>(pCommandBuffer->ClipRect.x), 0),
+				std::max(static_cast<int32_t>(pCommandBuffer->ClipRect.y), 0),
+				static_cast<uint32_t>(pCommandBuffer->ClipRect.z - pCommandBuffer->ClipRect.x),
+				static_cast<uint32_t>(pCommandBuffer->ClipRect.w - pCommandBuffer->ClipRect.y)
 			);
 
-			pCommandRecorder->bind(m_pPipeline.get(), m_pUserDescriptor.get(), m_pDescriptorSetMap[std::bit_cast<uint64_t>(pcmd->TextureId)].get(), nullptr);
-			pCommandRecorder->drawIndexed(vertexOffset, indexOffset, pcmd->ElemCount);
-			indexOffset += pcmd->ElemCount;
+			pCommandRecorder->bind(m_pPipeline.get(), m_pUserDescriptor.get(), m_pDescriptorSetMap[std::bit_cast<uint64_t>(pCommandBuffer->TextureId)].get(), nullptr);
+			pCommandRecorder->drawIndexed(pCommandBuffer->VtxOffset + vertexOffset, pCommandBuffer->IdxOffset + indexOffset, pCommandBuffer->ElemCount);
 		}
-		vertexOffset += cmd_list->VtxBuffer.Size;
+
+		indexOffset += pCommandList->IdxBuffer.Size;
+		vertexOffset += pCommandList->VtxBuffer.Size;
 	}
 }
 
@@ -199,7 +183,6 @@ void ImGuiLayer::setupDefaultMaterial()
 
 void ImGuiLayer::prepareResources(Xenon::Backend::CommandRecorder* pCommandRecorder)
 {
-	const auto frameIndex = pCommandRecorder->getCurrentIndex();
 	const auto* pDrawData = ImGui::GetDrawData();
 
 	// Return if we don't have any draw data.
@@ -214,6 +197,7 @@ void ImGuiLayer::prepareResources(Xenon::Backend::CommandRecorder* pCommandRecor
 		return;
 
 	// Setup the vertex buffer if necessary.
+	const auto frameIndex = pCommandRecorder->getCurrentIndex();
 	if (!m_pVertexBuffers[frameIndex] || m_pVertexBuffers[frameIndex]->getSize() < vertexBufferSize)
 		m_pVertexBuffers[frameIndex] = m_Renderer.getInstance().getFactory()->createBuffer(m_Renderer.getInstance().getBackendDevice(), getNextBufferSize(vertexBufferSize), Xenon::Backend::BufferType::Vertex);
 

@@ -676,7 +676,7 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
-			const auto hash = GenerateHashFor(vertexSpecification);
+			const auto hash = vertexSpecification.generateHash();
 
 			if (!m_Pipelines.contains(hash))
 			{

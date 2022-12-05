@@ -4,55 +4,9 @@
 #pragma once
 
 #include "Xenon/RasterizingLayer.hpp"
-#include "Xenon/MaterialBlob.hpp"
 
-#include "XenonCore/TaskNode.hpp"
 #include "XenonBackend/Buffer.hpp"
 #include "XenonBackend/RasterizingPipeline.hpp"
-
-/**
- * ImGui material class.
- */
-class ImGuiMaterial final : public Xenon::MaterialBlob
-{
-public:
-	/**
-	 * Explicit constructor.
-	 *
-	 * @param instance The instance reference.
-	 */
-	explicit ImGuiMaterial(Xenon::Instance& instance);
-
-	/**
-	 * Explicit constructor.
-	 *
-	 * @param instance The instance reference.
-	 * @param pImage The image pointer to create the image with.
-	 */
-	explicit ImGuiMaterial(Xenon::Instance& instance, Xenon::Backend::Image* pImage);
-
-	/**
-	 * Get the rasterizing pipeline specification.
-	 *
-	 * @return The pipeline specification.
-	 */
-	[[nodiscard]] Xenon::Backend::RasterizingPipelineSpecification getRasterizingSpecification() override;
-
-	/**
-	 * Create the material descriptor for the current material.
-	 *
-	 * @param pPipeline The pipeline pointer to create the material descriptor from.
-	 * @return The material pointer.
-	 */
-	[[nodiscard]] std::unique_ptr<Xenon::Backend::Descriptor> createDescriptor(Xenon::Backend::Pipeline* pPipeline) override;
-
-private:
-	Xenon::Backend::RasterizingPipelineSpecification m_RasterizingPipelineSpecification = {};
-
-	std::unique_ptr<Xenon::Backend::Image> m_pImage = nullptr;
-	std::unique_ptr<Xenon::Backend::ImageView> m_pImageView = nullptr;
-	std::unique_ptr<Xenon::Backend::ImageSampler> m_pSampler = nullptr;
-};
 
 /**
  * ImGui layer class.
@@ -93,7 +47,7 @@ public:
 	 * End the frame.
 	 * This function must be called to render things on the screen!
 	 */
-	void endFrame();
+	void endFrame() const;
 
 	/**
 	 * Bind the layer to the command recorder.
@@ -133,15 +87,13 @@ private:
 private:
 	std::unordered_map<uint64_t, std::unique_ptr<Xenon::Backend::Descriptor>> m_pDescriptorSetMap;
 
-	std::shared_ptr<Xenon::TaskNode> m_pTaskNode = nullptr;
-
 	std::unique_ptr<Xenon::Backend::RasterizingPipeline> m_pPipeline = nullptr;
+
 	std::unique_ptr<Xenon::Backend::Descriptor> m_pUserDescriptor = nullptr;
+	std::unique_ptr<Xenon::Backend::Buffer> m_pUniformBuffer = nullptr;
 
 	std::vector<std::unique_ptr<Xenon::Backend::Buffer>> m_pVertexBuffers;
 	std::vector<std::unique_ptr<Xenon::Backend::Buffer>> m_pIndexBuffers;
-
-	std::unique_ptr<Xenon::Backend::Buffer> m_pUniformBuffer = nullptr;
 
 	Xenon::Backend::VertexSpecification m_VertexSpecification;
 

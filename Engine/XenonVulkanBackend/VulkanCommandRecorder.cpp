@@ -548,6 +548,47 @@ namespace Xenon
 			changeImageLayout(currentSwapchainImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_IMAGE_ASPECT_COLOR_BIT);
 		}
 
+		void VulkanCommandRecorder::copy(Image* pSource, const glm::vec3& sourceOffset, Image* pDestination, const glm::vec3& destinationOffset)
+		{
+			OPTICK_EVENT();
+
+			auto pVkSourceImage = pSource->as<VulkanImage>();
+			auto pVkDestinationImage = pDestination->as<VulkanImage>();
+
+			VkImageBlit blit = {};
+			blit.srcSubresource.aspectMask = pVkSourceImage->getUsage() & ImageUsage::DepthAttachment ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+			blit.srcSubresource.baseArrayLayer = 0;
+			blit.srcSubresource.layerCount = 1;
+			blit.srcSubresource.mipLevel = 0;
+			blit.srcOffsets[0].x = static_cast<int32_t>(sourceOffset.x);
+			blit.srcOffsets[0].y = static_cast<int32_t>(sourceOffset.y);
+			blit.srcOffsets[0].z = static_cast<int32_t>(sourceOffset.z);
+			blit.srcOffsets[1].x = static_cast<int32_t>(pVkSourceImage->getWidth()) - blit.srcOffsets[0].x;
+			blit.srcOffsets[1].y = static_cast<int32_t>(pVkSourceImage->getHeight()) - blit.srcOffsets[0].y;
+			blit.srcOffsets[1].z = static_cast<int32_t>(pVkSourceImage->getDepth()) - blit.srcOffsets[0].z;
+			blit.dstSubresource.aspectMask = pVkDestinationImage->getUsage() & ImageUsage::DepthAttachment ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+			blit.dstSubresource.baseArrayLayer = 0;
+			blit.dstSubresource.layerCount = 1;
+			blit.dstSubresource.mipLevel = 0;
+			blit.dstOffsets[0].x = static_cast<int32_t>(destinationOffset.x);
+			blit.dstOffsets[0].y = static_cast<int32_t>(destinationOffset.y);
+			blit.dstOffsets[0].z = static_cast<int32_t>(destinationOffset.z);
+			blit.dstOffsets[1].x = static_cast<int32_t>(pVkDestinationImage->getWidth()) - blit.dstOffsets[0].x;
+			blit.dstOffsets[1].y = static_cast<int32_t>(pVkDestinationImage->getHeight()) - blit.dstOffsets[0].y;
+			blit.dstOffsets[1].z = static_cast<int32_t>(pVkDestinationImage->getDepth()) - blit.dstOffsets[0].z;
+
+			// Prepare to transfer.
+			changeImageLayout(pVkSourceImage->getImage(), pVkSourceImage->getImageLayout(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, blit.srcSubresource.aspectMask);
+			changeImageLayout(pVkDestinationImage->getImage(), pVkDestinationImage->getImageLayout(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, blit.dstSubresource.aspectMask);
+
+			// Copy the image.
+			m_pDevice->getDeviceTable().vkCmdBlitImage(*m_pCurrentBuffer, pVkSourceImage->getImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, pVkDestinationImage->getImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit, VK_FILTER_LINEAR);
+
+			// Change back to previous.
+			changeImageLayout(pVkSourceImage->getImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, pVkSourceImage->getImageLayout(), blit.srcSubresource.aspectMask);
+			changeImageLayout(pVkDestinationImage->getImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, pVkDestinationImage->getImageLayout(), blit.dstSubresource.aspectMask);
+		}
+
 		void VulkanCommandRecorder::copy(Buffer* pSource, uint64_t bufferOffset, Image* pImage, glm::vec3 imageSize, glm::vec3 imageOffset /*= glm::vec3(0)*/)
 		{
 			OPTICK_EVENT();

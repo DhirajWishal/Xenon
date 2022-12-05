@@ -84,6 +84,16 @@ namespace Xenon
 			virtual void copy(Image* pSource, Swapchain* pDestination) = 0;
 
 			/**
+			 * Copy a source image to the destination image.
+			 *
+			 * @param pSource The source image pointer.
+			 * @param sourceOffset The source image's offset.
+			 * @param pDestination The destination image pointer.
+			 * @param destinationOffset The destination image's offset.
+			 */
+			virtual void copy(Image* pSource, const glm::vec3& sourceOffset, Image* pDestination, const glm::vec3& destinationOffset) = 0;
+
+			/**
 			 * Copy image data from a buffer to an image.
 			 *
 			 * @param pSource The source buffer pointer.

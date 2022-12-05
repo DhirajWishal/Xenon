@@ -32,16 +32,6 @@ namespace Xenon
 		};
 
 		/**
-		 * Shader constant buffer structure.
-		 * Constant buffers are data sent to shaders/ pipelines at draw time.
-		 */
-		struct ConstantBuffer final
-		{
-			uint32_t m_Size = 0;
-			uint32_t m_Offset = 0;
-		};
-
-		/**
 		 * Shader source class.
 		 * Shaders are programs that are run on the GPU for specific tasks. This class contains the shader code in the
 		 * SPIR-V format (it will be converted to the appropriate format from the backend).
@@ -122,13 +112,6 @@ namespace Xenon
 			 */
 			[[nodiscard]] const std::vector<ShaderResource>& getResources() const { return m_Resources; }
 
-			/**
-			 * Get the constant buffers.
-			 *
-			 * @return The shader constant buffers.
-			 */
-			[[nodiscard]] const std::vector<ConstantBuffer>& getConstantBuffers() const { return m_ConstantBuffers; }
-
 		private:
 			/**
 			 * Perform reflection over the binary source and get information about inputs, outputs and resources.
@@ -141,7 +124,6 @@ namespace Xenon
 			std::vector<ShaderAttribute> m_InputAttributes;
 			std::vector<ShaderAttribute> m_OutputAttributes;
 			std::vector<ShaderResource> m_Resources;
-			std::vector<ConstantBuffer> m_ConstantBuffers;
 		};
 	}
 }

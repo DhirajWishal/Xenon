@@ -8,6 +8,7 @@
 
 #include <optick.h>
 
+// This magic number is used by the rasterizing pipeline to uniquely identify it's pipeline caches.
 constexpr auto g_MagicNumber = 0b0110010000111101101100100010100110111011101010111010111010000001;
 
 namespace /* anonymous */
@@ -32,14 +33,14 @@ namespace /* anonymous */
 			binding.m_ApplicableShaders = Xenon::Backend::ShaderType::Compute;
 		}
 
-		// Get the buffers.
-		for (const auto& buffer : shader.getConstantBuffers())
-		{
-			auto& range = pushConstants.emplace_back();
-			range.offset = buffer.m_Offset;
-			range.size = buffer.m_Size;
-			range.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
-		}
+		// // Get the buffers.
+		// for (const auto& buffer : shader.getConstantBuffers())
+		// {
+		// 	auto& range = pushConstants.emplace_back();
+		// 	range.offset = buffer.m_Offset;
+		// 	range.size = buffer.m_Size;
+		// 	range.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
+		// }
 	}
 }
 

@@ -8,6 +8,7 @@
 #include <spirv_hlsl.hpp>
 #include <optick.h>
 
+// This magic number is used by the rasterizing pipeline to uniquely identify it's pipeline caches.
 constexpr auto g_MagicNumber = 0b0111100101110000101100010000110010100010001110011100010100011001;
 
 namespace /* anonymous */

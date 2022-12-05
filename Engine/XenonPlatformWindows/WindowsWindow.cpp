@@ -122,6 +122,8 @@ namespace Xenon
 			OPTICK_EVENT();
 
 			m_Keyboard.m_Character = 0;
+			m_Mouse.m_VScroll = 0.0f;
+			m_Mouse.m_HScroll = 0.0f;
 
 			if (MSG message = {}; PeekMessage(&message, m_WindowHandle, NULL, NULL, PM_REMOVE))
 			{
@@ -192,10 +194,36 @@ namespace Xenon
 				if (wParam & MK_LBUTTON) m_Mouse.m_ButtonLeft = MouseButtonEvent::Press;
 				if (wParam & MK_MBUTTON) m_Mouse.m_ButtonMiddle = MouseButtonEvent::Press;
 				if (wParam & MK_RBUTTON) m_Mouse.m_ButtonRight = MouseButtonEvent::Press;
-				if (wParam & MK_RBUTTON) m_Keyboard.m_LeftShift = m_Keyboard.m_RightShift = true;
+				if (wParam & MK_SHIFT) m_Keyboard.m_LeftShift = m_Keyboard.m_RightShift = true;
 
-				m_Mouse.m_MousePosition.m_XAxis = static_cast<WORD>(GET_X_LPARAM(lParam));
-				m_Mouse.m_MousePosition.m_YAxis = static_cast<WORD>(GET_Y_LPARAM(lParam));
+				m_Mouse.m_MousePosition.m_XAxis = static_cast<float>(GET_X_LPARAM(lParam));
+				m_Mouse.m_MousePosition.m_YAxis = static_cast<float>(GET_Y_LPARAM(lParam));
+				return 0;
+
+			case WM_MOUSEWHEEL:
+				m_Mouse.m_VScroll = static_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA;
+
+				if (wParam & MK_CONTROL) m_Keyboard.m_LeftControl = m_Keyboard.m_RightControl = true;
+				if (wParam & MK_LBUTTON) m_Mouse.m_ButtonLeft = MouseButtonEvent::Press;
+				if (wParam & MK_MBUTTON) m_Mouse.m_ButtonMiddle = MouseButtonEvent::Press;
+				if (wParam & MK_RBUTTON) m_Mouse.m_ButtonRight = MouseButtonEvent::Press;
+				if (wParam & MK_SHIFT) m_Keyboard.m_LeftShift = m_Keyboard.m_RightShift = true;
+
+				m_Mouse.m_MousePosition.m_XAxis = static_cast<float>(GET_X_LPARAM(lParam));
+				m_Mouse.m_MousePosition.m_YAxis = static_cast<float>(GET_Y_LPARAM(lParam));
+				return 0;
+
+			case WM_MOUSEHWHEEL:
+				m_Mouse.m_HScroll = static_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA;
+
+				if (wParam & MK_CONTROL) m_Keyboard.m_LeftControl = m_Keyboard.m_RightControl = true;
+				if (wParam & MK_LBUTTON) m_Mouse.m_ButtonLeft = MouseButtonEvent::Press;
+				if (wParam & MK_MBUTTON) m_Mouse.m_ButtonMiddle = MouseButtonEvent::Press;
+				if (wParam & MK_RBUTTON) m_Mouse.m_ButtonRight = MouseButtonEvent::Press;
+				if (wParam & MK_SHIFT) m_Keyboard.m_LeftShift = m_Keyboard.m_RightShift = true;
+
+				m_Mouse.m_MousePosition.m_XAxis = static_cast<float>(GET_X_LPARAM(lParam));
+				m_Mouse.m_MousePosition.m_YAxis = static_cast<float>(GET_Y_LPARAM(lParam));
 				return 0;
 
 			case WM_KEYDOWN:

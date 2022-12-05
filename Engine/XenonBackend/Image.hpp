@@ -81,6 +81,13 @@ namespace Xenon
 			[[nodiscard]] uint32_t getHeight() const { return m_Specification.m_Height; }
 
 			/**
+			 * Get the depth of the image.
+			 *
+			 * @return The image's depth.
+			 */
+			[[nodiscard]] uint32_t getDepth() const { return m_Specification.m_Depth; }
+
+			/**
 			 * Get the image's data format.
 			 *
 			 * @return The format.

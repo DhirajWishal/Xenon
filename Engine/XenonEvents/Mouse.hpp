@@ -34,6 +34,9 @@ namespace Xenon
 	{
 		MousePosition m_MousePosition;
 
+		float m_VScroll = 0.0;
+		float m_HScroll = 0.0;
+
 		MouseButtonEvent m_ButtonLeft : 2 = MouseButtonEvent::Release;
 		MouseButtonEvent m_ButtonRight : 2 = MouseButtonEvent::Release;
 		MouseButtonEvent m_ButtonMiddle : 2 = MouseButtonEvent::Release;
