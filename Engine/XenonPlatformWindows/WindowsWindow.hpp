@@ -77,7 +77,15 @@ namespace Xenon
 			 * @param lParam The lParam.
 			 * @return The result.
 			 */
-			LRESULT handleEvent(UINT uMsg, WPARAM wParam, LPARAM lParam);
+			[[nodiscard]] LRESULT handleEvent(UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+			/**
+			 * Handle the key input.
+			 *
+			 * @param wParam The wparam.
+			 * @param state The key state. true = key down, false = key up.
+			 */
+			[[nodiscard]] LRESULT handleKeyInput(WPARAM wParam, bool state);
 
 		private:
 			std::function<void()> m_OnPaintCallback = nullptr;

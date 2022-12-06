@@ -197,7 +197,6 @@ namespace Xenon
 				return 0;
 
 			case WM_MOUSEMOVE:
-			{
 				if (wParam & MK_CONTROL) m_Keyboard.m_LeftControl = m_Keyboard.m_RightControl = true;
 				if (wParam & MK_LBUTTON) m_Mouse.m_ButtonLeft = MouseButtonEvent::Press;
 				if (wParam & MK_MBUTTON) m_Mouse.m_ButtonMiddle = MouseButtonEvent::Press;
@@ -207,692 +206,41 @@ namespace Xenon
 				m_Mouse.m_MousePosition.m_XAxis = static_cast<float>(GET_X_LPARAM(lParam));
 				m_Mouse.m_MousePosition.m_YAxis = static_cast<float>(GET_Y_LPARAM(lParam));
 				return 0;
-			}
 
 			case WM_MOUSEWHEEL:
-			{
 				if (wParam & MK_CONTROL) m_Keyboard.m_LeftControl = m_Keyboard.m_RightControl = true;
 				if (wParam & MK_LBUTTON) m_Mouse.m_ButtonLeft = MouseButtonEvent::Press;
 				if (wParam & MK_MBUTTON) m_Mouse.m_ButtonMiddle = MouseButtonEvent::Press;
 				if (wParam & MK_RBUTTON) m_Mouse.m_ButtonRight = MouseButtonEvent::Press;
 				if (wParam & MK_SHIFT) m_Keyboard.m_LeftShift = m_Keyboard.m_RightShift = true;
-
-				m_Mouse.m_MousePosition.m_XAxis = static_cast<float>(GET_X_LPARAM(lParam));
-				m_Mouse.m_MousePosition.m_YAxis = static_cast<float>(GET_Y_LPARAM(lParam));
 
 				m_Mouse.m_VScroll = static_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA;
 				return 0;
-			}
 
 			case WM_MOUSEHWHEEL:
-			{
 				if (wParam & MK_CONTROL) m_Keyboard.m_LeftControl = m_Keyboard.m_RightControl = true;
 				if (wParam & MK_LBUTTON) m_Mouse.m_ButtonLeft = MouseButtonEvent::Press;
 				if (wParam & MK_MBUTTON) m_Mouse.m_ButtonMiddle = MouseButtonEvent::Press;
 				if (wParam & MK_RBUTTON) m_Mouse.m_ButtonRight = MouseButtonEvent::Press;
 				if (wParam & MK_SHIFT) m_Keyboard.m_LeftShift = m_Keyboard.m_RightShift = true;
 
-				m_Mouse.m_MousePosition.m_XAxis = static_cast<float>(GET_X_LPARAM(lParam));
-				m_Mouse.m_MousePosition.m_YAxis = static_cast<float>(GET_Y_LPARAM(lParam));
-
 				m_Mouse.m_HScroll = static_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA;
 				return 0;
-			}
 
 			case WM_KEYDOWN:
-				switch (wParam)
-				{
-				case VK_LBUTTON:
-					m_Mouse.m_ButtonLeft = MouseButtonEvent::Press;
-					break;
-
-				case VK_RBUTTON:
-					m_Mouse.m_ButtonRight = MouseButtonEvent::Press;
-					break;
-
-				case VK_MBUTTON:
-					m_Mouse.m_ButtonMiddle = MouseButtonEvent::Press;
-					break;
-
-				case VK_BACK:
-					m_Keyboard.m_Backspace = true;
-					break;
-
-				case VK_TAB:
-					m_Keyboard.m_Tab = true;
-					break;
-
-				case VK_RETURN:
-					m_Keyboard.m_Enter = true;
-					break;
-
-				case VK_PAUSE:
-					m_Keyboard.m_Pause = true;
-					break;
-
-				case VK_CAPITAL:
-					m_Keyboard.m_CapsLock = true;
-					break;
-
-				case VK_ESCAPE:
-					m_Keyboard.m_Escape = true;
-					break;
-
-				case VK_SPACE:
-					m_Keyboard.m_Space = true;
-					break;
-
-				case VK_PRIOR:
-					m_Keyboard.m_PageUp = true;
-					break;
-
-				case VK_NEXT:
-					m_Keyboard.m_PageDown = true;
-					break;
-
-				case VK_END:
-					m_Keyboard.m_End = true;
-					break;
-
-				case VK_HOME:
-					m_Keyboard.m_Home = true;
-					break;
-
-				case VK_LEFT:
-					m_Keyboard.m_Left = true;
-					break;
-
-				case VK_UP:
-					m_Keyboard.m_Up = true;
-					break;
-
-				case VK_RIGHT:
-					m_Keyboard.m_Right = true;
-					break;
-
-				case VK_DOWN:
-					m_Keyboard.m_Down = true;
-					break;
-
-				case VK_SNAPSHOT:
-					m_Keyboard.m_PrintScreen = true;
-					break;
-
-				case VK_INSERT:
-					m_Keyboard.m_Insert = true;
-					break;
-
-				case VK_DELETE:
-					m_Keyboard.m_Delete = true;
-					break;
-
-				case 0x30:
-					m_Keyboard.m_KeyZero = true;
-					break;
-
-				case 0x31:
-					m_Keyboard.m_KeyOne = true;
-					break;
-
-				case 0x32:
-					m_Keyboard.m_KeyTwo = true;
-					break;
-
-				case 0x33:
-					m_Keyboard.m_KeyThree = true;
-					break;
-
-				case 0x34:
-					m_Keyboard.m_KeyFour = true;
-					break;
-
-				case 0x35:
-					m_Keyboard.m_KeyFive = true;
-					break;
-
-				case 0x36:
-					m_Keyboard.m_KeySix = true;
-					break;
-
-				case 0x37:
-					m_Keyboard.m_KeySeven = true;
-					break;
-
-				case 0x38:
-					m_Keyboard.m_KeyEight = true;
-					break;
-
-				case 0x39:
-					m_Keyboard.m_KeyNine = true;
-					break;
-
-				case VK_LWIN:
-					m_Keyboard.m_LeftSuper = true;
-					break;
-
-				case VK_RWIN:
-					m_Keyboard.m_RightSuper = true;
-					break;
-
-				case VK_NUMPAD0:
-					m_Keyboard.m_KeyPadZero = true;
-					break;
-
-				case VK_NUMPAD1:
-					m_Keyboard.m_KeyPadOne = true;
-					break;
-
-				case VK_NUMPAD2:
-					m_Keyboard.m_KeyPadTwo = true;
-					break;
-
-				case VK_NUMPAD3:
-					m_Keyboard.m_KeyPadThree = true;
-					break;
-
-				case VK_NUMPAD4:
-					m_Keyboard.m_KeyPadFour = true;
-					break;
-
-				case VK_NUMPAD5:
-					m_Keyboard.m_KeyPadFive = true;
-					break;
-
-				case VK_NUMPAD6:
-					m_Keyboard.m_KeyPadSix = true;
-					break;
-
-				case VK_NUMPAD7:
-					m_Keyboard.m_KeyPadSeven = true;
-					break;
-
-				case VK_NUMPAD8:
-					m_Keyboard.m_KeyPadEight = true;
-					break;
-
-				case VK_NUMPAD9:
-					m_Keyboard.m_KeyPadNine = true;
-					break;
-
-				case VK_MULTIPLY:
-					m_Keyboard.m_KeyPadMultiply = true;
-					break;
-
-				case VK_ADD:
-					m_Keyboard.m_KeyPadAdd = true;
-					break;
-
-				case VK_SUBTRACT:
-					m_Keyboard.m_KeyPadSubtract = true;
-					break;
-
-				case VK_DECIMAL:
-					m_Keyboard.m_KeyPadDecimal = true;
-					break;
-
-				case VK_DIVIDE:
-					m_Keyboard.m_KeyPadDivide = true;
-					break;
-
-				case VK_F1:
-					m_Keyboard.m_F1 = true;
-					break;
-
-				case VK_F2:
-					m_Keyboard.m_F2 = true;
-					break;
-
-				case VK_F3:
-					m_Keyboard.m_F3 = true;
-					break;
-
-				case VK_F4:
-					m_Keyboard.m_F4 = true;
-					break;
-
-				case VK_F5:
-					m_Keyboard.m_F5 = true;
-					break;
-
-				case VK_F6:
-					m_Keyboard.m_F6 = true;
-					break;
-
-				case VK_F7:
-					m_Keyboard.m_F7 = true;
-					break;
-
-				case VK_F8:
-					m_Keyboard.m_F8 = true;
-					break;
-
-				case VK_F9:
-					m_Keyboard.m_F9 = true;
-					break;
-
-				case VK_F10:
-					m_Keyboard.m_F10 = true;
-					break;
-
-				case VK_F11:
-					m_Keyboard.m_F11 = true;
-					break;
-
-				case VK_F12:
-					m_Keyboard.m_F12 = true;
-					break;
-
-				case VK_F13:
-					m_Keyboard.m_F13 = true;
-					break;
-
-				case VK_F14:
-					m_Keyboard.m_F14 = true;
-					break;
-
-				case VK_F15:
-					m_Keyboard.m_F15 = true;
-					break;
-
-				case VK_F16:
-					m_Keyboard.m_F16 = true;
-					break;
-
-				case VK_F17:
-					m_Keyboard.m_F17 = true;
-					break;
-
-				case VK_F18:
-					m_Keyboard.m_F18 = true;
-					break;
-
-				case VK_F19:
-					m_Keyboard.m_F19 = true;
-					break;
-
-				case VK_F20:
-					m_Keyboard.m_F20 = true;
-					break;
-
-				case VK_F21:
-					m_Keyboard.m_F21 = true;
-					break;
-
-				case VK_F22:
-					m_Keyboard.m_F22 = true;
-					break;
-
-				case VK_F23:
-					m_Keyboard.m_F23 = true;
-					break;
-
-				case VK_F24:
-					m_Keyboard.m_F24 = true;
-					break;
-
-				case VK_NUMLOCK:
-					m_Keyboard.m_NumLock = true;
-					break;
-
-				case VK_SCROLL:
-					m_Keyboard.m_ScrollLock = true;
-					break;
-
-				case VK_LSHIFT:
-					m_Keyboard.m_LeftShift = true;
-					break;
-
-				case VK_RSHIFT:
-					m_Keyboard.m_RightShift = true;
-					break;
-
-				case VK_LCONTROL:
-					m_Keyboard.m_LeftControl = true;
-					break;
-
-				case VK_RCONTROL:
-					m_Keyboard.m_RightControl = true;
-					break;
-
-				case VK_LMENU:
-				case VK_RMENU:
-					m_Keyboard.m_Menu = true;
-					break;
-
-				default:
-					break;
-				}
-
-				return 0;
+			case WM_SYSKEYDOWN:
+				return handleKeyInput(wParam, true);
 
 			case WM_KEYUP:
-				switch (wParam)
-				{
-				case VK_LBUTTON:
-					m_Mouse.m_ButtonLeft = MouseButtonEvent::Release;
-					break;
-
-				case VK_RBUTTON:
-					m_Mouse.m_ButtonRight = MouseButtonEvent::Release;
-					break;
-
-				case VK_MBUTTON:
-					m_Mouse.m_ButtonMiddle = MouseButtonEvent::Release;
-					break;
-
-				case VK_BACK:
-					m_Keyboard.m_Backspace = false;
-					break;
-
-				case VK_TAB:
-					m_Keyboard.m_Tab = false;
-					break;
-
-				case VK_RETURN:
-					m_Keyboard.m_Enter = false;
-					break;
-
-				case VK_PAUSE:
-					m_Keyboard.m_Pause = false;
-					break;
-
-				case VK_CAPITAL:
-					m_Keyboard.m_CapsLock = false;
-					break;
-
-				case VK_ESCAPE:
-					m_Keyboard.m_Escape = false;
-					break;
-
-				case VK_SPACE:
-					m_Keyboard.m_Space = false;
-					break;
-
-				case VK_PRIOR:
-					m_Keyboard.m_PageUp = false;
-					break;
-
-				case VK_NEXT:
-					m_Keyboard.m_PageDown = false;
-					break;
-
-				case VK_END:
-					m_Keyboard.m_End = false;
-					break;
-
-				case VK_HOME:
-					m_Keyboard.m_Home = false;
-					break;
-
-				case VK_LEFT:
-					m_Keyboard.m_Left = false;
-					break;
-
-				case VK_UP:
-					m_Keyboard.m_Up = false;
-					break;
-
-				case VK_RIGHT:
-					m_Keyboard.m_Right = false;
-					break;
-
-				case VK_DOWN:
-					m_Keyboard.m_Down = false;
-					break;
-
-				case VK_SNAPSHOT:
-					m_Keyboard.m_PrintScreen = false;
-					break;
-
-				case VK_INSERT:
-					m_Keyboard.m_Insert = false;
-					break;
-
-				case VK_DELETE:
-					m_Keyboard.m_Delete = false;
-					break;
-
-				case 0x30:
-					m_Keyboard.m_KeyZero = false;
-					break;
-
-				case 0x31:
-					m_Keyboard.m_KeyOne = false;
-					break;
-
-				case 0x32:
-					m_Keyboard.m_KeyTwo = false;
-					break;
-
-				case 0x33:
-					m_Keyboard.m_KeyThree = false;
-					break;
-
-				case 0x34:
-					m_Keyboard.m_KeyFour = false;
-					break;
-
-				case 0x35:
-					m_Keyboard.m_KeyFive = false;
-					break;
-
-				case 0x36:
-					m_Keyboard.m_KeySix = false;
-					break;
-
-				case 0x37:
-					m_Keyboard.m_KeySeven = false;
-					break;
-
-				case 0x38:
-					m_Keyboard.m_KeyEight = false;
-					break;
-
-				case 0x39:
-					m_Keyboard.m_KeyNine = false;
-					break;
-
-				case VK_LWIN:
-					m_Keyboard.m_LeftSuper = false;
-					break;
-
-				case VK_RWIN:
-					m_Keyboard.m_RightSuper = false;
-					break;
-
-				case VK_NUMPAD0:
-					m_Keyboard.m_KeyPadZero = false;
-					break;
-
-				case VK_NUMPAD1:
-					m_Keyboard.m_KeyPadOne = false;
-					break;
-
-				case VK_NUMPAD2:
-					m_Keyboard.m_KeyPadTwo = false;
-					break;
-
-				case VK_NUMPAD3:
-					m_Keyboard.m_KeyPadThree = false;
-					break;
-
-				case VK_NUMPAD4:
-					m_Keyboard.m_KeyPadFour = false;
-					break;
-
-				case VK_NUMPAD5:
-					m_Keyboard.m_KeyPadFive = false;
-					break;
-
-				case VK_NUMPAD6:
-					m_Keyboard.m_KeyPadSix = false;
-					break;
-
-				case VK_NUMPAD7:
-					m_Keyboard.m_KeyPadSeven = false;
-					break;
-
-				case VK_NUMPAD8:
-					m_Keyboard.m_KeyPadEight = false;
-					break;
-
-				case VK_NUMPAD9:
-					m_Keyboard.m_KeyPadNine = false;
-					break;
-
-				case VK_MULTIPLY:
-					m_Keyboard.m_KeyPadMultiply = false;
-					break;
-
-				case VK_ADD:
-					m_Keyboard.m_KeyPadAdd = false;
-					break;
-
-				case VK_SUBTRACT:
-					m_Keyboard.m_KeyPadSubtract = false;
-					break;
-
-				case VK_DECIMAL:
-					m_Keyboard.m_KeyPadDecimal = false;
-					break;
-
-				case VK_DIVIDE:
-					m_Keyboard.m_KeyPadDivide = false;
-					break;
-
-				case VK_F1:
-					m_Keyboard.m_F1 = false;
-					break;
-
-				case VK_F2:
-					m_Keyboard.m_F2 = false;
-					break;
-
-				case VK_F3:
-					m_Keyboard.m_F3 = false;
-					break;
-
-				case VK_F4:
-					m_Keyboard.m_F4 = false;
-					break;
-
-				case VK_F5:
-					m_Keyboard.m_F5 = false;
-					break;
-
-				case VK_F6:
-					m_Keyboard.m_F6 = false;
-					break;
-
-				case VK_F7:
-					m_Keyboard.m_F7 = false;
-					break;
-
-				case VK_F8:
-					m_Keyboard.m_F8 = false;
-					break;
-
-				case VK_F9:
-					m_Keyboard.m_F9 = false;
-					break;
-
-				case VK_F10:
-					m_Keyboard.m_F10 = false;
-					break;
-
-				case VK_F11:
-					m_Keyboard.m_F11 = false;
-					break;
-
-				case VK_F12:
-					m_Keyboard.m_F12 = false;
-					break;
-
-				case VK_F13:
-					m_Keyboard.m_F13 = false;
-					break;
-
-				case VK_F14:
-					m_Keyboard.m_F14 = false;
-					break;
-
-				case VK_F15:
-					m_Keyboard.m_F15 = false;
-					break;
-
-				case VK_F16:
-					m_Keyboard.m_F16 = false;
-					break;
-
-				case VK_F17:
-					m_Keyboard.m_F17 = false;
-					break;
-
-				case VK_F18:
-					m_Keyboard.m_F18 = false;
-					break;
-
-				case VK_F19:
-					m_Keyboard.m_F19 = false;
-					break;
-
-				case VK_F20:
-					m_Keyboard.m_F20 = false;
-					break;
-
-				case VK_F21:
-					m_Keyboard.m_F21 = false;
-					break;
-
-				case VK_F22:
-					m_Keyboard.m_F22 = false;
-					break;
-
-				case VK_F23:
-					m_Keyboard.m_F23 = false;
-					break;
-
-				case VK_F24:
-					m_Keyboard.m_F24 = false;
-					break;
-
-				case VK_NUMLOCK:
-					m_Keyboard.m_NumLock = false;
-					break;
-
-				case VK_SCROLL:
-					m_Keyboard.m_ScrollLock = false;
-					break;
-
-				case VK_LSHIFT:
-					m_Keyboard.m_LeftShift = false;
-					break;
-
-				case VK_RSHIFT:
-					m_Keyboard.m_RightShift = false;
-					break;
-
-				case VK_LCONTROL:
-					m_Keyboard.m_LeftControl = false;
-					break;
-
-				case VK_RCONTROL:
-					m_Keyboard.m_RightControl = false;
-					break;
-
-				case VK_LMENU:
-				case VK_RMENU:
-					m_Keyboard.m_Menu = false;
-					break;
-
-				default:
-					break;
-				}
-
-				return 0;
+			case WM_SYSKEYUP:
+				return handleKeyInput(wParam, false);
 
 			case WM_CHAR:
-				m_Keyboard.m_Character = static_cast<char>(wParam);
+				if (lParam & KF_UP)
+					m_Keyboard.m_Character = 0;
+
+				else
+					m_Keyboard.m_Character = static_cast<char>(wParam);
 				return 0;
 
 			case WM_SIZE:
@@ -900,11 +248,452 @@ namespace Xenon
 				m_Height = HIWORD(lParam);
 				return 0;
 
+			case WM_SETCURSOR:
+				if (LOWORD(lParam) == HTCLIENT)
+				{
+					SetCursor(nullptr);
+					return FALSE;
+				}
+
+				break;
+
 			default:
 				break;
 			}
 
 			return DefWindowProc(m_WindowHandle, uMsg, wParam, lParam);
+		}
+
+		LRESULT WindowsWindow::handleKeyInput(WPARAM wParam, bool state)
+		{
+			switch (wParam)
+			{
+			case VK_LBUTTON:
+				m_Mouse.m_ButtonLeft = state ? MouseButtonEvent::Press : MouseButtonEvent::Release;
+				break;
+
+			case VK_RBUTTON:
+				m_Mouse.m_ButtonRight = state ? MouseButtonEvent::Press : MouseButtonEvent::Release;
+				break;
+
+			case VK_MBUTTON:
+				m_Mouse.m_ButtonMiddle = state ? MouseButtonEvent::Press : MouseButtonEvent::Release;
+				break;
+
+			case VK_BACK:
+				m_Keyboard.m_Backspace = state;
+				break;
+
+			case VK_TAB:
+				m_Keyboard.m_Tab = state;
+				break;
+
+			case VK_RETURN:
+				m_Keyboard.m_Enter = state;
+				break;
+
+			case VK_PAUSE:
+				m_Keyboard.m_Pause = state;
+				break;
+
+			case VK_CAPITAL:
+				m_Keyboard.m_CapsLock = state;
+				break;
+
+			case VK_ESCAPE:
+				m_Keyboard.m_Escape = state;
+				break;
+
+			case VK_SPACE:
+				m_Keyboard.m_Space = state;
+				break;
+
+			case VK_PRIOR:
+				m_Keyboard.m_PageUp = state;
+				break;
+
+			case VK_NEXT:
+				m_Keyboard.m_PageDown = state;
+				break;
+
+			case VK_END:
+				m_Keyboard.m_End = state;
+				break;
+
+			case VK_HOME:
+				m_Keyboard.m_Home = state;
+				break;
+
+			case VK_LEFT:
+				m_Keyboard.m_Left = state;
+				break;
+
+			case VK_UP:
+				m_Keyboard.m_Up = state;
+				break;
+
+			case VK_RIGHT:
+				m_Keyboard.m_Right = state;
+				break;
+
+			case VK_DOWN:
+				m_Keyboard.m_Down = state;
+				break;
+
+			case VK_SNAPSHOT:
+				m_Keyboard.m_PrintScreen = state;
+				break;
+
+			case VK_INSERT:
+				m_Keyboard.m_Insert = state;
+				break;
+
+			case VK_DELETE:
+				m_Keyboard.m_Delete = state;
+				break;
+
+			case 0x30:
+				m_Keyboard.m_KeyZero = state;
+				break;
+
+			case 0x31:
+				m_Keyboard.m_KeyOne = state;
+				break;
+
+			case 0x32:
+				m_Keyboard.m_KeyTwo = state;
+				break;
+
+			case 0x33:
+				m_Keyboard.m_KeyThree = state;
+				break;
+
+			case 0x34:
+				m_Keyboard.m_KeyFour = state;
+				break;
+
+			case 0x35:
+				m_Keyboard.m_KeyFive = state;
+				break;
+
+			case 0x36:
+				m_Keyboard.m_KeySix = state;
+				break;
+
+			case 0x37:
+				m_Keyboard.m_KeySeven = state;
+				break;
+
+			case 0x38:
+				m_Keyboard.m_KeyEight = state;
+				break;
+
+			case 0x39:
+				m_Keyboard.m_KeyNine = state;
+				break;
+
+			case 0x41:
+				m_Keyboard.m_KeyA = state;
+				break;
+
+			case 0x42:
+				m_Keyboard.m_KeyB = state;
+				break;
+
+			case 0x43:
+				m_Keyboard.m_KeyC = state;
+				break;
+
+			case 0x44:
+				m_Keyboard.m_KeyD = state;
+				break;
+
+			case 0x45:
+				m_Keyboard.m_KeyE = state;
+				break;
+
+			case 0x46:
+				m_Keyboard.m_KeyF = state;
+				break;
+
+			case 0x47:
+				m_Keyboard.m_KeyG = state;
+				break;
+
+			case 0x48:
+				m_Keyboard.m_KeyH = state;
+				break;
+
+			case 0x49:
+				m_Keyboard.m_KeyI = state;
+				break;
+
+			case 0x4A:
+				m_Keyboard.m_KeyJ = state;
+				break;
+
+			case 0x4B:
+				m_Keyboard.m_KeyK = state;
+				break;
+
+			case 0x4C:
+				m_Keyboard.m_KeyL = state;
+				break;
+
+			case 0x4D:
+				m_Keyboard.m_KeyM = state;
+				break;
+
+			case 0x4E:
+				m_Keyboard.m_KeyN = state;
+				break;
+
+			case 0x4F:
+				m_Keyboard.m_KeyO = state;
+				break;
+
+			case 0x50:
+				m_Keyboard.m_KeyP = state;
+				break;
+
+			case 0x51:
+				m_Keyboard.m_KeyQ = state;
+				break;
+
+			case 0x52:
+				m_Keyboard.m_KeyR = state;
+				break;
+
+			case 0x53:
+				m_Keyboard.m_KeyS = state;
+				break;
+
+			case 0x54:
+				m_Keyboard.m_KeyT = state;
+				break;
+
+			case 0x55:
+				m_Keyboard.m_KeyU = state;
+				break;
+
+			case 0x56:
+				m_Keyboard.m_KeyV = state;
+				break;
+
+			case 0x57:
+				m_Keyboard.m_KeyW = state;
+				break;
+
+			case 0x58:
+				m_Keyboard.m_KeyX = state;
+				break;
+
+			case 0x59:
+				m_Keyboard.m_KeyY = state;
+				break;
+
+			case 0x5A:
+				m_Keyboard.m_KeyZ = state;
+				break;
+
+			case VK_LWIN:
+				m_Keyboard.m_LeftSuper = state;
+				break;
+
+			case VK_RWIN:
+				m_Keyboard.m_RightSuper = state;
+				break;
+
+			case VK_NUMPAD0:
+				m_Keyboard.m_KeyPadZero = state;
+				break;
+
+			case VK_NUMPAD1:
+				m_Keyboard.m_KeyPadOne = state;
+				break;
+
+			case VK_NUMPAD2:
+				m_Keyboard.m_KeyPadTwo = state;
+				break;
+
+			case VK_NUMPAD3:
+				m_Keyboard.m_KeyPadThree = state;
+				break;
+
+			case VK_NUMPAD4:
+				m_Keyboard.m_KeyPadFour = state;
+				break;
+
+			case VK_NUMPAD5:
+				m_Keyboard.m_KeyPadFive = state;
+				break;
+
+			case VK_NUMPAD6:
+				m_Keyboard.m_KeyPadSix = state;
+				break;
+
+			case VK_NUMPAD7:
+				m_Keyboard.m_KeyPadSeven = state;
+				break;
+
+			case VK_NUMPAD8:
+				m_Keyboard.m_KeyPadEight = state;
+				break;
+
+			case VK_NUMPAD9:
+				m_Keyboard.m_KeyPadNine = state;
+				break;
+
+			case VK_MULTIPLY:
+				m_Keyboard.m_KeyPadMultiply = state;
+				break;
+
+			case VK_ADD:
+				m_Keyboard.m_KeyPadAdd = state;
+				break;
+
+			case VK_SUBTRACT:
+				m_Keyboard.m_KeyPadSubtract = state;
+				break;
+
+			case VK_DECIMAL:
+				m_Keyboard.m_KeyPadDecimal = state;
+				break;
+
+			case VK_DIVIDE:
+				m_Keyboard.m_KeyPadDivide = state;
+				break;
+
+			case VK_F1:
+				m_Keyboard.m_F1 = state;
+				break;
+
+			case VK_F2:
+				m_Keyboard.m_F2 = state;
+				break;
+
+			case VK_F3:
+				m_Keyboard.m_F3 = state;
+				break;
+
+			case VK_F4:
+				m_Keyboard.m_F4 = state;
+				break;
+
+			case VK_F5:
+				m_Keyboard.m_F5 = state;
+				break;
+
+			case VK_F6:
+				m_Keyboard.m_F6 = state;
+				break;
+
+			case VK_F7:
+				m_Keyboard.m_F7 = state;
+				break;
+
+			case VK_F8:
+				m_Keyboard.m_F8 = state;
+				break;
+
+			case VK_F9:
+				m_Keyboard.m_F9 = state;
+				break;
+
+			case VK_F10:
+				m_Keyboard.m_F10 = state;
+				break;
+
+			case VK_F11:
+				m_Keyboard.m_F11 = state;
+				break;
+
+			case VK_F12:
+				m_Keyboard.m_F12 = state;
+				break;
+
+			case VK_F13:
+				m_Keyboard.m_F13 = state;
+				break;
+
+			case VK_F14:
+				m_Keyboard.m_F14 = state;
+				break;
+
+			case VK_F15:
+				m_Keyboard.m_F15 = state;
+				break;
+
+			case VK_F16:
+				m_Keyboard.m_F16 = state;
+				break;
+
+			case VK_F17:
+				m_Keyboard.m_F17 = state;
+				break;
+
+			case VK_F18:
+				m_Keyboard.m_F18 = state;
+				break;
+
+			case VK_F19:
+				m_Keyboard.m_F19 = state;
+				break;
+
+			case VK_F20:
+				m_Keyboard.m_F20 = state;
+				break;
+
+			case VK_F21:
+				m_Keyboard.m_F21 = state;
+				break;
+
+			case VK_F22:
+				m_Keyboard.m_F22 = state;
+				break;
+
+			case VK_F23:
+				m_Keyboard.m_F23 = state;
+				break;
+
+			case VK_F24:
+				m_Keyboard.m_F24 = state;
+				break;
+
+			case VK_NUMLOCK:
+				m_Keyboard.m_NumLock = state;
+				break;
+
+			case VK_SCROLL:
+				m_Keyboard.m_ScrollLock = state;
+				break;
+
+			case VK_LSHIFT:
+				m_Keyboard.m_LeftShift = state;
+				break;
+
+			case VK_RSHIFT:
+				m_Keyboard.m_RightShift = state;
+				break;
+
+			case VK_LCONTROL:
+				m_Keyboard.m_LeftControl = state;
+				break;
+
+			case VK_RCONTROL:
+				m_Keyboard.m_RightControl = state;
+				break;
+
+			case VK_LMENU:
+			case VK_RMENU:
+				m_Keyboard.m_Menu = state;
+				break;
+
+			default:
+				break;
+			}
+
+			return 0;
 		}
 	}
 }

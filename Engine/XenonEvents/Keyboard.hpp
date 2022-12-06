@@ -35,6 +35,33 @@ namespace Xenon
 		bool m_KeyEight : 1 = false;
 		bool m_KeyNine : 1 = false;
 
+		bool m_KeyA : 1 = false;
+		bool m_KeyB : 1 = false;
+		bool m_KeyC : 1 = false;
+		bool m_KeyD : 1 = false;
+		bool m_KeyE : 1 = false;
+		bool m_KeyF : 1 = false;
+		bool m_KeyG : 1 = false;
+		bool m_KeyH : 1 = false;
+		bool m_KeyI : 1 = false;
+		bool m_KeyJ : 1 = false;
+		bool m_KeyK : 1 = false;
+		bool m_KeyL : 1 = false;
+		bool m_KeyM : 1 = false;
+		bool m_KeyN : 1 = false;
+		bool m_KeyO : 1 = false;
+		bool m_KeyP : 1 = false;
+		bool m_KeyQ : 1 = false;
+		bool m_KeyR : 1 = false;
+		bool m_KeyS : 1 = false;
+		bool m_KeyT : 1 = false;
+		bool m_KeyU : 1 = false;
+		bool m_KeyV : 1 = false;
+		bool m_KeyW : 1 = false;
+		bool m_KeyX : 1 = false;
+		bool m_KeyY : 1 = false;
+		bool m_KeyZ : 1 = false;
+
 		bool m_Semicolon : 1 = false;
 		bool m_Equal : 1 = false;
 

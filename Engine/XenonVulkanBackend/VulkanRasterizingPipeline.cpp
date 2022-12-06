@@ -1056,9 +1056,9 @@ namespace Xenon
 			m_ViewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 			m_ViewportStateCreateInfo.pNext = nullptr;
 			m_ViewportStateCreateInfo.flags = 0;
-			m_ViewportStateCreateInfo.scissorCount = 0;
+			m_ViewportStateCreateInfo.scissorCount = 1;
 			m_ViewportStateCreateInfo.pScissors = nullptr;
-			m_ViewportStateCreateInfo.viewportCount = 0;
+			m_ViewportStateCreateInfo.viewportCount = 1;
 			m_ViewportStateCreateInfo.pViewports = nullptr;
 
 			// Tessellation state.
@@ -1076,9 +1076,9 @@ namespace Xenon
 				vAttachmentState.colorBlendOp = GetBlendOp(attachment.m_BlendOperator);
 				vAttachmentState.colorWriteMask = GetComponentFlags(attachment.m_ColorWriteMask);
 				vAttachmentState.srcColorBlendFactor = GetBlendFactor(attachment.m_SrcBlendFactor);
+				vAttachmentState.dstColorBlendFactor = GetBlendFactor(attachment.m_DstBlendFactor);
 				vAttachmentState.srcAlphaBlendFactor = GetBlendFactor(attachment.m_SrcAlphaBlendFactor);
 				vAttachmentState.dstAlphaBlendFactor = GetBlendFactor(attachment.m_DstAlphaBlendFactor);
-				vAttachmentState.dstColorBlendFactor = GetBlendFactor(attachment.m_DstBlendFactor);
 			}
 
 			m_ColorBlendStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;

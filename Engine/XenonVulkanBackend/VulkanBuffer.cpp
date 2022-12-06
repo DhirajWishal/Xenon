@@ -118,17 +118,17 @@ namespace Xenon
 			// If the buffer is either index of vertex, copy to a staging buffer before writing.
 			if (m_Type == BufferType::Index || m_Type == BufferType::Vertex)
 			{
-				m_pTemporaryBuffer->write(pData, size, 0);
+				m_pTemporaryBuffer->write(pData, size, offset);
 
 				if (pCommandRecorder)
-					pCommandRecorder->as<VulkanCommandRecorder>()->copy(m_pTemporaryBuffer.get(), 0, this, offset, size);
+					pCommandRecorder->as<VulkanCommandRecorder>()->copy(m_pTemporaryBuffer.get(), offset, this, offset, size);
 
 				else
-					copy(m_pTemporaryBuffer.get(), size, offset);
+					copy(m_pTemporaryBuffer.get(), size, offset, offset);
 			}
 			else
 			{
-				std::copy_n(pData, size, map());
+				std::copy_n(pData, size, map() + offset);
 				unmap();
 			}
 		}

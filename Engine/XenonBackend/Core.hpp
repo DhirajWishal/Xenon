@@ -433,6 +433,8 @@ namespace Xenon
 
 			/**
 			 * Add a vertex element to the specification.
+			 * Note that offsets are calculated internally so this function must be called in the same order they appear in a vertex.
+			 * Adding the same element twice might lead to errors!
 			 *
 			 * @param element The element to add.
 			 * @param dataType The element's data type.

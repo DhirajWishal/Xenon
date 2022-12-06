@@ -5,14 +5,26 @@
 #include "../CacheHandler.hpp"
 #include "../Materials/ImGuiMaterial.hpp"
 
+#include "XenonCore/Logging.hpp"
 #include "Xenon/Renderer.hpp"
 
 #include <imgui.h>
 
 constexpr auto g_DefaultMaterialHash = 0;
 
+namespace /* anonymous */
+{
+	/**
+	 * Create a color from the float value from 0 - 255.
+	 *
+	 * @param value The color value.
+	 * @return The created color value.
+	 */
+	constexpr float CreateColor256(float value) { return value / 256; }
+}
+
 ImGuiLayer::ImGuiLayer(Xenon::Renderer& renderer, Xenon::Backend::Camera* pCamera)
-	: RasterizingLayer(renderer, pCamera, Xenon::Backend::AttachmentType::Color)
+	: RasterizingLayer(renderer, pCamera, Xenon::Backend::AttachmentType::Color, false, Xenon::Backend::MultiSamplingCount::x2)
 	, m_pVertexBuffers(renderer.getCommandRecorder()->getBufferCount())
 	, m_pIndexBuffers(renderer.getCommandRecorder()->getBufferCount())
 {
@@ -57,11 +69,13 @@ void ImGuiLayer::beginFrame(std::chrono::nanoseconds delta) const
 
 	// Add the key events.
 	io.AddKeyEvent(ImGuiKey_Space, m_Renderer.getKeyboard().m_Space);
+
 	io.AddKeyEvent(ImGuiKey_Apostrophe, m_Renderer.getKeyboard().m_Apostrophe);
 	io.AddKeyEvent(ImGuiKey_Comma, m_Renderer.getKeyboard().m_Comma);
 	io.AddKeyEvent(ImGuiKey_Minus, m_Renderer.getKeyboard().m_Minus);
 	io.AddKeyEvent(ImGuiKey_Period, m_Renderer.getKeyboard().m_Period);
 	io.AddKeyEvent(ImGuiKey_Slash, m_Renderer.getKeyboard().m_Slash);
+
 	io.AddKeyEvent(ImGuiKey_0, m_Renderer.getKeyboard().m_KeyZero);
 	io.AddKeyEvent(ImGuiKey_1, m_Renderer.getKeyboard().m_KeyOne);
 	io.AddKeyEvent(ImGuiKey_2, m_Renderer.getKeyboard().m_KeyTwo);
@@ -72,6 +86,7 @@ void ImGuiLayer::beginFrame(std::chrono::nanoseconds delta) const
 	io.AddKeyEvent(ImGuiKey_7, m_Renderer.getKeyboard().m_KeySeven);
 	io.AddKeyEvent(ImGuiKey_8, m_Renderer.getKeyboard().m_KeyEight);
 	io.AddKeyEvent(ImGuiKey_9, m_Renderer.getKeyboard().m_KeyNine);
+
 	io.AddKeyEvent(ImGuiKey_Semicolon, m_Renderer.getKeyboard().m_Semicolon);
 	io.AddKeyEvent(ImGuiKey_Equal, m_Renderer.getKeyboard().m_Equal);
 	io.AddKeyEvent(ImGuiKey_LeftBracket, m_Renderer.getKeyboard().m_LeftBracket);
@@ -84,12 +99,15 @@ void ImGuiLayer::beginFrame(std::chrono::nanoseconds delta) const
 	io.AddKeyEvent(ImGuiKey_Backspace, m_Renderer.getKeyboard().m_Backspace);
 	io.AddKeyEvent(ImGuiKey_Insert, m_Renderer.getKeyboard().m_Insert);
 	io.AddKeyEvent(ImGuiKey_Delete, m_Renderer.getKeyboard().m_Delete);
+
 	io.AddKeyEvent(ImGuiKey_RightArrow, m_Renderer.getKeyboard().m_Right);
 	io.AddKeyEvent(ImGuiKey_LeftArrow, m_Renderer.getKeyboard().m_Left);
 	io.AddKeyEvent(ImGuiKey_DownArrow, m_Renderer.getKeyboard().m_Down);
 	io.AddKeyEvent(ImGuiKey_UpArrow, m_Renderer.getKeyboard().m_Up);
+
 	io.AddKeyEvent(ImGuiKey_PageUp, m_Renderer.getKeyboard().m_PageUp);
 	io.AddKeyEvent(ImGuiKey_PageDown, m_Renderer.getKeyboard().m_PageDown);
+
 	io.AddKeyEvent(ImGuiKey_Home, m_Renderer.getKeyboard().m_Home);
 	io.AddKeyEvent(ImGuiKey_End, m_Renderer.getKeyboard().m_End);
 	io.AddKeyEvent(ImGuiKey_CapsLock, m_Renderer.getKeyboard().m_CapsLock);
@@ -97,6 +115,7 @@ void ImGuiLayer::beginFrame(std::chrono::nanoseconds delta) const
 	io.AddKeyEvent(ImGuiKey_NumLock, m_Renderer.getKeyboard().m_NumLock);
 	io.AddKeyEvent(ImGuiKey_PrintScreen, m_Renderer.getKeyboard().m_PrintScreen);
 	io.AddKeyEvent(ImGuiKey_Pause, m_Renderer.getKeyboard().m_Pause);
+
 	io.AddKeyEvent(ImGuiKey_F1, m_Renderer.getKeyboard().m_F1);
 	io.AddKeyEvent(ImGuiKey_F2, m_Renderer.getKeyboard().m_F2);
 	io.AddKeyEvent(ImGuiKey_F3, m_Renderer.getKeyboard().m_F3);
@@ -109,20 +128,76 @@ void ImGuiLayer::beginFrame(std::chrono::nanoseconds delta) const
 	io.AddKeyEvent(ImGuiKey_F10, m_Renderer.getKeyboard().m_F10);
 	io.AddKeyEvent(ImGuiKey_F11, m_Renderer.getKeyboard().m_F11);
 	io.AddKeyEvent(ImGuiKey_F12, m_Renderer.getKeyboard().m_F12);
+
 	io.AddKeyEvent(ImGuiKey_KeyPadEnter, m_Renderer.getKeyboard().m_KeyPadEnter);
+
 	io.AddKeyEvent(ImGuiKey_LeftShift, m_Renderer.getKeyboard().m_LeftShift);
 	io.AddKeyEvent(ImGuiKey_LeftCtrl, m_Renderer.getKeyboard().m_LeftControl);
 	io.AddKeyEvent(ImGuiKey_LeftAlt, m_Renderer.getKeyboard().m_LeftAlt);
 	io.AddKeyEvent(ImGuiKey_LeftSuper, m_Renderer.getKeyboard().m_LeftSuper);
+
 	io.AddKeyEvent(ImGuiKey_RightShift, m_Renderer.getKeyboard().m_RightShift);
 	io.AddKeyEvent(ImGuiKey_RightCtrl, m_Renderer.getKeyboard().m_RightControl);
 	io.AddKeyEvent(ImGuiKey_RightAlt, m_Renderer.getKeyboard().m_RightAlt);
 	io.AddKeyEvent(ImGuiKey_RightSuper, m_Renderer.getKeyboard().m_RightSuper);
+
 	io.AddKeyEvent(ImGuiKey_Menu, m_Renderer.getKeyboard().m_Menu);
+
+	io.AddKeyEvent(ImGuiKey_A, m_Renderer.getKeyboard().m_KeyA);
+	io.AddKeyEvent(ImGuiKey_B, m_Renderer.getKeyboard().m_KeyB);
+	io.AddKeyEvent(ImGuiKey_C, m_Renderer.getKeyboard().m_KeyC);
+	io.AddKeyEvent(ImGuiKey_D, m_Renderer.getKeyboard().m_KeyD);
+	io.AddKeyEvent(ImGuiKey_E, m_Renderer.getKeyboard().m_KeyE);
+	io.AddKeyEvent(ImGuiKey_F, m_Renderer.getKeyboard().m_KeyF);
+	io.AddKeyEvent(ImGuiKey_G, m_Renderer.getKeyboard().m_KeyG);
+	io.AddKeyEvent(ImGuiKey_H, m_Renderer.getKeyboard().m_KeyH);
+	io.AddKeyEvent(ImGuiKey_I, m_Renderer.getKeyboard().m_KeyI);
+	io.AddKeyEvent(ImGuiKey_J, m_Renderer.getKeyboard().m_KeyJ);
+	io.AddKeyEvent(ImGuiKey_K, m_Renderer.getKeyboard().m_KeyK);
+	io.AddKeyEvent(ImGuiKey_L, m_Renderer.getKeyboard().m_KeyL);
+	io.AddKeyEvent(ImGuiKey_M, m_Renderer.getKeyboard().m_KeyM);
+	io.AddKeyEvent(ImGuiKey_N, m_Renderer.getKeyboard().m_KeyN);
+	io.AddKeyEvent(ImGuiKey_O, m_Renderer.getKeyboard().m_KeyO);
+	io.AddKeyEvent(ImGuiKey_P, m_Renderer.getKeyboard().m_KeyP);
+	io.AddKeyEvent(ImGuiKey_Q, m_Renderer.getKeyboard().m_KeyQ);
+	io.AddKeyEvent(ImGuiKey_R, m_Renderer.getKeyboard().m_KeyR);
+	io.AddKeyEvent(ImGuiKey_S, m_Renderer.getKeyboard().m_KeyS);
+	io.AddKeyEvent(ImGuiKey_T, m_Renderer.getKeyboard().m_KeyT);
+	io.AddKeyEvent(ImGuiKey_U, m_Renderer.getKeyboard().m_KeyU);
+	io.AddKeyEvent(ImGuiKey_V, m_Renderer.getKeyboard().m_KeyV);
+	io.AddKeyEvent(ImGuiKey_W, m_Renderer.getKeyboard().m_KeyW);
+	io.AddKeyEvent(ImGuiKey_X, m_Renderer.getKeyboard().m_KeyX);
+	io.AddKeyEvent(ImGuiKey_Y, m_Renderer.getKeyboard().m_KeyY);
+	io.AddKeyEvent(ImGuiKey_Z, m_Renderer.getKeyboard().m_KeyZ);
+
+	// Finally, setup the dockspace and everything else.
+	const ImGuiViewport* viewport = ImGui::GetMainViewport();
+	ImGui::SetNextWindowPos(viewport->WorkPos);
+	ImGui::SetNextWindowSize(viewport->WorkSize);
+	ImGui::SetNextWindowViewport(viewport->ID);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
+	ImGui::Begin("DockSpace", nullptr,
+		ImGuiWindowFlags_NoTitleBar |
+		ImGuiWindowFlags_NoCollapse |
+		ImGuiWindowFlags_NoResize |
+		ImGuiWindowFlags_NoMove |
+		ImGuiWindowFlags_MenuBar |
+		ImGuiWindowFlags_NoDocking |
+		ImGuiWindowFlags_NoBringToFrontOnFocus |
+		ImGuiWindowFlags_NoNavFocus |
+		ImGuiWindowFlags_NoBackground
+	);
+
+	ImGui::PopStyleVar(3);
+	ImGui::DockSpace(ImGui::GetID("EditorDockSpace"), ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
 }
 
 void ImGuiLayer::endFrame() const
 {
+	ImGui::End();
 	ImGui::Render();
 }
 
@@ -136,18 +211,18 @@ void ImGuiLayer::bind(Xenon::Layer* pPreviousLayer, Xenon::Backend::CommandRecor
 	if (!pDrawData || pDrawData->CmdListsCount == 0)
 		return;
 
-	pCommandRecorder->bind(m_pRasterizer.get(), { glm::vec4(0.0f, 0.0f, 0.0f, 1.0f) });
+	pCommandRecorder->bind(m_pRasterizer.get(), { glm::vec4(0.25f, 0.25f, 0.25f, 1.0f) });
 	pCommandRecorder->bind(m_pPipeline.get(), m_VertexSpecification);
 
 	const auto& io = ImGui::GetIO();
 	m_UserData.m_Scale = glm::vec2(2.0f / io.DisplaySize.x, 2.0f / io.DisplaySize.y);
-	m_UserData.m_Translate = glm::vec2(-1.0f);
+	m_UserData.m_Translate = glm::vec2(-1.0f - pDrawData->DisplayPos.x * m_UserData.m_Scale.x, -1.0f - pDrawData->DisplayPos.y * m_UserData.m_Scale.y);
 	m_pUniformBuffer->write(Xenon::ToBytes(&m_UserData), sizeof(UserData), 0, pCommandRecorder);
 
 	const auto frameIndex = pCommandRecorder->getCurrentIndex();
 	pCommandRecorder->bind(m_pVertexBuffers[frameIndex].get(), sizeof(ImDrawVert));
 	pCommandRecorder->bind(m_pIndexBuffers[frameIndex].get(), static_cast<Xenon::Backend::IndexBufferStride>(sizeof(ImDrawIdx)));
-	pCommandRecorder->setViewport(0.0f, 0.0f, static_cast<float>(m_Renderer.getCamera()->getWidth()), static_cast<float>(m_Renderer.getCamera()->getHeight()), 0.0f, 0.0f);
+	pCommandRecorder->setViewport(0.0f, 0.0f, io.DisplaySize.x, io.DisplaySize.y, 0.0f, 1.0f);
 
 	uint64_t indexOffset = 0;
 	uint64_t vertexOffset = 0;
@@ -177,8 +252,8 @@ void ImGuiLayer::bind(Xenon::Layer* pPreviousLayer, Xenon::Backend::CommandRecor
 void ImGuiLayer::configureImGui() const
 {
 	auto& io = ImGui::GetIO();
-	io.DisplaySize.x = static_cast<float>(m_Renderer.getWindow()->getWidth());
-	io.DisplaySize.y = static_cast<float>(m_Renderer.getWindow()->getHeight());
+	io.DisplaySize.x = static_cast<float>(m_Renderer.getCamera()->getWidth());
+	io.DisplaySize.y = static_cast<float>(m_Renderer.getCamera()->getHeight());
 
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
@@ -186,6 +261,40 @@ void ImGuiLayer::configureImGui() const
 
 	io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;
 	io.BackendFlags |= ImGuiBackendFlags_RendererHasViewports;
+
+	io.MouseDrawCursor = true;
+
+	// Setup the styles.
+	auto& style = ImGui::GetStyle();
+
+	// Background - 20, 23, 27
+	// Tabs - 242, 84, 91
+	// Menus - 25, 133, 161
+
+	style.Colors[ImGuiCol_TitleBg] = ImVec4(CreateColor256(26), CreateColor256(30), CreateColor256(35), 0.5f);
+	style.Colors[ImGuiCol_TitleBgActive] = ImVec4(CreateColor256(26), CreateColor256(30), CreateColor256(35), 0.75f);
+
+	style.Colors[ImGuiCol_WindowBg] = ImVec4(CreateColor256(26), CreateColor256(30), CreateColor256(35), 1.0f);
+	style.Colors[ImGuiCol_MenuBarBg] = ImVec4(CreateColor256(26), CreateColor256(30), CreateColor256(35), 1.0f);
+
+	style.Colors[ImGuiCol_Header] = ImVec4(CreateColor256(25), CreateColor256(133), CreateColor256(161), 0.5f);
+	style.Colors[ImGuiCol_HeaderHovered] = ImVec4(CreateColor256(25), CreateColor256(133), CreateColor256(161), 1.0f);
+
+	style.Colors[ImGuiCol_Tab] = ImVec4(CreateColor256(242), CreateColor256(84), CreateColor256(91), 0.25f);
+	style.Colors[ImGuiCol_TabActive] = ImVec4(CreateColor256(242), CreateColor256(84), CreateColor256(91), 0.75f);
+	style.Colors[ImGuiCol_TabHovered] = ImVec4(CreateColor256(242), CreateColor256(84), CreateColor256(91), 1.0f);
+	style.Colors[ImGuiCol_TabUnfocusedActive] = ImVec4(CreateColor256(242), CreateColor256(84), CreateColor256(91), 0.5f);
+	style.Colors[ImGuiCol_TabUnfocused] = ImVec4(CreateColor256(242), CreateColor256(84), CreateColor256(91), 0.25f);
+
+	style.ChildRounding = 6.0f;
+	style.FrameRounding = 1.0f;
+	style.FramePadding.x = 5.0f;
+	style.FramePadding.y = 2.0f;
+	style.PopupRounding = 3.0f;
+	style.TabRounding = 1.0f;
+	style.WindowRounding = 3.0f;
+
+	io.Fonts->AddFontFromFileTTF((std::filesystem::current_path() / "Fonts" / "Manrope" / "static" / "Manrope-Regular.ttf").string().c_str(), 16.0f);
 }
 
 void ImGuiLayer::setupDefaultMaterial()
@@ -251,11 +360,14 @@ void ImGuiLayer::prepareResources(Xenon::Backend::CommandRecorder* pCommandRecor
 	{
 		const auto* pCommandList = pDrawData->CmdLists[i];
 
-		pVertexBuffer->write(Xenon::ToBytes(pCommandList->VtxBuffer.Data), static_cast<uint64_t>(pCommandList->VtxBuffer.Size) * sizeof(ImDrawVert), vertexOffset, pCommandRecorder);
-		pIndexBuffer->write(Xenon::ToBytes(pCommandList->IdxBuffer.Data), static_cast<uint64_t>(pCommandList->IdxBuffer.Size) * sizeof(ImDrawIdx), indexOffset, pCommandRecorder);
+		const auto vertexCopySize = static_cast<uint64_t>(pCommandList->VtxBuffer.Size) * sizeof(ImDrawVert);
+		const auto indexCopySize = static_cast<uint64_t>(pCommandList->IdxBuffer.Size) * sizeof(ImDrawIdx);
 
-		vertexOffset += pCommandList->VtxBuffer.Size * sizeof(ImDrawVert);
-		indexOffset += pCommandList->IdxBuffer.Size * sizeof(ImDrawIdx);
+		pVertexBuffer->write(Xenon::ToBytes(pCommandList->VtxBuffer.Data), vertexCopySize, vertexOffset, pCommandRecorder);
+		pIndexBuffer->write(Xenon::ToBytes(pCommandList->IdxBuffer.Data), indexCopySize, indexOffset, pCommandRecorder);
+
+		vertexOffset += vertexCopySize;
+		indexOffset += indexCopySize;
 	}
 }
 
