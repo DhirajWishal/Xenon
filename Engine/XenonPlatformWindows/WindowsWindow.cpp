@@ -95,6 +95,13 @@ namespace Xenon
 				this							// Additional application data
 			);
 
+			// Get the actual window size.
+			if (RECT rectangle = {}; GetClientRect(m_WindowHandle, &rectangle))
+			{
+				m_Width = rectangle.right;
+				m_Height = rectangle.bottom;
+			}
+
 			// Set the windows window property.
 			SetProp(m_WindowHandle, TEXT("WindowsWindow"), this);
 
@@ -190,6 +197,7 @@ namespace Xenon
 				return 0;
 
 			case WM_MOUSEMOVE:
+			{
 				if (wParam & MK_CONTROL) m_Keyboard.m_LeftControl = m_Keyboard.m_RightControl = true;
 				if (wParam & MK_LBUTTON) m_Mouse.m_ButtonLeft = MouseButtonEvent::Press;
 				if (wParam & MK_MBUTTON) m_Mouse.m_ButtonMiddle = MouseButtonEvent::Press;
@@ -199,10 +207,10 @@ namespace Xenon
 				m_Mouse.m_MousePosition.m_XAxis = static_cast<float>(GET_X_LPARAM(lParam));
 				m_Mouse.m_MousePosition.m_YAxis = static_cast<float>(GET_Y_LPARAM(lParam));
 				return 0;
+			}
 
 			case WM_MOUSEWHEEL:
-				m_Mouse.m_VScroll = static_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA;
-
+			{
 				if (wParam & MK_CONTROL) m_Keyboard.m_LeftControl = m_Keyboard.m_RightControl = true;
 				if (wParam & MK_LBUTTON) m_Mouse.m_ButtonLeft = MouseButtonEvent::Press;
 				if (wParam & MK_MBUTTON) m_Mouse.m_ButtonMiddle = MouseButtonEvent::Press;
@@ -211,11 +219,13 @@ namespace Xenon
 
 				m_Mouse.m_MousePosition.m_XAxis = static_cast<float>(GET_X_LPARAM(lParam));
 				m_Mouse.m_MousePosition.m_YAxis = static_cast<float>(GET_Y_LPARAM(lParam));
+
+				m_Mouse.m_VScroll = static_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA;
 				return 0;
+			}
 
 			case WM_MOUSEHWHEEL:
-				m_Mouse.m_HScroll = static_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA;
-
+			{
 				if (wParam & MK_CONTROL) m_Keyboard.m_LeftControl = m_Keyboard.m_RightControl = true;
 				if (wParam & MK_LBUTTON) m_Mouse.m_ButtonLeft = MouseButtonEvent::Press;
 				if (wParam & MK_MBUTTON) m_Mouse.m_ButtonMiddle = MouseButtonEvent::Press;
@@ -224,7 +234,10 @@ namespace Xenon
 
 				m_Mouse.m_MousePosition.m_XAxis = static_cast<float>(GET_X_LPARAM(lParam));
 				m_Mouse.m_MousePosition.m_YAxis = static_cast<float>(GET_Y_LPARAM(lParam));
+
+				m_Mouse.m_HScroll = static_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA;
 				return 0;
+			}
 
 			case WM_KEYDOWN:
 				switch (wParam)
@@ -311,6 +324,46 @@ namespace Xenon
 
 				case VK_DELETE:
 					m_Keyboard.m_Delete = true;
+					break;
+
+				case 0x30:
+					m_Keyboard.m_KeyZero = true;
+					break;
+
+				case 0x31:
+					m_Keyboard.m_KeyOne = true;
+					break;
+
+				case 0x32:
+					m_Keyboard.m_KeyTwo = true;
+					break;
+
+				case 0x33:
+					m_Keyboard.m_KeyThree = true;
+					break;
+
+				case 0x34:
+					m_Keyboard.m_KeyFour = true;
+					break;
+
+				case 0x35:
+					m_Keyboard.m_KeyFive = true;
+					break;
+
+				case 0x36:
+					m_Keyboard.m_KeySix = true;
+					break;
+
+				case 0x37:
+					m_Keyboard.m_KeySeven = true;
+					break;
+
+				case 0x38:
+					m_Keyboard.m_KeyEight = true;
+					break;
+
+				case 0x39:
+					m_Keyboard.m_KeyNine = true;
 					break;
 
 				case VK_LWIN:
@@ -599,6 +652,46 @@ namespace Xenon
 					m_Keyboard.m_Delete = false;
 					break;
 
+				case 0x30:
+					m_Keyboard.m_KeyZero = false;
+					break;
+
+				case 0x31:
+					m_Keyboard.m_KeyOne = false;
+					break;
+
+				case 0x32:
+					m_Keyboard.m_KeyTwo = false;
+					break;
+
+				case 0x33:
+					m_Keyboard.m_KeyThree = false;
+					break;
+
+				case 0x34:
+					m_Keyboard.m_KeyFour = false;
+					break;
+
+				case 0x35:
+					m_Keyboard.m_KeyFive = false;
+					break;
+
+				case 0x36:
+					m_Keyboard.m_KeySix = false;
+					break;
+
+				case 0x37:
+					m_Keyboard.m_KeySeven = false;
+					break;
+
+				case 0x38:
+					m_Keyboard.m_KeyEight = false;
+					break;
+
+				case 0x39:
+					m_Keyboard.m_KeyNine = false;
+					break;
+
 				case VK_LWIN:
 					m_Keyboard.m_LeftSuper = false;
 					break;
@@ -800,6 +893,11 @@ namespace Xenon
 
 			case WM_CHAR:
 				m_Keyboard.m_Character = static_cast<char>(wParam);
+				return 0;
+
+			case WM_SIZE:
+				m_Width = LOWORD(lParam);
+				m_Height = HIWORD(lParam);
 				return 0;
 
 			default:

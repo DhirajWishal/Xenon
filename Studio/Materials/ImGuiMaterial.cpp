@@ -41,10 +41,11 @@ ImGuiMaterial::ImGuiMaterial(Xenon::Instance& instance)
 
 	// Create the image sampler.
 	Xenon::Backend::ImageSamplerSpecification imageSamplerSpecification = {};
-	imageSamplerSpecification.m_AddressModeU = Xenon::Backend::AddressMode::ClampToEdge;
-	imageSamplerSpecification.m_AddressModeV = Xenon::Backend::AddressMode::ClampToEdge;
-	imageSamplerSpecification.m_AddressModeW = Xenon::Backend::AddressMode::ClampToEdge;
+	imageSamplerSpecification.m_AddressModeU = Xenon::Backend::AddressMode::Repeat;
+	imageSamplerSpecification.m_AddressModeV = Xenon::Backend::AddressMode::Repeat;
+	imageSamplerSpecification.m_AddressModeW = Xenon::Backend::AddressMode::Repeat;
 	imageSamplerSpecification.m_BorderColor = Xenon::Backend::BorderColor::OpaqueWhiteFLOAT;
+	imageSamplerSpecification.m_MaxAnisotrophy = 1.0f;
 	m_pSampler = instance.getFactory()->createImageSampler(instance.getBackendDevice(), imageSamplerSpecification);
 }
 
@@ -61,10 +62,11 @@ ImGuiMaterial::ImGuiMaterial(Xenon::Instance& instance, const Xenon::Backend::Im
 
 	// Create the image sampler.
 	Xenon::Backend::ImageSamplerSpecification imageSamplerSpecification = {};
-	imageSamplerSpecification.m_AddressModeU = Xenon::Backend::AddressMode::ClampToEdge;
-	imageSamplerSpecification.m_AddressModeV = Xenon::Backend::AddressMode::ClampToEdge;
-	imageSamplerSpecification.m_AddressModeW = Xenon::Backend::AddressMode::ClampToEdge;
+	imageSamplerSpecification.m_AddressModeU = Xenon::Backend::AddressMode::Repeat;
+	imageSamplerSpecification.m_AddressModeV = Xenon::Backend::AddressMode::Repeat;
+	imageSamplerSpecification.m_AddressModeW = Xenon::Backend::AddressMode::Repeat;
 	imageSamplerSpecification.m_BorderColor = Xenon::Backend::BorderColor::OpaqueWhiteFLOAT;
+	imageSamplerSpecification.m_MaxAnisotrophy = 1.0f;
 	m_pSampler = instance.getFactory()->createImageSampler(instance.getBackendDevice(), imageSamplerSpecification);
 }
 
@@ -75,8 +77,8 @@ Xenon::Backend::RasterizingPipelineSpecification ImGuiMaterial::getRasterizingSp
 	attachment.m_SrcBlendFactor = Xenon::Backend::ColorBlendFactor::SourceAlpha;
 	attachment.m_DstBlendFactor = Xenon::Backend::ColorBlendFactor::OneMinusSourceAlpha;
 	attachment.m_BlendOperator = Xenon::Backend::ColorBlendOperator::Add;
-	attachment.m_SrcAlphaBlendFactor = Xenon::Backend::ColorBlendFactor::OneMinusSourceAlpha;
-	attachment.m_DstAlphaBlendFactor = Xenon::Backend::ColorBlendFactor::Zero;
+	attachment.m_SrcAlphaBlendFactor = Xenon::Backend::ColorBlendFactor::One;
+	attachment.m_DstAlphaBlendFactor = Xenon::Backend::ColorBlendFactor::OneMinusSourceAlpha;
 	attachment.m_AlphaBlendOperator = Xenon::Backend::ColorBlendOperator::Add;
 
 	Xenon::Backend::RasterizingPipelineSpecification specification = {};

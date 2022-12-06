@@ -708,6 +708,9 @@ namespace Xenon
 					++itr;
 				}
 
+				// Sort the inputs.
+				std::ranges::sort(pipeline.m_Inputs, [](const auto& lhs, const auto& rhs) { return lhs.AlignedByteOffset < rhs.AlignedByteOffset; });
+
 				// Create the pipeline.
 				D3D12_GRAPHICS_PIPELINE_STATE_DESC pipelineState = m_PipelineStateDescriptor;
 				pipelineState.InputLayout.pInputElementDescs = pipeline.m_Inputs.data();

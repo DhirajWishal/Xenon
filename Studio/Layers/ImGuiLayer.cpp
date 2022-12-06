@@ -27,69 +27,98 @@ ImGuiLayer::~ImGuiLayer()
 	ImGui::DestroyContext();
 }
 
-void ImGuiLayer::beginFrame() const
+void ImGuiLayer::beginFrame(std::chrono::nanoseconds delta) const
 {
 	ImGui::NewFrame();
 
 	// Process the ImGui events.
 	auto& io = ImGui::GetIO();
-	switch (m_Renderer.getMouse().m_ButtonLeft)
-	{
-	case Xenon::MouseButtonEvent::Release:
-		io.AddMouseButtonEvent(ImGuiMouseButton_Left, false);
-		break;
 
-	case Xenon::MouseButtonEvent::Press:
-		io.AddMouseButtonEvent(ImGuiMouseButton_Left, true);
-		break;
+	// Set the display size in case it was resized.
+	io.DisplaySize.x = static_cast<float>(m_Renderer.getWindow()->getWidth());
+	io.DisplaySize.y = static_cast<float>(m_Renderer.getWindow()->getHeight());
 
-	case Xenon::MouseButtonEvent::DoublePress:
-		io.AddMouseButtonEvent(ImGuiMouseButton_Left, true);
-		break;
+	// Set the time difference.
+	io.DeltaTime = static_cast<float>(delta.count()) / std::nano::den;
 
-	default:
-		break;
-	}
-
-	switch (m_Renderer.getMouse().m_ButtonMiddle)
-	{
-	case Xenon::MouseButtonEvent::Release:
-		io.AddMouseButtonEvent(ImGuiMouseButton_Middle, false);
-		break;
-
-	case Xenon::MouseButtonEvent::Press:
-		io.AddMouseButtonEvent(ImGuiMouseButton_Middle, true);
-		break;
-
-	case Xenon::MouseButtonEvent::DoublePress:
-		io.AddMouseButtonEvent(ImGuiMouseButton_Middle, true);
-		break;
-
-	default:
-		break;
-	}
-
-	switch (m_Renderer.getMouse().m_ButtonRight)
-	{
-	case Xenon::MouseButtonEvent::Release:
-		io.AddMouseButtonEvent(ImGuiMouseButton_Right, false);
-		break;
-
-	case Xenon::MouseButtonEvent::Press:
-		io.AddMouseButtonEvent(ImGuiMouseButton_Right, true);
-		break;
-
-	case Xenon::MouseButtonEvent::DoublePress:
-		io.AddMouseButtonEvent(ImGuiMouseButton_Right, true);
-		break;
-
-	default:
-		break;
-	}
-
-	io.AddMouseWheelEvent(m_Renderer.getMouse().m_HScroll, m_Renderer.getMouse().m_VScroll);
+	// Add the mouse position.
 	io.AddMousePosEvent(m_Renderer.getMouse().m_MousePosition.m_XAxis, m_Renderer.getMouse().m_MousePosition.m_YAxis);
+
+	// Add the mouse wheel events.
+	io.AddMouseWheelEvent(m_Renderer.getMouse().m_HScroll, m_Renderer.getMouse().m_VScroll);
+
+	// Add the mouse button presses.
+	io.AddMouseButtonEvent(ImGuiMouseButton_Left, m_Renderer.getMouse().m_ButtonLeft == Xenon::MouseButtonEvent::Press || m_Renderer.getMouse().m_ButtonLeft == Xenon::MouseButtonEvent::DoublePress);
+	io.AddMouseButtonEvent(ImGuiMouseButton_Middle, m_Renderer.getMouse().m_ButtonMiddle == Xenon::MouseButtonEvent::Press || m_Renderer.getMouse().m_ButtonMiddle == Xenon::MouseButtonEvent::DoublePress);
+	io.AddMouseButtonEvent(ImGuiMouseButton_Right, m_Renderer.getMouse().m_ButtonRight == Xenon::MouseButtonEvent::Press || m_Renderer.getMouse().m_ButtonRight == Xenon::MouseButtonEvent::DoublePress);
+
+	// Add the input character.
 	io.AddInputCharacter(m_Renderer.getKeyboard().m_Character);
+
+	// Add the key events.
+	io.AddKeyEvent(ImGuiKey_Space, m_Renderer.getKeyboard().m_Space);
+	io.AddKeyEvent(ImGuiKey_Apostrophe, m_Renderer.getKeyboard().m_Apostrophe);
+	io.AddKeyEvent(ImGuiKey_Comma, m_Renderer.getKeyboard().m_Comma);
+	io.AddKeyEvent(ImGuiKey_Minus, m_Renderer.getKeyboard().m_Minus);
+	io.AddKeyEvent(ImGuiKey_Period, m_Renderer.getKeyboard().m_Period);
+	io.AddKeyEvent(ImGuiKey_Slash, m_Renderer.getKeyboard().m_Slash);
+	io.AddKeyEvent(ImGuiKey_0, m_Renderer.getKeyboard().m_KeyZero);
+	io.AddKeyEvent(ImGuiKey_1, m_Renderer.getKeyboard().m_KeyOne);
+	io.AddKeyEvent(ImGuiKey_2, m_Renderer.getKeyboard().m_KeyTwo);
+	io.AddKeyEvent(ImGuiKey_3, m_Renderer.getKeyboard().m_KeyThree);
+	io.AddKeyEvent(ImGuiKey_4, m_Renderer.getKeyboard().m_KeyFour);
+	io.AddKeyEvent(ImGuiKey_5, m_Renderer.getKeyboard().m_KeyFive);
+	io.AddKeyEvent(ImGuiKey_6, m_Renderer.getKeyboard().m_KeySix);
+	io.AddKeyEvent(ImGuiKey_7, m_Renderer.getKeyboard().m_KeySeven);
+	io.AddKeyEvent(ImGuiKey_8, m_Renderer.getKeyboard().m_KeyEight);
+	io.AddKeyEvent(ImGuiKey_9, m_Renderer.getKeyboard().m_KeyNine);
+	io.AddKeyEvent(ImGuiKey_Semicolon, m_Renderer.getKeyboard().m_Semicolon);
+	io.AddKeyEvent(ImGuiKey_Equal, m_Renderer.getKeyboard().m_Equal);
+	io.AddKeyEvent(ImGuiKey_LeftBracket, m_Renderer.getKeyboard().m_LeftBracket);
+	io.AddKeyEvent(ImGuiKey_RightBracket, m_Renderer.getKeyboard().m_RightBracket);
+	io.AddKeyEvent(ImGuiKey_Backslash, m_Renderer.getKeyboard().m_Backslash);
+	io.AddKeyEvent(ImGuiKey_GraveAccent, m_Renderer.getKeyboard().m_GraveAccent);
+	io.AddKeyEvent(ImGuiKey_Escape, m_Renderer.getKeyboard().m_Escape);
+	io.AddKeyEvent(ImGuiKey_Enter, m_Renderer.getKeyboard().m_Enter);
+	io.AddKeyEvent(ImGuiKey_Tab, m_Renderer.getKeyboard().m_Tab);
+	io.AddKeyEvent(ImGuiKey_Backspace, m_Renderer.getKeyboard().m_Backspace);
+	io.AddKeyEvent(ImGuiKey_Insert, m_Renderer.getKeyboard().m_Insert);
+	io.AddKeyEvent(ImGuiKey_Delete, m_Renderer.getKeyboard().m_Delete);
+	io.AddKeyEvent(ImGuiKey_RightArrow, m_Renderer.getKeyboard().m_Right);
+	io.AddKeyEvent(ImGuiKey_LeftArrow, m_Renderer.getKeyboard().m_Left);
+	io.AddKeyEvent(ImGuiKey_DownArrow, m_Renderer.getKeyboard().m_Down);
+	io.AddKeyEvent(ImGuiKey_UpArrow, m_Renderer.getKeyboard().m_Up);
+	io.AddKeyEvent(ImGuiKey_PageUp, m_Renderer.getKeyboard().m_PageUp);
+	io.AddKeyEvent(ImGuiKey_PageDown, m_Renderer.getKeyboard().m_PageDown);
+	io.AddKeyEvent(ImGuiKey_Home, m_Renderer.getKeyboard().m_Home);
+	io.AddKeyEvent(ImGuiKey_End, m_Renderer.getKeyboard().m_End);
+	io.AddKeyEvent(ImGuiKey_CapsLock, m_Renderer.getKeyboard().m_CapsLock);
+	io.AddKeyEvent(ImGuiKey_ScrollLock, m_Renderer.getKeyboard().m_ScrollLock);
+	io.AddKeyEvent(ImGuiKey_NumLock, m_Renderer.getKeyboard().m_NumLock);
+	io.AddKeyEvent(ImGuiKey_PrintScreen, m_Renderer.getKeyboard().m_PrintScreen);
+	io.AddKeyEvent(ImGuiKey_Pause, m_Renderer.getKeyboard().m_Pause);
+	io.AddKeyEvent(ImGuiKey_F1, m_Renderer.getKeyboard().m_F1);
+	io.AddKeyEvent(ImGuiKey_F2, m_Renderer.getKeyboard().m_F2);
+	io.AddKeyEvent(ImGuiKey_F3, m_Renderer.getKeyboard().m_F3);
+	io.AddKeyEvent(ImGuiKey_F4, m_Renderer.getKeyboard().m_F4);
+	io.AddKeyEvent(ImGuiKey_F5, m_Renderer.getKeyboard().m_F5);
+	io.AddKeyEvent(ImGuiKey_F6, m_Renderer.getKeyboard().m_F6);
+	io.AddKeyEvent(ImGuiKey_F7, m_Renderer.getKeyboard().m_F7);
+	io.AddKeyEvent(ImGuiKey_F8, m_Renderer.getKeyboard().m_F8);
+	io.AddKeyEvent(ImGuiKey_F9, m_Renderer.getKeyboard().m_F9);
+	io.AddKeyEvent(ImGuiKey_F10, m_Renderer.getKeyboard().m_F10);
+	io.AddKeyEvent(ImGuiKey_F11, m_Renderer.getKeyboard().m_F11);
+	io.AddKeyEvent(ImGuiKey_F12, m_Renderer.getKeyboard().m_F12);
+	io.AddKeyEvent(ImGuiKey_KeyPadEnter, m_Renderer.getKeyboard().m_KeyPadEnter);
+	io.AddKeyEvent(ImGuiKey_LeftShift, m_Renderer.getKeyboard().m_LeftShift);
+	io.AddKeyEvent(ImGuiKey_LeftCtrl, m_Renderer.getKeyboard().m_LeftControl);
+	io.AddKeyEvent(ImGuiKey_LeftAlt, m_Renderer.getKeyboard().m_LeftAlt);
+	io.AddKeyEvent(ImGuiKey_LeftSuper, m_Renderer.getKeyboard().m_LeftSuper);
+	io.AddKeyEvent(ImGuiKey_RightShift, m_Renderer.getKeyboard().m_RightShift);
+	io.AddKeyEvent(ImGuiKey_RightCtrl, m_Renderer.getKeyboard().m_RightControl);
+	io.AddKeyEvent(ImGuiKey_RightAlt, m_Renderer.getKeyboard().m_RightAlt);
+	io.AddKeyEvent(ImGuiKey_RightSuper, m_Renderer.getKeyboard().m_RightSuper);
+	io.AddKeyEvent(ImGuiKey_Menu, m_Renderer.getKeyboard().m_Menu);
 }
 
 void ImGuiLayer::endFrame() const
@@ -118,10 +147,10 @@ void ImGuiLayer::bind(Xenon::Layer* pPreviousLayer, Xenon::Backend::CommandRecor
 	const auto frameIndex = pCommandRecorder->getCurrentIndex();
 	pCommandRecorder->bind(m_pVertexBuffers[frameIndex].get(), sizeof(ImDrawVert));
 	pCommandRecorder->bind(m_pIndexBuffers[frameIndex].get(), static_cast<Xenon::Backend::IndexBufferStride>(sizeof(ImDrawIdx)));
-	pCommandRecorder->setViewport(0.0f, 0.0f, static_cast<float>(m_Renderer.getCamera()->getWidth()), static_cast<float>(m_Renderer.getCamera()->getHeight()), 0.0f, 1.0f);
+	pCommandRecorder->setViewport(0.0f, 0.0f, static_cast<float>(m_Renderer.getCamera()->getWidth()), static_cast<float>(m_Renderer.getCamera()->getHeight()), 0.0f, 0.0f);
 
-	uint32_t indexOffset = 0;
-	uint32_t vertexOffset = 0;
+	uint64_t indexOffset = 0;
+	uint64_t vertexOffset = 0;
 	for (uint32_t i = 0; i < pDrawData->CmdListsCount; i++)
 	{
 		const auto* pCommandList = pDrawData->CmdLists[i];
@@ -145,11 +174,18 @@ void ImGuiLayer::bind(Xenon::Layer* pPreviousLayer, Xenon::Backend::CommandRecor
 	}
 }
 
-void ImGuiLayer::configureImGui()
+void ImGuiLayer::configureImGui() const
 {
 	auto& io = ImGui::GetIO();
-	io.DisplaySize.x = static_cast<float>(m_Renderer.getCamera()->getWidth());
-	io.DisplaySize.y = static_cast<float>(m_Renderer.getCamera()->getHeight());
+	io.DisplaySize.x = static_cast<float>(m_Renderer.getWindow()->getWidth());
+	io.DisplaySize.y = static_cast<float>(m_Renderer.getWindow()->getHeight());
+
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+
+	io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;
+	io.BackendFlags |= ImGuiBackendFlags_RendererHasViewports;
 }
 
 void ImGuiLayer::setupDefaultMaterial()
@@ -196,14 +232,17 @@ void ImGuiLayer::prepareResources(Xenon::Backend::CommandRecorder* pCommandRecor
 	if (vertexBufferSize == 0 || indexBufferSize == 0)
 		return;
 
-	// Setup the vertex buffer if necessary.
 	const auto frameIndex = pCommandRecorder->getCurrentIndex();
-	if (!m_pVertexBuffers[frameIndex] || m_pVertexBuffers[frameIndex]->getSize() < vertexBufferSize)
-		m_pVertexBuffers[frameIndex] = m_Renderer.getInstance().getFactory()->createBuffer(m_Renderer.getInstance().getBackendDevice(), getNextBufferSize(vertexBufferSize), Xenon::Backend::BufferType::Vertex);
+	auto& pVertexBuffer = m_pVertexBuffers[frameIndex];
+	auto& pIndexBuffer = m_pIndexBuffers[frameIndex];
+
+	// Setup the vertex buffer if necessary.
+	if (!pVertexBuffer || pVertexBuffer->getSize() != vertexBufferSize)
+		pVertexBuffer = m_Renderer.getInstance().getFactory()->createBuffer(m_Renderer.getInstance().getBackendDevice(), vertexBufferSize, Xenon::Backend::BufferType::Vertex);
 
 	// Setup the index buffer if necessary.
-	if (!m_pIndexBuffers[frameIndex] || m_pIndexBuffers[frameIndex]->getSize() < indexBufferSize)
-		m_pIndexBuffers[frameIndex] = m_Renderer.getInstance().getFactory()->createBuffer(m_Renderer.getInstance().getBackendDevice(), getNextBufferSize(indexBufferSize), Xenon::Backend::BufferType::Index);
+	if (!pIndexBuffer || pIndexBuffer->getSize() != indexBufferSize)
+		pIndexBuffer = m_Renderer.getInstance().getFactory()->createBuffer(m_Renderer.getInstance().getBackendDevice(), indexBufferSize, Xenon::Backend::BufferType::Index);
 
 	// Copy the data.
 	uint64_t vertexOffset = 0;
@@ -212,8 +251,8 @@ void ImGuiLayer::prepareResources(Xenon::Backend::CommandRecorder* pCommandRecor
 	{
 		const auto* pCommandList = pDrawData->CmdLists[i];
 
-		m_pVertexBuffers[frameIndex]->write(Xenon::ToBytes(pCommandList->VtxBuffer.Data), static_cast<uint64_t>(pCommandList->VtxBuffer.Size) * sizeof(ImDrawVert), vertexOffset, pCommandRecorder);
-		m_pIndexBuffers[frameIndex]->write(Xenon::ToBytes(pCommandList->IdxBuffer.Data), static_cast<uint64_t>(pCommandList->IdxBuffer.Size) * sizeof(ImDrawIdx), indexOffset, pCommandRecorder);
+		pVertexBuffer->write(Xenon::ToBytes(pCommandList->VtxBuffer.Data), static_cast<uint64_t>(pCommandList->VtxBuffer.Size) * sizeof(ImDrawVert), vertexOffset, pCommandRecorder);
+		pIndexBuffer->write(Xenon::ToBytes(pCommandList->IdxBuffer.Data), static_cast<uint64_t>(pCommandList->IdxBuffer.Size) * sizeof(ImDrawIdx), indexOffset, pCommandRecorder);
 
 		vertexOffset += pCommandList->VtxBuffer.Size * sizeof(ImDrawVert);
 		indexOffset += pCommandList->IdxBuffer.Size * sizeof(ImDrawIdx);

@@ -81,8 +81,10 @@ void Studio::run()
 	Xenon::FrameTimer timer;
 	do
 	{
+		const auto delta = timer.tick();
+
 		// Begin the ImGui scene.
-		pImGui->beginFrame();
+		pImGui->beginFrame(delta);
 
 		// Add the draw data when the model has been loaded.
 		if (!dataLoaded && is_ready(storage))
@@ -94,7 +96,6 @@ void Studio::run()
 		ImGui::ShowDemoWindow();
 
 		// Move the camera.
-		const auto delta = timer.tick();
 		switch (m_Renderer.getKeyboard().m_Character)
 		{
 		case 'w':

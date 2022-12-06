@@ -22,31 +22,31 @@ namespace Xenon
 			{
 			case Xenon::Backend::BufferType::Index:
 				m_CurrentState = D3D12_RESOURCE_STATE_INDEX_BUFFER;
-				allocationDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
+				allocationDesc.HeapType = m_HeapType;
 				resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(size, D3D12_RESOURCE_FLAG_NONE);
 				break;
 
 			case Xenon::Backend::BufferType::Vertex:
 				m_CurrentState = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
-				allocationDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
+				allocationDesc.HeapType = m_HeapType;
 				resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(size, D3D12_RESOURCE_FLAG_NONE);
 				break;
 
 			case Xenon::Backend::BufferType::Staging:
 				m_CurrentState = D3D12_RESOURCE_STATE_COMMON;
-				allocationDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
+				allocationDesc.HeapType = m_HeapType;
 				resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(size, D3D12_RESOURCE_FLAG_NONE);
 				break;
 
 			case Xenon::Backend::BufferType::Storage:
 				m_CurrentState = D3D12_RESOURCE_STATE_COMMON;
-				allocationDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
+				allocationDesc.HeapType = m_HeapType;
 				resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(size, D3D12_RESOURCE_FLAG_NONE);
 				break;
 
 			case Xenon::Backend::BufferType::Uniform:
 				m_CurrentState = D3D12_RESOURCE_STATE_COMMON;
-				allocationDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
+				allocationDesc.HeapType = m_HeapType;
 				m_Size = static_cast<uint64_t>(std::ceil(static_cast<float>(size) / D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT) * D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
 				resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(m_Size, D3D12_RESOURCE_FLAG_NONE);
 				break;
@@ -54,7 +54,7 @@ namespace Xenon
 			default:
 				m_Type = BufferType::Staging;
 				m_CurrentState = D3D12_RESOURCE_STATE_COMMON;
-				allocationDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
+				allocationDesc.HeapType = m_HeapType;
 				resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(size, D3D12_RESOURCE_FLAG_NONE);
 				XENON_LOG_ERROR("Invalid or unsupported buffer type! Defaulting to staging.");
 				break;
@@ -83,6 +83,7 @@ namespace Xenon
 			: Buffer(pDevice, size, BufferType::BackendSpecific)
 			, DX12DeviceBoundObject(pDevice)
 			, m_CurrentState(resourceStates)
+			, m_HeapType(heapType)
 		{
 			CD3DX12_RESOURCE_DESC resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(size, resourceFlags);
 
@@ -156,25 +157,26 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
-			// First, create the copy buffer.
-			auto copyBuffer = DX12Buffer(m_pDevice, size, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
+			// Create the temporary buffer if it's null.
+			if (m_pTemporaryWriteBuffer == nullptr)
+				m_pTemporaryWriteBuffer = std::make_unique<DX12Buffer>(m_pDevice, m_Size, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
 
 			// Map the memory.
 			std::byte* copyBufferMemory = nullptr;
-			copyBuffer.getResource()->Map(0, nullptr, std::bit_cast<void**>(&copyBufferMemory));
+			m_pTemporaryWriteBuffer->getResource()->Map(0, nullptr, std::bit_cast<void**>(&copyBufferMemory));
 
 			// Copy the data to the copy buffer.
 			std::copy_n(pData, size, copyBufferMemory);
 
 			// Unmap the copy buffer.
-			copyBuffer.getResource()->Unmap(0, nullptr);
+			m_pTemporaryWriteBuffer->getResource()->Unmap(0, nullptr);
 
 			// Finally copy everything to this.
 			if (pCommandRecorder)
-				performCopy(pCommandRecorder->as<DX12CommandRecorder>()->getCurrentCommandList(), &copyBuffer, size, 0, offset);
+				performCopy(pCommandRecorder->as<DX12CommandRecorder>()->getCurrentCommandList(), m_pTemporaryWriteBuffer.get(), size, 0, offset);
 
 			else
-				copy(&copyBuffer, size, 0, offset);
+				copy(m_pTemporaryWriteBuffer.get(), size, 0, offset);
 		}
 
 		const std::byte* DX12Buffer::beginRead()
@@ -195,11 +197,16 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
-			m_pTemporaryBuffer = std::make_unique<DX12Buffer>(m_pDevice, m_Size, D3D12_HEAP_TYPE_READBACK, D3D12_RESOURCE_STATE_COPY_DEST);
-			m_pTemporaryBuffer->copy(this, m_Size, 0, 0);
+			// Create the temporary buffer if it's null.
+			if (m_pTemporaryReadBuffer == nullptr)
+				m_pTemporaryReadBuffer = std::make_unique<DX12Buffer>(m_pDevice, m_Size, D3D12_HEAP_TYPE_READBACK, D3D12_RESOURCE_STATE_COPY_DEST);
 
+			// Copy the current data to it.
+			m_pTemporaryReadBuffer->copy(this, m_Size, 0, 0);
+
+			// Map the resources now.
 			std::byte* tempBufferMemory = nullptr;
-			m_pTemporaryBuffer->getResource()->Map(0, nullptr, std::bit_cast<void**>(&tempBufferMemory));
+			m_pTemporaryReadBuffer->getResource()->Map(0, nullptr, std::bit_cast<void**>(&tempBufferMemory));
 			return tempBufferMemory;
 		}
 
@@ -207,7 +214,7 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
-			m_pTemporaryBuffer->getResource()->Unmap(0, nullptr);
+			m_pTemporaryReadBuffer->getResource()->Unmap(0, nullptr);
 		}
 
 		void DX12Buffer::performCopy(ID3D12GraphicsCommandList* pCommandlist, Buffer* pBuffer, uint64_t size, uint64_t srcOffset /*= 0*/, uint64_t dstOffset /*= 0*/)
@@ -220,7 +227,7 @@ namespace Xenon
 			pCommandlist->ResourceBarrier(1, &barrier);
 
 			// Source
-			if (pSourceBuffer->m_CurrentState != D3D12_RESOURCE_STATE_GENERIC_READ)
+			if (pSourceBuffer->m_CurrentState != D3D12_RESOURCE_STATE_GENERIC_READ && pSourceBuffer->m_HeapType != D3D12_HEAP_TYPE_READBACK)
 			{
 				barrier = CD3DX12_RESOURCE_BARRIER::Transition(pSourceBuffer->getResource(), pSourceBuffer->m_CurrentState, D3D12_RESOURCE_STATE_COPY_SOURCE);
 				pCommandlist->ResourceBarrier(1, &barrier);
@@ -235,7 +242,7 @@ namespace Xenon
 			pCommandlist->ResourceBarrier(1, &barrier);
 
 			// Source
-			if (pSourceBuffer->m_CurrentState != D3D12_RESOURCE_STATE_GENERIC_READ)
+			if (pSourceBuffer->m_CurrentState != D3D12_RESOURCE_STATE_GENERIC_READ && pSourceBuffer->m_HeapType != D3D12_HEAP_TYPE_READBACK)
 			{
 				barrier = CD3DX12_RESOURCE_BARRIER::Transition(pSourceBuffer->getResource(), D3D12_RESOURCE_STATE_COPY_SOURCE, pSourceBuffer->m_CurrentState);
 				pCommandlist->ResourceBarrier(1, &barrier);

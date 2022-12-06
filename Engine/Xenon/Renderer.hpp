@@ -105,6 +105,13 @@ namespace Xenon
 		[[nodsicard]] const TaskGraph& getTaskGraph() const { return m_TaskGraph; }
 
 		/**
+		 * Get the window pointer.
+		 *
+		 * @return The window pointer.
+		 */
+		[[nodiscard]] const Platform::Window* getWindow() const { return m_pSwapChain->getWindow(); }
+
+		/**
 		 * Get the mouse from the associated window.
 		 *
 		 * @return The mouse inputs.

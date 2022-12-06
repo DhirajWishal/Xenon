@@ -130,9 +130,11 @@ namespace Xenon
 			ComPtr<ID3D12CommandAllocator> m_CommandAllocator;
 			ComPtr<ID3D12GraphicsCommandList> m_CommandList;
 
-			std::unique_ptr<DX12Buffer> m_pTemporaryBuffer = nullptr;
+			std::unique_ptr<DX12Buffer> m_pTemporaryReadBuffer = nullptr;
+			std::unique_ptr<DX12Buffer> m_pTemporaryWriteBuffer = nullptr;
 
 			D3D12_RESOURCE_STATES m_CurrentState = D3D12_RESOURCE_STATE_COMMON;
+			D3D12_HEAP_TYPE m_HeapType = D3D12_HEAP_TYPE_DEFAULT;
 		};
 	}
 }

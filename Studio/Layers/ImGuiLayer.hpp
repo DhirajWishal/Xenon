@@ -40,8 +40,10 @@ public:
 	/**
 	 * Begin the frame.
 	 * This function must be called before drawing anything on ImGui!
+	 * 
+	 * @param delta The time difference between the previous frame and the current frame in nanoseconds.
 	 */
-	void beginFrame() const;
+	void beginFrame(std::chrono::nanoseconds delta) const;
 
 	/**
 	 * End the frame.
@@ -62,7 +64,7 @@ private:
 	/**
 	 * Configure ImGui.
 	 */
-	void configureImGui();
+	void configureImGui() const;
 
 	/**
 	 * Setup the default texture material.
