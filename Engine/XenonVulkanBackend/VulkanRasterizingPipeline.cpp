@@ -800,7 +800,7 @@ namespace /* anonymous */
 				return VK_FORMAT_R64G64B64A64_UINT;
 
 			case Xenon::Backend::ComponentDataType::Int8:
-				return VK_FORMAT_R8G8B8A8_SINT;
+				return VK_FORMAT_R8G8B8A8_SNORM;
 
 			case Xenon::Backend::ComponentDataType::Int16:
 				return VK_FORMAT_R16G16B16A16_SINT;

@@ -596,7 +596,7 @@ namespace /* anonymous */
 			switch (dataType)
 			{
 			case Xenon::Backend::ComponentDataType::Uint8:
-				return DXGI_FORMAT_R8G8B8A8_UINT;
+				return DXGI_FORMAT_R8G8B8A8_UNORM;
 
 			case Xenon::Backend::ComponentDataType::Uint16:
 				return DXGI_FORMAT_R16G16B16A16_UINT;
@@ -605,7 +605,7 @@ namespace /* anonymous */
 				return DXGI_FORMAT_R32G32B32A32_UINT;
 
 			case Xenon::Backend::ComponentDataType::Int8:
-				return DXGI_FORMAT_R8G8B8A8_SINT;
+				return DXGI_FORMAT_R8G8B8A8_SNORM;
 
 			case Xenon::Backend::ComponentDataType::Int16:
 				return DXGI_FORMAT_R16G16B16A16_SINT;

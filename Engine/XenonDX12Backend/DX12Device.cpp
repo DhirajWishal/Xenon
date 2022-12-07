@@ -131,7 +131,7 @@ namespace Xenon
 
 			// Set the options.
 			spirv_cross::CompilerHLSL::Options options;
-			options.shader_model = 50;	// 
+			options.shader_model = 50;
 			compiler.set_hlsl_options(options);
 
 			// If we're in the vertex shader set the correct semantics.

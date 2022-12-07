@@ -593,7 +593,8 @@ namespace Xenon
 
 		void DX12CommandRecorder::setViewport(float x, float y, float width, float height, float minDepth, float maxDepth)
 		{
-			D3D12_VIEWPORT viewport = CD3DX12_VIEWPORT(x, y, width, height, minDepth, maxDepth);
+			// Note that here we flip the viewport vertically because we're using GLSL -> SPIR-V -> HLSL.
+			D3D12_VIEWPORT viewport = CD3DX12_VIEWPORT(x, height - y, width, -height, minDepth, maxDepth);
 			m_pCurrentCommandList->RSSetViewports(1, &viewport);
 		}
 

@@ -166,17 +166,17 @@ namespace Xenon
 			m_pTemporaryWriteBuffer->getResource()->Map(0, nullptr, std::bit_cast<void**>(&copyBufferMemory));
 
 			// Copy the data to the copy buffer.
-			std::copy_n(pData, size, copyBufferMemory);
+			std::copy_n(pData, size, copyBufferMemory + offset);
 
 			// Unmap the copy buffer.
 			m_pTemporaryWriteBuffer->getResource()->Unmap(0, nullptr);
 
 			// Finally copy everything to this.
 			if (pCommandRecorder)
-				performCopy(pCommandRecorder->as<DX12CommandRecorder>()->getCurrentCommandList(), m_pTemporaryWriteBuffer.get(), size, 0, offset);
+				performCopy(pCommandRecorder->as<DX12CommandRecorder>()->getCurrentCommandList(), m_pTemporaryWriteBuffer.get(), size, offset, offset);
 
 			else
-				copy(m_pTemporaryWriteBuffer.get(), size, 0, offset);
+				copy(m_pTemporaryWriteBuffer.get(), size, offset, offset);
 		}
 
 		const std::byte* DX12Buffer::beginRead()

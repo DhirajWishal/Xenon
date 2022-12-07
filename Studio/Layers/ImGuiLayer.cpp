@@ -24,7 +24,7 @@ namespace /* anonymous */
 }
 
 ImGuiLayer::ImGuiLayer(Xenon::Renderer& renderer, Xenon::Backend::Camera* pCamera)
-	: RasterizingLayer(renderer, pCamera, Xenon::Backend::AttachmentType::Color, false, Xenon::Backend::MultiSamplingCount::x2)
+	: RasterizingLayer(renderer, pCamera, Xenon::Backend::AttachmentType::Color)
 	, m_pVertexBuffers(renderer.getCommandRecorder()->getBufferCount())
 	, m_pIndexBuffers(renderer.getCommandRecorder()->getBufferCount())
 {
@@ -266,10 +266,6 @@ void ImGuiLayer::configureImGui() const
 
 	// Setup the styles.
 	auto& style = ImGui::GetStyle();
-
-	// Background - 20, 23, 27
-	// Tabs - 242, 84, 91
-	// Menus - 25, 133, 161
 
 	style.Colors[ImGuiCol_TitleBg] = ImVec4(CreateColor256(26), CreateColor256(30), CreateColor256(35), 0.5f);
 	style.Colors[ImGuiCol_TitleBgActive] = ImVec4(CreateColor256(26), CreateColor256(30), CreateColor256(35), 0.75f);
