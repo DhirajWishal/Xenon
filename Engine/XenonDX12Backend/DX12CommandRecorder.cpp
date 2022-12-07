@@ -595,12 +595,14 @@ namespace Xenon
 		{
 			// Note that here we flip the viewport vertically because we're using GLSL -> SPIR-V -> HLSL.
 			D3D12_VIEWPORT viewport = CD3DX12_VIEWPORT(x, height - y, width, -height, minDepth, maxDepth);
+			// D3D12_VIEWPORT viewport = CD3DX12_VIEWPORT(x, y, width, height, minDepth, maxDepth);
 			m_pCurrentCommandList->RSSetViewports(1, &viewport);
 		}
 
 		void DX12CommandRecorder::setScissor(int32_t x, int32_t y, uint32_t width, uint32_t height)
 		{
 			D3D12_RECT scissor = CD3DX12_RECT(x, y, width, height);
+			// D3D12_RECT scissor = CD3DX12_RECT(x, height - y, width, -static_cast<LONG>(height));
 			m_pCurrentCommandList->RSSetScissorRects(1, &scissor);
 		}
 

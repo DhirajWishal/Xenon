@@ -27,6 +27,7 @@ ImGuiLayer::ImGuiLayer(Xenon::Renderer& renderer, Xenon::Backend::Camera* pCamer
 	: RasterizingLayer(renderer, pCamera, Xenon::Backend::AttachmentType::Color)
 	, m_pVertexBuffers(renderer.getCommandRecorder()->getBufferCount())
 	, m_pIndexBuffers(renderer.getCommandRecorder()->getBufferCount())
+	, m_ClearValues({ glm::vec4(0.0f, 0.0f, 0.0f, 1.0f) })
 {
 	ImGui::CreateContext();
 
@@ -47,8 +48,8 @@ void ImGuiLayer::beginFrame(std::chrono::nanoseconds delta) const
 	auto& io = ImGui::GetIO();
 
 	// Set the display size in case it was resized.
-	io.DisplaySize.x = static_cast<float>(m_Renderer.getWindow()->getWidth());
-	io.DisplaySize.y = static_cast<float>(m_Renderer.getWindow()->getHeight());
+	io.DisplaySize.x = static_cast<float>(m_Renderer.getCamera()->getWidth());
+	io.DisplaySize.y = static_cast<float>(m_Renderer.getCamera()->getHeight());
 
 	// Set the time difference.
 	io.DeltaTime = static_cast<float>(delta.count()) / std::nano::den;
@@ -211,12 +212,12 @@ void ImGuiLayer::bind(Xenon::Layer* pPreviousLayer, Xenon::Backend::CommandRecor
 	if (!pDrawData || pDrawData->CmdListsCount == 0)
 		return;
 
-	pCommandRecorder->bind(m_pRasterizer.get(), { glm::vec4(0.25f, 0.25f, 0.25f, 1.0f) });
+	pCommandRecorder->bind(m_pRasterizer.get(), m_ClearValues);
 	pCommandRecorder->bind(m_pPipeline.get(), m_VertexSpecification);
 
 	const auto& io = ImGui::GetIO();
 	m_UserData.m_Scale = glm::vec2(2.0f / io.DisplaySize.x, 2.0f / io.DisplaySize.y);
-	m_UserData.m_Translate = glm::vec2(-1.0f - pDrawData->DisplayPos.x * m_UserData.m_Scale.x, -1.0f - pDrawData->DisplayPos.y * m_UserData.m_Scale.y);
+	m_UserData.m_Translate = glm::vec2(-1.0f);
 	m_pUniformBuffer->write(Xenon::ToBytes(&m_UserData), sizeof(UserData), 0, pCommandRecorder);
 
 	const auto frameIndex = pCommandRecorder->getCurrentIndex();
@@ -233,11 +234,16 @@ void ImGuiLayer::bind(Xenon::Layer* pPreviousLayer, Xenon::Backend::CommandRecor
 		{
 			const auto* pCommandBuffer = &pCommandList->CmdBuffer[j];
 
+			const auto minClip = ImVec2(pCommandBuffer->ClipRect.x - pDrawData->DisplayPos.x, pCommandBuffer->ClipRect.y - pDrawData->DisplayPos.y);
+			const auto maxClip = ImVec2(pCommandBuffer->ClipRect.z - pDrawData->DisplayPos.x, pCommandBuffer->ClipRect.w - pDrawData->DisplayPos.y);
+			if (maxClip.x <= minClip.x || maxClip.y <= minClip.y)
+				continue;
+
 			pCommandRecorder->setScissor(
-				std::max(static_cast<int32_t>(pCommandBuffer->ClipRect.x), 0),
-				std::max(static_cast<int32_t>(pCommandBuffer->ClipRect.y), 0),
-				static_cast<uint32_t>(pCommandBuffer->ClipRect.z - pCommandBuffer->ClipRect.x),
-				static_cast<uint32_t>(pCommandBuffer->ClipRect.w - pCommandBuffer->ClipRect.y)
+				static_cast<int32_t>(minClip.x),
+				static_cast<int32_t>(minClip.y),
+				static_cast<uint32_t>(maxClip.x),
+				static_cast<uint32_t>(maxClip.y)
 			);
 
 			pCommandRecorder->bind(m_pPipeline.get(), m_pUserDescriptor.get(), m_pDescriptorSetMap[std::bit_cast<uint64_t>(pCommandBuffer->TextureId)].get(), nullptr);

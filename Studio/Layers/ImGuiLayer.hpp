@@ -40,7 +40,7 @@ public:
 	/**
 	 * Begin the frame.
 	 * This function must be called before drawing anything on ImGui!
-	 * 
+	 *
 	 * @param delta The time difference between the previous frame and the current frame in nanoseconds.
 	 */
 	void beginFrame(std::chrono::nanoseconds delta) const;
@@ -96,6 +96,8 @@ private:
 
 	std::vector<std::unique_ptr<Xenon::Backend::Buffer>> m_pVertexBuffers;
 	std::vector<std::unique_ptr<Xenon::Backend::Buffer>> m_pIndexBuffers;
+
+	std::vector<Xenon::Backend::Rasterizer::ClearValueType> m_ClearValues;
 
 	Xenon::Backend::VertexSpecification m_VertexSpecification;
 

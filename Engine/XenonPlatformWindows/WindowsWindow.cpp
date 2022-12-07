@@ -84,7 +84,7 @@ namespace Xenon
 				0,								// Optional window styles. https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 				g_ClassName,					// Window class
 				wideString.data(),				// Window text
-				WS_OVERLAPPEDWINDOW,			// Window style
+				WS_BORDER,								// Window style
 				CW_USEDEFAULT,					// X-Position.
 				CW_USEDEFAULT,					// Y-Position.
 				width,							// Width of the window.
@@ -94,6 +94,8 @@ namespace Xenon
 				nullptr,						// Instance handle
 				this							// Additional application data
 			);
+
+			SetWindowLong(m_WindowHandle, GWL_STYLE, 0);
 
 			// Get the actual window size.
 			if (RECT rectangle = {}; GetClientRect(m_WindowHandle, &rectangle))
