@@ -70,6 +70,20 @@ namespace Xenon
 		 */
 		[[nodiscard]] bool isActive() const noexcept { return m_IsActive; }
 
+		/**
+		 * Get the renderer to which the layer is bound to.
+		 *
+		 * @return The layer.
+		 */
+		[[nodiscard]] Renderer& getRenderer() noexcept { return m_Renderer; }
+
+		/**
+		 * Get the renderer to which the layer is bound to.
+		 *
+		 * @return The layer.
+		 */
+		[[nodiscard]] const Renderer& getRenderer() const noexcept { return m_Renderer; }
+
 	protected:
 		Renderer& m_Renderer;
 

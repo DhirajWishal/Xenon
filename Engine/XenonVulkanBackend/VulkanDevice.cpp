@@ -263,59 +263,137 @@ namespace Xenon
 		{
 			switch (format)
 			{
-			case Xenon::Backend::DataFormat::Undefined:									return VK_FORMAT_UNDEFINED;
-			case Xenon::Backend::DataFormat::R8_SRGB:									return VK_FORMAT_R8_SRGB;
-			case Xenon::Backend::DataFormat::R8G8_SRGB:									return VK_FORMAT_R8G8_SRGB;
-			case Xenon::Backend::DataFormat::R8G8B8_SRGB:								return VK_FORMAT_R8G8B8_SRGB;
-			case Xenon::Backend::DataFormat::R8G8B8A8_SRGB:								return VK_FORMAT_R8G8B8A8_SRGB;
-			case Xenon::Backend::DataFormat::R8_UNORMAL:								return VK_FORMAT_R8_UNORM;
-			case Xenon::Backend::DataFormat::R8G8_UNORMAL:								return VK_FORMAT_R8G8_UNORM;
-			case Xenon::Backend::DataFormat::R8G8B8_UNORMAL:							return VK_FORMAT_R8G8B8_UNORM;
-			case Xenon::Backend::DataFormat::R8G8B8A8_UNORMAL:							return VK_FORMAT_R8G8B8A8_UNORM;
-			case Xenon::Backend::DataFormat::B8G8R8_SRGB:								return VK_FORMAT_B8G8R8_SRGB;
-			case Xenon::Backend::DataFormat::B8G8R8A8_SRGB:								return VK_FORMAT_B8G8R8A8_SRGB;
-			case Xenon::Backend::DataFormat::B8G8R8_UNORMAL:							return VK_FORMAT_B8G8R8_UNORM;
-			case Xenon::Backend::DataFormat::B8G8R8A8_UNORMAL:							return VK_FORMAT_B8G8R8A8_UNORM;
-			case Xenon::Backend::DataFormat::R16_SFLOAT:								return VK_FORMAT_R16_SFLOAT;
-			case Xenon::Backend::DataFormat::R16G16_SFLOAT:								return VK_FORMAT_R16G16_SFLOAT;
-			case Xenon::Backend::DataFormat::R16G16B16_SFLOAT:							return VK_FORMAT_R16G16B16_SFLOAT;
-			case Xenon::Backend::DataFormat::R16G16B16A16_SFLOAT:						return VK_FORMAT_R16G16B16A16_SFLOAT;
-			case Xenon::Backend::DataFormat::R32_SFLOAT:								return VK_FORMAT_R32_SFLOAT;
-			case Xenon::Backend::DataFormat::R32G32_SFLOAT:								return VK_FORMAT_R32G32_SFLOAT;
-			case Xenon::Backend::DataFormat::R32G32B32_SFLOAT:							return VK_FORMAT_R32G32B32_SFLOAT;
-			case Xenon::Backend::DataFormat::R32G32B32A32_SFLOAT:						return VK_FORMAT_R32G32B32A32_SFLOAT;
-			case Xenon::Backend::DataFormat::D16_SINT:									return VK_FORMAT_D16_UNORM;
-			case Xenon::Backend::DataFormat::D32_SFLOAT:								return VK_FORMAT_D32_SFLOAT;
-			case Xenon::Backend::DataFormat::S8_UINT:									return VK_FORMAT_S8_UINT;
-			case Xenon::Backend::DataFormat::D16_UNORMAL_S8_UINT:						return VK_FORMAT_D16_UNORM_S8_UINT;
-			case Xenon::Backend::DataFormat::D24_UNORMAL_S8_UINT:						return VK_FORMAT_D24_UNORM_S8_UINT;
-			case Xenon::Backend::DataFormat::D32_SFLOAT_S8_UINT:						return VK_FORMAT_D32_SFLOAT_S8_UINT;
-			default:																	XENON_LOG_ERROR("Invalid data format! Defaulting to Undefined.");
-			}
+			case Xenon::Backend::DataFormat::Undefined:
+				return VK_FORMAT_UNDEFINED;
 
-			return VK_FORMAT_UNDEFINED;
+			case Xenon::Backend::DataFormat::R8_SRGB:
+				return VK_FORMAT_R8_SRGB;
+
+			case Xenon::Backend::DataFormat::R8G8_SRGB:
+				return VK_FORMAT_R8G8_SRGB;
+
+			case Xenon::Backend::DataFormat::R8G8B8_SRGB:
+				return VK_FORMAT_R8G8B8_SRGB;
+
+			case Xenon::Backend::DataFormat::R8G8B8A8_SRGB:
+				return VK_FORMAT_R8G8B8A8_SRGB;
+
+			case Xenon::Backend::DataFormat::R8_UNORMAL:
+				return VK_FORMAT_R8_UNORM;
+
+			case Xenon::Backend::DataFormat::R8G8_UNORMAL:
+				return VK_FORMAT_R8G8_UNORM;
+
+			case Xenon::Backend::DataFormat::R8G8B8_UNORMAL:
+				return VK_FORMAT_R8G8B8_UNORM;
+
+			case Xenon::Backend::DataFormat::R8G8B8A8_UNORMAL:
+				return VK_FORMAT_R8G8B8A8_UNORM;
+
+			case Xenon::Backend::DataFormat::B8G8R8_SRGB:
+				return VK_FORMAT_B8G8R8_SRGB;
+
+			case Xenon::Backend::DataFormat::B8G8R8A8_SRGB:
+				return VK_FORMAT_B8G8R8A8_SRGB;
+
+			case Xenon::Backend::DataFormat::B8G8R8_UNORMAL:
+				return VK_FORMAT_B8G8R8_UNORM;
+
+			case Xenon::Backend::DataFormat::B8G8R8A8_UNORMAL:
+				return VK_FORMAT_B8G8R8A8_UNORM;
+
+			case Xenon::Backend::DataFormat::R16_SFLOAT:
+				return VK_FORMAT_R16_SFLOAT;
+
+			case Xenon::Backend::DataFormat::R16G16_SFLOAT:
+				return VK_FORMAT_R16G16_SFLOAT;
+
+			case Xenon::Backend::DataFormat::R16G16B16_SFLOAT:
+				return VK_FORMAT_R16G16B16_SFLOAT;
+
+			case Xenon::Backend::DataFormat::R16G16B16A16_SFLOAT:
+				return VK_FORMAT_R16G16B16A16_SFLOAT;
+
+			case Xenon::Backend::DataFormat::R32_SFLOAT:
+				return VK_FORMAT_R32_SFLOAT;
+
+			case Xenon::Backend::DataFormat::R32G32_SFLOAT:
+				return VK_FORMAT_R32G32_SFLOAT;
+
+			case Xenon::Backend::DataFormat::R32G32B32_SFLOAT:
+				return VK_FORMAT_R32G32B32_SFLOAT;
+
+			case Xenon::Backend::DataFormat::R32G32B32A32_SFLOAT:
+				return VK_FORMAT_R32G32B32A32_SFLOAT;
+
+			case Xenon::Backend::DataFormat::D16_SINT:
+				return VK_FORMAT_D16_UNORM;
+
+			case Xenon::Backend::DataFormat::D32_SFLOAT:
+				return VK_FORMAT_D32_SFLOAT;
+
+			case Xenon::Backend::DataFormat::S8_UINT:
+				return VK_FORMAT_S8_UINT;
+
+			case Xenon::Backend::DataFormat::D16_UNORMAL_S8_UINT:
+				return VK_FORMAT_D16_UNORM_S8_UINT;
+
+			case Xenon::Backend::DataFormat::D24_UNORMAL_S8_UINT:
+				return VK_FORMAT_D24_UNORM_S8_UINT;
+
+			case Xenon::Backend::DataFormat::D32_SFLOAT_S8_UINT:
+				return VK_FORMAT_D32_SFLOAT_S8_UINT;
+
+			default:
+				XENON_LOG_ERROR("Invalid data format! Defaulting to Undefined.");
+				return VK_FORMAT_UNDEFINED;
+			}
 		}
 
 		VkDescriptorType VulkanDevice::convertResourceType(ResourceType type) const
 		{
 			switch (type)
 			{
-			case Xenon::Backend::ResourceType::Sampler:							return VK_DESCRIPTOR_TYPE_SAMPLER;
-			case Xenon::Backend::ResourceType::CombinedImageSampler:			return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			case Xenon::Backend::ResourceType::SampledImage:					return VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-			case Xenon::Backend::ResourceType::StorageImage:					return VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-			case Xenon::Backend::ResourceType::UniformTexelBuffer:				return VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
-			case Xenon::Backend::ResourceType::StorageTexelBuffer:				return VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER;
-			case Xenon::Backend::ResourceType::UniformBuffer:					return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			case Xenon::Backend::ResourceType::StorageBuffer:					return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-			case Xenon::Backend::ResourceType::DynamicUniformBuffer:			return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-			case Xenon::Backend::ResourceType::DynamicStorageBuffer:			return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
-			case Xenon::Backend::ResourceType::InputAttachment:					return VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
-			case Xenon::Backend::ResourceType::AccelerationStructure:			return VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
-			default:															spdlog::error("Invalid resource type!");
-			}
+			case Xenon::Backend::ResourceType::Sampler:
+				return VK_DESCRIPTOR_TYPE_SAMPLER;
 
-			return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			case Xenon::Backend::ResourceType::CombinedImageSampler:
+				return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+
+			case Xenon::Backend::ResourceType::SampledImage:
+				return VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+
+			case Xenon::Backend::ResourceType::StorageImage:
+				return VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+
+			case Xenon::Backend::ResourceType::UniformTexelBuffer:
+				return VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
+
+			case Xenon::Backend::ResourceType::StorageTexelBuffer:
+				return VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER;
+
+			case Xenon::Backend::ResourceType::UniformBuffer:
+				return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+
+			case Xenon::Backend::ResourceType::StorageBuffer:
+				return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+
+			case Xenon::Backend::ResourceType::DynamicUniformBuffer:
+				return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+
+			case Xenon::Backend::ResourceType::DynamicStorageBuffer:
+				return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+
+			case Xenon::Backend::ResourceType::InputAttachment:
+				return VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+
+			case Xenon::Backend::ResourceType::AccelerationStructure:
+				return VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
+
+			default:
+				XENON_LOG_ERROR("Invalid resource type!");
+				return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			}
 		}
 
 		Mutex<Xenon::Backend::VulkanQueue>& VulkanDevice::getComputeQueue()

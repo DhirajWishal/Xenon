@@ -519,7 +519,7 @@ namespace Xenon
 			const auto currentSwapchainImage = pVkSwapchain->getCurrentImage();
 
 			VkImageBlit blit = {};
-			blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			blit.srcSubresource.aspectMask = pVkImage->getAspectFlags();
 			blit.srcSubresource.baseArrayLayer = 0;
 			blit.srcSubresource.layerCount = 1;
 			blit.srcSubresource.mipLevel = 0;
@@ -556,7 +556,7 @@ namespace Xenon
 			auto pVkDestinationImage = pDestination->as<VulkanImage>();
 
 			VkImageBlit blit = {};
-			blit.srcSubresource.aspectMask = pVkSourceImage->getUsage() & ImageUsage::DepthAttachment ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+			blit.srcSubresource.aspectMask = pVkSourceImage->getAspectFlags();
 			blit.srcSubresource.baseArrayLayer = 0;
 			blit.srcSubresource.layerCount = 1;
 			blit.srcSubresource.mipLevel = 0;
@@ -566,7 +566,7 @@ namespace Xenon
 			blit.srcOffsets[1].x = static_cast<int32_t>(pVkSourceImage->getWidth()) - blit.srcOffsets[0].x;
 			blit.srcOffsets[1].y = static_cast<int32_t>(pVkSourceImage->getHeight()) - blit.srcOffsets[0].y;
 			blit.srcOffsets[1].z = static_cast<int32_t>(pVkSourceImage->getDepth()) - blit.srcOffsets[0].z;
-			blit.dstSubresource.aspectMask = pVkDestinationImage->getUsage() & ImageUsage::DepthAttachment ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+			blit.dstSubresource.aspectMask = pVkDestinationImage->getAspectFlags();
 			blit.dstSubresource.baseArrayLayer = 0;
 			blit.dstSubresource.layerCount = 1;
 			blit.dstSubresource.mipLevel = 0;

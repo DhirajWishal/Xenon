@@ -51,8 +51,17 @@ namespace Xenon
 			 * Copy image data from a source buffer.
 			 *
 			 * @param pSrcBuffer The source buffer pointer.
+			 * @param pCommandRecorder The command recorder pointer to record the commands to. Default is nullptr.
 			 */
-			void copyFrom(Buffer* pSrcBuffer) override;
+			void copyFrom(Buffer* pSrcBuffer, CommandRecorder* pCommandRecorder = nullptr) override;
+
+			/**
+			 * Copy image data from a source image.
+			 *
+			 * @param pSrcImage The source image.
+			 * @param pCommandRecorder The command recorder pointer to record the commands to. Default is nullptr.
+			 */
+			void copyFrom(Image* pSrcImage, CommandRecorder* pCommandRecorder = nullptr) override;
 
 			/**
 			 * Get the backend resource.

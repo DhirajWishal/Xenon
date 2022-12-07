@@ -27,6 +27,7 @@ namespace Xenon
 			if (specification.m_Usage & ImageUsage::ColorAttachment)
 			{
 				usageFlags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+				usageFlags |= VK_IMAGE_USAGE_SAMPLED_BIT;
 
 				m_AttachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 				m_AttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -40,6 +41,7 @@ namespace Xenon
 			else if (specification.m_Usage & ImageUsage::DepthAttachment)
 			{
 				usageFlags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+				usageFlags |= VK_IMAGE_USAGE_SAMPLED_BIT;
 
 				m_AttachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 				m_AttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -150,7 +152,7 @@ namespace Xenon
 				vmaDestroyImage(m_pDevice->getAllocator(), m_Image, m_Allocation);
 		}
 
-		void VulkanImage::copyFrom(Buffer* pSrcBuffer)
+		void VulkanImage::copyFrom(Buffer* pSrcBuffer, CommandRecorder* pCommandRecorder /*= nullptr*/)
 		{
 			OPTICK_EVENT();
 
@@ -158,14 +160,35 @@ namespace Xenon
 			commandBuffers.begin();
 
 			const auto previousLayout = m_CurrentLayout;
-			commandBuffers.changeImageLayout(m_Image, m_CurrentLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT);
+			commandBuffers.changeImageLayout(m_Image, m_CurrentLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, getAspectFlags());
 			m_CurrentLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 
 			commandBuffers.copy(pSrcBuffer, 0, this, glm::vec3(getWidth(), getHeight(), 1));
 
 			const auto newLayout = previousLayout == VK_IMAGE_LAYOUT_UNDEFINED ? VK_IMAGE_LAYOUT_GENERAL : previousLayout;
-			commandBuffers.changeImageLayout(m_Image, m_CurrentLayout, newLayout, VK_IMAGE_ASPECT_COLOR_BIT);
+			commandBuffers.changeImageLayout(m_Image, m_CurrentLayout, newLayout, getAspectFlags());
 			m_CurrentLayout = newLayout;
+
+			commandBuffers.end();
+			commandBuffers.submit();
+			commandBuffers.wait();
+		}
+
+		void VulkanImage::copyFrom(Image* pSrcImage, CommandRecorder* pCommandRecorder /*= nullptr*/)
+		{
+			auto pVkImage = pSrcImage->as<VulkanImage>();
+
+			auto commandBuffers = VulkanCommandRecorder(m_pDevice, CommandRecorderUsage::Transfer);
+			commandBuffers.begin();
+
+			commandBuffers.changeImageLayout(m_Image, m_CurrentLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, getAspectFlags());
+			commandBuffers.changeImageLayout(pVkImage->getImage(), pVkImage->getImageLayout(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, pVkImage->getAspectFlags());
+
+			commandBuffers.copy(pSrcImage, glm::vec3(0), this, glm::vec3(0));
+
+			m_CurrentLayout = m_CurrentLayout == VK_IMAGE_LAYOUT_UNDEFINED ? VK_IMAGE_LAYOUT_GENERAL : m_CurrentLayout;
+			commandBuffers.changeImageLayout(m_Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, m_CurrentLayout, getAspectFlags());
+			commandBuffers.changeImageLayout(pVkImage->getImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, pVkImage->getImageLayout(), pVkImage->getAspectFlags());
 
 			commandBuffers.end();
 			commandBuffers.submit();
@@ -174,10 +197,7 @@ namespace Xenon
 
 		VkImageAspectFlags VulkanImage::getAspectFlags() const
 		{
-			if (m_Specification.m_Usage & ImageUsage::DepthAttachment)
-				return VK_IMAGE_ASPECT_DEPTH_BIT;
-
-			return VK_IMAGE_ASPECT_COLOR_BIT;
+			return m_Specification.m_Usage & ImageUsage::DepthAttachment ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
 		}
 
 		Xenon::Backend::VulkanImage& VulkanImage::operator=(VulkanImage&& other) noexcept

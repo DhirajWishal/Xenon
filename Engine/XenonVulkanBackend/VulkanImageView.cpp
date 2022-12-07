@@ -86,7 +86,7 @@ namespace Xenon
 			createInfo.components.g = GetComponentSwizzle(specification.m_ComponentG);
 			createInfo.components.b = GetComponentSwizzle(specification.m_ComponentB);
 			createInfo.components.a = GetComponentSwizzle(specification.m_ComponentA);
-			createInfo.subresourceRange.aspectMask = pImage->getUsage() & ImageUsage::DepthAttachment ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+			createInfo.subresourceRange.aspectMask = pImage->getAspectFlags();
 			createInfo.subresourceRange.baseMipLevel = specification.m_BaseMipLevel;
 			createInfo.subresourceRange.levelCount = specification.m_LevelCount;
 			createInfo.subresourceRange.baseArrayLayer = specification.m_BaseArrayLayer;

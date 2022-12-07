@@ -56,50 +56,59 @@ namespace Xenon
 			 * Copy image data from a source buffer.
 			 *
 			 * @param pSrcBuffer The source buffer pointer.
+			 * @param pCommandRecorder The command recorder pointer to record the commands to. Default is nullptr.
 			 */
-			virtual void copyFrom(Buffer* pSrcBuffer) = 0;
+			virtual void copyFrom(Buffer* pSrcBuffer, CommandRecorder* pCommandRecorder = nullptr) = 0;
+
+			/**
+			 * Copy image data from a source image.
+			 *
+			 * @param pSrcImage The source image.
+			 * @param pCommandRecorder The command recorder pointer to record the commands to. Default is nullptr.
+			 */
+			virtual void copyFrom(Image* pSrcImage, CommandRecorder* pCommandRecorder = nullptr) = 0;
 
 			/**
 			 * Get the image specification.
 			 *
 			 * @return The image specification.
 			 */
-			[[nodiscard]] const ImageSpecification& getSpecification() const { return m_Specification; }
+			[[nodiscard]] const ImageSpecification& getSpecification() const noexcept { return m_Specification; }
 
 			/**
 			 * Get the width of the image.
 			 *
 			 * @return The image's width.
 			 */
-			[[nodiscard]] uint32_t getWidth() const { return m_Specification.m_Width; }
+			[[nodiscard]] uint32_t getWidth() const noexcept { return m_Specification.m_Width; }
 
 			/**
 			 * Get the height of the image.
 			 *
 			 * @return The image's height.
 			 */
-			[[nodiscard]] uint32_t getHeight() const { return m_Specification.m_Height; }
+			[[nodiscard]] uint32_t getHeight() const noexcept { return m_Specification.m_Height; }
 
 			/**
 			 * Get the depth of the image.
 			 *
 			 * @return The image's depth.
 			 */
-			[[nodiscard]] uint32_t getDepth() const { return m_Specification.m_Depth; }
+			[[nodiscard]] uint32_t getDepth() const noexcept { return m_Specification.m_Depth; }
 
 			/**
 			 * Get the image's data format.
 			 *
 			 * @return The format.
 			 */
-			[[nodiscard]] DataFormat getDataFormat() const { return m_Specification.m_Format; }
+			[[nodiscard]] DataFormat getDataFormat() const noexcept { return m_Specification.m_Format; }
 
 			/**
 			 * Get the image usage.
 			 *
 			 * @return The image usage.
 			 */
-			[[nodiscard]] ImageUsage getUsage() const { return m_Specification.m_Usage; }
+			[[nodiscard]] ImageUsage getUsage() const noexcept { return m_Specification.m_Usage; }
 
 		public:
 			/**

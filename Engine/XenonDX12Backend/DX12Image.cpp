@@ -207,7 +207,7 @@ namespace Xenon
 				m_pAllocation->Release();
 		}
 
-		void DX12Image::copyFrom(Buffer* pSrcBuffer)
+		void DX12Image::copyFrom(Buffer* pSrcBuffer, CommandRecorder* pCommandRecorder /*= nullptr*/)
 		{
 			OPTICK_EVENT();
 
@@ -269,6 +269,99 @@ namespace Xenon
 			if (pSourceBuffer->getResourceState() != D3D12_RESOURCE_STATE_GENERIC_READ)
 			{
 				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pSourceBuffer->getResource(), D3D12_RESOURCE_STATE_COPY_SOURCE, pSourceBuffer->getResourceState());
+				m_CommandList->ResourceBarrier(1, &barrier);
+			}
+
+			// End the command list.
+			XENON_DX12_ASSERT(m_CommandList->Close(), "Failed to stop the current command list!");
+
+			// Submit the command list to be executed.
+			std::array<ID3D12CommandList*, 1> ppCommandLists = { m_CommandList.Get() };
+			m_pDevice->getDirectQueue()->ExecuteCommandLists(ppCommandLists.size(), ppCommandLists.data());
+
+			// Wait till the command is done executing.
+			ComPtr<ID3D12Fence> fence;
+			XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence)), "Failed to create the fence!");
+			XENON_DX12_ASSERT(m_pDevice->getDirectQueue()->Signal(fence.Get(), 1), "Failed to signal the fence!");
+
+			// Setup synchronization.
+			auto fenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+
+			// Validate the event.
+			if (fenceEvent == nullptr)
+			{
+				XENON_LOG_ERROR("Failed to wait till the command list execution!");
+				return;
+			}
+
+			// Set the event and wait.
+			XENON_DX12_ASSERT(fence->SetEventOnCompletion(1, fenceEvent), "Failed to set the fence event on completion event!");
+			WaitForSingleObjectEx(fenceEvent, std::numeric_limits<DWORD>::max(), FALSE);
+			CloseHandle(fenceEvent);
+		}
+
+		void DX12Image::copyFrom(Image* pSrcImage, CommandRecorder* pCommandRecorder /*= nullptr*/)
+		{
+			OPTICK_EVENT();
+
+			auto pSourceImage = pSrcImage->as<DX12Image>();
+
+			// Begin the command list.
+			XENON_DX12_ASSERT(m_CommandAllocator->Reset(), "Failed to reset the current command allocator!");
+			XENON_DX12_ASSERT(m_CommandList->Reset(m_CommandAllocator.Get(), nullptr), "Failed to reset the current command list!");
+
+			// Set the proper resource states.
+			// Destination (this)
+			if (m_CurrentState != D3D12_RESOURCE_STATE_COPY_DEST)
+			{
+				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(m_pAllocation->GetResource(), m_CurrentState, D3D12_RESOURCE_STATE_COPY_DEST);
+				m_CommandList->ResourceBarrier(1, &barrier);
+			}
+
+			// Source
+			if (pSourceImage->getCurrentState() != D3D12_RESOURCE_STATE_GENERIC_READ)
+			{
+				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pSourceImage->getResource(), pSourceImage->getCurrentState(), D3D12_RESOURCE_STATE_COPY_SOURCE);
+				m_CommandList->ResourceBarrier(1, &barrier);
+			}
+
+			// Copy the buffer to the image.
+			D3D12_TEXTURE_COPY_LOCATION sourceLocation = {};
+			sourceLocation.pResource = pSourceImage->getResource();
+			sourceLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+			sourceLocation.PlacedFootprint.Offset = 0;
+			sourceLocation.PlacedFootprint.Footprint.Format = m_pDevice->convertFormat(m_Specification.m_Format);
+			sourceLocation.PlacedFootprint.Footprint.Depth = 1;
+			sourceLocation.PlacedFootprint.Footprint.Width = getWidth();
+			sourceLocation.PlacedFootprint.Footprint.Height = getHeight();
+			sourceLocation.PlacedFootprint.Footprint.RowPitch = getWidth() * GetFormatSize(sourceLocation.PlacedFootprint.Footprint.Format);
+
+			D3D12_TEXTURE_COPY_LOCATION destinationLocation = {};
+			destinationLocation.pResource = getResource();
+			destinationLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+			destinationLocation.SubresourceIndex = 0;
+
+			m_CommandList->CopyTextureRegion(&destinationLocation, 0, 0, 0, &sourceLocation, nullptr);
+
+			// Change the state back to previous.
+			// Destination (this)
+			if (getUsage() & ImageUsage::Graphics)
+			{
+				m_CurrentState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+
+				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(m_pAllocation->GetResource(), D3D12_RESOURCE_STATE_COPY_DEST, m_CurrentState);
+				m_CommandList->ResourceBarrier(1, &barrier);
+			}
+			else
+			{
+				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(m_pAllocation->GetResource(), D3D12_RESOURCE_STATE_COPY_DEST, m_CurrentState);
+				m_CommandList->ResourceBarrier(1, &barrier);
+			}
+
+			// Source
+			if (pSourceImage->getCurrentState() != D3D12_RESOURCE_STATE_GENERIC_READ)
+			{
+				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pSourceImage->getResource(), D3D12_RESOURCE_STATE_COPY_SOURCE, pSourceImage->getCurrentState());
 				m_CommandList->ResourceBarrier(1, &barrier);
 			}
 

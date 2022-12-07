@@ -49,8 +49,9 @@ ImGuiMaterial::ImGuiMaterial(Xenon::Instance& instance)
 	m_pSampler = instance.getFactory()->createImageSampler(instance.getBackendDevice(), imageSamplerSpecification);
 }
 
-ImGuiMaterial::ImGuiMaterial(Xenon::Instance& instance, const Xenon::Backend::Image* pImage)
+ImGuiMaterial::ImGuiMaterial(Xenon::Instance& instance, Xenon::Backend::Image* pImage)
 	: Xenon::MaterialBlob(instance)
+	, m_pImage(pImage)
 {
 	// Create the image.
 	Xenon::Backend::ImageSpecification imageSpecification = pImage->getSpecification();
@@ -103,5 +104,5 @@ std::unique_ptr<Xenon::Backend::Descriptor> ImGuiMaterial::createDescriptor(Xeno
 
 void ImGuiMaterial::performCopy(Xenon::Backend::CommandRecorder* pCommandRecorder, Xenon::Backend::Image* pImage) const
 {
-	pCommandRecorder->copy(pImage, glm::vec3(0), m_pImage.get(), glm::vec3(0));
+	m_pImage->copyFrom(pImage, pCommandRecorder);
 }

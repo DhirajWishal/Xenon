@@ -40,7 +40,7 @@ ImGuiLayer::~ImGuiLayer()
 	ImGui::DestroyContext();
 }
 
-void ImGuiLayer::beginFrame(std::chrono::nanoseconds delta) const
+void ImGuiLayer::beginFrame(std::chrono::nanoseconds delta)
 {
 	ImGui::NewFrame();
 
@@ -217,7 +217,7 @@ void ImGuiLayer::bind(Xenon::Layer* pPreviousLayer, Xenon::Backend::CommandRecor
 
 	const auto& io = ImGui::GetIO();
 	m_UserData.m_Scale = glm::vec2(2.0f / io.DisplaySize.x, 2.0f / io.DisplaySize.y);
-	m_UserData.m_Translate = glm::vec2(-1.0f);
+	m_UserData.m_Translate = glm::vec2(-1.0f - pDrawData->DisplayPos.x * m_UserData.m_Scale.x, -1.0f - pDrawData->DisplayPos.y * m_UserData.m_Scale.y);
 	m_pUniformBuffer->write(Xenon::ToBytes(&m_UserData), sizeof(UserData), 0, pCommandRecorder);
 
 	const auto frameIndex = pCommandRecorder->getCurrentIndex();
@@ -234,8 +234,8 @@ void ImGuiLayer::bind(Xenon::Layer* pPreviousLayer, Xenon::Backend::CommandRecor
 		{
 			const auto* pCommandBuffer = &pCommandList->CmdBuffer[j];
 
-			const auto minClip = ImVec2(pCommandBuffer->ClipRect.x - pDrawData->DisplayPos.x, pCommandBuffer->ClipRect.y - pDrawData->DisplayPos.y);
-			const auto maxClip = ImVec2(pCommandBuffer->ClipRect.z - pDrawData->DisplayPos.x, pCommandBuffer->ClipRect.w - pDrawData->DisplayPos.y);
+			const auto minClip = glm::vec2(pCommandBuffer->ClipRect.x - pDrawData->DisplayPos.x, pCommandBuffer->ClipRect.y - pDrawData->DisplayPos.y);
+			const auto maxClip = glm::vec2(pCommandBuffer->ClipRect.z - pDrawData->DisplayPos.x, pCommandBuffer->ClipRect.w - pDrawData->DisplayPos.y);
 			if (maxClip.x <= minClip.x || maxClip.y <= minClip.y)
 				continue;
 
@@ -253,6 +253,11 @@ void ImGuiLayer::bind(Xenon::Layer* pPreviousLayer, Xenon::Backend::CommandRecor
 		indexOffset += pCommandList->IdxBuffer.Size;
 		vertexOffset += pCommandList->VtxBuffer.Size;
 	}
+}
+
+void ImGuiLayer::registerMaterial(uint64_t hash, Xenon::MaterialIdentifier identifier)
+{
+	m_pDescriptorSetMap[hash] = identifier.m_pMaterial->createDescriptor(m_pPipeline.get());
 }
 
 void ImGuiLayer::configureImGui() const

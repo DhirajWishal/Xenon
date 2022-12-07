@@ -13,6 +13,9 @@
 
 #include "Xenon/Layers/DefaultRasterizingLayer.hpp"
 
+#include "UIComponents/PerformanceMetrics.hpp"
+#include "UIComponents/LayerView.hpp"
+
 #include <imgui.h>
 
 namespace /* anonymous */
@@ -78,6 +81,9 @@ void Studio::run()
 
 	bool dataLoaded = false;
 
+	PerformanceMetrics performanceMetrics;
+	auto layerView = LayerView(pImGui, pLayer);
+
 	Xenon::FrameTimer timer;
 	do
 	{
@@ -94,6 +100,12 @@ void Studio::run()
 		}
 
 		ImGui::ShowDemoWindow();
+
+		performanceMetrics.begin(delta);
+		performanceMetrics.end();
+
+		layerView.copyLayerImage(nullptr);
+		layerView.begin(delta);
 
 		// Move the camera.
 		switch (m_Renderer.getKeyboard().m_Character)

@@ -43,7 +43,7 @@ public:
 	 *
 	 * @param delta The time difference between the previous frame and the current frame in nanoseconds.
 	 */
-	void beginFrame(std::chrono::nanoseconds delta) const;
+	void beginFrame(std::chrono::nanoseconds delta);
 
 	/**
 	 * End the frame.
@@ -59,6 +59,14 @@ public:
 	 * @param pCommandRecorder The command recorder pointer to bind the commands to.
 	 */
 	void bind(Xenon::Layer* pPreviousLayer, Xenon::Backend::CommandRecorder* pCommandRecorder) override;
+
+	/**
+	 * Register a material to the layer.
+	 *
+	 * @param hash The material's hash.
+	 * @param identifier The material's identifier.
+	 */
+	void registerMaterial(uint64_t hash, Xenon::MaterialIdentifier identifier);
 
 private:
 	/**

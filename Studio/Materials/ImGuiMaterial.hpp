@@ -24,7 +24,7 @@ public:
 	 * @param instance The instance reference.
 	 * @param pImage The image pointer to create the image with.
 	 */
-	explicit ImGuiMaterial(Xenon::Instance& instance, const Xenon::Backend::Image* pImage);
+	explicit ImGuiMaterial(Xenon::Instance& instance, Xenon::Backend::Image* pImage);
 
 	/**
 	 * Get the rasterizing pipeline specification.
