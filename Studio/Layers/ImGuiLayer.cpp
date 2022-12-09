@@ -9,6 +9,7 @@
 #include "Xenon/Renderer.hpp"
 
 #include <imgui.h>
+#include <imnodes.h>
 
 constexpr auto g_DefaultMaterialHash = 0;
 
@@ -30,6 +31,7 @@ ImGuiLayer::ImGuiLayer(Xenon::Renderer& renderer, Xenon::Backend::Camera* pCamer
 	, m_ClearValues({ glm::vec4(0.0f, 0.0f, 0.0f, 1.0f) })
 {
 	ImGui::CreateContext();
+	ImNodes::CreateContext();
 
 	configureImGui();
 	setupDefaultMaterial();
@@ -37,6 +39,7 @@ ImGuiLayer::ImGuiLayer(Xenon::Renderer& renderer, Xenon::Backend::Camera* pCamer
 
 ImGuiLayer::~ImGuiLayer()
 {
+	ImNodes::DestroyContext();
 	ImGui::DestroyContext();
 }
 
@@ -193,7 +196,45 @@ void ImGuiLayer::beginFrame(std::chrono::nanoseconds delta)
 	);
 
 	ImGui::PopStyleVar(3);
+
+	ImGui::BeginMenuBar();
+	if (ImGui::BeginMenu("File"))
+	{
+		if (ImGui::MenuItem("Open"));
+		if (ImGui::MenuItem("Save"));
+		if (ImGui::MenuItem("Save As"));
+
+		ImGui::Separator();
+		if (ImGui::MenuItem("Close"));
+
+		ImGui::EndMenu();
+	}
+
+	if (ImGui::BeginMenu("Edit"))
+	{
+		if (ImGui::MenuItem("Cut"));
+		if (ImGui::MenuItem("Copy"));
+		if (ImGui::MenuItem("Paste"));
+
+		ImGui::EndMenu();
+	}
+
+	if (ImGui::BeginMenu("View"))
+	{
+		if (ImGui::MenuItem("Shader Editor"));
+
+		ImGui::EndMenu();
+	}
+
+	ImGui::EndMenuBar();
+
 	ImGui::DockSpace(ImGui::GetID("EditorDockSpace"), ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
+
+	ImGui::Begin("Shader Editor");
+	ImNodes::BeginNodeEditor();
+	ImNodes::MiniMap();
+	ImNodes::EndNodeEditor();
+	ImGui::End();
 }
 
 void ImGuiLayer::endFrame() const
@@ -300,6 +341,7 @@ void ImGuiLayer::configureImGui() const
 	style.PopupRounding = 3.0f;
 	style.TabRounding = 1.0f;
 	style.WindowRounding = 3.0f;
+	style.ItemInnerSpacing = ImVec2(2, 1);
 
 	io.Fonts->AddFontFromFileTTF((std::filesystem::current_path() / "Fonts" / "Manrope" / "static" / "Manrope-Regular.ttf").string().c_str(), 16.0f);
 }

@@ -32,5 +32,5 @@ public:
 	void end() override;
 
 private:
-	std::vector<float> m_FrameRates = std::vector<float>(100);
+	std::vector<float> m_FrameRates = std::vector<float>(1000);
 };

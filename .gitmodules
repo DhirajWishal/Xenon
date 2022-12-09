@@ -41,3 +41,6 @@
 	path = ThirdParty/imgui
 	url = https://github.com/ocornut/imgui
 	branch = docking
+[submodule "ThirdParty/imnodes"]
+	path = ThirdParty/imnodes
+	url = https://github.com/Nelarius/imnodes

@@ -26,7 +26,8 @@ void LayerView::copyLayerImage(Xenon::Backend::CommandRecorder* pCommandRecorder
 void LayerView::begin(std::chrono::nanoseconds delta)
 {
 	ImGui::Begin("Layer View");
-	ImGui::Image(m_pLayer->getColorAttachment(), ImVec2(static_cast<float>(m_pLayer->getRenderer().getCamera()->getWidth()), static_cast<float>(m_pLayer->getRenderer().getCamera()->getHeight())));
+	ImGui::GetWindowContentRegionMin();
+	ImGui::Image(m_pLayer->getColorAttachment(), ImGui::GetContentRegionAvail());
 }
 
 void LayerView::end()

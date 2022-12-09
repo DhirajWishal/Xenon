@@ -204,9 +204,35 @@ namespace Xenon
 			void wait(uint64_t timeout = UINT64_MAX) override;
 
 		private:
+			/**
+			 * Get the currently used command pool.
+			 *
+			 * @return The command pool mutex.
+			 */
+			[[nodiscard]] Mutex<VkCommandPool>& getCommandPool();
+
+			/**
+			 * Call a provided method synchronously to the command pool.
+			 *
+			 * @tparam Function The function to call.
+			 * @tparam Arguments The argument types to forward to the function.
+			 * @param function The function to call.
+			 * @param arguments The arguments to forward.
+			 */
+			template<class Function, class... Arguments>
+			void issueCall(const Function& function, Arguments&&... arguments)
+			{
+				getCommandPool().access([this, function]([[maybe_unused]] const VkCommandPool& pool, Arguments&&... args)
+					{
+						function(std::forward<Arguments>(args)...);
+					}
+				, std::forward<Arguments>(arguments)...);
+			}
+
+		private:
 			VkCommandBufferInheritanceInfo m_InheritanceInfo = {};
 
-			VkCommandPool m_SecondaryPool = VK_NULL_HANDLE;
+			Mutex<VkCommandPool> m_SecondaryPool = VK_NULL_HANDLE;
 			std::vector<VulkanCommandBuffer> m_CommandBuffers;
 			std::vector<VkCommandBuffer> m_ChildCommandBuffers;
 			VulkanCommandBuffer* m_pCurrentBuffer = nullptr;

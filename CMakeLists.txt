@@ -35,6 +35,7 @@ set(XXHASH_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/xxHash)
 set(SPIRV_CROSS_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/SPIRV-Cross)
 set(OPTICK_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/optick/src)
 set(IMGUI_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/imgui)
+set(IMNODES_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/imnodes)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/SPIRV-Cross)
 
@@ -93,6 +94,22 @@ add_library(
 	"${IMGUI_INCLUDE_DIR}/imstb_rectpack.h"
 	"${IMGUI_INCLUDE_DIR}/imstb_textedit.h"
 	"${IMGUI_INCLUDE_DIR}/imstb_truetype.h"
+)
+
+# Add imnodes library as a third party static link.
+add_library(
+	XenonThirdParty_imnodes
+	STATIC 
+
+	"${IMNODES_INCLUDE_DIR}/imnodes.cpp"
+	"${IMNODES_INCLUDE_DIR}/imnodes.h"
+)
+
+# Set the include directories.
+target_include_directories(
+	XenonThirdParty_imnodes 
+
+	PRIVATE ${IMGUI_INCLUDE_DIR}
 )
 
 # Include the shader bank and it's information.
@@ -160,5 +177,6 @@ if (MSVC)
 	set_target_properties(spirv-cross-util PROPERTIES FOLDER "ThirdParty")
 	set_target_properties(XenonThirdParty_Optick PROPERTIES FOLDER "ThirdParty")
 	set_target_properties(XenonThirdParty_ImGui PROPERTIES FOLDER "ThirdParty")
+	set_target_properties(XenonThirdParty_imnodes PROPERTIES FOLDER "ThirdParty")
 
 endif ()

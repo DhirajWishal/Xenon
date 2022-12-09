@@ -63,10 +63,11 @@ target_include_directories(
 
 	PRIVATE ${CMAKE_SOURCE_DIR}/Engine
 	PRIVATE ${IMGUI_INCLUDE_DIR}
+	PRIVATE ${IMNODES_INCLUDE_DIR}
 )
 
 # Add the target links.
-target_link_libraries(XenonStudio XenonEngine XenonThirdParty_ImGui)
+target_link_libraries(XenonStudio XenonEngine XenonThirdParty_ImGui XenonThirdParty_imnodes)
 
 # Make sure to specify the C++ standard to C++20.
 set_property(TARGET XenonStudio PROPERTY CXX_STANDARD 20)
