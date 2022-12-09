@@ -99,6 +99,9 @@ void Studio::run()
 			// End the ImGui scene and render everything.
 			pImGui->endFrame();
 		} while (m_Renderer.update());
+
+		// Wait till the data has been added before quitting.
+		ret.get();
 	}
 
 	// Cleanup the renderer and instance.

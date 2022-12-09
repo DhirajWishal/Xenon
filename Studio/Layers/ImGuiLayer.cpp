@@ -443,6 +443,26 @@ void ImGuiLayer::showMainMenu()
 		ImGui::EndMenu();
 	}
 
+	if (ImGui::BeginMenu("Help"))
+	{
+		if (ImGui::MenuItem("What's New?"));
+
+		ImGui::Separator();
+		if (ImGui::MenuItem("About"));
+		if (ImGui::MenuItem("License"));
+
+		ImGui::Separator();
+		ImGui::MenuItem("Version: 1.0.0", "", false, false);
+
+		if (m_Renderer.getInstance().getBackendType() == Xenon::BackendType::Vulkan)
+			ImGui::MenuItem("Backend API: Vulkan", "", false, false);
+
+		else
+			ImGui::MenuItem("Backend API: DirectX 12", "", false, false);
+
+		ImGui::EndMenu();
+	}
+
 	ImGui::EndMenuBar();
 }
 

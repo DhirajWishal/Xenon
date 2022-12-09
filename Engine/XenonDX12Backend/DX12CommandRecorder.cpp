@@ -316,6 +316,9 @@ namespace Xenon
 			D3D12_VIEWPORT viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(pDxSwapchin->getWindow()->getWidth()), static_cast<float>(pDxSwapchin->getWindow()->getHeight()), 0.0f, 1.0f);
 			m_pCurrentCommandList->RSSetViewports(1, &viewport);
 
+			// setScissor(0, 0, pDxSwapchin->getWindow()->getWidth(), pDxSwapchin->getWindow()->getHeight());
+			// setViewport(0.0f, 0.0f, static_cast<float>(pDxSwapchin->getWindow()->getWidth()), static_cast<float>(pDxSwapchin->getWindow()->getHeight()), 0.0f, 1.0f);
+
 			// Prepare the descriptor heap.
 			pDxSwapchin->prepareDescriptorForImageCopy(pDxSource);
 			const auto& container = pDxSwapchin->getImageToSwapchainCopyContainer();
