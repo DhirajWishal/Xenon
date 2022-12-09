@@ -51,7 +51,6 @@ ImGuiMaterial::ImGuiMaterial(Xenon::Instance& instance)
 
 ImGuiMaterial::ImGuiMaterial(Xenon::Instance& instance, Xenon::Backend::Image* pImage)
 	: Xenon::MaterialBlob(instance)
-	, m_pImage(pImage)
 {
 	// Create the image.
 	Xenon::Backend::ImageSpecification imageSpecification = pImage->getSpecification();

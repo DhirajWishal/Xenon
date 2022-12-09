@@ -326,20 +326,21 @@ namespace Xenon
 			}
 
 			// Copy the buffer to the image.
-			D3D12_TEXTURE_COPY_LOCATION sourceLocation = {};
-			sourceLocation.pResource = pSourceImage->getResource();
-			sourceLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+			D3D12_TEXTURE_COPY_LOCATION sourceLocation = CD3DX12_TEXTURE_COPY_LOCATION(pSourceImage->getResource(), D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT);
 			sourceLocation.PlacedFootprint.Offset = 0;
-			sourceLocation.PlacedFootprint.Footprint.Format = m_pDevice->convertFormat(m_Specification.m_Format);
-			sourceLocation.PlacedFootprint.Footprint.Depth = 1;
-			sourceLocation.PlacedFootprint.Footprint.Width = getWidth();
-			sourceLocation.PlacedFootprint.Footprint.Height = getHeight();
-			sourceLocation.PlacedFootprint.Footprint.RowPitch = getWidth() * GetFormatSize(sourceLocation.PlacedFootprint.Footprint.Format);
+			sourceLocation.PlacedFootprint.Footprint.Format = m_pDevice->convertFormat(pSrcImage->getDataFormat());
+			sourceLocation.PlacedFootprint.Footprint.Depth = pSrcImage->getDepth();
+			sourceLocation.PlacedFootprint.Footprint.Width = pSrcImage->getWidth();
+			sourceLocation.PlacedFootprint.Footprint.Height = pSrcImage->getHeight();
+			sourceLocation.PlacedFootprint.Footprint.RowPitch = pSrcImage->getWidth() * GetFormatSize(sourceLocation.PlacedFootprint.Footprint.Format);
 
-			D3D12_TEXTURE_COPY_LOCATION destinationLocation = {};
-			destinationLocation.pResource = getResource();
-			destinationLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
-			destinationLocation.SubresourceIndex = 0;
+			D3D12_TEXTURE_COPY_LOCATION destinationLocation = CD3DX12_TEXTURE_COPY_LOCATION(getResource(), D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT);
+			destinationLocation.PlacedFootprint.Offset = 0;
+			destinationLocation.PlacedFootprint.Footprint.Format = m_pDevice->convertFormat(getDataFormat());
+			destinationLocation.PlacedFootprint.Footprint.Depth = getDepth();
+			destinationLocation.PlacedFootprint.Footprint.Width = getWidth();
+			destinationLocation.PlacedFootprint.Footprint.Height = getHeight();
+			destinationLocation.PlacedFootprint.Footprint.RowPitch = getWidth() * GetFormatSize(destinationLocation.PlacedFootprint.Footprint.Format);
 
 			m_CommandList->CopyTextureRegion(&destinationLocation, 0, 0, 0, &sourceLocation, nullptr);
 

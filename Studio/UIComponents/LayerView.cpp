@@ -14,7 +14,7 @@ LayerView::LayerView(ImGuiLayer* pImGuiLayer, Xenon::Layer* pLayer)
 {
 	const auto attachment = pLayer->getColorAttachment();
 	m_ImageHash = std::bit_cast<uint64_t>(attachment);
-	m_MaterialIdentifier = pImGuiLayer->getRenderer().getInstance().getMaterialDatabase().create<ImGuiMaterial>(m_ImageHash, pImGuiLayer->getRenderer().getInstance(), pLayer->getColorAttachment());
+	m_MaterialIdentifier = pImGuiLayer->getRenderer().getInstance().getMaterialDatabase().create<ImGuiMaterial>(m_ImageHash, pImGuiLayer->getRenderer().getInstance(), attachment);
 	m_pImGuiLayer->registerMaterial(m_ImageHash, m_MaterialIdentifier);
 }
 

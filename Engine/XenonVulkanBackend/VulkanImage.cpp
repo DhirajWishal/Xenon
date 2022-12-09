@@ -19,10 +19,18 @@ namespace Xenon
 			// Resolve the image usage.
 			VkImageUsageFlags usageFlags = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 			if (specification.m_Usage & ImageUsage::Storage)
+			{
 				usageFlags |= VK_IMAGE_USAGE_STORAGE_BIT;
 
+				m_CurrentLayout = VK_IMAGE_LAYOUT_GENERAL;
+			}
+
 			if (specification.m_Usage & ImageUsage::Graphics)
+			{
 				usageFlags |= VK_IMAGE_USAGE_SAMPLED_BIT;
+
+				m_CurrentLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			}
 
 			if (specification.m_Usage & ImageUsage::ColorAttachment)
 			{
@@ -35,6 +43,7 @@ namespace Xenon
 				m_AttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 				m_AttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 				m_AttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
 				m_CurrentLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 			}
 
@@ -49,6 +58,7 @@ namespace Xenon
 				m_AttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 				m_AttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 				m_AttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+
 				m_CurrentLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
 			}
 
@@ -134,6 +144,14 @@ namespace Xenon
 			m_AttachmentDescription.flags = 0;
 			m_AttachmentDescription.format = imageCreateInfo.format;
 			m_AttachmentDescription.samples = imageCreateInfo.samples;
+
+			// Change the image layout to the defined layout.
+			auto commandBuffers = VulkanCommandRecorder(m_pDevice, CommandRecorderUsage::Transfer);
+			commandBuffers.begin();
+			commandBuffers.changeImageLayout(m_Image, VK_IMAGE_LAYOUT_UNDEFINED, m_CurrentLayout, getAspectFlags());
+			commandBuffers.end();
+			commandBuffers.submit();
+			commandBuffers.wait();
 		}
 
 		VulkanImage::VulkanImage(VulkanImage&& other) noexcept
@@ -156,43 +174,58 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
-			auto commandBuffers = VulkanCommandRecorder(m_pDevice, CommandRecorderUsage::Transfer);
-			commandBuffers.begin();
+			if (pCommandRecorder)
+			{
+				const auto previousLayout = m_CurrentLayout;
+				pCommandRecorder->as<VulkanCommandRecorder>()->changeImageLayout(m_Image, m_CurrentLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, getAspectFlags());
+				m_CurrentLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 
-			const auto previousLayout = m_CurrentLayout;
-			commandBuffers.changeImageLayout(m_Image, m_CurrentLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, getAspectFlags());
-			m_CurrentLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+				pCommandRecorder->as<VulkanCommandRecorder>()->copy(pSrcBuffer, 0, this, glm::vec3(getWidth(), getHeight(), 1));
 
-			commandBuffers.copy(pSrcBuffer, 0, this, glm::vec3(getWidth(), getHeight(), 1));
+				const auto newLayout = previousLayout == VK_IMAGE_LAYOUT_UNDEFINED ? VK_IMAGE_LAYOUT_GENERAL : previousLayout;
+				pCommandRecorder->as<VulkanCommandRecorder>()->changeImageLayout(m_Image, m_CurrentLayout, newLayout, getAspectFlags());
+				m_CurrentLayout = newLayout;
+			}
+			else
+			{
+				auto commandBuffers = VulkanCommandRecorder(m_pDevice, CommandRecorderUsage::Transfer);
+				commandBuffers.begin();
 
-			const auto newLayout = previousLayout == VK_IMAGE_LAYOUT_UNDEFINED ? VK_IMAGE_LAYOUT_GENERAL : previousLayout;
-			commandBuffers.changeImageLayout(m_Image, m_CurrentLayout, newLayout, getAspectFlags());
-			m_CurrentLayout = newLayout;
+				const auto previousLayout = m_CurrentLayout;
+				commandBuffers.changeImageLayout(m_Image, m_CurrentLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, getAspectFlags());
+				m_CurrentLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 
-			commandBuffers.end();
-			commandBuffers.submit();
-			commandBuffers.wait();
+				commandBuffers.copy(pSrcBuffer, 0, this, glm::vec3(getWidth(), getHeight(), 1));
+
+				const auto newLayout = previousLayout == VK_IMAGE_LAYOUT_UNDEFINED ? VK_IMAGE_LAYOUT_GENERAL : previousLayout;
+				commandBuffers.changeImageLayout(m_Image, m_CurrentLayout, newLayout, getAspectFlags());
+				m_CurrentLayout = newLayout;
+
+				commandBuffers.end();
+				commandBuffers.submit();
+				commandBuffers.wait();
+			}
 		}
 
 		void VulkanImage::copyFrom(Image* pSrcImage, CommandRecorder* pCommandRecorder /*= nullptr*/)
 		{
-			auto pVkImage = pSrcImage->as<VulkanImage>();
+			OPTICK_EVENT();
 
-			auto commandBuffers = VulkanCommandRecorder(m_pDevice, CommandRecorderUsage::Transfer);
-			commandBuffers.begin();
+			if (pCommandRecorder)
+			{
+				pCommandRecorder->copy(pSrcImage, glm::vec3(0), this, glm::vec3(0));
+			}
+			else
+			{
+				auto commandBuffers = VulkanCommandRecorder(m_pDevice, CommandRecorderUsage::Transfer);
+				commandBuffers.begin();
 
-			commandBuffers.changeImageLayout(m_Image, m_CurrentLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, getAspectFlags());
-			commandBuffers.changeImageLayout(pVkImage->getImage(), pVkImage->getImageLayout(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, pVkImage->getAspectFlags());
+				commandBuffers.copy(pSrcImage, glm::vec3(0), this, glm::vec3(0));
 
-			commandBuffers.copy(pSrcImage, glm::vec3(0), this, glm::vec3(0));
-
-			m_CurrentLayout = m_CurrentLayout == VK_IMAGE_LAYOUT_UNDEFINED ? VK_IMAGE_LAYOUT_GENERAL : m_CurrentLayout;
-			commandBuffers.changeImageLayout(m_Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, m_CurrentLayout, getAspectFlags());
-			commandBuffers.changeImageLayout(pVkImage->getImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, pVkImage->getImageLayout(), pVkImage->getAspectFlags());
-
-			commandBuffers.end();
-			commandBuffers.submit();
-			commandBuffers.wait();
+				commandBuffers.end();
+				commandBuffers.submit();
+				commandBuffers.wait();
+			}
 		}
 
 		VkImageAspectFlags VulkanImage::getAspectFlags() const

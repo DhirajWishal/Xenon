@@ -585,8 +585,53 @@ namespace Xenon
 			m_pDevice->getDeviceTable().vkCmdBlitImage(*m_pCurrentBuffer, pVkSourceImage->getImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, pVkDestinationImage->getImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit, VK_FILTER_LINEAR);
 
 			// Change back to previous.
-			changeImageLayout(pVkSourceImage->getImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, pVkSourceImage->getImageLayout(), blit.srcSubresource.aspectMask);
-			changeImageLayout(pVkDestinationImage->getImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, pVkDestinationImage->getImageLayout(), blit.dstSubresource.aspectMask);
+			if (pVkSourceImage->getImageLayout() == VK_IMAGE_LAYOUT_UNDEFINED)
+			{
+				auto newLayout = VK_IMAGE_LAYOUT_GENERAL;
+				const auto usage = pVkSourceImage->getUsage();
+				if (usage & ImageUsage::Graphics)
+					newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+				else if (usage & ImageUsage::Storage)
+					newLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+				else if (usage & ImageUsage::ColorAttachment)
+					newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+				else if (usage & ImageUsage::DepthAttachment)
+					newLayout = VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL;
+
+				changeImageLayout(pVkSourceImage->getImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, newLayout, blit.srcSubresource.aspectMask);
+				pVkSourceImage->setImageLayout(newLayout);
+			}
+			else
+			{
+				changeImageLayout(pVkSourceImage->getImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, pVkSourceImage->getImageLayout(), blit.srcSubresource.aspectMask);
+			}
+
+			if (pVkDestinationImage->getImageLayout() == VK_IMAGE_LAYOUT_UNDEFINED)
+			{
+				auto newLayout = VK_IMAGE_LAYOUT_GENERAL;
+				const auto usage = pVkDestinationImage->getUsage();
+				if (usage & ImageUsage::Graphics)
+					newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+				else if (usage & ImageUsage::Storage)
+					newLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+				else if (usage & ImageUsage::ColorAttachment)
+					newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+				else if (usage & ImageUsage::DepthAttachment)
+					newLayout = VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL;
+
+				changeImageLayout(pVkDestinationImage->getImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, newLayout, blit.dstSubresource.aspectMask);
+				pVkDestinationImage->setImageLayout(newLayout);
+			}
+			else
+			{
+				changeImageLayout(pVkDestinationImage->getImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, pVkDestinationImage->getImageLayout(), blit.dstSubresource.aspectMask);
+			}
 		}
 
 		void VulkanCommandRecorder::copy(Buffer* pSource, uint64_t bufferOffset, Image* pImage, glm::vec3 imageSize, glm::vec3 imageOffset /*= glm::vec3(0)*/)

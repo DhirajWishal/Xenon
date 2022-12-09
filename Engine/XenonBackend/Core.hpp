@@ -161,6 +161,24 @@ namespace Xenon
 		XENON_DEFINE_ENUM_OR(ImageUsage);
 
 		/**
+		 * Image state enum.
+		 */
+		enum class ImageState : uint8_t
+		{
+			Undefined,				// Undefined image state type. This is the first state right after creating an image.
+			General,				// General image state type. This might not be efficient but is required in some places. Let the backend handle it...
+
+			TransferSource,			// Prepare the image to copy data from to another image (to transfer destination).
+			TransferDestination,	// Prepare the image to be copied to from another image (from transfer source).
+
+			ShaderRead,				// Prepare the image to be read by a shader. 
+			ShaderWrite,			// Prepare the image to be written by a shader.
+
+			AttachmentRead,			// Prepare the image to be written by a render target. This could be depth or color depending on the image usage.
+			AttachmentWrite			// Prepare the image to be read as an attachment. This could be depth or color depending on the image usage.
+		};
+
+		/**
 		 * Input element enum.
 		 *
 		 * Input elements are of two types.

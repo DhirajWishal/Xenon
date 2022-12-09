@@ -58,8 +58,7 @@ namespace Xenon
 			VkDescriptorImageInfo imageInfo = {};
 			imageInfo.sampler = pSampler->as<VulkanImageSampler>()->getSampler();
 			imageInfo.imageView = pView->as<VulkanImageView>()->getView();
-			// imageInfo.imageLayout = pImage->as<VulkanImage>()->getImageLayout();
-			imageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+			imageInfo.imageLayout = pImage->as<VulkanImage>()->getImageLayout();
 
 			VkWriteDescriptorSet writeDescriptorSet = {};
 			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;

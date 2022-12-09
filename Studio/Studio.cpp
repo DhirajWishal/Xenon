@@ -99,13 +99,12 @@ void Studio::run()
 			dataLoaded = true;
 		}
 
-		ImGui::ShowDemoWindow();
-
 		performanceMetrics.begin(delta);
 		performanceMetrics.end();
 
 		layerView.copyLayerImage(nullptr);
 		layerView.begin(delta);
+		layerView.end();
 
 		// Move the camera.
 		switch (m_Renderer.getKeyboard().m_Character)
@@ -133,6 +132,12 @@ void Studio::run()
 		default:
 			break;
 		}
+
+		if (m_Renderer.getKeyboard().m_Up)
+			m_Camera.moveUp(delta);
+
+		if (m_Renderer.getKeyboard().m_Down)
+			m_Camera.moveDown(delta);
 
 		m_Camera.update();
 
