@@ -45,6 +45,8 @@ set(
 	"UIComponents/LayerView.hpp"
 	"UIComponents/PipelineEditor.cpp"
 	"UIComponents/PipelineEditor.hpp"
+	"UIComponents/Configuration.cpp"
+	"UIComponents/Configuration.hpp"
 
 	${SHADERS}
 )

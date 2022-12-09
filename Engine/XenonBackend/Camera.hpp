@@ -64,70 +64,95 @@ namespace Xenon
 			 *
 			 * @param delta The time delta in nanoseconds.
 			 */
-			void moveForward(std::chrono::nanoseconds delta) { m_Position += m_Front * static_cast<float>(delta.count()) * m_MovementBias; }
+			void moveForward(std::chrono::nanoseconds delta) { m_Position += m_Front * (static_cast<float>(delta.count()) / std::nano::den) * m_MovementBias; }
 
 			/**
 			 * Move the camera backward.
 			 *
 			 * @param delta The time delta in nanoseconds.
 			 */
-			void moveBackward(std::chrono::nanoseconds delta) { m_Position -= m_Front * static_cast<float>(delta.count()) * m_MovementBias; }
+			void moveBackward(std::chrono::nanoseconds delta) { m_Position -= m_Front * (static_cast<float>(delta.count()) / std::nano::den) * m_MovementBias; }
 
 			/**
 			 * Move the camera to the left.
 			 *
 			 * @param delta The time delta in nanoseconds.
 			 */
-			void moveLeft(std::chrono::nanoseconds delta) { m_Position -= m_Right * static_cast<float>(delta.count()) * m_MovementBias; }
+			void moveLeft(std::chrono::nanoseconds delta) { m_Position -= m_Right * (static_cast<float>(delta.count()) / std::nano::den) * m_MovementBias; }
 
 			/**
 			 * Move the camera to the right.
 			 *
 			 * @param delta The time delta in nanoseconds.
 			 */
-			void moveRight(std::chrono::nanoseconds delta) { m_Position += m_Right * static_cast<float>(delta.count()) * m_MovementBias; }
+			void moveRight(std::chrono::nanoseconds delta) { m_Position += m_Right * (static_cast<float>(delta.count()) / std::nano::den) * m_MovementBias; }
 
 			/**
 			 * Move the camera up.
 			 *
 			 * @param delta The time delta in nanoseconds.
 			 */
-			void moveUp(std::chrono::nanoseconds delta) { m_Position += m_Up * static_cast<float>(delta.count()) * m_MovementBias; }
+			void moveUp(std::chrono::nanoseconds delta) { m_Position += m_Up * (static_cast<float>(delta.count()) / std::nano::den) * m_MovementBias; }
 
 			/**
 			 * Move the camera down.
 			 *
 			 * @param delta The time delta in nanoseconds.
 			 */
-			void moveDown(std::chrono::nanoseconds delta) { m_Position -= m_Up * static_cast<float>(delta.count()) * m_MovementBias; }
+			void moveDown(std::chrono::nanoseconds delta) { m_Position -= m_Up * (static_cast<float>(delta.count()) / std::nano::den) * m_MovementBias; }
 
 			/**
 			 * Rotate the camera up.
 			 *
 			 * @param delta The time delta in nanoseconds.
 			 */
-			void rotateUp(std::chrono::nanoseconds delta) { m_Pitch += static_cast<float>(delta.count()) * m_RotationBias; }
+			void rotateUp(std::chrono::nanoseconds delta) { m_Pitch += (static_cast<float>(delta.count()) / std::nano::den) * m_RotationBias; }
 
 			/**
 			 * Rotate the camera down.
 			 *
 			 * @param delta The time delta in nanoseconds.
 			 */
-			void rotateDown(std::chrono::nanoseconds delta) { m_Pitch -= static_cast<float>(delta.count()) * m_RotationBias; }
+			void rotateDown(std::chrono::nanoseconds delta) { m_Pitch -= (static_cast<float>(delta.count()) / std::nano::den) * m_RotationBias; }
 
 			/**
 			 * Rotate the camera to the left.
 			 *
 			 * @param delta The time delta in nanoseconds.
 			 */
-			void rotateLeft(std::chrono::nanoseconds delta) { m_Yaw += static_cast<float>(delta.count()) * m_RotationBias; }
+			void rotateLeft(std::chrono::nanoseconds delta) { m_Yaw += (static_cast<float>(delta.count()) / std::nano::den) * m_RotationBias; }
 
 			/**
 			 * Rotate the camera to the right.
 			 *
 			 * @param delta The time delta in nanoseconds.
 			 */
-			void rotateRight(std::chrono::nanoseconds delta) { m_Yaw -= static_cast<float>(delta.count()) * m_RotationBias; }
+			void rotateRight(std::chrono::nanoseconds delta) { m_Yaw -= (static_cast<float>(delta.count()) / std::nano::den) * m_RotationBias; }
+
+			/**
+			 * Update the Yaw of the camera.
+			 * This will just increment the yaw value by the incoming value.
+			 *
+			 * @param offset The offset to set.
+			 * @param delta The delta time.
+			 */
+			void updateYaw(float offset, std::chrono::nanoseconds delta) { m_Yaw += (static_cast<float>(delta.count()) / std::nano::den) * m_RotationBias * offset; }
+
+			/**
+			 * Update the Pitch of the camera.
+			 * This will just increment the [yaw]itch value by the incoming value.
+			 * It will also clamp the pitch value to stay within -89 - 89.
+			 *
+			 * @param offset The offset to set.
+			 * @param delta The delta time.
+			 */
+			void updatePitch(float offset, std::chrono::nanoseconds delta)
+			{
+				m_Pitch += (static_cast<float>(delta.count()) / std::nano::den) * m_RotationBias * offset;
+
+				if (m_Pitch > 89.0f) m_Pitch = 89.0f;
+				if (m_Pitch < -89.0f) m_Pitch = -89.0f;
+			}
 
 		public:
 			/**
@@ -144,15 +169,15 @@ namespace Xenon
 			 */
 			[[nodiscard]] uint32_t getHeight() const { return m_Height; }
 
-		protected:
+		public:
 			glm::vec3 m_Position = glm::vec3(0.0f, 1.0f, 0.0f);
 			glm::vec3 m_Up = glm::vec3(0.0f, 1.0f, 0.0f);
 			glm::vec3 m_Front = glm::vec3(0.0f, 0.0f, -1.0f);
 			glm::vec3 m_Right = glm::vec3(1.0f, 0.0f, 0.0f);
 			glm::vec3 m_WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
-			float m_MovementBias = 0.00000005f;
-			float m_RotationBias = 0.00000005f;	// Radians per second.
+			float m_MovementBias = 1.0f;
+			float m_RotationBias = 1.0f;	// Radians per second.
 
 			float m_FieldOfView = 60.0f;
 			float m_AspectRatio = 0.0f;

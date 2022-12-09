@@ -23,5 +23,4 @@ void PipeilneEditor::begin(std::chrono::nanoseconds delta)
 
 void PipeilneEditor::end()
 {
-
 }

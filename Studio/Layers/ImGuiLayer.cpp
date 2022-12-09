@@ -280,7 +280,6 @@ void ImGuiLayer::registerMaterial(uint64_t hash, Xenon::MaterialIdentifier ident
 void ImGuiLayer::showLayer(Xenon::Layer* pLayer)
 {
 	m_UIStorage.m_LayerViewUI.setLayer(pLayer);
-	m_UIStorage.m_LayerViewUI.copyLayerImage(nullptr);
 }
 
 void ImGuiLayer::configureImGui() const
@@ -359,6 +358,9 @@ void ImGuiLayer::setupDefaultMaterial()
 
 void ImGuiLayer::prepareResources(Xenon::Backend::CommandRecorder* pCommandRecorder)
 {
+	// Copy the layer view.
+	m_UIStorage.m_LayerViewUI.copyLayerImage(pCommandRecorder);
+
 	const auto* pDrawData = ImGui::GetDrawData();
 
 	// Return if we don't have any draw data.
@@ -412,9 +414,9 @@ void ImGuiLayer::showMainMenu()
 	ImGui::BeginMenuBar();
 	if (ImGui::BeginMenu("File"))
 	{
-		if (ImGui::MenuItem("Open"));
-		if (ImGui::MenuItem("Save"));
-		if (ImGui::MenuItem("Save As"));
+		if (ImGui::MenuItem("Open", "Ctrl+O"));
+		if (ImGui::MenuItem("Save", "Ctrl+S"));
+		if (ImGui::MenuItem("Save As", "Ctrl+Shift+S"));
 
 		ImGui::Separator();
 		if (ImGui::MenuItem("Close")) m_Renderer.close();
@@ -424,18 +426,19 @@ void ImGuiLayer::showMainMenu()
 
 	if (ImGui::BeginMenu("Edit"))
 	{
-		if (ImGui::MenuItem("Cut"));
-		if (ImGui::MenuItem("Copy"));
-		if (ImGui::MenuItem("Paste"));
+		if (ImGui::MenuItem("Cut", "Ctrl+X"));
+		if (ImGui::MenuItem("Copy", "Ctrl+C"));
+		if (ImGui::MenuItem("Paste", "Ctrl+V"));
 
 		ImGui::EndMenu();
 	}
 
 	if (ImGui::BeginMenu("View"))
 	{
-		if (ImGui::MenuItem("Layer View", "CTRL+L", nullptr, !m_UIStorage.m_LayerViewUI.isVisible())) m_UIStorage.m_LayerViewUI.show();
-		if (ImGui::MenuItem("Performance Metrics", "CTRL+P", nullptr, !m_UIStorage.m_PerformanceMetricsUI.isVisible())) m_UIStorage.m_PerformanceMetricsUI.show();
-		if (ImGui::MenuItem("Pipeline Editor", "CTRL+E", nullptr, !m_UIStorage.m_PipelineEditorUI.isVisible())) m_UIStorage.m_PipelineEditorUI.show();
+		if (ImGui::MenuItem("Layer View", "Ctrl+L", nullptr, !m_UIStorage.m_LayerViewUI.isVisible())) m_UIStorage.m_LayerViewUI.show();
+		if (ImGui::MenuItem("Configuration", "Ctrl+R", nullptr, !m_UIStorage.m_ConfigurationUI.isVisible())) m_UIStorage.m_ConfigurationUI.show();
+		if (ImGui::MenuItem("Performance Metrics", "Ctrl+P", nullptr, !m_UIStorage.m_PerformanceMetricsUI.isVisible())) m_UIStorage.m_PerformanceMetricsUI.show();
+		if (ImGui::MenuItem("Pipeline Editor", "Ctrl+E", nullptr, !m_UIStorage.m_PipelineEditorUI.isVisible())) m_UIStorage.m_PipelineEditorUI.show();
 
 		ImGui::EndMenu();
 	}
@@ -447,6 +450,9 @@ void ImGuiLayer::showUIs(std::chrono::nanoseconds delta)
 {
 	m_UIStorage.m_LayerViewUI.begin(delta);
 	m_UIStorage.m_LayerViewUI.end();
+
+	m_UIStorage.m_ConfigurationUI.begin(delta);
+	m_UIStorage.m_ConfigurationUI.end();
 
 	m_UIStorage.m_PerformanceMetricsUI.begin(delta);
 	m_UIStorage.m_PerformanceMetricsUI.end();
