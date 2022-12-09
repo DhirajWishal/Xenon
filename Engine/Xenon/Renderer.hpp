@@ -61,6 +61,12 @@ namespace Xenon
 		 */
 		void cleanup();
 
+		/**
+		 * Close the renderer.
+		 * This will only set an internal bool to false.
+		 */
+		void close();
+
 	public:
 		/**
 		 * Get the attached camera pointer.
@@ -150,5 +156,7 @@ namespace Xenon
 		Backend::Camera* m_pCamera = nullptr;
 
 		Instance& m_Instance;
+
+		bool m_IsOpen = true;
 	};
 }

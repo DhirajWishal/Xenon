@@ -21,11 +21,12 @@ namespace /* anonymous */
 	 * @param value The color value.
 	 * @return The created color value.
 	 */
-	constexpr float CreateColor256(float value) { return value / 256; }
+	[[nodiscard]] constexpr float CreateColor256(float value) noexcept { return value / 256; }
 }
 
 ImGuiLayer::ImGuiLayer(Xenon::Renderer& renderer, Xenon::Backend::Camera* pCamera)
 	: RasterizingLayer(renderer, pCamera, Xenon::Backend::AttachmentType::Color)
+	, m_UIStorage(this)
 	, m_pVertexBuffers(renderer.getCommandRecorder()->getBufferCount())
 	, m_pIndexBuffers(renderer.getCommandRecorder()->getBufferCount())
 	, m_ClearValues({ glm::vec4(0.0f, 0.0f, 0.0f, 1.0f) })
@@ -43,7 +44,7 @@ ImGuiLayer::~ImGuiLayer()
 	ImGui::DestroyContext();
 }
 
-void ImGuiLayer::beginFrame(std::chrono::nanoseconds delta)
+bool ImGuiLayer::beginFrame(std::chrono::nanoseconds delta)
 {
 	ImGui::NewFrame();
 
@@ -197,44 +198,19 @@ void ImGuiLayer::beginFrame(std::chrono::nanoseconds delta)
 
 	ImGui::PopStyleVar(3);
 
-	ImGui::BeginMenuBar();
-	if (ImGui::BeginMenu("File"))
-	{
-		if (ImGui::MenuItem("Open"));
-		if (ImGui::MenuItem("Save"));
-		if (ImGui::MenuItem("Save As"));
-
-		ImGui::Separator();
-		if (ImGui::MenuItem("Close"));
-
-		ImGui::EndMenu();
-	}
-
-	if (ImGui::BeginMenu("Edit"))
-	{
-		if (ImGui::MenuItem("Cut"));
-		if (ImGui::MenuItem("Copy"));
-		if (ImGui::MenuItem("Paste"));
-
-		ImGui::EndMenu();
-	}
-
-	if (ImGui::BeginMenu("View"))
-	{
-		if (ImGui::MenuItem("Shader Editor"));
-
-		ImGui::EndMenu();
-	}
-
-	ImGui::EndMenuBar();
+	// Show the main menu.
+	showMainMenu();
 
 	ImGui::DockSpace(ImGui::GetID("EditorDockSpace"), ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
 
-	ImGui::Begin("Shader Editor");
-	ImNodes::BeginNodeEditor();
-	ImNodes::MiniMap();
-	ImNodes::EndNodeEditor();
-	ImGui::End();
+	// Show all the UI components.
+	showUIs(delta);
+
+	return !(io.WantCaptureMouse ||
+		io.WantCaptureKeyboard ||
+		io.WantTextInput ||
+		io.WantSetMousePos ||
+		io.WantSaveIniSettings) || m_UIStorage.m_LayerViewUI.isInFocus();
 }
 
 void ImGuiLayer::endFrame() const
@@ -299,6 +275,12 @@ void ImGuiLayer::bind(Xenon::Layer* pPreviousLayer, Xenon::Backend::CommandRecor
 void ImGuiLayer::registerMaterial(uint64_t hash, Xenon::MaterialIdentifier identifier)
 {
 	m_pDescriptorSetMap[hash] = identifier.m_pMaterial->createDescriptor(m_pPipeline.get());
+}
+
+void ImGuiLayer::showLayer(Xenon::Layer* pLayer)
+{
+	m_UIStorage.m_LayerViewUI.setLayer(pLayer);
+	m_UIStorage.m_LayerViewUI.copyLayerImage(nullptr);
 }
 
 void ImGuiLayer::configureImGui() const
@@ -423,4 +405,52 @@ void ImGuiLayer::prepareResources(Xenon::Backend::CommandRecorder* pCommandRecor
 uint64_t ImGuiLayer::getNextBufferSize(uint64_t requiredSize) const
 {
 	return requiredSize + 1024;
+}
+
+void ImGuiLayer::showMainMenu()
+{
+	ImGui::BeginMenuBar();
+	if (ImGui::BeginMenu("File"))
+	{
+		if (ImGui::MenuItem("Open"));
+		if (ImGui::MenuItem("Save"));
+		if (ImGui::MenuItem("Save As"));
+
+		ImGui::Separator();
+		if (ImGui::MenuItem("Close")) m_Renderer.close();
+
+		ImGui::EndMenu();
+	}
+
+	if (ImGui::BeginMenu("Edit"))
+	{
+		if (ImGui::MenuItem("Cut"));
+		if (ImGui::MenuItem("Copy"));
+		if (ImGui::MenuItem("Paste"));
+
+		ImGui::EndMenu();
+	}
+
+	if (ImGui::BeginMenu("View"))
+	{
+		if (ImGui::MenuItem("Layer View", "CTRL+L", nullptr, !m_UIStorage.m_LayerViewUI.isVisible())) m_UIStorage.m_LayerViewUI.show();
+		if (ImGui::MenuItem("Performance Metrics", "CTRL+P", nullptr, !m_UIStorage.m_PerformanceMetricsUI.isVisible())) m_UIStorage.m_PerformanceMetricsUI.show();
+		if (ImGui::MenuItem("Pipeline Editor", "CTRL+E", nullptr, !m_UIStorage.m_PipelineEditorUI.isVisible())) m_UIStorage.m_PipelineEditorUI.show();
+
+		ImGui::EndMenu();
+	}
+
+	ImGui::EndMenuBar();
+}
+
+void ImGuiLayer::showUIs(std::chrono::nanoseconds delta)
+{
+	m_UIStorage.m_LayerViewUI.begin(delta);
+	m_UIStorage.m_LayerViewUI.end();
+
+	m_UIStorage.m_PerformanceMetricsUI.begin(delta);
+	m_UIStorage.m_PerformanceMetricsUI.end();
+
+	m_UIStorage.m_PipelineEditorUI.begin(delta);
+	m_UIStorage.m_PipelineEditorUI.end();
 }

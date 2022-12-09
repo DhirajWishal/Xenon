@@ -20,6 +20,10 @@ namespace Xenon
 	{
 		OPTICK_FRAME("Renderer Update");
 
+		// Return false if we need to close.
+		if (!m_IsOpen)
+			return false;
+
 		m_pSwapChain->getWindow()->update();
 
 		// Prepare the swapchain for a new frame.
@@ -62,5 +66,10 @@ namespace Xenon
 	{
 		m_Instance.getBackendDevice()->waitIdle();
 		m_pLayers.clear();
+	}
+
+	void Renderer::close()
+	{
+		m_IsOpen = false;
 	}
 }

@@ -43,6 +43,8 @@ set(
 	"UIComponents/PerformanceMetrics.hpp"
 	"UIComponents/LayerView.cpp"
 	"UIComponents/LayerView.hpp"
+	"UIComponents/PipelineEditor.cpp"
+	"UIComponents/PipelineEditor.hpp"
 
 	${SHADERS}
 )

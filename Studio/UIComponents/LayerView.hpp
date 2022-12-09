@@ -4,7 +4,10 @@
 #pragma once
 
 #include "../UIComponent.hpp"
-#include "../Layers/ImGuiLayer.hpp"
+
+#include "Xenon/Layer.hpp"
+
+class ImGuiLayer;
 
 /**
  * Layer view class.
@@ -19,7 +22,14 @@ public:
 	 * @param pImGuiLayer The ImGui layer pointer.
 	 * @param pLayer The layer to be shown.
 	 */
-	explicit LayerView(ImGuiLayer* pImGuiLayer, Xenon::Layer* pLayer);
+	explicit LayerView(ImGuiLayer* pImGuiLayer);
+
+	/**
+	 * Set the layer to be shown.
+	 *
+	 * @param pLayer The layer to show.
+	 */
+	void setLayer(Xenon::Layer* pLayer);
 
 	/**
 	 * Copy the layer's color image to the material image.
@@ -40,10 +50,20 @@ public:
 	 */
 	void end() override;
 
+	/**
+	 * Check if the layer is in focus.
+	 *
+	 * @return True if the layer is in focus.
+	 * @return False if the layer is not in focus.
+	 */
+	[[nodiscard]] bool isInFocus() const noexcept { return m_bIsInFocus; }
+
 private:
 	ImGuiLayer* m_pImGuiLayer = nullptr;
-	Xenon::Layer* m_pLayer = nullptr;
+	Xenon::Layer* m_pLayerToShow = nullptr;
 
 	uint64_t m_ImageHash = 0;
 	Xenon::MaterialIdentifier m_MaterialIdentifier;
+
+	bool m_bIsInFocus = false;
 };

@@ -13,9 +13,6 @@
 
 #include "Xenon/Layers/DefaultRasterizingLayer.hpp"
 
-#include "UIComponents/PerformanceMetrics.hpp"
-#include "UIComponents/LayerView.hpp"
-
 #include <imgui.h>
 
 namespace /* anonymous */
@@ -61,7 +58,7 @@ namespace /* anonymous */
 
 Studio::Studio(Xenon::BackendType type /*= Xenon::BackendType::Any*/)
 	: m_Instance("Xenon Studio", 0, Xenon::RenderTargetType::All, type)
-	, m_Camera(m_Instance, 1280, 720)
+	, m_Camera(m_Instance, 1920, 1080)
 	, m_Renderer(m_Instance, &m_Camera, GetRendererTitle(type))
 {
 	XENON_LOG_INFORMATION("Starting the {}", GetRendererTitle(m_Instance.getBackendType()));
@@ -81,16 +78,13 @@ void Studio::run()
 
 	bool dataLoaded = false;
 
-	PerformanceMetrics performanceMetrics;
-	auto layerView = LayerView(pImGui, pLayer);
-
 	Xenon::FrameTimer timer;
 	do
 	{
 		const auto delta = timer.tick();
 
 		// Begin the ImGui scene.
-		pImGui->beginFrame(delta);
+		const auto handleInputs = pImGui->beginFrame(delta);
 
 		// Add the draw data when the model has been loaded.
 		if (!dataLoaded && is_ready(storage))
@@ -99,47 +93,46 @@ void Studio::run()
 			dataLoaded = true;
 		}
 
-		performanceMetrics.begin(delta);
-		performanceMetrics.end();
+		pImGui->showLayer(pLayer);
 
-		layerView.copyLayerImage(nullptr);
-		layerView.begin(delta);
-		layerView.end();
-
-		// Move the camera.
-		switch (m_Renderer.getKeyboard().m_Character)
+		// Handle the inputs and update the camera only if we need to.
+		if (handleInputs)
 		{
-		case 'w':
-		case 'W':
-			m_Camera.moveForward(delta);
-			break;
+			// Move the camera.
+			switch (m_Renderer.getKeyboard().m_Character)
+			{
+			case 'w':
+			case 'W':
+				m_Camera.moveForward(delta);
+				break;
 
-		case 'a':
-		case 'A':
-			m_Camera.moveLeft(delta);
-			break;
+			case 'a':
+			case 'A':
+				m_Camera.moveLeft(delta);
+				break;
 
-		case 's':
-		case 'S':
-			m_Camera.moveBackward(delta);
-			break;
+			case 's':
+			case 'S':
+				m_Camera.moveBackward(delta);
+				break;
 
-		case 'd':
-		case 'D':
-			m_Camera.moveRight(delta);
-			break;
+			case 'd':
+			case 'D':
+				m_Camera.moveRight(delta);
+				break;
 
-		default:
-			break;
+			default:
+				break;
+			}
+
+			if (m_Renderer.getKeyboard().m_Up)
+				m_Camera.moveUp(delta);
+
+			if (m_Renderer.getKeyboard().m_Down)
+				m_Camera.moveDown(delta);
+
+			m_Camera.update();
 		}
-
-		if (m_Renderer.getKeyboard().m_Up)
-			m_Camera.moveUp(delta);
-
-		if (m_Renderer.getKeyboard().m_Down)
-			m_Camera.moveDown(delta);
-
-		m_Camera.update();
 
 		// End the ImGui scene and render everything.
 		pImGui->endFrame();

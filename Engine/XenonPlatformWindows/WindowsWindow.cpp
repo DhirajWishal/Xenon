@@ -84,7 +84,7 @@ namespace Xenon
 				0,								// Optional window styles. https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 				g_ClassName,					// Window class
 				wideString.data(),				// Window text
-				WS_BORDER,								// Window style
+				WS_BORDER,						// Window style
 				CW_USEDEFAULT,					// X-Position.
 				CW_USEDEFAULT,					// Y-Position.
 				width,							// Width of the window.
@@ -97,13 +97,6 @@ namespace Xenon
 
 			SetWindowLong(m_WindowHandle, GWL_STYLE, 0);
 
-			// Get the actual window size.
-			if (RECT rectangle = {}; GetClientRect(m_WindowHandle, &rectangle))
-			{
-				m_Width = rectangle.right;
-				m_Height = rectangle.bottom;
-			}
-
 			// Set the windows window property.
 			SetProp(m_WindowHandle, TEXT("WindowsWindow"), this);
 
@@ -115,7 +108,14 @@ namespace Xenon
 			}
 
 			// Show the window to the user.
-			ShowWindow(m_WindowHandle, SW_SHOWNORMAL);
+			ShowWindow(m_WindowHandle, SW_SHOWMAXIMIZED);
+
+			// Get the actual window size.
+			if (RECT rectangle = {}; GetClientRect(m_WindowHandle, &rectangle))
+			{
+				m_Width = rectangle.right;
+				m_Height = rectangle.bottom;
+			}
 		}
 
 		WindowsWindow::~WindowsWindow()

@@ -18,7 +18,11 @@ namespace Xenon
 		/**
 		 * Interface database entry structure.
 		 */
-		struct IDatabaseEntry {};
+		struct IDatabaseEntry
+		{
+			IDatabaseEntry() = default;
+			virtual ~IDatabaseEntry() = default;
+		};
 
 		/**
 		 * Database entry structure.

@@ -382,8 +382,8 @@ namespace Xenon
 			// Create the memory barrier.
 			VkImageMemoryBarrier memorybarrier = {};
 			memorybarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-			memorybarrier.srcAccessMask = 0;
-			memorybarrier.dstAccessMask = 0;
+			memorybarrier.srcAccessMask = VK_ACCESS_NONE;
+			memorybarrier.dstAccessMask = VK_ACCESS_NONE;
 			memorybarrier.oldLayout = currentLayout;
 			memorybarrier.newLayout = newLayout;
 			memorybarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -400,7 +400,7 @@ namespace Xenon
 			{
 			case VK_IMAGE_LAYOUT_GENERAL:
 			case VK_IMAGE_LAYOUT_UNDEFINED:
-				memorybarrier.srcAccessMask = 0;
+				memorybarrier.srcAccessMask = VK_ACCESS_NONE;
 				break;
 
 			case VK_IMAGE_LAYOUT_PREINITIALIZED:
@@ -436,7 +436,6 @@ namespace Xenon
 				break;
 
 			default:
-				XENON_LOG_FATAL("Unsupported layout transition!");
 				return;
 			}
 
@@ -470,7 +469,6 @@ namespace Xenon
 				break;
 
 			default:
-				XENON_LOG_FATAL("Unsupported layout transition!");
 				return;
 			}
 

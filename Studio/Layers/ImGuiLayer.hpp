@@ -8,6 +8,10 @@
 #include "XenonBackend/Buffer.hpp"
 #include "XenonBackend/RasterizingPipeline.hpp"
 
+#include "../UIComponents/LayerView.hpp"
+#include "../UIComponents/PerformanceMetrics.hpp"
+#include "../UIComponents/PipelineEditor.hpp"
+
 /**
  * ImGui layer class.
  * This class can be used to render ImGui.
@@ -21,6 +25,20 @@ class ImGuiLayer final : public Xenon::RasterizingLayer
 	{
 		glm::vec2 m_Scale;
 		glm::vec2 m_Translate;
+	};
+
+	/**
+	 * UI storage structure.
+	 * This structure contains all the UI components which are used by the studio.
+	 * This layer also manages them.
+	 */
+	struct UIStorage final
+	{
+		explicit UIStorage(ImGuiLayer* pLayer) : m_LayerViewUI(pLayer) {}
+
+		LayerView m_LayerViewUI;
+		PerformanceMetrics m_PerformanceMetricsUI;
+		PipeilneEditor m_PipelineEditorUI;
 	};
 
 public:
@@ -42,8 +60,10 @@ public:
 	 * This function must be called before drawing anything on ImGui!
 	 *
 	 * @param delta The time difference between the previous frame and the current frame in nanoseconds.
+	 * @return True if the user should handle the inputs.
+	 * @return False if the events are handled internally and the user should not handle inputs.
 	 */
-	void beginFrame(std::chrono::nanoseconds delta);
+	[[nodiscard]] bool beginFrame(std::chrono::nanoseconds delta);
 
 	/**
 	 * End the frame.
@@ -67,6 +87,13 @@ public:
 	 * @param identifier The material's identifier.
 	 */
 	void registerMaterial(uint64_t hash, Xenon::MaterialIdentifier identifier);
+
+	/**
+	 * Register a layer to be shown.
+	 *
+	 * @param pLayer The layer to be shown.
+	 */
+	void showLayer(Xenon::Layer* pLayer);
 
 private:
 	/**
@@ -94,7 +121,21 @@ private:
 	 */
 	[[nodiscard]] uint64_t getNextBufferSize(uint64_t requiredSize) const;
 
+	/**
+	 * Show the main menu.
+	 */
+	void showMainMenu();
+
+	/**
+	 * Show all the UIs.
+	 *
+	 * @param delta The time taken from the previous frame to this.
+	 */
+	void showUIs(std::chrono::nanoseconds delta);
+
 private:
+	UIStorage m_UIStorage;
+
 	std::unordered_map<uint64_t, std::unique_ptr<Xenon::Backend::Descriptor>> m_pDescriptorSetMap;
 
 	std::unique_ptr<Xenon::Backend::RasterizingPipeline> m_pPipeline = nullptr;

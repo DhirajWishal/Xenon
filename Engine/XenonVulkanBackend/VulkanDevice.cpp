@@ -193,13 +193,6 @@ namespace Xenon
 
 		VulkanDevice::~VulkanDevice()
 		{
-			m_DeviceTable.vkDestroyCommandPool(m_LogicalDevice, m_ComputeCommandPool.getUnsafe(), nullptr);
-			m_DeviceTable.vkDestroyCommandPool(m_LogicalDevice, m_GraphicsCommandPool.getUnsafe(), nullptr);
-			m_DeviceTable.vkDestroyCommandPool(m_LogicalDevice, m_TransferCommandPool.getUnsafe(), nullptr);
-
-			vmaDestroyAllocator(m_Allocator);
-			m_DeviceTable.vkDestroyDevice(m_LogicalDevice, nullptr);
-
 			try
 			{
 				delete m_pDescriptorSetManager;
@@ -208,6 +201,13 @@ namespace Xenon
 			{
 				XENON_VK_ASSERT(VK_ERROR_UNKNOWN, "Failed to push the device deletion function to the deletion queue!");
 			}
+
+			m_DeviceTable.vkDestroyCommandPool(m_LogicalDevice, m_ComputeCommandPool.getUnsafe(), nullptr);
+			m_DeviceTable.vkDestroyCommandPool(m_LogicalDevice, m_GraphicsCommandPool.getUnsafe(), nullptr);
+			m_DeviceTable.vkDestroyCommandPool(m_LogicalDevice, m_TransferCommandPool.getUnsafe(), nullptr);
+
+			vmaDestroyAllocator(m_Allocator);
+			m_DeviceTable.vkDestroyDevice(m_LogicalDevice, nullptr);
 		}
 
 		void VulkanDevice::waitIdle()
