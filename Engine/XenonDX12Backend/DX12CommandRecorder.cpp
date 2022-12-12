@@ -295,13 +295,13 @@ namespace Xenon
 
 			// Change the destination resource state.
 			{
-				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pDestinationResource, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+				const auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pDestinationResource, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 				m_pCurrentCommandList->ResourceBarrier(1, &barrier);
 			}
 
 			// Change the source resource state.
 			{
-				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pDxSource->getResource(), pDxSource->getCurrentState(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+				const auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pDxSource->getResource(), pDxSource->getCurrentState(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 				m_pCurrentCommandList->ResourceBarrier(1, &barrier);
 				pDxSource->setCurrentState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 			}
@@ -310,14 +310,11 @@ namespace Xenon
 			auto swpchainHandle = pDxSwapchin->getCPUDescriptorHandle();
 			m_pCurrentCommandList->OMSetRenderTargets(1, &swpchainHandle, FALSE, nullptr);
 
-			D3D12_RECT scissor = CD3DX12_RECT(0, 0, pDxSwapchin->getWindow()->getWidth(), pDxSwapchin->getWindow()->getHeight());
+			const D3D12_RECT scissor = CD3DX12_RECT(0, 0, pDxSwapchin->getWindow()->getWidth(), pDxSwapchin->getWindow()->getHeight());
 			m_pCurrentCommandList->RSSetScissorRects(1, &scissor);
 
-			D3D12_VIEWPORT viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(pDxSwapchin->getWindow()->getWidth()), static_cast<float>(pDxSwapchin->getWindow()->getHeight()), 0.0f, 1.0f);
+			const D3D12_VIEWPORT viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(pDxSwapchin->getWindow()->getWidth()), static_cast<float>(pDxSwapchin->getWindow()->getHeight()), 0.0f, 1.0f);
 			m_pCurrentCommandList->RSSetViewports(1, &viewport);
-
-			// setScissor(0, 0, pDxSwapchin->getWindow()->getWidth(), pDxSwapchin->getWindow()->getHeight());
-			// setViewport(0.0f, 0.0f, static_cast<float>(pDxSwapchin->getWindow()->getWidth()), static_cast<float>(pDxSwapchin->getWindow()->getHeight()), 0.0f, 1.0f);
 
 			// Prepare the descriptor heap.
 			pDxSwapchin->prepareDescriptorForImageCopy(pDxSource);
@@ -341,7 +338,7 @@ namespace Xenon
 
 			// Change the destination resource state.
 			{
-				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pDestinationResource, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+				const auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pDestinationResource, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 				m_pCurrentCommandList->ResourceBarrier(1, &barrier);
 			}
 		}
@@ -596,16 +593,19 @@ namespace Xenon
 
 		void DX12CommandRecorder::setViewport(float x, float y, float width, float height, float minDepth, float maxDepth)
 		{
-			// Note that here we flip the viewport vertically because we're using GLSL -> SPIR-V -> HLSL.
-			D3D12_VIEWPORT viewport = CD3DX12_VIEWPORT(x, height - y, width, -height, minDepth, maxDepth);
-			// D3D12_VIEWPORT viewport = CD3DX12_VIEWPORT(x, y, width, height, minDepth, maxDepth);
+			const D3D12_VIEWPORT viewport = CD3DX12_VIEWPORT(x, y, width, height, minDepth, maxDepth);
+			m_pCurrentCommandList->RSSetViewports(1, &viewport);
+		}
+
+		void DX12CommandRecorder::setViewportNatural(float x, float y, float width, float height, float minDepth, float maxDepth)
+		{
+			const D3D12_VIEWPORT viewport = CD3DX12_VIEWPORT(x, height - y, width, -height, minDepth, maxDepth);
 			m_pCurrentCommandList->RSSetViewports(1, &viewport);
 		}
 
 		void DX12CommandRecorder::setScissor(int32_t x, int32_t y, uint32_t width, uint32_t height)
 		{
-			D3D12_RECT scissor = CD3DX12_RECT(x, y, width, height);
-			// D3D12_RECT scissor = CD3DX12_RECT(x, height - y, width, -static_cast<LONG>(height));
+			const D3D12_RECT scissor = CD3DX12_RECT(x, y, width, height);
 			m_pCurrentCommandList->RSSetScissorRects(1, &scissor);
 		}
 

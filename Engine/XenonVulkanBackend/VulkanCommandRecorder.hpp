@@ -153,6 +153,20 @@ namespace Xenon
 			void setViewport(float x, float y, float width, float height, float minDepth, float maxDepth) override;
 
 			/**
+			 * Set the natural viewport.
+			 * Vulkan uses the normal viewport type here whereas the DirectX 12 backend will flip the viewport vertically since it's coordinate system is different to Vulkan.
+			 * Use this if Vulkan renders the scene properly and in DirectX 12 the view is flipped vertically (upside-down).
+			 *
+			 * @param x The x offset.
+			 * @param y The y offset.
+			 * @param width The width to viewport.
+			 * @param height The height to viewport.
+			 * @param minDepth The minimum depth.
+			 * @param maxDepth The maximum depth.
+			 */
+			void setViewportNatural(float x, float y, float width, float height, float minDepth, float maxDepth) override;
+
+			/**
 			 * Set the scissor to draw.
 			 *
 			 * @param x The x offset.

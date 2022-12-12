@@ -799,7 +799,7 @@ namespace Xenon
 			}
 
 			m_PipelineStateDescriptor.DepthStencilState.DepthEnable = m_Specification.m_EnableDepthTest;
-			m_PipelineStateDescriptor.DepthStencilState.DepthWriteMask = m_Specification.m_EnableDepthWrite ? D3D12_DEPTH_WRITE_MASK_ZERO : D3D12_DEPTH_WRITE_MASK_ALL;
+			m_PipelineStateDescriptor.DepthStencilState.DepthWriteMask = m_Specification.m_EnableDepthWrite ? D3D12_DEPTH_WRITE_MASK_ALL : D3D12_DEPTH_WRITE_MASK_ZERO;
 			m_PipelineStateDescriptor.DepthStencilState.DepthFunc = GetComparisonFunction(m_Specification.m_DepthCompareLogic);
 			m_PipelineStateDescriptor.DepthStencilState.StencilEnable = FALSE;
 			m_PipelineStateDescriptor.DepthStencilState.StencilReadMask = {};

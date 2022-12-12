@@ -353,6 +353,71 @@ namespace /* anonymous */
 	}
 
 	/**
+	 * Get the image specification.
+	 *
+	 * @param sampler The sampler.
+	 * @return The image sampler specification.
+	 */
+	[[nodiscard]] constexpr Xenon::Backend::ImageSamplerSpecification GetImageSamplerSpecification(const tinygltf::Sampler& sampler) noexcept
+	{
+		Xenon::Backend::ImageSamplerSpecification specification;
+
+		switch (sampler.minFilter)
+		{
+		case TINYGLTF_TEXTURE_FILTER_NEAREST:
+			specification.m_ImageMinificationFilter = Xenon::Backend::ImageFilter::Nearest;
+			break;
+
+		case TINYGLTF_TEXTURE_FILTER_LINEAR:
+			specification.m_ImageMinificationFilter = Xenon::Backend::ImageFilter::Linear;
+			break;
+
+		case TINYGLTF_TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST:
+		case TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST:
+			specification.m_MipMapMode = Xenon::Backend::ImageMipMapMode::Nearest;
+			break;
+
+		case TINYGLTF_TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR:
+		case TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR:
+			specification.m_MipMapMode = Xenon::Backend::ImageMipMapMode::Linear;
+			break;
+
+		default:
+			break;
+		}
+
+		switch (sampler.magFilter)
+		{
+		case TINYGLTF_TEXTURE_FILTER_NEAREST:
+			specification.m_ImageMagificationFilter = Xenon::Backend::ImageFilter::Nearest;
+			break;
+
+		case TINYGLTF_TEXTURE_FILTER_LINEAR:
+			specification.m_ImageMagificationFilter = Xenon::Backend::ImageFilter::Linear;
+			break;
+
+		case TINYGLTF_TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST:
+		case TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST:
+			specification.m_MipMapMode = Xenon::Backend::ImageMipMapMode::Nearest;
+			break;
+
+		case TINYGLTF_TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR:
+		case TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR:
+			specification.m_MipMapMode = Xenon::Backend::ImageMipMapMode::Linear;
+			break;
+
+		default:
+			break;
+		}
+
+		// TINYGLTF_TEXTURE_WRAP_REPEAT 
+		// TINYGLTF_TEXTURE_WRAP_CLAMP_TO_EDGE 
+		// TINYGLTF_TEXTURE_WRAP_MIRRORED_REPEAT 
+
+		return specification;
+	}
+
+	/**
 	 * Load a node from the model.
 	 *
 	 * @param instance The instance reference.
@@ -399,7 +464,7 @@ namespace /* anonymous */
 			Xenon::XObject::GetJobSystem().insert([&subMesh, &model, &storage, &gltfPrimitive, vertexItr, indexItr, &synchronization]
 				{
 					LoadSubMesh(subMesh, storage.getVertexSpecification(), model, gltfPrimitive, vertexItr, indexItr);
-					synchronization.count_down();
+			synchronization.count_down();
 				}
 			);
 
@@ -453,15 +518,13 @@ namespace /* anonymous */
 					}
 
 					// Setup image view.
-					Xenon::Backend::ImageViewSpecification imageViewSpecification = {};
-					auto pImageView = instance.getFactory()->createImageView(instance.getBackendDevice(), pImage.get(), imageViewSpecification);
+					auto pImageView = instance.getFactory()->createImageView(instance.getBackendDevice(), pImage.get(), {});
 
 					// Setup image sampler.
-					Xenon::Backend::ImageSamplerSpecification imageSamplerSpecification = {};
-					auto pSampler = instance.getFactory()->createImageSampler(instance.getBackendDevice(), imageSamplerSpecification);
+					auto pSampler = instance.getFactory()->createImageSampler(instance.getBackendDevice(), GetImageSamplerSpecification(sampler));
 
 					// Set the material.
-					subMesh.m_MaterialIdentifier = instance.getMaterialDatabase().create<Xenon::PBRMetallicRoughnessMaterial>(imageHash, instance, std::move(pImage), std::move(pImageView), std::move(pSampler));;
+					subMesh.m_MaterialIdentifier = instance.getMaterialDatabase().create<Xenon::PBRMetallicRoughnessMaterial>(imageHash, instance, std::move(pImage), std::move(pImageView), std::move(pSampler));
 				}
 
 				// Set the material.
@@ -533,6 +596,12 @@ namespace Xenon
 					indexBufferSize += accessor.count * accessor.ByteStride(bufferView);
 				}
 			}
+		}
+
+		// Setup animations.
+		for (const auto& animation : model.animations)
+		{
+
 		}
 
 		// Load the mesh information.

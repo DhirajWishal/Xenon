@@ -176,7 +176,8 @@ namespace Xenon
 
 			// Compile the shader.
 			ComPtr<ID3DBlob> shaderBlob;
-			XENON_DX12_ASSERT(D3DCompile(hlsl.data(), hlsl.size(), nullptr, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entryPoint.data(), target.data(), 0, 0, &shaderBlob, nullptr), "Failed to compile the shader!");
+			constexpr std::array<D3D_SHADER_MACRO, 2> macros = { D3D_SHADER_MACRO("SPIRV_CROSS_CONSTANT_ID_0", "1u"), D3D_SHADER_MACRO() };
+			XENON_DX12_ASSERT(D3DCompile(hlsl.data(), hlsl.size(), nullptr, macros.data(), D3D_COMPILE_STANDARD_FILE_INCLUDE, entryPoint.data(), target.data(), 0, 0, &shaderBlob, nullptr), "Failed to compile the shader!");
 
 			return shaderBlob;
 		}

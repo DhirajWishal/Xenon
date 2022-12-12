@@ -285,7 +285,7 @@ namespace Xenon
 
 				// Copy the triangle data to the vertex buffer.
 				UINT8* pVertexDataBegin = nullptr;
-				CD3DX12_RANGE readRange(0, 0);
+				const CD3DX12_RANGE readRange(0, 0);
 				XENON_DX12_ASSERT(m_ImageCopyContainer.m_VertexBuffer->Map(0, &readRange, reinterpret_cast<void**>(&pVertexDataBegin)), "Failed to map the I2SC vertex buffer!");
 				memcpy(pVertexDataBegin, triangleVertices.data(), vertexBufferSize);
 				m_ImageCopyContainer.m_VertexBuffer->Unmap(0, nullptr);

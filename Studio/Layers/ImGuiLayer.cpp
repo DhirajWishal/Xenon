@@ -240,7 +240,7 @@ void ImGuiLayer::bind(Xenon::Layer* pPreviousLayer, Xenon::Backend::CommandRecor
 	const auto frameIndex = pCommandRecorder->getCurrentIndex();
 	pCommandRecorder->bind(m_pVertexBuffers[frameIndex].get(), sizeof(ImDrawVert));
 	pCommandRecorder->bind(m_pIndexBuffers[frameIndex].get(), static_cast<Xenon::Backend::IndexBufferStride>(sizeof(ImDrawIdx)));
-	pCommandRecorder->setViewport(0.0f, 0.0f, io.DisplaySize.x, io.DisplaySize.y, 0.0f, 1.0f);
+	pCommandRecorder->setViewportNatural(0.0f, 0.0f, io.DisplaySize.x, io.DisplaySize.y, 0.0f, 1.0f);
 
 	uint64_t indexOffset = 0;
 	uint64_t vertexOffset = 0;
@@ -324,7 +324,7 @@ void ImGuiLayer::configureImGui() const
 	style.WindowRounding = 3.0f;
 	style.ItemInnerSpacing = ImVec2(2, 1);
 
-	io.Fonts->AddFontFromFileTTF((std::filesystem::current_path() / "Fonts" / "Manrope" / "static" / "Manrope-Regular.ttf").string().c_str(), 16.0f);
+	io.Fonts->AddFontFromFileTTF((std::filesystem::current_path() / "Fonts" / "Roboto" / "Roboto-Regular.ttf").string().c_str(), 14.0f);
 }
 
 void ImGuiLayer::setupDefaultMaterial()

@@ -825,6 +825,11 @@ namespace Xenon
 			issueCall(m_pDevice->getDeviceTable().vkCmdSetViewport, *m_pCurrentBuffer, 0, 1, &viewport);
 		}
 
+		void VulkanCommandRecorder::setViewportNatural(float x, float y, float width, float height, float minDepth, float maxDepth)
+		{
+			setViewport(x, y, width, height, minDepth, maxDepth);
+		}
+
 		void VulkanCommandRecorder::setScissor(int32_t x, int32_t y, uint32_t width, uint32_t height)
 		{
 			VkRect2D scissorRect = {};
