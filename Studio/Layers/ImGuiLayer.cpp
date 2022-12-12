@@ -36,6 +36,11 @@ ImGuiLayer::ImGuiLayer(Xenon::Renderer& renderer, Xenon::Backend::Camera* pCamer
 
 	configureImGui();
 	setupDefaultMaterial();
+
+	// Setup the ImGui logger.
+	auto logger = std::make_shared<spdlog::logger>("XenonStudio", m_UIStorage.m_pLogs);
+	spdlog::register_logger(logger);
+	spdlog::set_default_logger(logger);
 }
 
 ImGuiLayer::~ImGuiLayer()
@@ -439,6 +444,7 @@ void ImGuiLayer::showMainMenu()
 		if (ImGui::MenuItem("Configuration", "Ctrl+R", nullptr, !m_UIStorage.m_ConfigurationUI.isVisible())) m_UIStorage.m_ConfigurationUI.show();
 		if (ImGui::MenuItem("Performance Metrics", "Ctrl+P", nullptr, !m_UIStorage.m_PerformanceMetricsUI.isVisible())) m_UIStorage.m_PerformanceMetricsUI.show();
 		if (ImGui::MenuItem("Pipeline Editor", "Ctrl+E", nullptr, !m_UIStorage.m_PipelineEditorUI.isVisible())) m_UIStorage.m_PipelineEditorUI.show();
+		if (ImGui::MenuItem("Logs", "Ctrl+L", nullptr, !m_UIStorage.m_pLogs->isVisible())) m_UIStorage.m_pLogs->show();
 
 		ImGui::EndMenu();
 	}
@@ -479,4 +485,7 @@ void ImGuiLayer::showUIs(std::chrono::nanoseconds delta)
 
 	m_UIStorage.m_PipelineEditorUI.begin(delta);
 	m_UIStorage.m_PipelineEditorUI.end();
+
+	m_UIStorage.m_pLogs->begin(delta);
+	m_UIStorage.m_pLogs->end();
 }

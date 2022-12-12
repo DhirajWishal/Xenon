@@ -12,6 +12,7 @@
 #include "../UIComponents/PerformanceMetrics.hpp"
 #include "../UIComponents/PipelineEditor.hpp"
 #include "../UIComponents/Configuration.hpp"
+#include "../UIComponents/Logs.hpp"
 
 /**
  * ImGui layer class.
@@ -35,12 +36,14 @@ class ImGuiLayer final : public Xenon::RasterizingLayer
 	 */
 	struct UIStorage final
 	{
-		explicit UIStorage(ImGuiLayer* pLayer) : m_LayerViewUI(pLayer), m_ConfigurationUI(pLayer) {}
+		explicit UIStorage(ImGuiLayer* pLayer) : m_LayerViewUI(pLayer), m_ConfigurationUI(pLayer), m_pLogs(std::make_shared<Logs>()) {}
 
 		LayerView m_LayerViewUI;
 		Configuration m_ConfigurationUI;
 		PerformanceMetrics m_PerformanceMetricsUI;
 		PipeilneEditor m_PipelineEditorUI;
+
+		std::shared_ptr<Logs> m_pLogs;
 	};
 
 public:

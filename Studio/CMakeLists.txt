@@ -47,6 +47,8 @@ set(
 	"UIComponents/PipelineEditor.hpp"
 	"UIComponents/Configuration.cpp"
 	"UIComponents/Configuration.hpp"
+	"UIComponents/Logs.cpp"
+	"UIComponents/Logs.hpp"
 
 	${SHADERS}
 )
