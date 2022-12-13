@@ -17,6 +17,8 @@ project(
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(PREDEFINED_TARGETS_FOLDER "PredefinedTargets")
 
+include(ExternalProject)
+
 # Set the caches.
 set(XENON_LOG_LEVEL 5 CACHE INTERNAL "This defines what to log. Checkout the wiki page for more information.")
 
@@ -37,8 +39,27 @@ set(OPTICK_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/optick/src)
 set(IMGUI_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/imgui)
 set(IMNODES_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/imnodes)
 set(FMT_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/fmt/include)
+set(SPIRV_TOOLS_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/SPIRV-Tools/include)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/SPIRV-Cross)
+
+# Find the python package.
+find_package(Python COMPONENTS Interpreter Development)
+
+# Execute the SPIR-V Tools initialization process.
+execute_process(
+	COMMAND ${Python_EXECUTABLE} "utils/git-sync-deps"
+	WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/SPIRV-Tools"
+	COMMAND_ECHO STDOUT
+	ERROR_VARIABLE SPIRV_TOOLS_INIT_STATUS
+)
+
+# If there was an error with the initialization process, print it out.
+if (SPIRV_TOOLS_INIT_STATUS)
+	message(FATAL_ERROR "SPIR-V Tools initialization failed with ${SPIRV_TOOLS_INIT_STATUS}")
+endif ()
+
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/SPIRV-Tools)
 
 # Add the Optick library as a third party static link.
 add_library(
@@ -133,6 +154,7 @@ add_compile_definitions(
 	XENON_GLTF_ASSET_DIR="${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/glTF-Sample-Models/"
 	XENON_SHADER_DIR="${XENON_SHADER_BANK_OUTPUT_DIR}"
 	XENON_LOG_LEVEL=${XENON_LOG_LEVEL}
+	FMT_HEADER_ONLY
 )
 
 # Include the main subdirectories.
@@ -168,17 +190,29 @@ if (MSVC)
 	set_target_properties(XenonConfigureCMake PROPERTIES FOLDER "VisualStudio")
 
 	# Add the third party targets to a third party folder.
-	set_target_properties(spirv-cross PROPERTIES FOLDER "ThirdParty")
-	set_target_properties(spirv-cross-c PROPERTIES FOLDER "ThirdParty")
-	set_target_properties(spirv-cross-core PROPERTIES FOLDER "ThirdParty")
-	set_target_properties(spirv-cross-cpp PROPERTIES FOLDER "ThirdParty")
-	set_target_properties(spirv-cross-glsl PROPERTIES FOLDER "ThirdParty")
-	set_target_properties(spirv-cross-hlsl PROPERTIES FOLDER "ThirdParty")
-	set_target_properties(spirv-cross-msl PROPERTIES FOLDER "ThirdParty")
-	set_target_properties(spirv-cross-reflect PROPERTIES FOLDER "ThirdParty")
-	set_target_properties(spirv-cross-util PROPERTIES FOLDER "ThirdParty")
-	set_target_properties(XenonThirdParty_Optick PROPERTIES FOLDER "ThirdParty")
-	set_target_properties(XenonThirdParty_ImGui PROPERTIES FOLDER "ThirdParty")
-	set_target_properties(XenonThirdParty_imnodes PROPERTIES FOLDER "ThirdParty")
+	set_target_properties(
+		spirv-cross 
+		spirv-cross-c
+		spirv-cross-core
+		spirv-cross-cpp
+		spirv-cross-glsl
+		spirv-cross-hlsl
+		spirv-cross-msl
+		spirv-cross-reflect
+		spirv-cross-util
+
+		core_tables
+		enum_string_mapping
+		extinst_tables
+		re2
+		spirv-tools-pkg-config
+		spirv-tools-shared-pkg-config
+
+		XenonThirdParty_Optick
+		XenonThirdParty_ImGui
+		XenonThirdParty_imnodes
+			
+		PROPERTIES FOLDER "ThirdParty"
+	)
 
 endif ()

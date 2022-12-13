@@ -26,6 +26,8 @@ namespace Xenon
 			explicit Variable(AssemblyStorage& storage) : DataType(storage)
 			{
 				storage.registerType<Type>();
+				storage.insertType(fmt::format(FMT_STRING("%variable_type_{} = OpTypePointer Function {}"), TypeTraits<Type>::RawIdentifier, TypeTraits<Type>::Identifier));
+				storage.insertFunctionVariable(fmt::format("%{} = OpVariable %variable_type_{} Function", m_Identifier, TypeTraits<Type>::RawIdentifier));
 			}
 
 			/**

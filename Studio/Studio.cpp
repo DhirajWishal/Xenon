@@ -73,9 +73,15 @@ Studio::Studio(Xenon::BackendType type /*= Xenon::BackendType::Any*/)
 	auto outUV = builder.createOutput<glm::vec2>(0);
 	auto outColor = builder.createOutput<glm::vec4>(1);
 
+	auto function = builder.createFunction<void>();
 	outUV = inUV;
 	outColor = inColor;
+	auto temp = function.createVariable<glm::vec4>();
+
+	builder.addEntryPoint(Xenon::Backend::ShaderType::Vertex, "main", function, inPos, inUV, inColor, outUV, outColor);
+
 	XENON_LOG_INFORMATION("ShaderBuilder output: \n{}", builder.getInstructionStorage().compile());
+	const auto shader = builder.generate();
 }
 
 void Studio::run()

@@ -82,14 +82,14 @@ namespace Xenon
 			m_FunctionDeclarations.back().m_OpFunctionParameters.emplace_back(std::move(instruction));
 		}
 
-		void AssemblyStorage::setDeclarationOpFunctionEnd(std::string&& instruction)
-		{
-			m_FunctionDeclarations.back().m_OpFunctionEnd = std::move(instruction);
-		}
-
 		void AssemblyStorage::beginFunctionDefinition()
 		{
-			m_FunctionDefinitions.emplace_back();
+			auto& block = m_FunctionDefinitions.emplace_back();
+			block.m_VariableInstructions.emplace_back(fmt::format("%{} = OpLabel", getUniqueID()));
+
+			const auto newFunctionBlockID = getUniqueID();
+			block.m_Instructions.emplace_back(fmt::format("OpBranch %{}", newFunctionBlockID));
+			block.m_Instructions.emplace_back(fmt::format("%{} = OpLabel", newFunctionBlockID));
 		}
 
 		void AssemblyStorage::setDefinitionOpFunction(std::string&& instruction)
@@ -102,11 +102,6 @@ namespace Xenon
 			m_FunctionDefinitions.back().m_Declaration.m_OpFunctionParameters.emplace_back(std::move(instruction));
 		}
 
-		void AssemblyStorage::setDefinitionOpFunctionEnd(std::string&& instruction)
-		{
-			m_FunctionDefinitions.back().m_Declaration.m_OpFunctionEnd = std::move(instruction);
-		}
-
 		void AssemblyStorage::insertFunctionVariable(std::string&& instruction)
 		{
 			m_FunctionDefinitions.back().m_VariableInstructions.emplace_back(std::move(instruction));
@@ -117,12 +112,18 @@ namespace Xenon
 			m_FunctionDefinitions.back().m_Instructions.emplace_back(std::move(instruction));
 		}
 
+		void AssemblyStorage::setFunctionOpReturn(std::string&& instruction)
+		{
+			m_FunctionDefinitions.back().m_OpReturn = std::move(instruction);
+		}
+
 		std::string AssemblyStorage::compile() const
 		{
 			std::stringstream instructions;
 			instructions << "; Magic:     0x07230203 (SPIR-V)" << std::endl;
 			instructions << "; Version:   0x00010000 (Version: 1.0.0)" << std::endl;
 			instructions << "; Generator: 0x00000000 (Xenon Shader Builder; 1)" << std::endl;
+			instructions << "; Bound:     " << m_UniqueIdentifier << std::endl;
 			instructions << "; Schema:    0" << std::endl;
 
 			// Insert the capabilities.
@@ -190,7 +191,7 @@ namespace Xenon
 				for (const auto& instruction : declaration.m_OpFunctionParameters)
 					instructions << instruction << std::endl;
 
-				instructions << declaration.m_OpFunctionEnd << std::endl;
+				instructions << "OpFunctionEnd" << std::endl;
 			}
 
 			// Insert function definitions.
@@ -211,7 +212,8 @@ namespace Xenon
 				for (const auto& instruction : definition.m_Instructions)
 					instructions << instruction << std::endl;
 
-				instructions << definition.m_Declaration.m_OpFunctionEnd << std::endl;
+				instructions << definition.m_OpReturn << std::endl;
+				instructions << "OpFunctionEnd" << std::endl;
 			}
 
 			return instructions.str();

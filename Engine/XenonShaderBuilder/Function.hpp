@@ -24,7 +24,16 @@ namespace Xenon
 			 */
 			explicit Function(AssemblyStorage& storage) : DataType(storage)
 			{
-				storage.registerTypes<ReturnType, Parameters...>();
+				storage.registerCallable<ReturnType, Parameters...>();
+				// storage.insertExecutionMode(fmt::format("OpExecutionMode %{} OriginLowerLeft", m_Identifier)); Fragment only!
+
+				storage.beginFunctionDefinition();
+				storage.setDefinitionOpFunction(fmt::format("%{} = OpFunction {} None {}", m_Identifier, TypeTraits<ReturnType>::Identifier, storage.getFunctionIdentifier<ReturnType, Parameters...>()));
+
+				if constexpr (std::is_void_v<ReturnType>)
+					storage.setFunctionOpReturn("OpReturn");
+
+				storage.setDefinitionOpFunctionEnd("OpFunctionEnd");
 			}
 
 			/**

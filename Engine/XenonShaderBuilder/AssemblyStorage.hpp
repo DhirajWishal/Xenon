@@ -44,7 +44,6 @@ namespace Xenon
 			struct FunctionDeclaration final
 			{
 				std::string m_OpFunction;
-				std::string m_OpFunctionEnd;
 
 				std::vector<std::string> m_OpFunctionParameters;
 			};
@@ -55,6 +54,8 @@ namespace Xenon
 			struct FunctionDefinition final
 			{
 				FunctionDeclaration m_Declaration;
+
+				std::string m_OpReturn;
 
 				std::vector<std::string> m_VariableInstructions;
 				std::vector<std::string> m_Instructions;
@@ -166,13 +167,6 @@ namespace Xenon
 			void insertDeclarationOpFunctionParameter(std::string&& instruction);
 
 			/**
-			 * set an OpFunctionEnd declaration instruction.
-			 *
-			 * @param instruction The instruction to insert.
-			 */
-			void setDeclarationOpFunctionEnd(std::string&& instruction);
-
-			/**
 			 * Begin a function definition.
 			 * This is the same as before (the function declaration) as the class works as before; the proceeding function calls which require the function definition
 			 * will not work without this function call.
@@ -194,13 +188,6 @@ namespace Xenon
 			void insertDefinitionOpFunctionParameter(std::string&& instruction);
 
 			/**
-			 * set an OpFunctionEnd definition instruction.
-			 *
-			 * @param instruction The instruction to insert.
-			 */
-			void setDefinitionOpFunctionEnd(std::string&& instruction);
-
-			/**
 			 * Insert a function variable.
 			 *
 			 * @param instruction The instruction to insert.
@@ -213,6 +200,13 @@ namespace Xenon
 			 * @param instruction The instruction to insert.
 			 */
 			void insertFunctionInstruction(std::string&& instruction);
+
+			/**
+			 * Set the current function's return statement.
+			 * 
+			 * @param instruction The instruction to insert.
+			 */
+			void setFunctionOpReturn(std::string&& instruction);
 
 			/**
 			 * Register type function.
@@ -306,6 +300,61 @@ namespace Xenon
 
 				else
 					return fmt::format(FMT_STRING("{} "), TypeTraits<Type>::Identifier);
+			}
+
+			/**
+			 * Get the parameter identifier of multiple parameter types.
+			 *
+			 * @tparam Type The parameter type.
+			 * @tparam Types The rest of the parameters
+			 * @return The type string.
+			 */
+			template<class Type, class... Types>
+			[[nodiscard]] constexpr std::string getParameterIdentifier()
+			{
+				registerType<Type>();
+				if constexpr (sizeof...(Types) > 0)
+					return fmt::format("{}_{}", TypeTraits<Type>::RawIdentifier, getParameterIdentifier<Types...>());
+
+				else
+					return TypeTraits<Type>::RawIdentifier;
+			}
+
+			/**
+			 * Get a function's identifier using the value type.
+			 *
+			 * @tparam Return The return type.
+			 * @tparam Parameters The parameter types.
+			 * @return The identifier string.
+			 */
+			template<class Return, class... Parameters>
+			[[nodiscard]] constexpr std::string getFunctionIdentifier()
+			{
+				if constexpr (sizeof...(Parameters) > 0)
+					return fmt::format("{}_{}_callable", TypeTraits<Return>::Identifier, getParameterIdentifier<Parameters...>());
+
+				else
+					return fmt::format(FMT_STRING("{}_callable"), TypeTraits<Return>::Identifier);
+			}
+
+			/**
+			 * Register a function callback type.
+			 *
+			 * @tparam Type The callback type.
+			 */
+			template<class Return, class... Parameters>
+			constexpr void registerCallable()
+			{
+				using ReturnType = typename TypeTraits<Return>::Type;
+
+				// Try and register value types.
+				registerType<ReturnType>();
+
+				std::string parameterTypes;
+				if constexpr (sizeof...(Parameters) > 0)
+					parameterTypes = getTypeIdentifiers<Parameters...>();
+
+				insertType(fmt::format("{} = OpTypeFunction {} {}", getFunctionIdentifier<ReturnType, Parameters...>(), TypeTraits<ReturnType>::Identifier, parameterTypes));
 			}
 
 			/**

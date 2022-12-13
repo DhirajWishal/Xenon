@@ -44,10 +44,19 @@ target_include_directories(
 
 	PUBLIC ${GLM_INCLUDE_DIR}
 	PUBLIC ${FMT_INCLUDE_DIR}
+	PRIVATE ${SPIRV_TOOLS_INCLUDE_DIR}
+)
+
+# Add the target links.
+target_link_libraries(
+	XenonShaderBuilder 
+
+	PUBLIC XenonBackend 
+	PUBLIC SPIRV-Tools-static
+	PUBLIC SPIRV-Tools-opt
 )
 
 # If we are on MSVC, we can use the Multi Processor Compilation option.
 if (MSVC)
 	target_compile_options(XenonShaderBuilder PRIVATE "/MP")	
-	target_link_libraries(XenonShaderBuilder XenonCore)
 endif ()

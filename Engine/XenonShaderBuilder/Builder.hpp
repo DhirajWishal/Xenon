@@ -7,7 +7,7 @@
 #include "Output.hpp"
 #include "Function.hpp"
 
-#include "../XenonBackend/Core.hpp"
+#include "../XenonBackend/ShaderSource.hpp"
 
 namespace Xenon
 {
@@ -39,7 +39,7 @@ namespace Xenon
 			/**
 			 * Default constructor.
 			 */
-			Builder() = default;
+			Builder();
 
 			/**
 			 * Create a new shader input.
@@ -72,7 +72,7 @@ namespace Xenon
 			[[nodiscard]] Function<ReturnType, Parameters...> createFunction() { return Function<ReturnType, Parameters...>(m_InstructionStorage); }
 
 			/**
-			 * Set an entry point function.
+			 * Add an entry point function.
 			 *
 			 * @tparam ReturnType The return type of the function.
 			 * @tparam Attributes The entry point's input and output attribute types.
@@ -82,9 +82,13 @@ namespace Xenon
 			 * @param attributes The input and output attributes used by the entry point.
 			 */
 			template<class ReturnType, class... Attributes>
-			void setEntryPoint(Backend::ShaderType shaderType, std::string&& name, const Function<ReturnType>& function, const Attributes&... attributes)
+			void addEntryPoint(Backend::ShaderType shaderType, const std::string_view& name, const Function<ReturnType>& function, const Attributes&... attributes)
 			{
+				std::string attributeString;
+				auto lambda = [&attributeString](const auto& attribute) { attributeString += fmt::format(" %{}", attribute.getID()); };
+				(lambda(attributes), ...);
 
+				m_InstructionStorage.insertOpEntryPoint(fmt::format("OpEntryPoint {} %{} \"{}\"{}", getShaderTypeString(shaderType).data(), function.getID(), name.data(), attributeString));
 			}
 
 			/**
@@ -100,6 +104,22 @@ namespace Xenon
 			 * @return The instruction storage reference.
 			 */
 			[[nodiscard]] const AssemblyStorage& getInstructionStorage() const noexcept { return m_InstructionStorage; }
+
+			/**
+			 * Generate the shader source using the recorded assembly.
+			 *
+			 * @return The generated shader source.
+			 */
+			[[nodiscard]] Backend::ShaderSource generate() const;
+
+		private:
+			/**
+			 * Get the shader type string.
+			 *
+			 * @param shaderType The shader type to get the string of.
+			 * @return The string.
+			 */
+			[[nodiscard]] std::string_view getShaderTypeString(Backend::ShaderType shaderType) const noexcept;
 
 		private:
 			AssemblyStorage m_InstructionStorage;

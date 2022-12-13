@@ -4,7 +4,7 @@
 #pragma once
 
 #include "TypeTraits.hpp"
-#include "DataType.hpp"
+#include "Input.hpp"
 
 namespace Xenon
 {
@@ -52,7 +52,11 @@ namespace Xenon
 			 * @param value The value to assign.
 			 * @return The altered value.
 			 */
-			Type& operator=(const Type& value) { return m_Variable = value; }
+			Type& operator=(const Input<Type>& value)
+			{
+				m_Storage.insertFunctionInstruction(fmt::format("OpCopyMemory %{} %{}", m_Identifier, value.getID()));
+				return m_Variable = value;
+			}
 
 		private:
 			Type m_Variable;

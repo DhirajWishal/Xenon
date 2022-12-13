@@ -47,3 +47,6 @@
 [submodule "ThirdParty/fmt"]
 	path = ThirdParty/fmt
 	url = https://github.com/fmtlib/fmt
+[submodule "ThirdParty/SPIRV-Tools"]
+	path = ThirdParty/SPIRV-Tools
+	url = https://github.com/KhronosGroup/SPIRV-Tools
