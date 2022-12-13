@@ -13,6 +13,8 @@
 
 #include "Xenon/Layers/DefaultRasterizingLayer.hpp"
 
+#include "XenonShaderBuilder/Builder.hpp"
+
 #include <imgui.h>
 
 namespace /* anonymous */
@@ -62,6 +64,18 @@ Studio::Studio(Xenon::BackendType type /*= Xenon::BackendType::Any*/)
 	, m_Renderer(m_Instance, &m_Camera, GetRendererTitle(type))
 {
 	XENON_LOG_INFORMATION("Starting the {}", GetRendererTitle(m_Instance.getBackendType()));
+
+	Xenon::ShaderBuilder::Builder builder;
+	const auto inPos = builder.createInput<glm::vec2>(0);
+	const auto inUV = builder.createInput<glm::vec2>(11);
+	const auto inColor = builder.createInput<glm::vec4>(3);
+
+	auto outUV = builder.createOutput<glm::vec2>(0);
+	auto outColor = builder.createOutput<glm::vec4>(1);
+
+	outUV = inUV;
+	outColor = inColor;
+	XENON_LOG_INFORMATION("ShaderBuilder output: \n{}", builder.getInstructionStorage().compile());
 }
 
 void Studio::run()

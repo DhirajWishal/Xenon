@@ -44,3 +44,6 @@
 [submodule "ThirdParty/imnodes"]
 	path = ThirdParty/imnodes
 	url = https://github.com/Nelarius/imnodes
+[submodule "ThirdParty/fmt"]
+	path = ThirdParty/fmt
+	url = https://github.com/fmtlib/fmt

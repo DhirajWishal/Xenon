@@ -3,7 +3,10 @@
 
 #include "AssemblyStorage.hpp"
 
+#include "../XenonCore/Common.hpp"
+
 #include <sstream>
+#include <set>
 
 namespace Xenon
 {
@@ -59,6 +62,11 @@ namespace Xenon
 			m_Annotations.emplace_back(std::move(instruction));
 		}
 
+		void AssemblyStorage::insertType(std::string&& instruction)
+		{
+			m_TypeDeclarations.emplace_back(std::move(instruction));
+		}
+
 		void AssemblyStorage::beginFunctionDeclaration()
 		{
 			m_FunctionDeclarations.emplace_back();
@@ -86,39 +94,125 @@ namespace Xenon
 
 		void AssemblyStorage::setDefinitionOpFunction(std::string&& instruction)
 		{
-			m_FunctionDefinitions.back().m_OpFunction = std::move(instruction);
+			m_FunctionDefinitions.back().m_Declaration.m_OpFunction = std::move(instruction);
 		}
 
 		void AssemblyStorage::insertDefinitionOpFunctionParameter(std::string&& instruction)
 		{
-			m_FunctionDefinitions.back().m_OpFunctionParameters.emplace_back(std::move(instruction));
+			m_FunctionDefinitions.back().m_Declaration.m_OpFunctionParameters.emplace_back(std::move(instruction));
 		}
 
 		void AssemblyStorage::setDefinitionOpFunctionEnd(std::string&& instruction)
 		{
-			m_FunctionDefinitions.back().m_OpFunctionEnd = std::move(instruction);
+			m_FunctionDefinitions.back().m_Declaration.m_OpFunctionEnd = std::move(instruction);
 		}
 
-		void AssemblyStorage::beginFunctionBlock()
+		void AssemblyStorage::insertFunctionVariable(std::string&& instruction)
 		{
-			m_FunctionDefinitions.back().m_BlockStack.emplace();
+			m_FunctionDefinitions.back().m_VariableInstructions.emplace_back(std::move(instruction));
 		}
 
 		void AssemblyStorage::insertFunctionInstruction(std::string&& instruction)
 		{
-			m_FunctionDefinitions.back().m_BlockStack.top().m_Instructions.emplace_back(std::move(instruction));
-		}
-
-		void AssemblyStorage::endFunctionBlock()
-		{
-			auto& currentDefinition = m_FunctionDefinitions.back();
-			currentDefinition.m_Blocks.emplace_back(std::move(currentDefinition.m_BlockStack.top()));
-			currentDefinition.m_BlockStack.pop();
+			m_FunctionDefinitions.back().m_Instructions.emplace_back(std::move(instruction));
 		}
 
 		std::string AssemblyStorage::compile() const
 		{
 			std::stringstream instructions;
+			instructions << "; Magic:     0x07230203 (SPIR-V)" << std::endl;
+			instructions << "; Version:   0x00010000 (Version: 1.0.0)" << std::endl;
+			instructions << "; Generator: 0x00000000 (Xenon Shader Builder; 1)" << std::endl;
+			instructions << "; Schema:    0" << std::endl;
+
+			// Insert the capabilities.
+			instructions << std::endl << "; Capabilities." << std::endl;
+			for (const auto& instruction : m_OpCapabilities)
+				instructions << instruction << std::endl;
+
+			// Insert the extensions.
+			instructions << std::endl << "; Extensions." << std::endl;
+			for (const auto& instruction : m_OpExtensions)
+				instructions << instruction << std::endl;
+
+			// Insert the extended instructions.
+			instructions << std::endl << "; Extended Instructions." << std::endl;
+			for (const auto& instruction : m_OpExtInstImports)
+				instructions << instruction << std::endl;
+
+			// Set the memory model.
+			instructions << std::endl << "; Memory Model." << std::endl;
+			instructions << m_OpMemoryModel << std::endl;
+
+			// Insert the entry points.
+			instructions << std::endl << "; Entry Points." << std::endl;
+			for (const auto& instruction : m_OpEntryPoints)
+				instructions << instruction << std::endl;
+
+			// Insert the execution modes.
+			instructions << std::endl << "; Execution modes." << std::endl;
+			for (const auto& instruction : m_ExecutionModes)
+				instructions << instruction << std::endl;
+
+			// Insert the debug information.
+			instructions << std::endl << "; Debug information." << std::endl;
+			for (const auto& instruction : m_DebugSource)
+				instructions << instruction << std::endl;
+
+			for (const auto& instruction : m_OpNames)
+				instructions << instruction << std::endl;
+
+			for (const auto& instruction : m_OpModulesProcessed)
+				instructions << instruction << std::endl;
+
+			// Insert the annotations.
+			instructions << std::endl << "; Annotations." << std::endl;
+			for (const auto& instruction : m_Annotations)
+				instructions << instruction << std::endl;
+
+			// Insert the type definitions.
+			// This must ensure that each entry is unique.
+			instructions << std::endl << "; Type definitions." << std::endl;
+			std::set<uint64_t> uniqueStrings;
+			for (const auto& instruction : m_TypeDeclarations)
+			{
+				if (uniqueStrings.emplace(GenerateHash(ToBytes(instruction.data()), instruction.size())).second)
+					instructions << instruction << std::endl;
+			}
+
+			// Insert function declarations.
+			instructions << std::endl << "; Function declarations." << std::endl;
+			for (const auto& declaration : m_FunctionDeclarations)
+			{
+				instructions << declaration.m_OpFunction << std::endl;
+
+				// Insert the parameters.
+				for (const auto& instruction : declaration.m_OpFunctionParameters)
+					instructions << instruction << std::endl;
+
+				instructions << declaration.m_OpFunctionEnd << std::endl;
+			}
+
+			// Insert function definitions.
+			instructions << std::endl << "; Function definitions." << std::endl;
+			for (const auto& definition : m_FunctionDefinitions)
+			{
+				instructions << definition.m_Declaration.m_OpFunction << std::endl;
+
+				// Insert the parameters.
+				for (const auto& instruction : definition.m_Declaration.m_OpFunctionParameters)
+					instructions << instruction << std::endl;
+
+				// Insert the variable instructions.
+				for (const auto& instruction : definition.m_VariableInstructions)
+					instructions << instruction << std::endl;
+
+				// Insert the function instructions.
+				for (const auto& instruction : definition.m_Instructions)
+					instructions << instruction << std::endl;
+
+				instructions << definition.m_Declaration.m_OpFunctionEnd << std::endl;
+			}
 
 			return instructions.str();
 		}

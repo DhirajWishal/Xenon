@@ -12,12 +12,16 @@ project(
 set(
 	SOURCES
 
-	"ShaderBuilder.cpp"
-	"ShaderBuilder.hpp"
+	"Builder.cpp"
+	"Builder.hpp"
 	"TypeTraits.hpp"
 	"Input.hpp"
 	"AssemblyStorage.cpp"
 	"AssemblyStorage.hpp"
+	"DataType.hpp"
+	"Output.hpp"
+	"Function.hpp"
+	"Variable.hpp"
 )
 
 # Add the source group.
@@ -39,6 +43,7 @@ target_include_directories(
 	XenonShaderBuilder 
 
 	PUBLIC ${GLM_INCLUDE_DIR}
+	PUBLIC ${FMT_INCLUDE_DIR}
 )
 
 # If we are on MSVC, we can use the Multi Processor Compilation option.
