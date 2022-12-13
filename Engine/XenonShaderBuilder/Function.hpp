@@ -32,8 +32,6 @@ namespace Xenon
 
 				if constexpr (std::is_void_v<ReturnType>)
 					storage.setFunctionOpReturn("OpReturn");
-
-				storage.setDefinitionOpFunctionEnd("OpFunctionEnd");
 			}
 
 			/**

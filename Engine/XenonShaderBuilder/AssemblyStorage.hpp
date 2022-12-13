@@ -203,7 +203,7 @@ namespace Xenon
 
 			/**
 			 * Set the current function's return statement.
-			 * 
+			 *
 			 * @param instruction The instruction to insert.
 			 */
 			void setFunctionOpReturn(std::string&& instruction);
@@ -345,16 +345,71 @@ namespace Xenon
 			template<class Return, class... Parameters>
 			constexpr void registerCallable()
 			{
-				using ReturnType = typename TypeTraits<Return>::Type;
-
 				// Try and register value types.
-				registerType<ReturnType>();
+				registerType<Return>();
 
 				std::string parameterTypes;
 				if constexpr (sizeof...(Parameters) > 0)
 					parameterTypes = getTypeIdentifiers<Parameters...>();
 
-				insertType(fmt::format("{} = OpTypeFunction {} {}", getFunctionIdentifier<ReturnType, Parameters...>(), TypeTraits<ReturnType>::Identifier, parameterTypes));
+				insertType(fmt::format("{} = OpTypeFunction {} {}", getFunctionIdentifier<Return, Parameters...>(), TypeTraits<Return>::Identifier, parameterTypes));
+			}
+
+			/**
+			 * Get the offset of a member variable.
+			 *
+			 * @tparam Object The object type.
+			 * @tparam ValueType The value type.
+			 * @param member The member variable pointer.
+			 * @return The offset.
+			 */
+			template<class Object, class ValueType>
+			constexpr std::ptrdiff_t offsetOf(const ValueType(Object::* member)) const noexcept
+			{
+				return std::bit_cast<std::ptrdiff_t>(&(reinterpret_cast<Object*>(0)->*member)) - static_cast<std::ptrdiff_t>(sizeof(Buffer<Object>));
+			}
+
+			/**
+			 * Get a object's identifier.
+			 *
+			 * @tparam Object The object type.
+			 * @return The identifier.
+			 */
+			template<class Object>
+			constexpr std::string getObjectIdentifier() const { return fmt::format("%struct_{}", typeid(Object).hash_code()); }
+
+			/**
+			 * Register a member variable.
+			 *
+			 * @tparam Object The object type.
+			 * @tparam ValueType The value type.
+			 * @param member The member variable pointer.
+			 * @param index The member index.
+			 */
+			template<class Object, class ValueType>
+			void registerMember(ValueType(Object::* member), uint8_t index)
+			{
+				registerType<ValueType>();
+				insertAnnotation(fmt::format("OpMemberDecorate {} {} Offset {}", getObjectIdentifier<Object>(), index, offsetOf<Object>(member)));
+			}
+
+			/**
+			 * Register a struct.
+			 *
+			 * @tparam Object The object type.
+			 * @tparam Members The member types.
+			 * @param members The member variables.
+			 */
+			template<class Object, class... Members>
+			void registerObject(const Members&... members)
+			{
+				uint8_t index = 0;
+				(registerMember<Object>(members, index++), ...);
+
+				std::string memberIdentifier;
+				(appendMemberTypeIdentifier(members, memberIdentifier), ...);
+
+				insertType(fmt::format("{} = OpTypeStruct{}", getObjectIdentifier<Object>(), memberIdentifier));
 			}
 
 			/**
@@ -371,6 +426,21 @@ namespace Xenon
 			 * @return The unique ID integer.
 			 */
 			[[nodiscard]] uint32_t getUniqueID() { return m_UniqueIdentifier++; }
+
+		private:
+			/**
+			 * Append the member type identifier to a string.
+			 *
+			 * @tparam Object The object type.
+			 * @tparam Members The member types.
+			 * @param - The member pointer.
+			 * @param identifierString The identifier string to insert to.
+			 */
+			template<class Object, class MemberType>
+			void appendMemberTypeIdentifier(const MemberType(Object::*), std::string& identifierString) const
+			{
+				identifierString += fmt::format(FMT_STRING(" {}"), TypeTraits<MemberType>::Identifier);
+			}
 
 		private:
 			std::string m_OpMemoryModel;

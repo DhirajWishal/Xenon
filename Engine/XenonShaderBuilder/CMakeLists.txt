@@ -22,6 +22,10 @@ set(
 	"Output.hpp"
 	"Function.hpp"
 	"Variable.hpp"
+	"VertexShader.cpp"
+	"VertexShader.hpp"
+	"Uniform.hpp"
+	"Buffer.hpp"
 )
 
 # Add the source group.

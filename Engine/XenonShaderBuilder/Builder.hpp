@@ -4,6 +4,7 @@
 #pragma once
 
 #include "Input.hpp"
+#include "Buffer.hpp"
 #include "Output.hpp"
 #include "Function.hpp"
 
@@ -16,24 +17,13 @@ namespace Xenon
 		template<class ValueType>
 		class Parameter final {};
 
-		template<class Type>
-		class Uniform
-		{
-		public:
-			template<class Member>
-			Member& access(Member)
-			{
-
-			}
-		};
-
 		/**
 		 * Shader builder class.
 		 * This class can be used to build SPIR-V.
 		 *
 		 * Note that this class is not thread safe and is meant to be written in one thread.
 		 */
-		class Builder final
+		class Builder
 		{
 		public:
 			/**
@@ -72,24 +62,15 @@ namespace Xenon
 			[[nodiscard]] Function<ReturnType, Parameters...> createFunction() { return Function<ReturnType, Parameters...>(m_InstructionStorage); }
 
 			/**
-			 * Add an entry point function.
+			 * Create a new uniform buffer.
 			 *
-			 * @tparam ReturnType The return type of the function.
-			 * @tparam Attributes The entry point's input and output attribute types.
-			 * @param shaderType The type of the shader.
-			 * @param name The entry point name.
-			 * @param function The entry point function.
-			 * @param attributes The input and output attributes used by the entry point.
+			 * @tparam Object The object type.
+			 * @param set The descriptor set.
+			 * @param binding The uniform binding.
+			 * @return The buffer object.
 			 */
-			template<class ReturnType, class... Attributes>
-			void addEntryPoint(Backend::ShaderType shaderType, const std::string_view& name, const Function<ReturnType>& function, const Attributes&... attributes)
-			{
-				std::string attributeString;
-				auto lambda = [&attributeString](const auto& attribute) { attributeString += fmt::format(" %{}", attribute.getID()); };
-				(lambda(attributes), ...);
-
-				m_InstructionStorage.insertOpEntryPoint(fmt::format("OpEntryPoint {} %{} \"{}\"{}", getShaderTypeString(shaderType).data(), function.getID(), name.data(), attributeString));
-			}
+			template<class Object>
+			[[nodiscard]] Object createBuffer(uint32_t set, uint32_t binding) { return Object(m_InstructionStorage, set, binding); }
 
 			/**
 			 * Get the instruction storage.
@@ -112,16 +93,7 @@ namespace Xenon
 			 */
 			[[nodiscard]] Backend::ShaderSource generate() const;
 
-		private:
-			/**
-			 * Get the shader type string.
-			 *
-			 * @param shaderType The shader type to get the string of.
-			 * @return The string.
-			 */
-			[[nodiscard]] std::string_view getShaderTypeString(Backend::ShaderType shaderType) const noexcept;
-
-		private:
+		protected:
 			AssemblyStorage m_InstructionStorage;
 		};
 	}

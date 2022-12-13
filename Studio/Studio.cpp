@@ -13,7 +13,7 @@
 
 #include "Xenon/Layers/DefaultRasterizingLayer.hpp"
 
-#include "XenonShaderBuilder/Builder.hpp"
+#include "XenonShaderBuilder/VertexShader.hpp"
 
 #include <imgui.h>
 
@@ -65,7 +65,19 @@ Studio::Studio(Xenon::BackendType type /*= Xenon::BackendType::Any*/)
 {
 	XENON_LOG_INFORMATION("Starting the {}", GetRendererTitle(m_Instance.getBackendType()));
 
-	Xenon::ShaderBuilder::Builder builder;
+
+	class UserData final : public Xenon::ShaderBuilder::Buffer<UserData>
+	{
+	public:
+		explicit UserData(Xenon::ShaderBuilder::AssemblyStorage& storage, uint32_t set, uint32_t binding)
+			: Buffer<UserData>(storage, set, binding, &UserData::m_Scale, &UserData::m_Translation) {}
+
+	private:
+		glm::vec2 m_Scale;
+		glm::vec2 m_Translation;
+	};
+
+	Xenon::ShaderBuilder::VertexShader builder;
 	const auto inPos = builder.createInput<glm::vec2>(0);
 	const auto inUV = builder.createInput<glm::vec2>(11);
 	const auto inColor = builder.createInput<glm::vec4>(3);
@@ -73,12 +85,14 @@ Studio::Studio(Xenon::BackendType type /*= Xenon::BackendType::Any*/)
 	auto outUV = builder.createOutput<glm::vec2>(0);
 	auto outColor = builder.createOutput<glm::vec4>(1);
 
+	auto buffer = builder.createBuffer<UserData>(0, 0);
+
 	auto function = builder.createFunction<void>();
 	outUV = inUV;
 	outColor = inColor;
 	auto temp = function.createVariable<glm::vec4>();
 
-	builder.addEntryPoint(Xenon::Backend::ShaderType::Vertex, "main", function, inPos, inUV, inColor, outUV, outColor);
+	builder.addEntryPoint("main", function, inPos, inUV, inColor, outUV, outColor);
 
 	XENON_LOG_INFORMATION("ShaderBuilder output: \n{}", builder.getInstructionStorage().compile());
 	const auto shader = builder.generate();

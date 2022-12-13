@@ -16,7 +16,6 @@ namespace Xenon
 	{
 		Builder::Builder()
 		{
-			m_InstructionStorage.insertOpCapability("OpCapability Shader");
 			m_InstructionStorage.insertOpExtInstImport("%glsl = OpExtInstImport \"GLSL.std.450\"");
 			m_InstructionStorage.setOpMemoryModel("OpMemoryModel Logical GLSL450");
 		}
@@ -93,42 +92,6 @@ namespace Xenon
 #endif // XENON_DEBUG
 
 			return Backend::ShaderSource(std::move(spirv));
-		}
-
-		std::string_view Builder::getShaderTypeString(Backend::ShaderType shaderType) const noexcept
-		{
-			switch (shaderType)
-			{
-			case Xenon::Backend::ShaderType::Vertex:
-				return "Vertex";
-
-			case Xenon::Backend::ShaderType::Fragment:
-				return "Fragment";
-
-			case Xenon::Backend::ShaderType::RayGen:
-				return "RayGenerationKHR";
-
-			case Xenon::Backend::ShaderType::Intersection:
-				return "IntersectionKHR";
-
-			case Xenon::Backend::ShaderType::AnyHit:
-				return "AnyHitKHR";
-
-			case Xenon::Backend::ShaderType::ClosestHit:
-				return "ClosestHitKHR";
-
-			case Xenon::Backend::ShaderType::Miss:
-				return "MissKHR";
-
-			case Xenon::Backend::ShaderType::Callable:
-				return "CallableKHR";
-
-			case Xenon::Backend::ShaderType::Compute:
-				return "GLCompute";
-
-			default:
-				return "";
-			}
 		}
 	}
 }
