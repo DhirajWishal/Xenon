@@ -5,6 +5,7 @@
 
 #include "Xenon/RasterizingLayer.hpp"
 
+#include "XenonCore/Logging.hpp"
 #include "XenonBackend/Buffer.hpp"
 #include "XenonBackend/RasterizingPipeline.hpp"
 
@@ -147,6 +148,8 @@ private:
 
 	std::unique_ptr<Xenon::Backend::Descriptor> m_pUserDescriptor = nullptr;
 	std::unique_ptr<Xenon::Backend::Buffer> m_pUniformBuffer = nullptr;
+
+	std::shared_ptr<spdlog::logger> m_pDefaultLogger = nullptr;
 
 	std::vector<std::unique_ptr<Xenon::Backend::Buffer>> m_pVertexBuffers;
 	std::vector<std::unique_ptr<Xenon::Backend::Buffer>> m_pIndexBuffers;

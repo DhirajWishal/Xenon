@@ -24,7 +24,7 @@ class PipelineBuilder final
 public:
 	/**
 	 * Explicit constructor.
-	 * 
+	 *
 	 * @param type The builder type.
 	 */
 	explicit PipelineBuilder(PipelineBuilderType type) : m_Type(type) {}
@@ -56,4 +56,10 @@ public:
 	 * End the component draw.
 	 */
 	void end() override;
+
+private:
+	/**
+	 * Show all the nodes.
+	 */
+	void showNodes();
 };
