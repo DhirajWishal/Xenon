@@ -4,7 +4,7 @@
 #pragma once
 
 #include "TypeTraits.hpp"
-#include "DataType.hpp"
+#include "Output.hpp"
 
 namespace Xenon
 {
@@ -26,8 +26,21 @@ namespace Xenon
 			explicit Variable(AssemblyStorage& storage) : DataType(storage)
 			{
 				storage.registerType<Type>();
-				storage.insertType(fmt::format(FMT_STRING("%variable_type_{} = OpTypePointer Function {}"), TypeTraits<Type>::RawIdentifier, TypeTraits<Type>::Identifier));
-				storage.insertFunctionVariable(fmt::format("%{} = OpVariable %variable_type_{} Function", m_Identifier, TypeTraits<Type>::RawIdentifier));
+				storage.insertType(fmt::format(FMT_STRING("%variable_type_{} = OpTypePointer Function %{}"), GetTypeIdentifier<Type>(), GetTypeIdentifier<Type>()));
+				storage.insertFunctionVariable(fmt::format("%{} = OpVariable %variable_type_{} Function", m_Identifier, GetTypeIdentifier<Type>()));
+			}
+
+			/**
+			 * Explicit constructor.
+			 * This is used by the buffer object to access it's member variables.
+			 *
+			 * @param storage The assembly storage to record the instructions to.
+			 * @param identifier The variable identifier.
+			 * @param data The data to initialize.
+			 */
+			explicit Variable(AssemblyStorage& storage, uint32_t identifier, const Type& data) : DataType(storage, identifier), m_Variable(data)
+			{
+				storage.registerType<Type>();
 			}
 
 			/**
@@ -51,6 +64,42 @@ namespace Xenon
 			 * @return The altered value.
 			 */
 			Type& operator=(const Type& value) { return m_Variable = value; }
+
+			/**
+			 * Assign a value to the internal variable.
+			 *
+			 * @param value The value to assign.
+			 * @return The altered value.
+			 */
+			Type& operator=(const Input<Type>& value)
+			{
+				m_Storage.insertFunctionInstruction(fmt::format("%{} = OpLoad %{} %{}", m_Storage.getUniqueID(), GetTypeIdentifier<Type>(), value.getID()));
+				return m_Variable = value;
+			}
+
+			/**
+			 * Assign a value to the internal variable.
+			 *
+			 * @param value The value to assign.
+			 * @return The altered value.
+			 */
+			Type& operator=(const Output<Type>& value)
+			{
+				m_Storage.insertFunctionInstruction(fmt::format("%{} = OpLoad %{} %{}", m_Storage.getUniqueID(), GetTypeIdentifier<Type>(), value.getID()));
+				return m_Variable = value;
+			}
+
+			/**
+			 * Assign a value to the internal variable.
+			 *
+			 * @param value The value to assign.
+			 * @return The altered value.
+			 */
+			Type& operator=(const Variable<Type>& value)
+			{
+				m_Storage.insertFunctionInstruction(fmt::format("%{} = OpLoad %{} %{}", m_Storage.getUniqueID(), GetTypeIdentifier<Type>(), value.getID()));
+				return m_Variable = value;
+			}
 
 		private:
 			Type m_Variable;

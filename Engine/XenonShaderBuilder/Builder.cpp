@@ -8,8 +8,6 @@
 #include <spirv-tools/libspirv.hpp>
 #include <spirv-tools/optimizer.hpp>
 
-#include <fmt/color.h>
-
 namespace Xenon
 {
 	namespace ShaderBuilder
@@ -24,42 +22,11 @@ namespace Xenon
 		{
 			auto errorMessageConsumer = [](spv_message_level_t level, const char* source, const spv_position_t& position, const char* message)
 			{
-				fmt::color color = fmt::color::green;
-				switch (level)
-				{
-				case SPV_MSG_FATAL:
-					color = fmt::color::red;
-					break;
-
-				case SPV_MSG_INTERNAL_ERROR:
-					color = fmt::color::orange;
-					break;
-
-				case SPV_MSG_ERROR:
-					color = fmt::color::orange_red;
-					break;
-
-				case SPV_MSG_WARNING:
-					color = fmt::color::yellow;
-					break;
-
-				case SPV_MSG_INFO:
-					color = fmt::color::green;
-					break;
-
-				case SPV_MSG_DEBUG:
-					color = fmt::color::blue;
-					break;
-
-				default:
-					break;
-				}
-
-				fmt::print(fg(color), "Source: {}\n", source);
-				fmt::print(fg(color), "Line: {}\n", position.line);
-				fmt::print(fg(color), "Index: {}\n", position.index);
-				fmt::print(fg(color), "Column: {}\n", position.column);
-				fmt::print(fg(color), "{}\n", message);
+				fmt::print("Source: {}\n", source);
+				fmt::print("Line: {}\n", position.line);
+				fmt::print("Index: {}\n", position.index);
+				fmt::print("Column: {}\n", position.column);
+				fmt::print("{}\n", message);
 			};
 
 			auto tools = spvtools::SpirvTools(SPV_ENV_UNIVERSAL_1_6);
@@ -68,6 +35,12 @@ namespace Xenon
 			std::vector<uint32_t> spirv;
 			if (!tools.Assemble(m_InstructionStorage.compile(), &spirv))
 				XENON_LOG_FATAL("Failed the assemble the assembly!");
+
+#ifdef XENON_DEBUG
+			std::string disassembled; 
+			tools.Disassemble(spirv, &disassembled, SPV_BINARY_TO_TEXT_OPTION_COLOR | SPV_BINARY_TO_TEXT_OPTION_PRINT | SPV_BINARY_TO_TEXT_OPTION_INDENT | SPV_BINARY_TO_TEXT_OPTION_FRIENDLY_NAMES);
+
+#endif
 
 			if (!tools.Validate(spirv))
 				XENON_LOG_FATAL("The generated SPIR-V is invalid!");

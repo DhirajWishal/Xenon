@@ -28,7 +28,7 @@ namespace Xenon
 			{
 				storage.registerType<Type>();
 				storage.insertAnnotation(fmt::format("OpDecorate %{} Location {}", m_Identifier, location));
-				storage.insertType(fmt::format("%output_{} = OpTypePointer Output {}", m_Identifier, TypeTraits<Type>::Identifier));
+				storage.insertType(fmt::format("%output_{} = OpTypePointer Output %{}", m_Identifier, GetTypeIdentifier<Type>()));
 				storage.insertType(fmt::format("%{} = OpVariable %output_{} Output", m_Identifier, m_Identifier));
 			}
 

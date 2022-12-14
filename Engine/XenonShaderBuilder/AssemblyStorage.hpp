@@ -16,20 +16,6 @@ namespace Xenon
 	namespace ShaderBuilder
 	{
 		/**
-		 * Get the constant value's identifier.
-		 * Make sure that the type is registered.
-		 *
-		 * @tparam Type The type of the value.
-		 * @param value The constant value.
-		 * @return The identifier string.
-		 */
-		template<class Type>
-		[[nodiscard]] static std::string GetConstantIdentifier(const Type& value)
-		{
-			return fmt::format("const_{}_{}", TypeTraits<Type>::RawIdentifier, value);
-		}
-
-		/**
 		 * Assembly storage class.
 		 * This class is used to store all the SPIR-V assembly instructions in an efficient manner and then compiled to a single assembly string when needed.
 		 *
@@ -216,11 +202,18 @@ namespace Xenon
 			template<class Type>
 			constexpr void registerType()
 			{
-				// Try and register value types if the Type is complex.
-				if constexpr (TypeTraits<Type>::ComponentCount > 1)
-					registerType<typename TypeTraits<Type>::ComponentType>();
+				if constexpr (IsStdArray<Type>)
+				{
+					registerArray<Type>();
+				}
+				else
+				{
+					// Try and register value types if the Type is complex.
+					if constexpr (TypeTraits<Type>::ComponentCount > 1)
+						registerType<typename TypeTraits<Type>::ComponentType>();
 
-				insertType(fmt::format(FMT_STRING("{} = {}"), TypeTraits<Type>::Identifier, TypeTraits<Type>::Declaration));
+					insertType(fmt::format(FMT_STRING("%{} = {}"), GetTypeIdentifier<Type>(), GetTypeDeclaration<Type>()));
+				}
 			}
 
 			/**
@@ -251,7 +244,25 @@ namespace Xenon
 			constexpr void storeConstant(const Type& value)
 			{
 				registerType<Type>();
-				insertType(fmt::format("%{} = OpConstant {} {}", GetConstantIdentifier(value), TypeTraits<Type>::Identifier, value));
+				insertType(fmt::format("%{} = OpConstant %{} {}", GetConstantIdentifier(value), GetTypeIdentifier<Type>(), value));
+			}
+
+			/**
+			 * Register an array function.
+			 *
+			 * @tparam ValueType The value type of the array.
+			 * @tparam Size The size of the array.
+			 */
+			template<class StdArray>
+			constexpr void registerArray()
+			{
+				using ValueType = typename ArrayTraits<StdArray>::ValueType;
+				constexpr auto size = ArrayTraits<StdArray>::Size;
+
+				registerType<ValueType>();
+				storeConstant<uint32_t>(size);
+
+				insertType(fmt::format("%{} = OpTypeArray %{} %{}", GetTypeIdentifier<std::array<ValueType, size>>(), GetTypeIdentifier<ValueType>(), GetConstantIdentifier<uint32_t>(size)));
 			}
 
 			/**
@@ -263,12 +274,10 @@ namespace Xenon
 			template<class ValueType, size_t Size>
 			constexpr void registerArray()
 			{
-				// Try and register value types if the Type is complex.
-				if constexpr (TypeTraits<ValueType>::ComponentCount > 1)
-					registerType<typename TypeTraits<ValueType>::ComponentType>();
-
+				registerType<ValueType>();
 				storeConstant<uint32_t>(Size);
-				insertType(fmt::format("%array_{}_{} = OpTypeArray {} %{}", TypeTraits<ValueType>::RawIdentifier, Size, TypeTraits<ValueType>::Identifier, GetConstantIdentifier<uint32_t>(Size)));
+
+				insertType(fmt::format("%{} = OpTypeArray %{} %{}", GetTypeIdentifier<std::array<ValueType, Size>>(), GetTypeIdentifier<ValueType>(), GetConstantIdentifier<uint32_t>(Size)));
 			}
 
 			/**
@@ -281,7 +290,7 @@ namespace Xenon
 			[[nodiscard]] constexpr std::string getTypeIdentifier()
 			{
 				registerType<Type>();
-				return fmt::format(FMT_STRING("{} "), TypeTraits<Type>::Identifier);
+				return fmt::format(FMT_STRING("%{} "), GetTypeIdentifier<Type>());
 			}
 
 			/**
@@ -296,10 +305,10 @@ namespace Xenon
 			{
 				registerType<Type>();
 				if constexpr (sizeof...(Types) > 0)
-					return fmt::format("{} {}", TypeTraits<Type>::Identifier, getTypeIdentifiers<Types...>());
+					return fmt::format("%{} %{}", GetTypeIdentifier<Type>(), getTypeIdentifiers<Types...>());
 
 				else
-					return fmt::format(FMT_STRING("{} "), TypeTraits<Type>::Identifier);
+					return fmt::format(FMT_STRING("%{} "), GetTypeIdentifier<Type>());
 			}
 
 			/**
@@ -314,10 +323,10 @@ namespace Xenon
 			{
 				registerType<Type>();
 				if constexpr (sizeof...(Types) > 0)
-					return fmt::format("{}_{}", TypeTraits<Type>::RawIdentifier, getParameterIdentifier<Types...>());
+					return fmt::format("{}_{}", GetTypeIdentifier<Type>(), getParameterIdentifier<Types...>());
 
 				else
-					return TypeTraits<Type>::RawIdentifier;
+					return GetTypeIdentifier<Type>();
 			}
 
 			/**
@@ -331,10 +340,10 @@ namespace Xenon
 			[[nodiscard]] constexpr std::string getFunctionIdentifier()
 			{
 				if constexpr (sizeof...(Parameters) > 0)
-					return fmt::format("{}_{}_callable", TypeTraits<Return>::Identifier, getParameterIdentifier<Parameters...>());
+					return fmt::format("{}_{}_callable", GetTypeIdentifier<Return>(), getParameterIdentifier<Parameters...>());
 
 				else
-					return fmt::format(FMT_STRING("{}_callable"), TypeTraits<Return>::Identifier);
+					return fmt::format(FMT_STRING("{}_callable"), GetTypeIdentifier<Return>());
 			}
 
 			/**
@@ -352,7 +361,7 @@ namespace Xenon
 				if constexpr (sizeof...(Parameters) > 0)
 					parameterTypes = getTypeIdentifiers<Parameters...>();
 
-				insertType(fmt::format("{} = OpTypeFunction {} {}", getFunctionIdentifier<Return, Parameters...>(), TypeTraits<Return>::Identifier, parameterTypes));
+				insertType(fmt::format("%{} = OpTypeFunction %{} {}", getFunctionIdentifier<Return, Parameters...>(), GetTypeIdentifier<Return>(), parameterTypes));
 			}
 
 			/**
@@ -370,27 +379,23 @@ namespace Xenon
 			}
 
 			/**
-			 * Get a object's identifier.
-			 *
-			 * @tparam Object The object type.
-			 * @return The identifier.
-			 */
-			template<class Object>
-			constexpr std::string getObjectIdentifier() const { return fmt::format("%struct_{}", typeid(Object).hash_code()); }
-
-			/**
 			 * Register a member variable.
 			 *
 			 * @tparam Object The object type.
 			 * @tparam ValueType The value type.
 			 * @param member The member variable pointer.
 			 * @param index The member index.
+			 * @param type The pointer type. Default is uniform.
 			 */
 			template<class Object, class ValueType>
-			void registerMember(ValueType(Object::* member), uint8_t index)
+			void registerMember(ValueType(Object::* member), uint8_t index, const std::string_view& type = "Uniform")
 			{
 				registerType<ValueType>();
-				insertAnnotation(fmt::format("OpMemberDecorate {} {} Offset {}", getObjectIdentifier<Object>(), index, offsetOf<Object>(member)));
+
+				if (type == "Uniform")
+					insertAnnotation(fmt::format("OpMemberDecorate %{} {} Offset {}", GetTypeIdentifier<Object>(), index, offsetOf<Object>(member)));
+
+				insertType(fmt::format("%member_ptr_{} = OpTypePointer {} %{}", GetTypeIdentifier<ValueType>(), type.data(), GetTypeIdentifier<ValueType>()));
 			}
 
 			/**
@@ -398,18 +403,19 @@ namespace Xenon
 			 *
 			 * @tparam Object The object type.
 			 * @tparam Members The member types.
+			 * @param type The object type. Default is uniform.
 			 * @param members The member variables.
 			 */
 			template<class Object, class... Members>
-			void registerObject(const Members&... members)
+			void registerObject(const std::string_view& type, const Members&... members)
 			{
 				uint8_t index = 0;
-				(registerMember<Object>(members, index++), ...);
+				(registerMember<Object>(members, index++, type), ...);
 
 				std::string memberIdentifier;
 				(appendMemberTypeIdentifier(members, memberIdentifier), ...);
 
-				insertType(fmt::format("{} = OpTypeStruct{}", getObjectIdentifier<Object>(), memberIdentifier));
+				insertType(fmt::format("%{} = OpTypeStruct{}", GetTypeIdentifier<Object>(), memberIdentifier));
 			}
 
 			/**
@@ -439,7 +445,7 @@ namespace Xenon
 			template<class Object, class MemberType>
 			void appendMemberTypeIdentifier(const MemberType(Object::*), std::string& identifierString) const
 			{
-				identifierString += fmt::format(FMT_STRING(" {}"), TypeTraits<MemberType>::Identifier);
+				identifierString += fmt::format(FMT_STRING(" %{}"), GetTypeIdentifier<MemberType>());
 			}
 
 		private:

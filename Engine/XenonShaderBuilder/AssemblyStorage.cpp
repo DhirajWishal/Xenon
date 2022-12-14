@@ -86,10 +86,6 @@ namespace Xenon
 		{
 			auto& block = m_FunctionDefinitions.emplace_back();
 			block.m_VariableInstructions.emplace_back(fmt::format("%{} = OpLabel", getUniqueID()));
-
-			const auto newFunctionBlockID = getUniqueID();
-			block.m_Instructions.emplace_back(fmt::format("OpBranch %{}", newFunctionBlockID));
-			block.m_Instructions.emplace_back(fmt::format("%{} = OpLabel", newFunctionBlockID));
 		}
 
 		void AssemblyStorage::setDefinitionOpFunction(std::string&& instruction)

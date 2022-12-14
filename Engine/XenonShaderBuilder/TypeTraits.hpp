@@ -4,6 +4,9 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <fmt/format.h>
+
+#include <concepts>
 
 namespace Xenon
 {
@@ -242,5 +245,138 @@ namespace Xenon
 			static constexpr uint8_t Size = sizeof(Type);
 			static constexpr uint8_t ComponentCount = 2;
 		};
+
+		/**
+		 * Is std::array<,> generalized boolean.
+		 * This will be set to false if the type is not a std::array<,> type.
+		 */
+		template<class... Types>
+		constexpr bool IsStdArray = false;
+
+		/**
+		 * Is std::array<,> specialized boolean.
+		 * This will be set to true if the type is a std::array<,> type.
+		 */
+		template<class Type, size_t Size>
+		constexpr bool IsStdArray<std::array<Type, Size>> = true;
+
+		/**
+		 * Get a type's identifier.
+		 * The type identifiers are the same as the typeid hash of a type.
+		 *
+		 * @tparam Type The type to get the identifier of.
+		 * @return The type identifier string. Note that you explicitly need to set the % when using it.
+		 */
+		template<class Type>
+		[[nodiscard]] constexpr std::string GetTypeIdentifier() noexcept { return fmt::to_string(typeid(Type).hash_code()); }
+
+		/**
+		 * Get the constant value's identifier.
+		 * Make sure that the type is registered.
+		 *
+		 * @tparam Type The type of the value.
+		 * @param value The constant value.
+		 * @return The identifier string.
+		 */
+		template<class Type>
+		[[nodiscard]] constexpr std::string GetConstantIdentifier(const Type& value) { return fmt::format("const_{}_{}", GetTypeIdentifier<Type>(), value); }
+
+		/**
+		 * Get type declaration function general type.
+		 *
+		 * @tparam Type The type to get the declaration of.
+		 */
+		template<class Type>
+		[[nodiscard]] constexpr std::string GetTypeDeclaration() { return ""; };
+
+		/**
+		 * Get the void type declaration.
+		 *
+		 * @return The type declaration.
+		 */
+		template<>
+		[[nodiscard]] constexpr std::string GetTypeDeclaration<void>() { return "OpTypeVoid"; }
+
+		/**
+		 * Get the bool type declaration.
+		 *
+		 * @return The type declaration.
+		 */
+		template<>
+		[[nodiscard]] constexpr std::string GetTypeDeclaration<bool>() { return "OpTypeBool"; }
+
+		/**
+		 * Get the unsigned integer type declaration.
+		 *
+		 * @return The type declaration.
+		 */
+		template<std::unsigned_integral Type>
+		[[nodiscard]] constexpr std::string GetTypeDeclaration() { return fmt::format("OpTypeInt {} 0", sizeof(Type) * 8); };
+
+		/**
+		 * Get the signed integer type declaration.
+		 *
+		 * @return The type declaration.
+		 */
+		template<std::integral Type>
+		[[nodiscard]] constexpr std::string GetTypeDeclaration() { return fmt::format("OpTypeInt {} 1", sizeof(Type) * 8); };
+
+		/**
+		 * Get the float type declaration.
+		 *
+		 * @return The type declaration.
+		 */
+		template<>
+		[[nodiscard]] constexpr std::string GetTypeDeclaration<float>() { return "OpTypeFloat 32"; }
+
+		/**
+		 * Get the double type declaration.
+		 *
+		 * @return The type declaration.
+		 */
+		template<>
+		[[nodiscard]] constexpr std::string GetTypeDeclaration<double>() { return "OpTypeFloat 64"; }
+
+		template<class T>
+		struct VectorTraits;
+
+		template<size_t C, class T>
+		struct VectorTraits<glm::vec<C, T, glm::qualifier::defaultp>>
+		{
+			using ValueType = T;
+			static constexpr size_t Components = C;
+		};
+
+		template<class Type>
+		concept GLMVector = requires(Type type) { [] <size_t C, class T>(glm::vec<C, T, glm::qualifier::defaultp>&) {}(type); };
+
+		/**
+		 * Get the GLM vector type declaration.
+		 *
+		 * @return The type declaration.
+		 */
+		template<GLMVector Type>
+		[[nodiscard]] constexpr std::string GetTypeDeclaration() { return fmt::format("OpTypeVector %{} {}", GetTypeIdentifier<typename VectorTraits<Type>::ValueType>(), VectorTraits<Type>::Components); }
+
+		template<class Type>
+		concept StdArray = requires(Type type) { [] <class T, size_t C>(std::array<T, C>&) {}(type); };
+
+		template<class T>
+		struct ArrayTraits;
+
+		template<class T, size_t S>
+		struct ArrayTraits<std::array<T, S>>
+		{
+			using ValueType = T;
+			static constexpr size_t Size = S;
+		};
+
+		/**
+		 * Get the std::array<,> type declaration.
+		 *
+		 * @return The type declaration.
+		 */
+		template<StdArray Type>
+		[[nodiscard]] constexpr std::string GetTypeDeclaration() { return fmt::format("OpTypeArray %{} %{}", GetTypeIdentifier<typename ArrayTraits<Type>::ValueType>(), GetConstantIdentifier(ArrayTraits<Type>::Size)); }
 	}
 }

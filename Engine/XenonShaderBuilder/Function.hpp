@@ -28,7 +28,7 @@ namespace Xenon
 				// storage.insertExecutionMode(fmt::format("OpExecutionMode %{} OriginLowerLeft", m_Identifier)); Fragment only!
 
 				storage.beginFunctionDefinition();
-				storage.setDefinitionOpFunction(fmt::format("%{} = OpFunction {} None {}", m_Identifier, TypeTraits<ReturnType>::Identifier, storage.getFunctionIdentifier<ReturnType, Parameters...>()));
+				storage.setDefinitionOpFunction(fmt::format("%{} = OpFunction %{} None %{}", m_Identifier, GetTypeIdentifier<ReturnType>(), storage.getFunctionIdentifier<ReturnType, Parameters...>()));
 
 				if constexpr (std::is_void_v<ReturnType>)
 					storage.setFunctionOpReturn("OpReturn");

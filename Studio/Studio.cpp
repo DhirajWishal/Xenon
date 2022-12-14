@@ -72,7 +72,6 @@ Studio::Studio(Xenon::BackendType type /*= Xenon::BackendType::Any*/)
 		explicit UserData(Xenon::ShaderBuilder::AssemblyStorage& storage, uint32_t set, uint32_t binding)
 			: Buffer<UserData>(storage, set, binding, &UserData::m_Scale, &UserData::m_Translation) {}
 
-	private:
 		glm::vec2 m_Scale;
 		glm::vec2 m_Translation;
 	};
@@ -88,11 +87,16 @@ Studio::Studio(Xenon::BackendType type /*= Xenon::BackendType::Any*/)
 	auto buffer = builder.createBuffer<UserData>(0, 0);
 
 	auto function = builder.createFunction<void>();
+
+	auto scale = buffer.access(&UserData::m_Scale);
+	auto translation = buffer.access(&UserData::m_Translation);
+
 	outUV = inUV;
 	outColor = inColor;
 	auto temp = function.createVariable<glm::vec4>();
 
-	builder.addEntryPoint("main", function, inPos, inUV, inColor, outUV, outColor);
+	builder.gl_PerVertex.access(&Xenon::ShaderBuilder::PerVertexStruct::gl_Position) = temp;
+	builder.addEntryPoint("main", function, inPos, inUV, inColor, outUV, outColor, buffer, builder.gl_PerVertex.gl_Position);
 
 	XENON_LOG_INFORMATION("ShaderBuilder output: \n{}", builder.getInstructionStorage().compile());
 	const auto shader = builder.generate();

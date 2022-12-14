@@ -26,6 +26,7 @@ set(
 	"VertexShader.hpp"
 	"Uniform.hpp"
 	"Buffer.hpp"
+	"BuiltIn.hpp"
 )
 
 # Add the source group.
