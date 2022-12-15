@@ -73,7 +73,10 @@ namespace Xenon
 			 */
 			Type& operator=(const Input<Type>& value)
 			{
-				m_Storage.insertFunctionInstruction(fmt::format("%{} = OpLoad %{} %{}", m_Storage.getUniqueID(), GetTypeIdentifier<Type>(), value.getID()));
+				const auto loadedID = m_Storage.getUniqueID();
+				m_Storage.insertFunctionInstruction(fmt::format("%{} = OpLoad %{} %{}", loadedID, GetTypeIdentifier<Type>(), value.getID()));
+				m_Storage.insertFunctionInstruction(fmt::format("OpStore %{} %{}", m_Identifier, loadedID));
+
 				return m_Variable = value;
 			}
 
@@ -85,7 +88,10 @@ namespace Xenon
 			 */
 			Type& operator=(const Output<Type>& value)
 			{
-				m_Storage.insertFunctionInstruction(fmt::format("%{} = OpLoad %{} %{}", m_Storage.getUniqueID(), GetTypeIdentifier<Type>(), value.getID()));
+				const auto loadedID = m_Storage.getUniqueID();
+				m_Storage.insertFunctionInstruction(fmt::format("%{} = OpLoad %{} %{}", loadedID, GetTypeIdentifier<Type>(), value.getID()));
+				m_Storage.insertFunctionInstruction(fmt::format("OpStore %{} %{}", m_Identifier, loadedID));
+
 				return m_Variable = value;
 			}
 
@@ -97,7 +103,10 @@ namespace Xenon
 			 */
 			Type& operator=(const Variable<Type>& value)
 			{
-				m_Storage.insertFunctionInstruction(fmt::format("%{} = OpLoad %{} %{}", m_Storage.getUniqueID(), GetTypeIdentifier<Type>(), value.getID()));
+				const auto loadedID = m_Storage.getUniqueID();
+				m_Storage.insertFunctionInstruction(fmt::format("%{} = OpLoad %{} %{}", loadedID, GetTypeIdentifier<Type>(), value.getID()));
+				m_Storage.insertFunctionInstruction(fmt::format("OpStore %{} %{}", m_Identifier, loadedID));
+
 				return m_Variable = value;
 			}
 

@@ -21,11 +21,11 @@ namespace /* anonymous */
 	 */
 	void SPIRVToolsErrorMessgaeConsumer([[maybe_unused]] spv_message_level_t level, const char* source, const spv_position_t& position, const char* message)
 	{
-		XENON_LOG_ERROR("SPIR-V Tools error @'{}'", std::launder(source));
+		XENON_LOG_ERROR("SPIR-V Tools error @'{}'", source);
 		XENON_LOG_ERROR("Line: {}", position.line);
 		XENON_LOG_ERROR("Index: {}", position.index);
 		XENON_LOG_ERROR("Column: {}", position.column);
-		XENON_LOG_ERROR("Message: {}", std::launder(message));
+		XENON_LOG_ERROR("Message: {}", message);
 	}
 }
 
@@ -44,15 +44,24 @@ namespace Xenon
 			auto tools = spvtools::SpirvTools(SPV_ENV_UNIVERSAL_1_6);
 			tools.SetMessageConsumer(SPIRVToolsErrorMessgaeConsumer);
 
+			const auto assembly = m_InstructionStorage.compile();
+
+#ifdef XENON_DEBUG
+			XENON_LOG_INFORMATION("Generated assembly:\n{}", assembly);
+
+#endif
+
 			// Assemble the generated SPI-V source code.
 			std::vector<uint32_t> spirv;
-			if (!tools.Assemble(m_InstructionStorage.compile(), &spirv))
+			if (!tools.Assemble(assembly, &spirv))
 			{
 				XENON_LOG_FATAL("Failed the assemble the assembly!");
 				return {};
 			}
 
 #ifdef XENON_DEBUG
+			XENON_LOG_INFORMATION("Disassembled assembly:");
+
 			// Disassemble the assembled SPIR-V and show it to the console.
 			std::string disassembled;
 			tools.Disassemble(spirv, &disassembled, SPV_BINARY_TO_TEXT_OPTION_COLOR | SPV_BINARY_TO_TEXT_OPTION_PRINT | SPV_BINARY_TO_TEXT_OPTION_INDENT | SPV_BINARY_TO_TEXT_OPTION_FRIENDLY_NAMES);

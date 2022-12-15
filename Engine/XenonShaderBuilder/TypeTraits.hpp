@@ -29,10 +29,6 @@ namespace Xenon
 		{
 			using Type = void;
 			using ComponentType = Type;
-			static constexpr const char RawIdentifier[] = "void";
-			static constexpr const char Identifier[] = "%void";
-			static constexpr const char Declaration[] = "OpTypeVoid";
-			static constexpr uint8_t Size = 0;
 			static constexpr uint8_t ComponentCount = 1;
 		};
 
@@ -44,10 +40,6 @@ namespace Xenon
 		{
 			using Type = bool;
 			using ComponentType = Type;
-			static constexpr const char RawIdentifier[] = "bool";
-			static constexpr const char Identifier[] = "%bool";
-			static constexpr const char Declaration[] = "OpTypeBool";
-			static constexpr uint8_t Size = sizeof(Type);
 			static constexpr uint8_t ComponentCount = 1;
 		};
 
@@ -59,10 +51,6 @@ namespace Xenon
 		{
 			using Type = int8_t;
 			using ComponentType = Type;
-			static constexpr const char RawIdentifier[] = "int8";
-			static constexpr const char Identifier[] = "%int8";
-			static constexpr const char Declaration[] = "OpTypeInt 8 1";
-			static constexpr uint8_t Size = sizeof(Type);
 			static constexpr uint8_t ComponentCount = 1;
 		};
 
@@ -74,10 +62,6 @@ namespace Xenon
 		{
 			using Type = uint8_t;
 			using ComponentType = Type;
-			static constexpr const char RawIdentifier[] = "uint8";
-			static constexpr const char Identifier[] = "%uint8";
-			static constexpr const char Declaration[] = "OpTypeInt 8 0";
-			static constexpr uint8_t Size = sizeof(Type);
 			static constexpr uint8_t ComponentCount = 1;
 		};
 
@@ -89,10 +73,6 @@ namespace Xenon
 		{
 			using Type = int16_t;
 			using ComponentType = Type;
-			static constexpr const char RawIdentifier[] = "int16";
-			static constexpr const char Identifier[] = "%int16";
-			static constexpr const char Declaration[] = "OpTypeInt 16 1";
-			static constexpr uint8_t Size = sizeof(Type);
 			static constexpr uint8_t ComponentCount = 1;
 		};
 
@@ -104,10 +84,6 @@ namespace Xenon
 		{
 			using Type = uint16_t;
 			using ComponentType = Type;
-			static constexpr const char RawIdentifier[] = "uint16";
-			static constexpr const char Identifier[] = "%uint16";
-			static constexpr const char Declaration[] = "OpTypeInt 16 0";
-			static constexpr uint8_t Size = sizeof(Type);
 			static constexpr uint8_t ComponentCount = 1;
 		};
 
@@ -119,10 +95,6 @@ namespace Xenon
 		{
 			using Type = int32_t;
 			using ComponentType = Type;
-			static constexpr const char RawIdentifier[] = "int32";
-			static constexpr const char Identifier[] = "%int32";
-			static constexpr const char Declaration[] = "OpTypeInt 32 1";
-			static constexpr uint8_t Size = sizeof(Type);
 			static constexpr uint8_t ComponentCount = 1;
 		};
 
@@ -134,10 +106,6 @@ namespace Xenon
 		{
 			using Type = uint32_t;
 			using ComponentType = Type;
-			static constexpr const char RawIdentifier[] = "uint32";
-			static constexpr const char Identifier[] = "%uint32";
-			static constexpr const char Declaration[] = "OpTypeInt 32 0";
-			static constexpr uint8_t Size = sizeof(Type);
 			static constexpr uint8_t ComponentCount = 1;
 		};
 
@@ -149,10 +117,6 @@ namespace Xenon
 		{
 			using Type = int64_t;
 			using ComponentType = Type;
-			static constexpr const char RawIdentifier[] = "int64";
-			static constexpr const char Identifier[] = "%int64";
-			static constexpr const char Declaration[] = "OpTypeInt 64 1";
-			static constexpr uint8_t Size = sizeof(Type);
 			static constexpr uint8_t ComponentCount = 1;
 		};
 
@@ -164,10 +128,6 @@ namespace Xenon
 		{
 			using Type = uint64_t;
 			using ComponentType = Type;
-			static constexpr const char RawIdentifier[] = "uint64";
-			static constexpr const char Identifier[] = "%uint64";
-			static constexpr const char Declaration[] = "OpTypeInt 64 0";
-			static constexpr uint8_t Size = sizeof(Type);
 			static constexpr uint8_t ComponentCount = 1;
 		};
 
@@ -179,10 +139,6 @@ namespace Xenon
 		{
 			using Type = float;
 			using ComponentType = Type;
-			static constexpr const char RawIdentifier[] = "float";
-			static constexpr const char Identifier[] = "%float";
-			static constexpr const char Declaration[] = "OpTypeFloat 32";
-			static constexpr uint8_t Size = sizeof(Type);
 			static constexpr uint8_t ComponentCount = 1;
 		};
 
@@ -194,10 +150,6 @@ namespace Xenon
 		{
 			using Type = double;
 			using ComponentType = Type;
-			static constexpr const char RawIdentifier[] = "double";
-			static constexpr const char Identifier[] = "%double";
-			static constexpr const char Declaration[] = "OpTypeFloat 64";
-			static constexpr uint8_t Size = sizeof(Type);
 			static constexpr uint8_t ComponentCount = 1;
 		};
 
@@ -209,10 +161,6 @@ namespace Xenon
 		{
 			using Type = glm::vec2;
 			using ComponentType = Type::value_type;
-			static constexpr const char RawIdentifier[] = "vec2";
-			static constexpr const char Identifier[] = "%vec2";
-			static constexpr const char Declaration[] = "OpTypeVector %float 2";
-			static constexpr uint8_t Size = sizeof(Type);
 			static constexpr uint8_t ComponentCount = 2;
 		};
 
@@ -224,10 +172,6 @@ namespace Xenon
 		{
 			using Type = glm::vec3;
 			using ComponentType = Type::value_type;
-			static constexpr const char RawIdentifier[] = "vec3";
-			static constexpr const char Identifier[] = "%vec3";
-			static constexpr const char Declaration[] = "OpTypeVector %float 3";
-			static constexpr uint8_t Size = sizeof(Type);
 			static constexpr uint8_t ComponentCount = 2;
 		};
 
@@ -239,10 +183,6 @@ namespace Xenon
 		{
 			using Type = glm::vec4;
 			using ComponentType = Type::value_type;
-			static constexpr const char RawIdentifier[] = "vec4";
-			static constexpr const char Identifier[] = "%vec4";
-			static constexpr const char Declaration[] = "OpTypeVector %float 4";
-			static constexpr uint8_t Size = sizeof(Type);
 			static constexpr uint8_t ComponentCount = 2;
 		};
 
@@ -337,9 +277,20 @@ namespace Xenon
 		template<>
 		[[nodiscard]] constexpr std::string GetTypeDeclaration<double>() { return "OpTypeFloat 64"; }
 
+		/**
+		 * Vector traits generalized structure.
+		 *
+		 * @param T The type.
+		 */
 		template<class T>
 		struct VectorTraits;
 
+		/**
+		 * Vector traits specialization structure.
+		 *
+		 * @param C The vector's component count.
+		 * @param T The type.
+		 */
 		template<size_t C, class T>
 		struct VectorTraits<glm::vec<C, T, glm::qualifier::defaultp>>
 		{
@@ -347,6 +298,10 @@ namespace Xenon
 			static constexpr size_t Components = C;
 		};
 
+		/**
+		 * glm::vec<,,> concept.
+		 * This will only allow glm::vec types.
+		 */
 		template<class Type>
 		concept GLMVector = requires(Type type) { [] <size_t C, class T>(glm::vec<C, T, glm::qualifier::defaultp>&) {}(type); };
 
@@ -358,18 +313,33 @@ namespace Xenon
 		template<GLMVector Type>
 		[[nodiscard]] constexpr std::string GetTypeDeclaration() { return fmt::format("OpTypeVector %{} {}", GetTypeIdentifier<typename VectorTraits<Type>::ValueType>(), VectorTraits<Type>::Components); }
 
-		template<class Type>
-		concept StdArray = requires(Type type) { [] <class T, size_t C>(std::array<T, C>&) {}(type); };
-
+		/**
+		 * Array traits generalized structure.
+		 *
+		 * @param T The type.
+		 */
 		template<class T>
 		struct ArrayTraits;
 
+		/**
+		 * Array traits specialization structure.
+		 *
+		 * @param T The type.
+		 * @param S The array's size.
+		 */
 		template<class T, size_t S>
 		struct ArrayTraits<std::array<T, S>>
 		{
 			using ValueType = T;
 			static constexpr size_t Size = S;
 		};
+
+		/**
+		 * std::array<,> concept.
+		 * This will only allow std::array types.
+		 */
+		template<class Type>
+		concept StdArray = requires(Type type) { [] <class T, size_t C>(std::array<T, C>&) {}(type); };
 
 		/**
 		 * Get the std::array<,> type declaration.

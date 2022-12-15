@@ -95,6 +95,11 @@ namespace Xenon
 			Type m_Variable;
 		};
 
+		/**
+		 * Type traits specialization of the built-in class.
+		 *
+		 * @param T The value type.
+		 */
 		template<class T>
 		struct TypeTraits<BuiltIn<T>>
 		{
@@ -102,5 +107,24 @@ namespace Xenon
 			static constexpr uint8_t Size = sizeof(Type);
 			static constexpr uint8_t ComponentCount = 1;
 		};
+
+		/**
+		 * Is built-in boolean generalized type.
+		 *
+		 * @tparam Type The value type of the built-in class.
+		 */
+		template<class Type>
+		constexpr bool IsBuiltIn = false;
+
+		template<class Type>
+		concept BuiltInType = requires(Type type) { [](const BuiltIn<Type>&) {}(type); };
+
+		/**
+		 * Is built-in boolean specialized type.
+		 *
+		 * @tparam Type The value type of the built-in class.
+		 */
+		template<BuiltInType Type>
+		constexpr bool IsBuiltIn<Type> = true;
 	}
 }

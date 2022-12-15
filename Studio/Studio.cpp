@@ -96,11 +96,10 @@ namespace /* anonymous */
 		builder.gl_PerVertex.access(&Xenon::ShaderBuilder::PerVertexStruct::gl_Position) = temp;
 		builder.addEntryPoint("main", function, inPos, inUV, inColor, outUV, outColor, buffer, builder.gl_PerVertex/*.gl_Position*/);
 
-		XENON_LOG_INFORMATION("ShaderBuilder output: \n{}", builder.getInstructionStorage().compile());
 		const auto shader = builder.generate();
 
 		const auto timeTaken = timer.tick();
-		XENON_LOG_INFORMATION("Time taken to build the shader: {} ns", timeTaken.count());
+		XENON_LOG_INFORMATION("Time taken to build the shader: {} s", static_cast<float>(timeTaken.count()) / std::nano::den);
 	}
 }
 
