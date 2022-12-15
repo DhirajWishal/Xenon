@@ -4,7 +4,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
-#include <fmt/format.h>
+#include <spdlog/fmt/fmt.h>
 
 #include <concepts>
 

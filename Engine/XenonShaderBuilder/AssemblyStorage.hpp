@@ -9,8 +9,6 @@
 #include <vector>
 #include <stack>
 
-#include <fmt/format.h>
-
 namespace Xenon
 {
 	namespace ShaderBuilder

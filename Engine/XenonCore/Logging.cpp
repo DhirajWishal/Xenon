@@ -45,7 +45,7 @@ namespace Xenon
 			const auto currentOffset = pointerInteger + rowIndex;
 
 			// Finally, print the line.
-			spdlog::info("[0x{:016X} ... 0x{:016X}] "
+			XENON_LOG_INFORMATION("[0x{:016X} ... 0x{:016X}] "
 				" {:02X} {:02X} {:02X} {:02X} {:02X} {:02X} {:02X} {:02X}  {:02X} {:02X} {:02X} {:02X} {:02X} {:02X} {:02X} {:02X} "
 				" {} {} {} {} {} {} {} {}  {} {} {} {} {} {} {} {} ",
 				currentOffset, currentOffset + rowSize - 1,

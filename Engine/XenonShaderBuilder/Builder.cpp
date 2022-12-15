@@ -1,9 +1,9 @@
 // Copyright 2022 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
-#include "../XenonCore/Logging.hpp"
-
 #include "Builder.hpp"
+
+#include "../XenonCore/Logging.hpp"
 
 #include <spirv-tools/libspirv.hpp>
 #include <spirv-tools/optimizer.hpp>
