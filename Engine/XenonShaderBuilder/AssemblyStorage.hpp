@@ -390,12 +390,12 @@ namespace Xenon
 			template<class Object, class ValueType>
 			void registerMember(ValueType(Object::* member), uint8_t index, const std::string_view& type = "Uniform")
 			{
-				registerType<ValueType>();
+				registerType<typename TypeTraits<ValueType>::Type>();
 
 				if (type == "Uniform")
 					insertAnnotation(fmt::format("OpMemberDecorate %{} {} Offset {}", GetTypeIdentifier<Object>(), index, offsetOf<Object>(member)));
 
-				insertType(fmt::format("%member_ptr_{} = OpTypePointer {} %{}", GetTypeIdentifier<ValueType>(), type.data(), GetTypeIdentifier<ValueType>()));
+				insertType(fmt::format("%member_ptr_{} = OpTypePointer {} %{}", GetTypeIdentifier<typename TypeTraits<ValueType>::Type>(), type.data(), GetTypeIdentifier<typename TypeTraits<ValueType>::Type>()));
 			}
 
 			/**
@@ -445,7 +445,7 @@ namespace Xenon
 			template<class Object, class MemberType>
 			void appendMemberTypeIdentifier(const MemberType(Object::*), std::string& identifierString) const
 			{
-				identifierString += fmt::format(FMT_STRING(" %{}"), GetTypeIdentifier<MemberType>());
+				identifierString += fmt::format(FMT_STRING(" %{}"), GetTypeIdentifier<typename TypeTraits<MemberType>::Type>());
 			}
 
 		private:

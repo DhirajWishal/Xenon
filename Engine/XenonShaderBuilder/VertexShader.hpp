@@ -25,10 +25,10 @@ namespace Xenon
 			explicit PerVertexStruct(AssemblyStorage& storage);
 
 		public:
-			glm::vec4 gl_Position;
-			float gl_PointSize;
-			std::array<float, 1> gl_ClipDistance;
-			std::array<float, 1> gl_CullDistance;
+			BuiltIn<glm::vec4> gl_Position;
+			BuiltIn<float> gl_PointSize;
+			BuiltIn<std::array<float, 1>> gl_ClipDistance;
+			BuiltIn<std::array<float, 1>> gl_CullDistance;
 		};
 
 		/**
@@ -56,10 +56,10 @@ namespace Xenon
 			void addEntryPoint(const std::string_view& name, const Function<ReturnType>& function, const Attributes&... attributes)
 			{
 				std::string attributeString;
-				auto lambda = [&attributeString](const auto& attribute) { if constexpr (std::is_base_of_v<DataType, decltype(attribute)>) attributeString += fmt::format(" %{}", attribute.getID()); };
+				auto lambda = [&attributeString](const auto& attribute) { attributeString += fmt::format(" %{}", attribute.getID()); };
 				(lambda(attributes), ...);
 
-				m_InstructionStorage.insertOpEntryPoint(fmt::format("OpEntryPoint Vertex %{} \"{}\"{}", function.getID(), name.data(), attributeString));
+				m_InstructionStorage.insertOpEntryPoint(fmt::format("OpEntryPoint Vertex %{} \"{}\" {}", function.getID(), name.data(), attributeString));
 			}
 
 		public:

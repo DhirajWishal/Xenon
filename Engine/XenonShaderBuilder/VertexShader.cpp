@@ -9,6 +9,10 @@ namespace Xenon
 	{
 		PerVertexStruct::PerVertexStruct(AssemblyStorage& storage)
 			: BuiltInBuffer<PerVertexStruct>(storage, "Output", &PerVertexStruct::gl_Position, &PerVertexStruct::gl_PointSize, &PerVertexStruct::gl_ClipDistance, &PerVertexStruct::gl_CullDistance)
+			, gl_Position(storage, storage.getUniqueID())
+			, gl_PointSize(storage, storage.getUniqueID())
+			, gl_ClipDistance(storage, storage.getUniqueID())
+			, gl_CullDistance(storage, storage.getUniqueID())
 		{
 			const auto structIdentifier = GetTypeIdentifier<PerVertexStruct>();
 
@@ -24,10 +28,6 @@ namespace Xenon
 			storage.insertName(fmt::format("OpMemberName %{} 1 \"gl_PointSize\"", structIdentifier));
 			storage.insertName(fmt::format("OpMemberName %{} 2 \"gl_ClipDistance\"", structIdentifier));
 			storage.insertName(fmt::format("OpMemberName %{} 3 \"gl_CullDistance\"", structIdentifier));
-
-			// Setup constants.
-			storage.storeConstant(0);
-			storage.storeConstant(1);
 		}
 
 		VertexShader::VertexShader()

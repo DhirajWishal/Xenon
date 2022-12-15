@@ -56,6 +56,52 @@ namespace /* anonymous */
 	{
 		return f.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
 	}
+
+	/**
+	 * Build the test shader.
+	 * This is mainly used for debugging.
+	 */
+	void buildTestShader()
+	{
+		Xenon::FrameTimer timer;
+
+		class UserData final : public Xenon::ShaderBuilder::Buffer<UserData>
+		{
+		public:
+			explicit UserData(Xenon::ShaderBuilder::AssemblyStorage& storage, uint32_t set, uint32_t binding)
+				: Buffer<UserData>(storage, set, binding, &UserData::m_Scale, &UserData::m_Translation) {}
+
+			glm::vec2 m_Scale;
+			glm::vec2 m_Translation;
+		};
+
+		Xenon::ShaderBuilder::VertexShader builder;
+		const auto inPos = builder.createInput<glm::vec2>(0);
+		const auto inUV = builder.createInput<glm::vec2>(11);
+		const auto inColor = builder.createInput<glm::vec4>(3);
+
+		auto outUV = builder.createOutput<glm::vec2>(0);
+		auto outColor = builder.createOutput<glm::vec4>(1);
+
+		auto buffer = builder.createBuffer<UserData>(0, 0);
+
+		auto function = builder.createFunction<void>();
+		auto scale = buffer.access(&UserData::m_Scale);
+		auto translation = buffer.access(&UserData::m_Translation);
+
+		outUV = inUV;
+		outColor = inColor;
+		auto temp = function.createVariable<glm::vec4>();
+
+		builder.gl_PerVertex.access(&Xenon::ShaderBuilder::PerVertexStruct::gl_Position) = temp;
+		builder.addEntryPoint("main", function, inPos, inUV, inColor, outUV, outColor, buffer, builder.gl_PerVertex/*.gl_Position*/);
+
+		XENON_LOG_INFORMATION("ShaderBuilder output: \n{}", builder.getInstructionStorage().compile());
+		const auto shader = builder.generate();
+
+		const auto timeTaken = timer.tick();
+		XENON_LOG_INFORMATION("Time taken to build the shader: {} ns", timeTaken.count());
+	}
 }
 
 Studio::Studio(Xenon::BackendType type /*= Xenon::BackendType::Any*/)
@@ -65,41 +111,7 @@ Studio::Studio(Xenon::BackendType type /*= Xenon::BackendType::Any*/)
 {
 	XENON_LOG_INFORMATION("Starting the {}", GetRendererTitle(m_Instance.getBackendType()));
 
-
-	class UserData final : public Xenon::ShaderBuilder::Buffer<UserData>
-	{
-	public:
-		explicit UserData(Xenon::ShaderBuilder::AssemblyStorage& storage, uint32_t set, uint32_t binding)
-			: Buffer<UserData>(storage, set, binding, &UserData::m_Scale, &UserData::m_Translation) {}
-
-		glm::vec2 m_Scale;
-		glm::vec2 m_Translation;
-	};
-
-	Xenon::ShaderBuilder::VertexShader builder;
-	const auto inPos = builder.createInput<glm::vec2>(0);
-	const auto inUV = builder.createInput<glm::vec2>(11);
-	const auto inColor = builder.createInput<glm::vec4>(3);
-
-	auto outUV = builder.createOutput<glm::vec2>(0);
-	auto outColor = builder.createOutput<glm::vec4>(1);
-
-	auto buffer = builder.createBuffer<UserData>(0, 0);
-
-	auto function = builder.createFunction<void>();
-
-	auto scale = buffer.access(&UserData::m_Scale);
-	auto translation = buffer.access(&UserData::m_Translation);
-
-	outUV = inUV;
-	outColor = inColor;
-	auto temp = function.createVariable<glm::vec4>();
-
-	builder.gl_PerVertex.access(&Xenon::ShaderBuilder::PerVertexStruct::gl_Position) = temp;
-	builder.addEntryPoint("main", function, inPos, inUV, inColor, outUV, outColor, buffer, builder.gl_PerVertex.gl_Position);
-
-	XENON_LOG_INFORMATION("ShaderBuilder output: \n{}", builder.getInstructionStorage().compile());
-	const auto shader = builder.generate();
+	buildTestShader();
 }
 
 void Studio::run()

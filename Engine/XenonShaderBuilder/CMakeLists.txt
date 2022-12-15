@@ -48,7 +48,6 @@ target_include_directories(
 	XenonShaderBuilder 
 
 	PUBLIC ${GLM_INCLUDE_DIR}
-	PUBLIC ${FMT_INCLUDE_DIR}
 	PRIVATE ${SPIRV_TOOLS_INCLUDE_DIR}
 )
 

@@ -32,6 +32,20 @@ namespace Xenon
 			}
 
 			/**
+			 * Implicitly get the stored data variable.
+			 *
+			 * @return The variable reference.
+			 */
+			operator Type& () noexcept { return m_Variable; }
+
+			/**
+			 * Implicitly get the stored data variable.
+			 *
+			 * @return The variable reference.
+			 */
+			operator const Type& () const noexcept { return m_Variable; }
+
+			/**
 			 * Assign a value to the internal variable.
 			 *
 			 * @param value The value to assign.
@@ -79,6 +93,14 @@ namespace Xenon
 
 		private:
 			Type m_Variable;
+		};
+
+		template<class T>
+		struct TypeTraits<BuiltIn<T>>
+		{
+			using Type = T;
+			static constexpr uint8_t Size = sizeof(Type);
+			static constexpr uint8_t ComponentCount = 1;
 		};
 	}
 }

@@ -103,15 +103,15 @@ namespace Xenon
 			 * @return The value type reference.
 			 */
 			template<class ValueType>
-			[[nodiscard]] Variable<ValueType> access(const ValueType(Type::* member))
+			[[nodiscard]] Variable<typename TypeTraits<ValueType>::Type> access(const ValueType(Type::* member))
 			{
 				const auto identifier = m_Storage.getUniqueID();
 				const auto index = m_OffsetMap[m_Storage.offsetOf(member)];
 
 				m_Storage.storeConstant(index);
-				m_Storage.insertFunctionInstruction(fmt::format("%{} = OpAccessChain %member_ptr_{} %{} %{}", identifier, GetTypeIdentifier<ValueType>(), m_Identifier, GetConstantIdentifier(index)));
+				m_Storage.insertFunctionInstruction(fmt::format("%{} = OpAccessChain %member_ptr_{} %{} %{}", identifier, GetTypeIdentifier<typename TypeTraits<ValueType>::Type>(), m_Identifier, GetConstantIdentifier(index)));
 
-				return Variable<ValueType>(m_Storage, identifier, static_cast<Type*>(this)->*member);
+				return Variable<typename TypeTraits<ValueType>::Type>(m_Storage, identifier, static_cast<Type*>(this)->*member);
 			}
 
 		private:
