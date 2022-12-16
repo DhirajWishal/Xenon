@@ -117,7 +117,7 @@ namespace Xenon
 		{
 			std::stringstream instructions;
 			instructions << "; Magic:     0x07230203 (SPIR-V)" << std::endl;
-			instructions << "; Version:   0x00010000 (Version: 1.0.0)" << std::endl;
+			instructions << "; Version:   0x00010200 (Version: 1.2.0)" << std::endl;
 			instructions << "; Generator: 0x00000000 (Xenon Shader Builder; 1)" << std::endl;
 			instructions << "; Bound:     " << m_UniqueIdentifier << std::endl;
 			instructions << "; Schema:    0" << std::endl;
@@ -178,9 +178,9 @@ namespace Xenon
 			}
 
 			// Insert function declarations.
-			instructions << std::endl << "; Function declarations." << std::endl;
 			for (const auto& declaration : m_FunctionDeclarations)
 			{
+				instructions << std::endl << "; Function declaration." << std::endl;
 				instructions << declaration.m_OpFunction << std::endl;
 
 				// Insert the parameters.
@@ -191,9 +191,9 @@ namespace Xenon
 			}
 
 			// Insert function definitions.
-			instructions << std::endl << "; Function definitions." << std::endl;
 			for (const auto& definition : m_FunctionDefinitions)
 			{
+				instructions << std::endl << "; Function definition." << std::endl;
 				instructions << definition.m_Declaration.m_OpFunction << std::endl;
 
 				// Insert the parameters.

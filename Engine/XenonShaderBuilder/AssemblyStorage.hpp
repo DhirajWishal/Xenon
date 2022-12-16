@@ -210,7 +210,29 @@ namespace Xenon
 					if constexpr (TypeTraits<Type>::ComponentCount > 1)
 						registerType<typename TypeTraits<Type>::ComponentType>();
 
-					insertType(fmt::format(FMT_STRING("%{} = {}"), GetTypeIdentifier<Type>(), GetTypeDeclaration<Type>()));
+					insertType(fmt::format("%{} = {}", GetTypeIdentifier<Type>(), GetTypeDeclaration<Type>()));
+				}
+			}
+
+			/**
+			 * Register type function.
+			 *
+			 * @tparam Type The type to register.
+			 */
+			template<class Type>
+			constexpr void registerParameterType()
+			{
+				if constexpr (IsStdArray<Type>)
+				{
+					registerArray<Type>();
+				}
+				else
+				{
+					// Try and register value types if the Type is complex.
+					if constexpr (TypeTraits<Type>::ComponentCount > 1)
+						registerParameterType<typename TypeTraits<Type>::ComponentType>();
+
+					insertType(fmt::format(FMT_STRING("%variable_type_{} = OpTypePointer Function %{}"), GetTypeIdentifier<Type>(), GetTypeIdentifier<Type>()));
 				}
 			}
 
@@ -310,6 +332,24 @@ namespace Xenon
 			}
 
 			/**
+			 * Get multiple parameter identifiers.
+			 *
+			 * @tparam Type The type to get the identifier of.
+			 * @tparam Types The rest of the types.
+			 * @return The identifier.
+			 */
+			template<class Type, class... Types>
+			[[nodiscard]] constexpr std::string getParameterTypeIdentifiers()
+			{
+				registerParameterType<Type>();
+				if constexpr (sizeof...(Types) > 0)
+					return fmt::format("%variable_type_{} %{}", GetTypeIdentifier<Type>(), getParameterTypeIdentifiers<Types...>());
+
+				else
+					return fmt::format("%variable_type_{} ", GetTypeIdentifier<Type>());
+			}
+
+			/**
 			 * Get the parameter identifier of multiple parameter types.
 			 *
 			 * @tparam Type The parameter type.
@@ -357,7 +397,7 @@ namespace Xenon
 
 				std::string parameterTypes;
 				if constexpr (sizeof...(Parameters) > 0)
-					parameterTypes = getTypeIdentifiers<Parameters...>();
+					parameterTypes = getParameterTypeIdentifiers<Parameters...>();
 
 				insertType(fmt::format("%{} = OpTypeFunction %{} {}", getFunctionIdentifier<Return, Parameters...>(), GetTypeIdentifier<Return>(), parameterTypes));
 			}

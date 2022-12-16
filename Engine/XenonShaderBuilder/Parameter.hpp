@@ -26,7 +26,7 @@ namespace Xenon
 			explicit Parameter(AssemblyStorage& storage) : DataType(storage)
 			{
 				storage.registerType<Type>();
-				storage.insertDefinitionOpFunctionParameter(fmt::format("%{} = OpFunctionParameter %{}", m_Identifier, GetTypeIdentifier<Type>()));
+				storage.insertDefinitionOpFunctionParameter(fmt::format("%{} = OpFunctionParameter %variable_type_{}", m_Identifier, GetTypeIdentifier<Type>()));
 			}
 
 			/**
