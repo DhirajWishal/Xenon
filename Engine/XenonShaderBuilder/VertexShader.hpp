@@ -5,6 +5,9 @@
 
 #include "Builder.hpp"
 #include "BuiltIn.hpp"
+#include "Parameter.hpp"
+
+#include <functional>
 
 namespace Xenon
 {
@@ -38,10 +41,31 @@ namespace Xenon
 		class VertexShader final : public Builder
 		{
 		public:
+			template<class ReturnType, class... Parameters>
+			using FunctionBuilderType = std::function<void(VertexShader&, Function<ReturnType, Parameters...>&, Parameter<Parameters>...)>;
+
+		public:
 			/**
 			 * Default constructor.
 			 */
 			VertexShader();
+
+			/**
+			 * Create a new function.
+			 *
+			 * @tparam ReturnType The function's return type.
+			 * @tparam Parameters The function's parameters.
+			 * @param body The function body used to build the function.
+			 * @return The created builder function.
+			 */
+			template<class ReturnType, class... Parameters>
+			[[nodiscard]] Function<ReturnType, Parameters...> createFunction(const FunctionBuilderType<ReturnType, Parameters...>& body)
+			{
+				auto functionBuilder = Function<ReturnType, Parameters...>(m_InstructionStorage);
+				body(*this, functionBuilder, Parameter<Parameters>(m_InstructionStorage)...);
+
+				return functionBuilder;
+			}
 
 			/**
 			 * Add an entry point function.
@@ -61,6 +85,10 @@ namespace Xenon
 
 				m_InstructionStorage.insertOpEntryPoint(fmt::format("OpEntryPoint Vertex %{} \"{}\" {}", function.getID(), name.data(), attributeString));
 			}
+
+		private:
+			template<class Type>
+			Parameter<Type> createParameter() { return Parameter<Type>(); }
 
 		public:
 			PerVertexStruct gl_PerVertex;

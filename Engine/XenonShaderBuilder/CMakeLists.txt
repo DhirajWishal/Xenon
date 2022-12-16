@@ -27,6 +27,7 @@ set(
 	"Uniform.hpp"
 	"Buffer.hpp"
 	"BuiltIn.hpp"
+	"Parameter.hpp"
 )
 
 # Add the source group.

@@ -14,9 +14,6 @@ namespace Xenon
 {
 	namespace ShaderBuilder
 	{
-		template<class ValueType>
-		class Parameter final {};
-
 		/**
 		 * Shader builder class.
 		 * This class can be used to build SPIR-V.
@@ -50,16 +47,6 @@ namespace Xenon
 			 */
 			template<class ValueType>
 			[[nodiscard]] Output<ValueType> createOutput(uint32_t location) { return Output<ValueType>(m_InstructionStorage, location); }
-
-			/**
-			 * Create a new function.
-			 *
-			 * @tparam ReturnType The function's return type.
-			 * @tparam Parameters The function's parameters.
-			 * @return The created builder function.
-			 */
-			template<class ReturnType, class... Parameters>
-			[[nodiscard]] Function<ReturnType, Parameters...> createFunction() { return Function<ReturnType, Parameters...>(m_InstructionStorage); }
 
 			/**
 			 * Create a new uniform buffer.

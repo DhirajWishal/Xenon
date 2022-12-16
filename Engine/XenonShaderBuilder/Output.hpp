@@ -62,5 +62,24 @@ namespace Xenon
 			Type m_Variable;
 			uint32_t m_Location = 0;
 		};
+
+		/**
+		 * Out alias type.
+		 */
+		template<class Type>
+		using Out = Output<Type>;
+
+		/**
+		 * Type traits specialization of the output class.
+		 *
+		 * @param T The value type.
+		 */
+		template<class T>
+		struct TypeTraits<Output<T>>
+		{
+			using Type = T;
+			static constexpr uint8_t Size = sizeof(Type);
+			static constexpr uint8_t ComponentCount = 1;
+		};
 	}
 }

@@ -85,21 +85,38 @@ namespace /* anonymous */
 
 		auto buffer = builder.createBuffer<UserData>(0, 0);
 
-		auto function = builder.createFunction<void>();
-		auto scale = buffer.access(&UserData::m_Scale);
-		auto translation = buffer.access(&UserData::m_Translation);
+		auto function = builder.createFunction(std::function([&buffer, &inPos, &inUV, &inColor, &outUV, &outColor](Xenon::ShaderBuilder::VertexShader& builder, Xenon::ShaderBuilder::Function<void>& function)
+			{
+				auto scale = buffer.access(&UserData::m_Scale);
+				auto translation = buffer.access(&UserData::m_Translation);
 
-		outUV = inUV;
-		outColor = inColor;
-		auto temp = function.createVariable<glm::vec4>();
+				outUV = inUV;
+				outColor = inColor;
+				auto temp = function.createVariable<glm::vec4>();
 
-		builder.gl_PerVertex.access(&Xenon::ShaderBuilder::PerVertexStruct::gl_Position) = temp;
+				builder.gl_PerVertex.access(&Xenon::ShaderBuilder::PerVertexStruct::gl_Position) = temp;
+			}
+		));
+
 		builder.addEntryPoint("main", function, inPos, inUV, inColor, outUV, outColor, buffer, builder.gl_PerVertex/*.gl_Position*/);
 
-		const auto shader = builder.generate();
+		auto function2 = builder.createFunction(std::function([](Xenon::ShaderBuilder::VertexShader& builder, Xenon::ShaderBuilder::Function<glm::vec2, glm::vec2>& function, Xenon::ShaderBuilder::Parameter<glm::vec2> val)
+			{
+				auto variable = function.createVariable<glm::vec2>();
+				variable = val;
+				function.exit(variable);
+			}
+		));
 
-		const auto timeTaken = timer.tick();
-		XENON_LOG_INFORMATION("Time taken to build the shader: {} s", static_cast<float>(timeTaken.count()) / std::nano::den);
+		auto timeTaken = timer.tick();
+		XENON_LOG_INFORMATION("Time taken to record the shader: {} s", static_cast<float>(timeTaken.count()) / std::nano::den);
+
+		const auto shader = builder.generate();
+		timeTaken += timer.tick();
+		XENON_LOG_INFORMATION("Time taken to compile the shader: {} s", static_cast<float>(timeTaken.count()) / std::nano::den);
+
+		timeTaken += timer.tick();
+		XENON_LOG_INFORMATION("Total time taken to build the shader: {} s", static_cast<float>(timeTaken.count()) / std::nano::den);
 	}
 }
 

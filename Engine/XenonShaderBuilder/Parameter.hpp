@@ -11,26 +11,30 @@ namespace Xenon
 	namespace ShaderBuilder
 	{
 		/**
-		 * Input class.
-		 * This class contains information about a single input attribute.
+		 * Parameter type class.
+		 * This contains information about a single parameter passed into a function.
 		 */
 		template<class Type>
-		class Input final : public DataType
+		class Parameter final : public DataType
 		{
 		public:
 			/**
 			 * Explicit constructor.
 			 *
 			 * @param storage The assembly storage to record the instructions to.
-			 * @param location The input location.
 			 */
-			explicit Input(AssemblyStorage& storage, uint32_t location) : DataType(storage), m_Location(location)
+			explicit Parameter(AssemblyStorage& storage) : DataType(storage)
 			{
 				storage.registerType<Type>();
-				storage.insertAnnotation(fmt::format("OpDecorate %{} Location {}", m_Identifier, location));
-				storage.insertType(fmt::format("%input_{} = OpTypePointer Input %{}", m_Identifier, GetTypeIdentifier<Type>()));
-				storage.insertType(fmt::format("%{} = OpVariable %input_{} Input", m_Identifier, m_Identifier));
+				storage.insertDefinitionOpFunctionParameter(fmt::format("%{} = OpFunctionParameter %{}", m_Identifier, GetTypeIdentifier<Type>()));
 			}
+
+			/**
+			 * Implicitly get the stored data variable.
+			 *
+			 * @return The variable reference.
+			 */
+			operator Type& () noexcept { return m_Variable; }
 
 			/**
 			 * Implicitly get the stored data variable.
@@ -41,22 +45,21 @@ namespace Xenon
 
 		private:
 			Type m_Variable;
-			uint32_t m_Location = 0;
 		};
 
 		/**
-		 * In alias type.
+		 * Param alias type.
 		 */
 		template<class Type>
-		using In = Input<Type>;
+		using Param = Parameter<Type>;
 
 		/**
-		 * Type traits specialization of the input class.
+		 * Type traits specialization of the parameter class.
 		 *
 		 * @param T The value type.
 		 */
 		template<class T>
-		struct TypeTraits<Input<T>>
+		struct TypeTraits<Parameter<T>>
 		{
 			using Type = T;
 			static constexpr uint8_t Size = sizeof(Type);

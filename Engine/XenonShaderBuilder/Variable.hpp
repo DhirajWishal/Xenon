@@ -5,6 +5,7 @@
 
 #include "TypeTraits.hpp"
 #include "Output.hpp"
+#include "Parameter.hpp"
 
 namespace Xenon
 {
@@ -101,11 +102,23 @@ namespace Xenon
 			 * @param value The value to assign.
 			 * @return The altered value.
 			 */
-			Type& operator=(const Variable<Type>& value)
+			Type& operator=(const Parameter<Type>& value)
 			{
 				const auto loadedID = m_Storage.getUniqueID();
-				m_Storage.insertFunctionInstruction(fmt::format("%{} = OpLoad %{} %{}", loadedID, GetTypeIdentifier<Type>(), value.getID()));
-				m_Storage.insertFunctionInstruction(fmt::format("OpStore %{} %{}", m_Identifier, loadedID));
+				m_Storage.insertFunctionInstruction(fmt::format("OpStore %{} %{}", m_Identifier, value.getID()));
+
+				return m_Variable = value;
+			}
+
+			/**
+			 * Assign a value to the internal variable.
+			 *
+			 * @param value The value to assign.
+			 * @return The altered value.
+			 */
+			Type& operator=(const Variable<Type>& value)
+			{
+				m_Storage.insertFunctionInstruction(fmt::format("OpCopyMemory %{} %{}", m_Identifier, value.getID()));
 
 				return m_Variable = value;
 			}
@@ -113,5 +126,11 @@ namespace Xenon
 		private:
 			Type m_Variable;
 		};
+
+		/**
+		 * Var alias type.
+		 */
+		template<class Type>
+		using Var = Variable<Type>;
 	}
 }
