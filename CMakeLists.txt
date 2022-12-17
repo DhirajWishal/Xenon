@@ -59,6 +59,11 @@ if (SPIRV_TOOLS_INIT_STATUS)
 	message(FATAL_ERROR "SPIR-V Tools initialization failed with ${SPIRV_TOOLS_INIT_STATUS}")
 endif ()
 
+# Set the required variables for assimp.
+set(SPIRV_SKIP_TESTS ON CACHE BOOL "Disable the SPIR-V Tools tests.")
+set(SPIRV_SKIP_EXECUTABLES ON CACHE BOOL "We don't need the SPIR-V Tools executable either.")
+
+# Add the SPIR-V Tools as a subdirectory.
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/SPIRV-Tools)
 
 # Add the Optick library as a third party static link.
@@ -165,11 +170,21 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonCore)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonVulkanBackend)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonDX12Backend)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonPlatform)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonPlatformWindows)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonPlatformLinux)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonEvents)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonShaderBuilder)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Studio)
+
+if (CMAKE_SYSTEM_NAME MATCHES "Windows$")
+	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonPlatformWindows)
+	message(STATUS "We're on Windows so include the Windows-specific project.")
+	
+	elseif (CMAKE_SYSTEM_NAME MATCHES "Linux$")
+	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonPlatformLinux)
+
+	else ()
+	message(FATAL_ERROR "We're on an unknown platform! This is obviously not good (send help!)...")
+
+endif()
 
 # Set the output directories.
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)

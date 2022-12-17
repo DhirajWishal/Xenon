@@ -97,8 +97,11 @@ namespace Xenon
 #ifdef XENON_DEBUG
 #	define XENON_LOG_DEBUG(...)									SPDLOG_DEBUG(__VA_ARGS__)
 
-#	ifdef XENON_PLATFORM_WINDOWS
+#	if defined(XENON_PLATFORM_WINDOWS)
 #		define XENON_DEBUG_BREAK								__debugbreak()
+
+#	elif defined(XENON_PLATFORM_LINUX)
+#		define XENON_DEBUG_BREAK								__builtin_trap
 
 #	endif
 

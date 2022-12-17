@@ -5,6 +5,8 @@
 
 #include "Materials/DefaultMaterial.hpp"
 
+#include "../XenonCore/Logging.hpp"
+
 #include "../XenonVulkanBackend/VulkanFactory.hpp"
 
 #ifdef XENON_PLATFORM_WINDOWS

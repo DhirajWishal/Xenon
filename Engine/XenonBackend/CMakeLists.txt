@@ -61,8 +61,12 @@ target_include_directories(
 	PRIVATE ${SPIRV_REFLECT_INCLUDE_DIR}
 )
 
-# If we are on MSVC, we can use the Multi Processor Compilation option.
-if (MSVC)
+# Include and setup the corrct links depending on the platform.
+if (CMAKE_SYSTEM_NAME MATCHES "Windows$")
 	target_compile_options(XenonBackend PRIVATE "/MP")	
 	target_link_libraries(XenonBackend XenonPlatformWindows)
-endif ()
+	
+	elseif (CMAKE_SYSTEM_NAME MATCHES "Linux$")
+	target_link_libraries(XenonBackend XenonPlatformLinux)
+
+endif()
