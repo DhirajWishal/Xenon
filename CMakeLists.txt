@@ -17,7 +17,8 @@ project(
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(PREDEFINED_TARGETS_FOLDER "PredefinedTargets")
 
-include(ExternalProject)
+# Set the compile commands option to ON.
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Set the caches.
 set(XENON_LOG_LEVEL 5 CACHE INTERNAL "This defines what to log. Checkout the wiki page for more information.")
@@ -166,6 +167,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonVulkanBackend)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonDX12Backend)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonPlatform)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonPlatformWindows)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonPlatformLinux)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonEvents)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonShaderBuilder)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Studio)
