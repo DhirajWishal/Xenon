@@ -74,7 +74,7 @@ namespace Xenon
 			case Xenon::Backend::ImageType::CubeMap:
 				break;
 
-			case Xenon::Backend::ImageType::ThreeDImentional:
+			case Xenon::Backend::ImageType::ThreeDimensional:
 				type = VK_IMAGE_TYPE_3D;
 				break;
 

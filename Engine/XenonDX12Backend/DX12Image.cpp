@@ -121,7 +121,7 @@ namespace Xenon
 			case Xenon::Backend::ImageType::CubeMap:
 				break;
 
-			case Xenon::Backend::ImageType::ThreeDImentional:
+			case Xenon::Backend::ImageType::ThreeDimensional:
 				dimension = D3D12_RESOURCE_DIMENSION_TEXTURE3D;
 				break;
 

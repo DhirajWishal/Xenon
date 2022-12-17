@@ -40,7 +40,7 @@ namespace Xenon
 		 * @return The child node.
 		 */
 		template<class Function>
-		[[nodsicard]] std::shared_ptr<TaskNode> then(Function&& function)
+		[[nodiscard]] std::shared_ptr<TaskNode> then(Function&& function)
 		{
 			auto pChild = std::make_shared<TaskNode>(m_JobSystem, std::forward<Function>(function), 1);
 			addDependency(pChild);

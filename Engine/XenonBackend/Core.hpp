@@ -139,7 +139,7 @@ namespace Xenon
 		{
 			OneDimensional,
 			TwoDimensional,
-			ThreeDImentional,
+			ThreeDimensional,
 			CubeMap
 		};
 
@@ -471,7 +471,12 @@ namespace Xenon
 					if (!m_Elements.empty())
 						offset = m_Elements.back().m_Offset + m_Elements.back().m_Size;
 
-					m_Elements.emplace_back(element, GetComponentTypeSize(componentSize) * GetAttributeDataTypeComponentCount(dataType), offset, dataType, componentSize);
+					auto& newElement = m_Elements.emplace_back();
+					newElement.m_Element = element;
+					newElement.m_Size = GetComponentTypeSize(componentSize) * GetAttributeDataTypeComponentCount(dataType);
+					newElement.m_Offset = offset;
+					newElement.m_AttributeDataType = dataType;
+					newElement.m_ComponentDataType = componentSize;
 
 					m_VertexElements |= 1 << EnumToInt(element);
 				}
@@ -501,7 +506,7 @@ namespace Xenon
 			 * @param element The element type.
 			 * @return The component data type.
 			 */
-			[[nodsicard]] ComponentDataType getElementComponentDataType(InputElement element) const { return m_Elements[m_ElementIndexMap[EnumToInt(element)]].m_ComponentDataType; }
+			[[nodiscard]] ComponentDataType getElementComponentDataType(InputElement element) const { return m_Elements[m_ElementIndexMap[EnumToInt(element)]].m_ComponentDataType; }
 
 			/**
 			 * Get the element attribute data type of a given element.
@@ -509,7 +514,7 @@ namespace Xenon
 			 * @param element The element type.
 			 * @return The attribute data type.
 			 */
-			[[nodsicard]] AttributeDataType getElementAttributeDataType(InputElement element) const { return m_Elements[m_ElementIndexMap[EnumToInt(element)]].m_AttributeDataType; }
+			[[nodiscard]] AttributeDataType getElementAttributeDataType(InputElement element) const { return m_Elements[m_ElementIndexMap[EnumToInt(element)]].m_AttributeDataType; }
 
 			/**
 			 * Get the size of the vertex.

@@ -71,7 +71,7 @@ namespace Xenon
 		 *
 		 * @return The render target types.
 		 */
-		[[nodsicard]] RenderTargetType getSupportedRenderTargetTypes() const { return m_pDevice->getSupportedRenderTargetTypes(); }
+		[[nodiscard]] RenderTargetType getSupportedRenderTargetTypes() const { return m_pDevice->getSupportedRenderTargetTypes(); }
 
 		/**
 		 * Get the current backend type that's been used.

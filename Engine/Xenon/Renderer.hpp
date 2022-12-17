@@ -101,14 +101,14 @@ namespace Xenon
 		 *
 		 * @return The task graph.
 		 */
-		[[nodsicard]] TaskGraph& getTaskGraph() { return m_TaskGraph; }
+		[[nodiscard]] TaskGraph& getTaskGraph() { return m_TaskGraph; }
 
 		/**
 		 * Get the renderer's task graph.
 		 *
 		 * @return The task graph.
 		 */
-		[[nodsicard]] const TaskGraph& getTaskGraph() const { return m_TaskGraph; }
+		[[nodiscard]] const TaskGraph& getTaskGraph() const { return m_TaskGraph; }
 
 		/**
 		 * Get the window pointer.

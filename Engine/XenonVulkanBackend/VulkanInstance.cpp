@@ -7,6 +7,9 @@
 #if defined(XENON_PLATFORM_WINDOWS)
 #include <vulkan/vulkan_win32.h>
 
+#elif defined(XENON_PLATFORM_LINUX)
+#include <vulkan/vulkan_wayland.h>
+
 #endif // defined(XENON_PLATFORM_WINDOWS)
 
 namespace /* anonymous */

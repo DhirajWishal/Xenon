@@ -66,7 +66,7 @@ namespace Xenon
 				viewType = VK_IMAGE_VIEW_TYPE_CUBE;
 				break;
 
-			case Xenon::Backend::ImageType::ThreeDImentional:
+			case Xenon::Backend::ImageType::ThreeDimensional:
 				viewType = VK_IMAGE_VIEW_TYPE_3D;
 				break;
 

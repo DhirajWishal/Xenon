@@ -44,14 +44,14 @@ namespace Xenon
 		 *
 		 * @return The rasterizer pointer.
 		 */
-		[[nodsicard]] Backend::Rasterizer* getRasterizer() { return m_pRasterizer.get(); }
+		[[nodiscard]] Backend::Rasterizer* getRasterizer() { return m_pRasterizer.get(); }
 
 		/**
 		 * Get the internally stored rasterizer.
 		 *
 		 * @return The rasterizer pointer.
 		 */
-		[[nodsicard]] const Backend::Rasterizer* getRasterizer() const { return m_pRasterizer.get(); }
+		[[nodiscard]] const Backend::Rasterizer* getRasterizer() const { return m_pRasterizer.get(); }
 
 	protected:
 		std::unique_ptr<Backend::Rasterizer> m_pRasterizer = nullptr;

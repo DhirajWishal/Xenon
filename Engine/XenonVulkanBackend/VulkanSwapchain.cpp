@@ -7,6 +7,11 @@
 #if defined(XENON_PLATFORM_WINDOWS)
 #include "../XenonPlatformWindows/WindowsWindow.hpp"
 
+#elif defined(XENON_PLATFORM_LINUX)
+#include "../XenonPlatformLinux/LinuxWindow.hpp"
+
+#include <vulkan/vulkan_wayland.h>
+
 #endif // defined(XENON_PLATFORM_WINDOWS)
 
 #include <optick.h>
@@ -15,9 +20,8 @@ namespace Xenon
 {
 	namespace Backend
 	{
-		VulkanSwapchain::VulkanSwapchain(VulkanDevice* pDevice, const std::string& title, uint32_t width, uint32_t height)
-			: Swapchain(pDevice, title, width, height)
-			, VulkanDeviceBoundObject(pDevice)
+		VulkanSwapchain::VulkanSwapchain(VulkanDevice *pDevice, const std::string &title, uint32_t width, uint32_t height)
+			: Swapchain(pDevice, title, width, height), VulkanDeviceBoundObject(pDevice)
 		{
 			// Create the surface.
 			createSurface();
@@ -84,11 +88,9 @@ namespace Xenon
 				presentInfo.pResults = VK_NULL_HANDLE;
 
 				// Present it to the surface.
-				const auto result = m_pDevice->getTransferQueue().access([this](const VulkanQueue& queue, const VkPresentInfoKHR& presentInfo)
-					{
-						return m_pDevice->getDeviceTable().vkQueuePresentKHR(queue.getQueue(), &presentInfo);
-					}
-				, presentInfo);
+				const auto result = m_pDevice->getTransferQueue().access([this](const VulkanQueue &queue, const VkPresentInfoKHR &presentInfo)
+																		 { return m_pDevice->getDeviceTable().vkQueuePresentKHR(queue.getQueue(), &presentInfo); },
+																		 presentInfo);
 
 				if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
 					recreate();
@@ -121,11 +123,20 @@ namespace Xenon
 			createInfo.pNext = nullptr;
 			createInfo.flags = 0;
 			createInfo.hinstance = nullptr;
-			createInfo.hwnd = static_cast<Platform::WindowsWindow*>(m_pWindow.get())->getWindowHandle();
+			createInfo.hwnd = static_cast<Platform::WindowsWindow *>(m_pWindow.get())->getWindowHandle();
 
 			XENON_VK_ASSERT(vkCreateWin32SurfaceKHR(m_pDevice->getInstance()->getInstance(), &createInfo, nullptr, &m_Surface), "Failed to create the Windows surface!");
 
-#else 
+#elif defined(XENON_PLATFORM_LINUX)
+			VkWaylandSurfaceCreateInfoKHR createInfo = {};
+			createInfo.sType = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR;
+			createInfo.pNext = nullptr;
+			createInfo.flags = 0;
+			createInfo.display = static_cast<Platform::LinuxWindow *>(m_pWindow.get())->getDisplay();
+			createInfo.surface = static_cast<Platform::LinuxWindow *>(m_pWindow.get())->getSurface();
+
+			XENON_VK_ASSERT(vkCreateWaylandSurfaceKHR(m_pDevice->getInstance()->getInstance(), &createInfo, nullptr, &m_Surface), "Failed to create the Wayland surface!");
+#else
 #error "Surface creation for the current platform is not supported!"
 
 #endif // defined(XENON_PLATFORM_WINDOWS)
@@ -198,7 +209,7 @@ namespace Xenon
 
 			// Get the best surface format.
 			VkSurfaceFormatKHR surfaceFormat = surfaceFormats.front();
-			for (const auto& availableFormat : surfaceFormats)
+			for (const auto &availableFormat : surfaceFormats)
 			{
 				if (availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
 				{
@@ -233,8 +244,7 @@ namespace Xenon
 			// Resolve the queue families if the two queues are different.
 			const std::array<uint32_t, 2> queueFamilyindices = {
 				m_pDevice->getGraphicsQueue().getUnsafe().getFamily(),
-				m_pDevice->getTransferQueue().getUnsafe().getFamily()
-			};
+				m_pDevice->getTransferQueue().getUnsafe().getFamily()};
 
 			if (queueFamilyindices[0] != queueFamilyindices[1])
 			{
@@ -273,7 +283,7 @@ namespace Xenon
 			m_SwapchainImageViews.resize(m_SwapchainImages.size());
 
 			// Iterate over the image views and create them.
-			VkImageView* pArray = m_SwapchainImageViews.data();
+			VkImageView *pArray = m_SwapchainImageViews.data();
 			for (auto itr = m_SwapchainImages.begin(); itr != m_SwapchainImages.end(); ++itr, ++pArray)
 			{
 				createInfo.image = *itr;
