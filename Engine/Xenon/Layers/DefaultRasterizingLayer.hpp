@@ -6,6 +6,7 @@
 #include "../RasterizingLayer.hpp"
 #include "../MeshStorage.hpp"
 
+#include "../../XenonCore/TaskNode.hpp"
 #include "../../XenonBackend/RasterizingPipeline.hpp"
 
 namespace Xenon
@@ -27,6 +28,7 @@ namespace Xenon
 
 			std::unique_ptr<Backend::Descriptor> m_pCameraDescriptor = nullptr;
 			std::vector<std::unique_ptr<Backend::Descriptor>> m_pMaterialDescriptors;
+			std::vector<std::shared_ptr<TaskNode>> m_pNodes;
 		};
 
 	public:

@@ -33,6 +33,12 @@ namespace Xenon
 		}
 
 		/**
+		 * Start the execution.
+		 * This will not do anything if it's waiting tasks have not been completed yet.
+		 */
+		void start();
+
+		/**
 		 * Create a child which will get executed after this.
 		 *
 		 * @tparam Function The function type.

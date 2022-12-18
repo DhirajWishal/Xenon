@@ -5,6 +5,12 @@
 
 namespace Xenon
 {
+	void TaskNode::start()
+	{
+		if (m_WaitCount == 0)
+			insertThis();
+	}
+
 	void TaskNode::reset(const std::vector<std::shared_ptr<TaskNode>>& pTasks)
 	{
 		m_Completed = false;

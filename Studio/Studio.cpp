@@ -98,11 +98,15 @@ namespace /* anonymous */
 				auto scale = buffer.access(&UserData::m_Scale);
 				auto translation = buffer.access(&UserData::m_Translation);
 
-				outUV = inUV;
+				float val = 1.0f;
+				builder.createVariable<glm::vec2>(1.0f, val);
+
+				outUV = function2(inUV);
 				outColor = inColor;
 				auto temp = function.createVariable<glm::vec4>();
 
-				function2(outUV);
+				// Next is to do OpCompositeConstruct
+
 				builder.gl_PerVertex.access(&Xenon::ShaderBuilder::PerVertexStruct::gl_Position) = temp;
 			}
 		));

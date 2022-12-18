@@ -37,10 +37,7 @@ namespace Xenon
 			constexpr auto parentCount = sizeof...(pTasks);
 			auto pChild = std::make_shared<TaskNode>(m_JobSystem, std::forward<Function>(function), parentCount);
 
-			if constexpr (parentCount == 0)
-				m_JobSystem.insert([pChild] { pChild->run(); });
-
-			else
+			if constexpr (parentCount > 0)
 				(pTasks->addDependency(pChild), ...);
 
 			return pChild;

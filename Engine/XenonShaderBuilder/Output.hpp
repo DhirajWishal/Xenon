@@ -10,6 +10,9 @@ namespace Xenon
 {
 	namespace ShaderBuilder
 	{
+		template<class Type>
+		class Variable;
+
 		/**
 		 * Output class.
 		 * This class contains information about a single output attribute.
@@ -55,6 +58,18 @@ namespace Xenon
 			Type& operator=(const Input<Type>& value)
 			{
 				m_Storage.insertFunctionInstruction(fmt::format("OpCopyMemory %{} %{}", m_Identifier, value.getID()));
+				return m_Variable = value;
+			}
+
+			/**
+			 * Assign a value to the internal variable.
+			 *
+			 * @param value The value to assign.
+			 * @return The altered value.
+			 */
+			Type& operator=(const Variable<Type>& value)
+			{
+				m_Storage.insertFunctionInstruction(fmt::format("OpStore %{} %{}", m_Identifier, value.getID()));
 				return m_Variable = value;
 			}
 

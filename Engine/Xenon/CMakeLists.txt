@@ -29,6 +29,10 @@ set(
 	"FrameTimer.hpp"
 	"MaterialBlob.hpp"
 	"MaterialDatabase.hpp"
+	"AssetManager.cpp"
+	"AssetManager.hpp"
+	"Package.cpp"
+	"Package.hpp"
 
 	"Layers/ClearScreenLayer.cpp"
 	"Layers/ClearScreenLayer.hpp"

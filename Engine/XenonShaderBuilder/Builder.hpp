@@ -9,6 +9,7 @@
 #include "Function.hpp"
 
 #include "../XenonBackend/ShaderSource.hpp"
+#include "../XenonCore/Logging.hpp"
 
 namespace Xenon
 {
@@ -59,6 +60,19 @@ namespace Xenon
 			template<class Object>
 			[[nodiscard]] Object createBuffer(uint32_t set, uint32_t binding) { return Object(m_InstructionStorage, set, binding); }
 
+			template<class ValueType, class... Arguments>
+			[[nodiscard]] Variable<ValueType> createVariable(Arguments... arguments)
+			{
+				(setupArgument(arguments), ...);
+				// %float_0 = OpConstant %float 0
+				// %float_1 = OpConstant %float 1
+				//      %54 = OpCompositeExtract %float %51 0
+				//	    %55 = OpCompositeExtract %float %51 1
+				//	    %56 = OpCompositeConstruct %v4float %54 %55 %float_0 %float_1
+
+				return Variable<ValueType>(m_InstructionStorage);
+			}
+
 			/**
 			 * Get the instruction storage.
 			 *
@@ -79,6 +93,23 @@ namespace Xenon
 			 * @return The generated shader source.
 			 */
 			[[nodiscard]] Backend::ShaderSource generate() const;
+
+		private:
+			template<class Type>
+			void setupArgument(Type argument)
+			{
+				if constexpr (std::is_reference_v<Type>)
+					XENON_LOG_INFORMATION("Yup, definitely a reference type!");
+
+				else if constexpr (std::is_rvalue_reference_v<Type>)
+					XENON_LOG_INFORMATION("Yup, definitely a literal!");
+
+				else if constexpr (std::is_lvalue_reference_v<Type>)
+					XENON_LOG_INFORMATION("A variable maybe?");
+
+				else
+					XENON_LOG_INFORMATION("IDK what the hell this is...");
+			}
 
 		protected:
 			AssemblyStorage m_InstructionStorage;
