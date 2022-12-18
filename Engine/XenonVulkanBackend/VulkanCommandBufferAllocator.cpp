@@ -3,6 +3,7 @@
 
 #include "VulkanCommandBufferAllocator.hpp"
 #include "VulkanMacros.hpp"
+#include "VulkanCommandBuffer.hpp"
 
 namespace Xenon
 {
@@ -61,11 +62,27 @@ namespace Xenon
 
 			auto commandBuffers = std::vector<VkCommandBuffer>(bufferCount);
 			XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkAllocateCommandBuffers(m_pDevice->getLogicalDevice(), &allocateInfo, commandBuffers.data()), "Failed to allocate command buffers!");
+
+			// Setup the command buffer objects.
+			m_CommandBuffers.reserve(bufferCount);
+			for (const auto& buffer : commandBuffers)
+				m_CommandBuffers.emplace_back(pDevice, this, buffer);
 		}
 
 		VulkanCommandBufferAllocator::~VulkanCommandBufferAllocator()
 		{
+			m_CommandBuffers.clear();
 			m_pDevice->getDeviceTable().vkDestroyCommandPool(m_pDevice->getLogicalDevice(), m_CommandPool.getUnsafe(), nullptr);
+		}
+
+		Xenon::Backend::CommandBuffer* VulkanCommandBufferAllocator::getBuffer(uint8_t index)
+		{
+			return &m_CommandBuffers[index];
+		}
+
+		const Xenon::Backend::CommandBuffer* VulkanCommandBufferAllocator::getBuffer(uint8_t index) const
+		{
+			return &m_CommandBuffers[index];
 		}
 	}
 }

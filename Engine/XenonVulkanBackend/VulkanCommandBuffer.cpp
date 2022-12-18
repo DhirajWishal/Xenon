@@ -845,6 +845,7 @@ namespace Xenon
 				break;
 
 			case Xenon::Backend::CommandBufferAllocatorUsage::Graphics:
+			case Xenon::Backend::CommandBufferAllocatorUsage::Secondary:
 				m_pDevice->getGraphicsQueue().access([this](const VulkanQueue& queue, Swapchain* pSwapchain) { submit(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, queue.getQueue(), pSwapchain->as<VulkanSwapchain>()); }, pSwapchain);
 				break;
 

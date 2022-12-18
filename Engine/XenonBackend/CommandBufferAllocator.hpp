@@ -9,6 +9,8 @@ namespace Xenon
 {
 	namespace Backend
 	{
+		class CommandBuffer;
+
 		/**
 		 * Command buffer allocator usage enum.
 		 */
@@ -45,6 +47,22 @@ namespace Xenon
 			 * @return The command buffer allocator usage.
 			 */
 			[[nodiscard]] CommandBufferAllocatorUsage getUsage() const noexcept { return m_Usage; }
+
+			/**
+			 * Get the command buffer pointer.
+			 *
+			 * @param index The index to access.
+			 * @return The command buffer pointer.
+			 */
+			[[nodiscard]] virtual CommandBuffer* getBuffer(uint8_t index) = 0;
+
+			/**
+			 * Get the command buffer pointer.
+			 *
+			 * @param index The index to access.
+			 * @return The command buffer pointer.
+			 */
+			[[nodiscard]] virtual const CommandBuffer* getBuffer(uint8_t index) const = 0;
 
 		protected:
 			CommandBufferAllocatorUsage m_Usage = CommandBufferAllocatorUsage::Graphics;

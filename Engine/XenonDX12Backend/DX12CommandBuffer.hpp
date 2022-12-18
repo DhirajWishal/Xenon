@@ -5,24 +5,16 @@
 
 #include "../XenonBackend/CommandBuffer.hpp"
 
-#include "VulkanCommandBufferAllocator.hpp"
-
-#ifdef max
-#undef max
-
-#endif
+#include "DX12CommandBufferAllocator.hpp"
 
 namespace Xenon
 {
 	namespace Backend
 	{
-		class VulkanSwapchain;
-
 		/**
-		 * Vulkan command buffer structure.
-		 * This contains the actual Vulkan command buffer and it's synchronization primitives.
+		 * DirectX 12 command buffer class.
 		 */
-		class VulkanCommandBuffer final : public CommandBuffer, public VulkanDeviceBoundObject
+		class DX12CommandBuffer final : public CommandBuffer, public DX12DeviceBoundObject
 		{
 		public:
 			/**
@@ -30,21 +22,13 @@ namespace Xenon
 			 *
 			 * @param pDevice The device pointer to which the command buffer belongs to.
 			 * @param pAllocator The command buffer allocator pointer.
-			 * @param buffer The allocated command buffer.
 			 */
-			explicit VulkanCommandBuffer(VulkanDevice* pDevice, VulkanCommandBufferAllocator* pAllocator, VkCommandBuffer buffer);
-
-			/**
-			 * Move constructor.
-			 *
-			 * @param other The other command buffer.
-			 */
-			VulkanCommandBuffer(VulkanCommandBuffer&& other) noexcept;
+			explicit DX12CommandBuffer(DX12Device* pDevice, DX12CommandBufferAllocator* pAllocator);
 
 			/**
 			 * Destructor.
 			 */
-			~VulkanCommandBuffer() override;
+			~DX12CommandBuffer() override;
 
 			/**
 			 * Set the command recorder state to recording.
@@ -58,18 +42,6 @@ namespace Xenon
 			 * @param pParent The parent command buffer pointer.
 			 */
 			void begin(CommandBuffer* pParent) override;
-
-			/**
-			 * Change the image layout of an image.
-			 *
-			 * @param image The image to change the layout of.
-			 * @param currentLayout The current layout of the image.
-			 * @param newLayout The new layout to change to.
-			 * @param aspectFlags The image aspect flags.
-			 * @param mipLevels The image mip levels. Default is 1.
-			 * @param layers The image layers. Default is 1.
-			 */
-			void changeImageLayout(VkImage image, VkImageLayout currentLayout, VkImageLayout newLayout, VkImageAspectFlags aspectFlags, uint32_t mipLevels = 1, uint32_t layers = 1);
 
 			/**
 			 * Copy data from one buffer to another.
@@ -227,87 +199,22 @@ namespace Xenon
 			void wait(uint64_t timeout = UINT64_MAX) override;
 
 			/**
-			 * Submit the command buffer to the device.
+			 * Add a bundle command list to be executed by the command list.
 			 *
-			 * @param pipelineStageFlags The pipeline stage flags.
-			 * @param queue The queue to submit to.
-			 * @param pSwapchain The swapchain to get the semaphores from. Default is nullptr.
+			 * @param pCommandList The command list to add.
 			 */
-			void submit(VkPipelineStageFlags pipelineStageFlags, VkQueue queue, VulkanSwapchain* pSwapchain = nullptr);
-
-		public:
-			/**
-			 * Move assignment operator.
-			 *
-			 * @param other The other command buffer.
-			 * @return The moved buffer reference.
-			 */
-			VulkanCommandBuffer& operator=(VulkanCommandBuffer&& other) noexcept;
-
-			/**
-			 * VkCommandBuffer operator.
-			 * This can be used to conveniently get the Vulkan command buffer handle.
-			 *
-			 * @return The Vulkan command buffer.
-			 */
-			operator VkCommandBuffer() const { return m_CommandBuffer; }
-
-			/**
-			 * VkFence operator.
-			 * This can be used to conveniently get the Vulkan fence handle.
-			 *
-			 * @return The Vulkan fence.
-			 */
-			operator VkFence() const { return m_Fence; }
-
-		public:
-			/**
-			 * Get the command buffer.
-			 *
-			 * @return The command buffer.
-			 */
-			[[nodiscard]] VkCommandBuffer getCommandBuffer() const { return m_CommandBuffer; }
-
-			/**
-			 * Get the command buffer address (pointer).
-			 *
-			 * @return The const command buffer pointer.
-			 */
-			[[nodiscard]] const VkCommandBuffer* getCommandBufferAddress() const { return &m_CommandBuffer; }
+			void addBundle(ID3D12GraphicsCommandList* pCommandList);
 
 		private:
-			/**
-			 * Call a provided method synchronously to the command pool.
-			 *
-			 * @tparam Function The function to call.
-			 * @tparam Arguments The argument types to forward to the function.
-			 * @param function The function to call.
-			 * @param arguments The arguments to forward.
-			 */
-			template<class Function, class... Arguments>
-			void issueCall(const Function& function, Arguments&&... arguments)
-			{
-				getCommandPool().access([this, function]([[maybe_unused]] const VkCommandPool& pool, Arguments&&... args)
-					{
-						function(std::forward<Arguments>(args)...);
-					}
-				, std::forward<Arguments>(arguments)...);
-			}
+			DX12CommandBufferAllocator* m_pAllocator = nullptr;
 
-		private:
-			VkCommandBufferInheritanceInfo m_InheritanceInfo = {};
+			ComPtr<ID3D12GraphicsCommandList> m_CommandList;
+			ComPtr<ID3D12Fence> m_CommandListFence;
 
-			std::vector<VkCommandBuffer> m_ChildCommandBuffers;
+			std::vector<ID3D12GraphicsCommandList*> m_pBundleCommandLists;
 
-			VulkanCommandBufferAllocator* m_pCommandAllocator = nullptr;
-
-			VkCommandBuffer m_CommandBuffer = VK_NULL_HANDLE;
-
-			VkSemaphore m_WaitSemaphore = VK_NULL_HANDLE;
-			VkSemaphore m_SignalSemaphore = VK_NULL_HANDLE;
-
-			VkFence m_Fence = VK_NULL_HANDLE;
-			bool m_IsFenceFree = true;
+			bool m_bIsRecording = false;
+			bool m_bIsRenderTargetBound = false;
 		};
 	}
 }

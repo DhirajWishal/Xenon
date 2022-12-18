@@ -5,18 +5,18 @@
 
 #include "../XenonBackend/CommandBufferAllocator.hpp"
 
-#include "VulkanDeviceBoundObject.hpp"
+#include "DX12DeviceBoundObject.hpp"
 
 namespace Xenon
 {
 	namespace Backend
 	{
-		class VulkanCommandBuffer;
+		class DX12CommandBuffer;
 
 		/**
-		 * Vulkan command buffer allocator class.
+		 * DirectX 12 command buffer allocator class.
 		 */
-		class VulkanCommandBufferAllocator final : public CommandBufferAllocator, public VulkanDeviceBoundObject
+		class DX12CommandBufferAllocator final : public CommandBufferAllocator, public DX12DeviceBoundObject
 		{
 		public:
 			/**
@@ -26,12 +26,12 @@ namespace Xenon
 			 * @param usage The allocator usage.
 			 * @param bufferCount The command buffer count.
 			 */
-			explicit VulkanCommandBufferAllocator(VulkanDevice* pDevice, CommandBufferAllocatorUsage usage, uint8_t bufferCount);
+			explicit DX12CommandBufferAllocator(DX12Device* pDevice, CommandBufferAllocatorUsage usage, uint8_t bufferCount);
 
 			/**
 			 * Destructor.
 			 */
-			~VulkanCommandBufferAllocator() override;
+			~DX12CommandBufferAllocator() override;
 
 			/**
 			 * Get the command buffer pointer.
@@ -50,23 +50,23 @@ namespace Xenon
 			[[nodiscard]] const CommandBuffer* getBuffer(uint8_t index) const override;
 
 			/**
-			 * Get the command pool.
+			 * Get the command allocator.
 			 *
-			 * @return The command pool mutex reference.
+			 * @return The allocator pointer.
 			 */
-			[[nodiscard]] Mutex<VkCommandPool>& getCommandPool() noexcept { return m_CommandPool; }
+			[[nodiscard]] ID3D12CommandAllocator* getCommandAllocator() noexcept { return m_Allocator.Get(); }
 
 			/**
-			 * Get the command pool.
+			 * Get the command allocator.
 			 *
-			 * @return The command pool mutex reference.
+			 * @return The allocator pointer.
 			 */
-			[[nodiscard]] const Mutex<VkCommandPool>& getCommandPool() const noexcept { return m_CommandPool; }
+			[[nodiscard]] const ID3D12CommandAllocator* getCommandAllocator() const noexcept { return m_Allocator.Get(); }
 
 		private:
-			Mutex<VkCommandPool> m_CommandPool = VK_NULL_HANDLE;
+			ComPtr<ID3D12CommandAllocator> m_Allocator;
 
-			std::vector<VulkanCommandBuffer> m_CommandBuffers;
+			std::vector<DX12CommandBuffer> m_CommandBuffers;
 		};
 	}
 }
