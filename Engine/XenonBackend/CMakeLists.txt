@@ -35,6 +35,7 @@ set(
 	"ImageView.hpp"
 	"ImageSampler.hpp"
 	"ComputePipeline.hpp"
+	"CommandSubmitter.hpp"
 )
 
 # Add the source group.

@@ -49,6 +49,8 @@ set(
 	"VulkanDescriptorSetManager.hpp"
 	"VulkanComputePipeline.cpp"
 	"VulkanComputePipeline.hpp"
+	"VulkanCommandSubmitter.cpp"
+	"VulkanCommandSubmitter.hpp"
 )
 
 # Add the source group.

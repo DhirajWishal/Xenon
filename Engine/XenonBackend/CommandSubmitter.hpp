@@ -1,0 +1,42 @@
+// Copyright 2022 Dhiraj Wishal
+// SPDX-License-Identifier: Apache-2.0
+
+#pragma once
+
+#include "CommandRecorder.hpp"
+
+namespace Xenon
+{
+	namespace Backend
+	{
+		/**
+		 * Command submitter object.
+		 * This object can be used to submit multiple command recorders to the GPU so that they can be executed one after the other.
+		 */
+		class CommandSubmitter : public BackendObject
+		{
+		public:
+			/**
+			 * Explicit constructor.
+			 *
+			 * @param pDevice The device pointer.
+			 */
+			explicit CommandSubmitter([[maybe_unused]] const Device* pDevice) {}
+
+			/**
+			 * Submit the command recorders to the GPU.
+			 *
+			 * @param pCommandRecorders The command recorders to submit.
+			 * @param pSwapchain The swapchain pointer. This is needed when rendering images to a window. Default is nullptr.
+			 */
+			virtual void submit(const std::vector<CommandRecorder*>& pCommandRecorders, Swapchain* pSwapchain = nullptr) = 0;
+
+			/**
+			 * Wait till the commands that were submitted has been executed.
+			 *
+			 * @param timeout The time to wait till the commands are executed in milliseconds. Default is uint64_t max.
+			 */
+			virtual void wait(std::chrono::milliseconds timeout = std::chrono::milliseconds(UINT64_MAX)) = 0;
+		};
+	}
+}

@@ -87,6 +87,8 @@ namespace Xenon
 	protected:
 		Renderer& m_Renderer;
 
+		std::unique_ptr<Backend::CommandRecorder> m_pCommandRecorder = nullptr;
+
 	private:
 		bool m_IsActive = true;
 	};

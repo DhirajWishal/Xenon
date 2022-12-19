@@ -217,6 +217,20 @@ namespace Xenon
 			 */
 			void wait(uint64_t timeout = UINT64_MAX) override;
 
+			/**
+			 * Get the current command buffer pointer.
+			 *
+			 * @return The command buffer pointer.
+			 */
+			[[nodiscard]] VulkanCommandBuffer* getCurrentCommandBuffer() noexcept { return m_pCurrentBuffer; }
+
+			/**
+			 * Get the current command buffer pointer.
+			 *
+			 * @return The command buffer pointer.
+			 */
+			[[nodiscard]] const VulkanCommandBuffer* getCurrentCommandBuffer() const noexcept { return m_pCurrentBuffer; }
+
 		private:
 			/**
 			 * Get the currently used command pool.

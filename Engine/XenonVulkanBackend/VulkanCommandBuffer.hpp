@@ -75,7 +75,7 @@ namespace Xenon
 			 *
 			 * @return The Vulkan command buffer.
 			 */
-			operator VkCommandBuffer() const { return m_CommandBuffer; }
+			operator VkCommandBuffer() const noexcept { return m_CommandBuffer; }
 
 			/**
 			 * VkFence operator.
@@ -83,7 +83,7 @@ namespace Xenon
 			 *
 			 * @return The Vulkan fence.
 			 */
-			operator VkFence() const { return m_Fence; }
+			operator VkFence() const noexcept { return m_Fence; }
 
 		public:
 			/**
@@ -91,20 +91,55 @@ namespace Xenon
 			 *
 			 * @return The command buffer.
 			 */
-			[[nodiscard]] VkCommandBuffer getCommandBuffer() const { return m_CommandBuffer; }
+			[[nodiscard]] VkCommandBuffer getCommandBuffer() const noexcept { return m_CommandBuffer; }
 
 			/**
 			 * Get the command buffer address (pointer).
 			 *
 			 * @return The const command buffer pointer.
 			 */
-			[[nodiscard]] const VkCommandBuffer* getCommandBufferAddress() const { return &m_CommandBuffer; }
+			[[nodiscard]] const VkCommandBuffer* getCommandBufferAddress() const noexcept { return &m_CommandBuffer; }
+
+			/**
+			 * Get the submit info structure.
+			 */
+			[[nodiscard]] VkSubmitInfo getSubmitInfo() const { return m_SubmitInfo; }
+
+			/**
+			 * Get the signal semaphore pointer.
+			 *
+			 * @return The pointer.
+			 */
+			[[nodiscard]] VkSemaphore* getSignalSemaphoreAddress() noexcept { return &m_SignalSemaphore; }
+
+			/**
+			 * Get the signal semaphore pointer.
+			 *
+			 * @return The pointer.
+			 */
+			[[nodiscard]] const VkSemaphore* getSignalSemaphoreAddress() const noexcept { return &m_SignalSemaphore; }
+
+			/**
+			 * Get the stage flags pointer.
+			 *
+			 * @return The pipeline stage flags pointer.
+			 */
+			[[nodiscard]] VkPipelineStageFlags* getStageFlagsAddress() noexcept { return &m_StageFlags; }
+
+			/**
+			 * Get the stage flags pointer.
+			 *
+			 * @return The pipeline stage flags pointer.
+			 */
+			[[nodiscard]] const VkPipelineStageFlags* getStageFlagsAddress() const noexcept { return &m_StageFlags; }
 
 		private:
+			VkSubmitInfo m_SubmitInfo = {};
+			VkPipelineStageFlags m_StageFlags = 0;
+
 			VkCommandBuffer m_CommandBuffer = VK_NULL_HANDLE;
 			VkCommandPool m_CommandPool = VK_NULL_HANDLE;
 
-			VkSemaphore m_WaitSemaphore = VK_NULL_HANDLE;
 			VkSemaphore m_SignalSemaphore = VK_NULL_HANDLE;
 
 			VkFence m_Fence = VK_NULL_HANDLE;
