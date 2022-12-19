@@ -43,10 +43,6 @@ set(
 	"DX12DescriptorHeapManager.hpp"
 	"DX12ComputePipeline.cpp"
 	"DX12ComputePipeline.hpp"
-	"DX12CommandBufferAllocator.cpp"
-	"DX12CommandBufferAllocator.hpp"
-	"DX12CommandBuffer.cpp"
-	"DX12CommandBuffer.hpp"
 )
 
 # Add the source group.
