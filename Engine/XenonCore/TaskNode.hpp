@@ -67,11 +67,7 @@ namespace Xenon
 			m_WaitCount = sizeof...(pTasks);
 			m_Completed = false;
 
-			if constexpr (sizeof...(pTasks) == 0)
-			{
-				insertThis();
-			}
-			else
+			if constexpr (sizeof...(pTasks) > 0)
 			{
 				auto pThis = shared_from_this();
 				(pTasks->addDependency(pThis), ...);
@@ -93,6 +89,12 @@ namespace Xenon
 		 * @return False if the task has not been executed.
 		 */
 		[[nodiscard]] bool isComplete() const { return m_Completed; }
+
+		/**
+		 * Wait till the node has been executed.
+		 * Make sure to call start before calling this method!
+		 */
+		void wait() const;
 
 	private:
 		/**

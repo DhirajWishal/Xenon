@@ -54,24 +54,25 @@ namespace Xenon
 			const auto jobStatus = m_JobEntries.emplace_back([pPromise, job = std::move(job)]
 				{
 					try
-					{
-						if constexpr (std::is_void_v<ReturnType>)
-						{
-							job();
-							pPromise->set_value();
-						}
-						else
-						{
-							pPromise->set_value(job());
-						}
+			{
+				if constexpr (std::is_void_v<ReturnType>)
+				{
+					job();
+					pPromise->set_value();
+				}
+				else
+				{
+					pPromise->set_value(job());
+				}
 
-						delete pPromise;
-					}
-					catch (std::exception_ptr ptr)
-					{
-						pPromise->set_exception(ptr);
-					}
-				});
+				delete pPromise;
+			}
+			catch (std::exception_ptr ptr)
+			{
+				pPromise->set_exception(ptr);
+			}
+				}
+			);
 
 			m_ConditionVariable.notify_one();
 			return future;
@@ -129,8 +130,9 @@ namespace Xenon
 		 * This function will execute a single job in the worker thread.
 		 *
 		 * @param lock The lock to lock and unlock when executing.
+		 * @param index The thread index.
 		 */
-		void execute(std::unique_lock<std::mutex>& lock);
+		void execute(std::unique_lock<std::mutex>& lock, uint32_t index);
 
 	private:
 		std::mutex m_JobMutex;

@@ -54,10 +54,16 @@ namespace Xenon
 				recreate();
 			}
 
-			const auto result = m_pDevice->getDeviceTable().vkAcquireNextImageKHR(m_pDevice->getLogicalDevice(), m_Swapchain, UINT64_MAX, m_InFlightSemaphores[m_FrameIndex], VK_NULL_HANDLE, &m_ImageIndex);
+			const auto result = m_pDevice->getDeviceTable().vkAcquireNextImageKHR(m_pDevice->getLogicalDevice(), m_Swapchain, 0, m_InFlightSemaphores[m_FrameIndex], VK_NULL_HANDLE, &m_ImageIndex);
 			if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
 			{
 				recreate();
+				return prepare();
+			}
+			
+			if (result == VK_TIMEOUT || result == VK_NOT_READY)
+			{
+				std::this_thread::sleep_for(std::chrono::microseconds(1));
 				return prepare();
 			}
 

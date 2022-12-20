@@ -30,7 +30,7 @@ namespace Xenon
 		 *
 		 * @return The job system reference.
 		 */
-		[[nodiscard]] static JobSystem& GetJobSystem() { return m_JobSystem; }
+		[[nodiscard]] static JobSystem& GetJobSystem();
 
 	private:
 		static JobSystem m_JobSystem;

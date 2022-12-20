@@ -7,7 +7,7 @@ namespace Xenon
 {
 	void TaskNode::start()
 	{
-		if (m_WaitCount == 0)
+		if (m_WaitCount == 0 && !m_Completed)
 			insertThis();
 	}
 
@@ -67,9 +67,14 @@ namespace Xenon
 
 	void TaskNode::run()
 	{
-		m_Task();
+		if (m_Task) m_Task();
 		signalChildren();
 
 		m_Completed = true;
+	}
+
+	void TaskNode::wait() const
+	{
+		while (!isComplete());
 	}
 }

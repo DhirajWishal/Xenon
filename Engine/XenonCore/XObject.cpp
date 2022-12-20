@@ -5,5 +5,9 @@
 
 namespace Xenon
 {
-	Xenon::JobSystem XObject::m_JobSystem = JobSystem(std::thread::hardware_concurrency());
+	Xenon::JobSystem& XObject::GetJobSystem()
+	{
+		static JobSystem jobSystem = JobSystem(std::thread::hardware_concurrency());
+		return jobSystem;
+	}
 }

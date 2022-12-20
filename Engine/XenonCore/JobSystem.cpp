@@ -38,27 +38,36 @@ namespace Xenon
 		m_ShouldRun = true;
 		m_ShouldFinishJobs = true;
 
+		m_WorkerState.resize(threadCount, false);
 		m_Workers.reserve(threadCount);
+
 		for (uint32_t i = 0; i < threadCount; i++)
 			m_Workers.emplace_back([this, i] { worker(i); });
 	}
 
 	void JobSystem::wait()
 	{
+		OPTICK_EVENT();
+
 		while (!completed());
 	}
 
 	void JobSystem::waitFor(std::chrono::nanoseconds timeout)
 	{
+		OPTICK_EVENT();
+
 		const auto targetTimeStamp = std::chrono::high_resolution_clock::now() + timeout;
 		while (!completed() && targetTimeStamp > std::chrono::high_resolution_clock::now());
 	}
 
 	void JobSystem::clear()
 	{
+		OPTICK_EVENT();
+
 		m_ShouldRun = false;
 		m_ConditionVariable.notify_all();
 		m_Workers.clear();
+		m_WorkerState.clear();
 	}
 
 	bool JobSystem::completed()
@@ -83,7 +92,7 @@ namespace Xenon
 	void JobSystem::worker(uint32_t index)
 	{
 		const auto threadTitle = fmt::format("Worker thread ({}) number ({})", fmt::ptr(this), index);
-		// OPTICK_THREAD(threadTitle.c_str());
+		OPTICK_THREAD(threadTitle.c_str());
 
 		auto locker = std::unique_lock(m_JobMutex);
 
@@ -92,15 +101,9 @@ namespace Xenon
 			// Wait till we get notified, or if the job entries have jobs to execute, or if we can end the thread.
 			m_ConditionVariable.wait(locker, [this] { return !m_JobEntries.empty() || m_ShouldRun == false; });
 
-			// Update the thread's state.
-			m_WorkerState[index] = true;
-
 			// If we have jobs, execute one.
 			if (!m_JobEntries.empty())
-				execute(locker);
-
-			// Update the state to completed.
-			m_WorkerState[index] = false;
+				execute(locker, index);
 		} while (m_ShouldRun);
 
 
@@ -108,16 +111,16 @@ namespace Xenon
 		if (m_ShouldFinishJobs)
 		{
 			while (!m_JobEntries.empty())
-			{
-				m_WorkerState[index] = true;
-				execute(locker);
-				m_WorkerState[index] = false;
-			}
+				execute(locker, index);
 		}
 	}
 
-	void JobSystem::execute(std::unique_lock<std::mutex>& lock)
+	void JobSystem::execute(std::unique_lock<std::mutex>& lock, uint32_t index)
 	{
+		OPTICK_EVENT();
+
+		m_WorkerState[index] = true;
+
 		// Get the next job entry and pop it from the list.
 		const auto jobEntry = m_JobEntries.front();
 		m_JobEntries.pop_front();
@@ -126,9 +129,15 @@ namespace Xenon
 		if (lock) lock.unlock();
 
 		// Execute the job.
-		jobEntry();
+		{
+			OPTICK_EVENT_DYNAMIC("Executing Job");
+
+			jobEntry();
+			m_WorkerState[index] = false;
+		}
 
 		// Lock it back again.
+		OPTICK_EVENT_DYNAMIC("Locking Mutex");
 		lock.lock();
 	}
 }
