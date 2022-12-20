@@ -37,6 +37,17 @@ namespace Xenon
 			 * @param timeout The time to wait till the commands are executed in milliseconds. Default is uint64_t max.
 			 */
 			virtual void wait(std::chrono::milliseconds timeout = std::chrono::milliseconds(UINT64_MAX)) = 0;
+
+			/**
+			 * Check if the submitter is waiting for execution to complete.
+			 *
+			 * @return True if all the commands have been executed.
+			 * @return False if the commands are still being executed.
+			 */
+			[[nodiscard]] bool isWaiting() const noexcept { return m_bIsWaiting; }
+
+		protected:
+			bool m_bIsWaiting = false;
 		};
 	}
 }

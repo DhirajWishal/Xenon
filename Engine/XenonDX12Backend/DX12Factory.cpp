@@ -12,6 +12,7 @@
 #include "DX12ImageSampler.hpp"
 #include "DX12RasterizingPipeline.hpp"
 #include "DX12ComputePipeline.hpp"
+#include "DX12CommandSubmitter.hpp"
 
 namespace Xenon
 {
@@ -70,6 +71,11 @@ namespace Xenon
 		std::unique_ptr<Xenon::Backend::ComputePipeline> DX12Factory::createComputePipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const ShaderSource& computeShader)
 		{
 			return std::make_unique<DX12ComputePipeline>(pDevice->as<DX12Device>(), std::move(pCacheHandler), computeShader);
+		}
+
+		std::unique_ptr<Xenon::Backend::CommandSubmitter> DX12Factory::createCommandSubmitter(Device* pDevice)
+		{
+			return std::make_unique<DX12CommandSubmitter>(pDevice->as<DX12Device>());
 		}
 	}
 }

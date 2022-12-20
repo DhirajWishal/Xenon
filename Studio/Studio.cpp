@@ -99,7 +99,7 @@ namespace /* anonymous */
 				auto translation = buffer.access(&UserData::m_Translation);
 
 				float val = 1.0f;
-				builder.createVariable<glm::vec2>(1.0f, val);
+				const auto result = builder.createVariable<glm::vec2>(1.0f, val);
 
 				outUV = function2(inUV);
 				outColor = inColor;

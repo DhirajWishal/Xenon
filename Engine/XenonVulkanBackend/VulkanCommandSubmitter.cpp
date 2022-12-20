@@ -50,7 +50,7 @@ namespace Xenon
 			VulkanCommandBuffer* pPreviousCommandBuffer = nullptr;
 			for (const auto pCommandRecorder : pCommandRecorders)
 			{
-				m_IsFenceFree = false;
+				m_bIsWaiting = false;
 
 				auto pVkCommandBuffer = pCommandRecorder->as<VulkanCommandRecorder>()->getCurrentCommandBuffer();
 
@@ -98,11 +98,11 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
-			if (!m_IsFenceFree)
+			if (!m_bIsWaiting)
 			{
 				XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkWaitForFences(m_pDevice->getLogicalDevice(), 1, &m_WaitFence, VK_TRUE, timeout.count()), "Failed to wait for the fence!");
 				XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkResetFences(m_pDevice->getLogicalDevice(), 1, &m_WaitFence), "Failed to reset fence!");
-				m_IsFenceFree = true;
+				m_bIsWaiting = true;
 			}
 		}
 	}

@@ -12,6 +12,7 @@
 #include "ImageSampler.hpp"
 #include "RasterizingPipeline.hpp"
 #include "ComputePipeline.hpp"
+#include "CommandSubmitter.hpp"
 
 namespace Xenon
 {
@@ -143,6 +144,14 @@ namespace Xenon
 			 * @return The pipeline pointer.
 			 */
 			[[nodiscard]] virtual std::unique_ptr<ComputePipeline> createComputePipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const ShaderSource& computeShader) = 0;
+
+			/**
+			 * Create a new command submitter.
+			 *
+			 * @param pDevice The device pointer.
+			 * @return The command submitter pointer.
+			 */
+			[[nodiscard]] virtual std::unique_ptr<CommandSubmitter> createCommandSubmitter(Device* pDevice) = 0;
 		};
 	}
 }

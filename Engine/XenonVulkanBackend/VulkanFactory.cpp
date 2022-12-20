@@ -13,6 +13,7 @@
 #include "VulkanImageSampler.hpp"
 #include "VulkanRasterizingPipeline.hpp"
 #include "VulkanComputePipeline.hpp"
+#include "VulkanCommandSubmitter.hpp"
 
 namespace Xenon
 {
@@ -71,6 +72,11 @@ namespace Xenon
 		std::unique_ptr<Xenon::Backend::ComputePipeline> VulkanFactory::createComputePipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const ShaderSource& computeShader)
 		{
 			return std::make_unique<VulkanComputePipeline>(pDevice->as<VulkanDevice>(), std::move(pCacheHandler), computeShader);
+		}
+
+		std::unique_ptr<Xenon::Backend::CommandSubmitter> VulkanFactory::createCommandSubmitter(Device* pDevice)
+		{
+			return std::make_unique<VulkanCommandSubmitter>(pDevice->as<VulkanDevice>());
 		}
 	}
 }

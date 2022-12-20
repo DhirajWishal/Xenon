@@ -135,6 +135,14 @@ namespace Xenon
 			 * @return The pipeline pointer.
 			 */
 			[[nodiscard]] std::unique_ptr<ComputePipeline> createComputePipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const ShaderSource& computeShader) override;
+
+			/**
+			 * Create a new command submitter.
+			 *
+			 * @param pDevice The device pointer.
+			 * @return The command submitter pointer.
+			 */
+			[[nodiscard]] std::unique_ptr<CommandSubmitter> createCommandSubmitter(Device* pDevice) override;
 		};
 	}
 }

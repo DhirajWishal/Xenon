@@ -5,16 +5,16 @@
 
 #include "../XenonBackend/CommandSubmitter.hpp"
 
-#include "VulkanDeviceBoundObject.hpp"
+#include "DX12DeviceBoundObject.hpp"
 
 namespace Xenon
 {
 	namespace Backend
 	{
 		/**
-		 * Vulkan command submitter class.
+		 * DirectX 12 command submitter class.
 		 */
-		class VulkanCommandSubmitter final : public CommandSubmitter, public VulkanDeviceBoundObject
+		class DX12CommandSubmitter final : public CommandSubmitter, public DX12DeviceBoundObject
 		{
 		public:
 			/**
@@ -22,12 +22,12 @@ namespace Xenon
 			 *
 			 * @param pDevice The device pointer.
 			 */
-			explicit VulkanCommandSubmitter(VulkanDevice* pDevice);
+			explicit DX12CommandSubmitter(DX12Device* pDevice);
 
 			/**
 			 * Destructor.
 			 */
-			~VulkanCommandSubmitter() override;
+			~DX12CommandSubmitter() override;
 
 			/**
 			 * Submit the command recorders to the GPU.
@@ -45,7 +45,20 @@ namespace Xenon
 			void wait(std::chrono::milliseconds timeout = std::chrono::milliseconds(UINT64_MAX)) override;
 
 		private:
-			VkFence m_WaitFence = VK_NULL_HANDLE;
+			/**
+			 * Worker function.
+			 */
+			void worker();
+
+		private:
+			std::jthread m_Worker;
+			std::condition_variable m_ConditionVariable;
+			std::mutex m_Mutex;
+			std::atomic_bool m_bShouldRun = true;
+
+			std::vector<ID3D12CommandList*> m_pCommandLists;
+
+			ComPtr<ID3D12Fence> m_Fence;
 		};
 	}
 }

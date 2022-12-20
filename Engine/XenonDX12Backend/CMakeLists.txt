@@ -43,6 +43,8 @@ set(
 	"DX12DescriptorHeapManager.hpp"
 	"DX12ComputePipeline.cpp"
 	"DX12ComputePipeline.hpp"
+	"DX12CommandSubmitter.cpp"
+	"DX12CommandSubmitter.hpp"
 )
 
 # Add the source group.
