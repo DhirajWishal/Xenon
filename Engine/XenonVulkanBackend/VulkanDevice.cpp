@@ -184,9 +184,6 @@ namespace Xenon
 			// Create the memory allocator.
 			createMemoryAllocator();
 
-			// Create the command pools.
-			createCommandPools();
-
 			// Create the descriptor set manager.
 			m_pDescriptorSetManager = new VulkanDescriptorSetManager(this);
 		}
@@ -201,10 +198,6 @@ namespace Xenon
 			{
 				XENON_VK_ASSERT(VK_ERROR_UNKNOWN, "Failed to push the device deletion function to the deletion queue!");
 			}
-
-			m_DeviceTable.vkDestroyCommandPool(m_LogicalDevice, m_ComputeCommandPool.getUnsafe(), nullptr);
-			m_DeviceTable.vkDestroyCommandPool(m_LogicalDevice, m_GraphicsCommandPool.getUnsafe(), nullptr);
-			m_DeviceTable.vkDestroyCommandPool(m_LogicalDevice, m_TransferCommandPool.getUnsafe(), nullptr);
 
 			vmaDestroyAllocator(m_Allocator);
 			m_DeviceTable.vkDestroyDevice(m_LogicalDevice, nullptr);
@@ -647,31 +640,6 @@ namespace Xenon
 
 			// Create the allocator.
 			XENON_VK_ASSERT(vmaCreateAllocator(&createInfo, &m_Allocator), "Failed to create the allocator!");
-		}
-
-		void VulkanDevice::createCommandPools()
-		{
-			// Setup the command pool create info structure.
-			VkCommandPoolCreateInfo createInfo = {};
-			createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-			createInfo.pNext = nullptr;
-			createInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-
-			// Create the compute command pool.
-			createInfo.queueFamilyIndex = getComputeQueue().getUnsafe().getFamily();
-			VkCommandPool commandPool = VK_NULL_HANDLE;
-			XENON_VK_ASSERT(getDeviceTable().vkCreateCommandPool(m_LogicalDevice, &createInfo, nullptr, &commandPool), "Failed to create the compute command pool!");
-			m_ComputeCommandPool = commandPool;
-
-			// Create the graphics command pool.
-			createInfo.queueFamilyIndex = getGraphicsQueue().getUnsafe().getFamily();
-			XENON_VK_ASSERT(getDeviceTable().vkCreateCommandPool(m_LogicalDevice, &createInfo, nullptr, &commandPool), "Failed to create the graphics command pool!");
-			m_GraphicsCommandPool = commandPool;
-
-			// Create the transfer command pool.
-			createInfo.queueFamilyIndex = getTransferQueue().getUnsafe().getFamily();
-			XENON_VK_ASSERT(getDeviceTable().vkCreateCommandPool(m_LogicalDevice, &createInfo, nullptr, &commandPool), "Failed to create the transfer command pool!");
-			m_TransferCommandPool = commandPool;
 		}
 	}
 }

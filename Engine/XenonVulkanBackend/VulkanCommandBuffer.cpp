@@ -11,10 +11,11 @@ namespace Xenon
 {
 	namespace Backend
 	{
-		VulkanCommandBuffer::VulkanCommandBuffer(VulkanDevice* pDevice, VkCommandBuffer buffer, VkCommandPool commandPool)
+		VulkanCommandBuffer::VulkanCommandBuffer(VulkanDevice* pDevice, VkCommandBuffer buffer, VkCommandPool commandPool, VkPipelineStageFlags stageFlags)
 			: VulkanDeviceBoundObject(pDevice)
 			, m_CommandBuffer(buffer)
 			, m_CommandPool(commandPool)
+			, m_StageFlags(stageFlags)
 		{
 			// Create the fence.
 			VkFenceCreateInfo fenceCreateInfo = {};
@@ -31,16 +32,6 @@ namespace Xenon
 
 			XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkCreateSemaphore(m_pDevice->getLogicalDevice(), &semaphoreCreateInfo, nullptr, &m_SignalSemaphore), "Failed to create the signal semaphore!");
 
-			// Setup the wait stage flags.
-			if (m_pDevice->getComputeCommandPool().getUnsafe() == m_CommandPool)
-				m_StageFlags = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
-
-			else if (m_pDevice->getGraphicsCommandPool().getUnsafe() == m_CommandPool)
-				m_StageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-
-			else if (m_pDevice->getTransferCommandPool().getUnsafe() == m_CommandPool)
-				m_StageFlags = VK_PIPELINE_STAGE_TRANSFER_BIT;
-
 			// Setup the submit info structure.
 			m_SubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 			m_SubmitInfo.waitSemaphoreCount = 0;
@@ -54,7 +45,7 @@ namespace Xenon
 
 		VulkanCommandBuffer::VulkanCommandBuffer(VulkanCommandBuffer&& other) noexcept
 			: VulkanDeviceBoundObject(std::move(other))
-			, m_SubmitInfo(other.m_SubmitInfo)
+			, m_SubmitInfo(std::exchange(other.m_SubmitInfo, {}))
 			, m_StageFlags(std::exchange(other.m_StageFlags, 0))
 			, m_CommandBuffer(std::exchange(other.m_CommandBuffer, VK_NULL_HANDLE))
 			, m_CommandPool(std::exchange(other.m_CommandPool, VK_NULL_HANDLE))
@@ -62,21 +53,15 @@ namespace Xenon
 			, m_Fence(std::exchange(other.m_Fence, VK_NULL_HANDLE))
 			, m_IsFenceFree(std::exchange(other.m_IsFenceFree, true))
 		{
+			m_SubmitInfo.pCommandBuffers = &m_CommandBuffer;
+			m_SubmitInfo.pSignalSemaphores = &m_SignalSemaphore;
 		}
 
 		VulkanCommandBuffer::~VulkanCommandBuffer()
 		{
 			if (m_pDevice)
 			{
-				if (m_pDevice->getComputeCommandPool().getUnsafe() == m_CommandPool)
-					m_pDevice->getComputeCommandPool().access([this](VkCommandPool pool) { m_pDevice->getDeviceTable().vkFreeCommandBuffers(m_pDevice->getLogicalDevice(), pool, 1, &m_CommandBuffer); });
-
-				else if (m_pDevice->getGraphicsCommandPool().getUnsafe() == m_CommandPool)
-					m_pDevice->getGraphicsCommandPool().access([this](VkCommandPool pool) { m_pDevice->getDeviceTable().vkFreeCommandBuffers(m_pDevice->getLogicalDevice(), pool, 1, &m_CommandBuffer); });
-
-				else if (m_pDevice->getTransferCommandPool().getUnsafe() == m_CommandPool)
-					m_pDevice->getTransferCommandPool().access([this](VkCommandPool pool) { m_pDevice->getDeviceTable().vkFreeCommandBuffers(m_pDevice->getLogicalDevice(), pool, 1, &m_CommandBuffer); });
-
+				m_pDevice->getDeviceTable().vkFreeCommandBuffers(m_pDevice->getLogicalDevice(), m_CommandPool, 1, &m_CommandBuffer);
 				m_pDevice->getDeviceTable().vkDestroyFence(m_pDevice->getLogicalDevice(), m_Fence, nullptr);
 				m_pDevice->getDeviceTable().vkDestroySemaphore(m_pDevice->getLogicalDevice(), m_SignalSemaphore, nullptr);
 			}
@@ -128,13 +113,16 @@ namespace Xenon
 		{
 			VulkanDeviceBoundObject::operator=(std::move(other));
 
-			m_SubmitInfo = other.m_SubmitInfo;
+			m_SubmitInfo = std::exchange(other.m_SubmitInfo, {});
 			m_StageFlags = std::exchange(other.m_StageFlags, 0);
 			m_CommandBuffer = std::exchange(other.m_CommandBuffer, VK_NULL_HANDLE);
 			m_CommandPool = std::exchange(other.m_CommandPool, VK_NULL_HANDLE);
 			m_SignalSemaphore = std::exchange(other.m_SignalSemaphore, VK_NULL_HANDLE);
 			m_Fence = std::exchange(other.m_Fence, VK_NULL_HANDLE);
 			m_IsFenceFree = std::exchange(other.m_IsFenceFree, true);
+
+			m_SubmitInfo.pCommandBuffers = &m_CommandBuffer;
+			m_SubmitInfo.pSignalSemaphores = &m_SignalSemaphore;
 
 			return *this;
 		}

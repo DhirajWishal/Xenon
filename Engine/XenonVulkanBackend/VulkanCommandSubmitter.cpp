@@ -43,47 +43,42 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
+			auto pVkSwapchain = pSwapchain->as<VulkanSwapchain>();
+			const VkPipelineStageFlags swapchainWaitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+
 			std::vector<VkSubmitInfo> submitInfos;
 			submitInfos.reserve(pCommandRecorders.size());
+			m_bIsWaiting = !pCommandRecorders.empty();
 
 			// Create the submit info structure.
 			VulkanCommandBuffer* pPreviousCommandBuffer = nullptr;
 			for (const auto pCommandRecorder : pCommandRecorders)
 			{
-				m_bIsWaiting = false;
-
 				auto pVkCommandBuffer = pCommandRecorder->as<VulkanCommandRecorder>()->getCurrentCommandBuffer();
-
 				auto& submitInfo = submitInfos.emplace_back(pVkCommandBuffer->getSubmitInfo());
+
 				if (pPreviousCommandBuffer)
 				{
-					submitInfo.pWaitDstStageMask = pPreviousCommandBuffer->getStageFlagsAddress();
 					submitInfo.waitSemaphoreCount = 1;
 					submitInfo.pWaitSemaphores = pPreviousCommandBuffer->getSignalSemaphoreAddress();
+					submitInfo.pWaitDstStageMask = pPreviousCommandBuffer->getStageFlagsAddress();
+				}
+				else if (pVkSwapchain != nullptr && pVkSwapchain->isRenderable())
+				{
+					submitInfo.waitSemaphoreCount = 1;
+					submitInfo.pWaitSemaphores = pVkSwapchain->getInFlightSemaphorePtr();
+					submitInfo.pWaitDstStageMask = &swapchainWaitStage;
 				}
 
 				pPreviousCommandBuffer = pVkCommandBuffer;
 			}
 
 			// Get the semaphores from the swapchain if provided.
-			std::vector<VkSemaphore> semaphores;
-			auto pVkSwapchain = pSwapchain->as<VulkanSwapchain>();
 			if (pPreviousCommandBuffer && pVkSwapchain != nullptr && pVkSwapchain->isRenderable())
 			{
 				auto& submitInfo = submitInfos.back();
-				semaphores.reserve(4);
-
-				semaphores.emplace_back(*pVkSwapchain->getInFlightSemaphorePtr());
-				semaphores.emplace_back(*submitInfo.pWaitSemaphores);
-
-				semaphores.emplace_back(*pVkSwapchain->getRenderFinishedSemaphorePtr());
-				semaphores.emplace_back(*submitInfo.pSignalSemaphores);
-
-				submitInfo.waitSemaphoreCount++;
-				submitInfo.pWaitSemaphores = semaphores.data();
-
-				submitInfo.signalSemaphoreCount++;
-				submitInfo.pSignalSemaphores = semaphores.data() + submitInfo.waitSemaphoreCount;
+				submitInfo.signalSemaphoreCount = 1;
+				submitInfo.pSignalSemaphores = pVkSwapchain->getRenderFinishedSemaphorePtr();
 			}
 
 			// Submit the queue.
@@ -98,11 +93,11 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
-			if (!m_bIsWaiting)
+			if (m_bIsWaiting)
 			{
 				XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkWaitForFences(m_pDevice->getLogicalDevice(), 1, &m_WaitFence, VK_TRUE, timeout.count()), "Failed to wait for the fence!");
 				XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkResetFences(m_pDevice->getLogicalDevice(), 1, &m_WaitFence), "Failed to reset fence!");
-				m_bIsWaiting = true;
+				m_bIsWaiting = false;
 			}
 		}
 	}

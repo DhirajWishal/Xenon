@@ -29,8 +29,9 @@ namespace Xenon
 			 * @param pDevice The device pointer to which the command buffer belongs to.
 			 * @param buffer The allocated command buffer.
 			 * @param commandPool The command pool to allocate the command buffer from.
+			 * @param stageFlags The command buffer's pipeline stage flags.
 			 */
-			explicit VulkanCommandBuffer(VulkanDevice* pDevice, VkCommandBuffer buffer, VkCommandPool commandPool);
+			explicit VulkanCommandBuffer(VulkanDevice* pDevice, VkCommandBuffer buffer, VkCommandPool commandPool, VkPipelineStageFlags stageFlags);
 
 			/**
 			 * Move constructor.

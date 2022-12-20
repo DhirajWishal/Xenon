@@ -263,57 +263,64 @@ namespace Xenon
 			, VulkanDeviceBoundObject(pDevice)
 		{
 			// Allocate the command buffers.
-			auto function = [this, bufferCount](VkCommandPool commandPool)
+			auto function = [this](const VulkanQueue& queue)
 			{
-				VkCommandBufferAllocateInfo allocateInfo = {};
-				allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-				allocateInfo.pNext = nullptr;
-				allocateInfo.commandPool = commandPool;
-				allocateInfo.level = m_Usage & CommandRecorderUsage::Secondary ? VK_COMMAND_BUFFER_LEVEL_SECONDARY : VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-				allocateInfo.commandBufferCount = bufferCount;
-
-				std::vector<VkCommandBuffer> commandBuffers(bufferCount);
-				XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkAllocateCommandBuffers(m_pDevice->getLogicalDevice(), &allocateInfo, commandBuffers.data()), "Failed to allocate command buffers!");
-
-				// Create the command buffers.
-				for (uint32_t i = 0; i < bufferCount; i++)
-					m_CommandBuffers.emplace_back(m_pDevice, commandBuffers[i], commandPool);
-
-				// Select the default buffer.
-				m_pCurrentBuffer = &m_CommandBuffers[m_CurrentIndex];
-			};
-
-			// Get the command pool from the device and create the buffers.
-			switch (usage)
-			{
-			case Xenon::Backend::CommandRecorderUsage::Compute:
-				pDevice->getComputeCommandPool().access(std::move(function));
-				break;
-
-			case Xenon::Backend::CommandRecorderUsage::Graphics:
-				pDevice->getGraphicsCommandPool().access(std::move(function));
-				break;
-
-			case Xenon::Backend::CommandRecorderUsage::Transfer:
-				pDevice->getTransferCommandPool().access(std::move(function));
-				break;
-
-			case Xenon::Backend::CommandRecorderUsage::Secondary:
-			{
+				// Setup the command pool create info structure.
 				VkCommandPoolCreateInfo createInfo = {};
 				createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 				createInfo.pNext = nullptr;
 				createInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-				createInfo.queueFamilyIndex = pDevice->getGraphicsQueue().getUnsafe().getFamily();
 
-				XENON_VK_ASSERT(pDevice->getDeviceTable().vkCreateCommandPool(pDevice->getLogicalDevice(), &createInfo, nullptr, &m_SecondaryPool.getUnsafe()), "Failed to create the secondary command pool!");
-				function(m_SecondaryPool.getUnsafe());
-			}
-			break;
+				// Create the compute command pool.
+				createInfo.queueFamilyIndex = queue.getFamily();
+				XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkCreateCommandPool(m_pDevice->getLogicalDevice(), &createInfo, nullptr, &m_CommandPool), "Failed to create the command pool!");
+			};
+
+			// Get the command pool from the device and create the buffers.
+			VkPipelineStageFlags stageFlags = 0;
+			switch (usage)
+			{
+			case Xenon::Backend::CommandRecorderUsage::Compute:
+				pDevice->getComputeQueue().access(std::move(function));
+				stageFlags = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+				break;
+
+			case Xenon::Backend::CommandRecorderUsage::Graphics:
+				pDevice->getGraphicsQueue().access(std::move(function));
+				stageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+				break;
+
+			case Xenon::Backend::CommandRecorderUsage::Transfer:
+				pDevice->getTransferQueue().access(std::move(function));
+				stageFlags = VK_PIPELINE_STAGE_TRANSFER_BIT;
+				break;
+
+			case Xenon::Backend::CommandRecorderUsage::Secondary:
+				pDevice->getGraphicsQueue().access(std::move(function));
+				stageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+				break;
 
 			default:
 				XENON_LOG_FATAL("Invalid command recorder usage!");
 			}
+
+			// Allocate the command buffers.
+			VkCommandBufferAllocateInfo allocateInfo = {};
+			allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+			allocateInfo.pNext = nullptr;
+			allocateInfo.commandPool = m_CommandPool;
+			allocateInfo.level = m_Usage & CommandRecorderUsage::Secondary ? VK_COMMAND_BUFFER_LEVEL_SECONDARY : VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+			allocateInfo.commandBufferCount = bufferCount;
+
+			std::vector<VkCommandBuffer> commandBuffers(bufferCount);
+			XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkAllocateCommandBuffers(m_pDevice->getLogicalDevice(), &allocateInfo, commandBuffers.data()), "Failed to allocate command buffers!");
+
+			// Create the command buffers.
+			for (uint32_t i = 0; i < bufferCount; i++)
+				m_CommandBuffers.emplace_back(m_pDevice, commandBuffers[i], m_CommandPool, stageFlags);
+
+			// Select the default buffer.
+			m_pCurrentBuffer = &m_CommandBuffers[m_CurrentIndex];
 
 			// Setup the initial inheritance info structure data.
 			m_InheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
@@ -327,12 +334,7 @@ namespace Xenon
 		VulkanCommandRecorder::~VulkanCommandRecorder()
 		{
 			m_CommandBuffers.clear();
-			m_SecondaryPool.access([this](VkCommandPool pool)
-				{
-					if (pool != VK_NULL_HANDLE)
-					m_pDevice->getDeviceTable().vkDestroyCommandPool(m_pDevice->getLogicalDevice(), pool, nullptr);
-				}
-			);
+			m_pDevice->getDeviceTable().vkDestroyCommandPool(m_pDevice->getLogicalDevice(), m_CommandPool, nullptr);
 		}
 
 		void VulkanCommandRecorder::begin()
@@ -346,7 +348,7 @@ namespace Xenon
 			beginInfo.pInheritanceInfo = nullptr;
 
 			m_pCurrentBuffer->wait();
-			issueCall(m_pDevice->getDeviceTable().vkBeginCommandBuffer, *m_pCurrentBuffer, &beginInfo);
+			m_pDevice->getDeviceTable().vkBeginCommandBuffer(*m_pCurrentBuffer, &beginInfo);
 		}
 
 		void VulkanCommandRecorder::begin(CommandRecorder* pParent)
@@ -362,7 +364,7 @@ namespace Xenon
 			beginInfo.pInheritanceInfo = &pVkParent->m_InheritanceInfo;
 
 			m_pCurrentBuffer->wait();
-			issueCall(m_pDevice->getDeviceTable().vkBeginCommandBuffer, *m_pCurrentBuffer, &beginInfo);
+			m_pDevice->getDeviceTable().vkBeginCommandBuffer(*m_pCurrentBuffer, &beginInfo);
 
 			// Insert he child (this) command buffer.
 			pVkParent->m_ChildCommandBuffers.emplace_back(m_pCurrentBuffer->getCommandBuffer());
@@ -376,7 +378,7 @@ namespace Xenon
 			if (m_IsRenderTargetBound)
 			{
 				m_IsRenderTargetBound = false;
-				issueCall(m_pDevice->getDeviceTable().vkCmdEndRenderPass, *m_pCurrentBuffer);
+				m_pDevice->getDeviceTable().vkCmdEndRenderPass(*m_pCurrentBuffer);
 			}
 
 			// Create the memory barrier.
@@ -473,8 +475,7 @@ namespace Xenon
 			}
 
 			// Issue the commands. 
-			issueCall(
-				m_pDevice->getDeviceTable().vkCmdPipelineBarrier,
+			m_pDevice->getDeviceTable().vkCmdPipelineBarrier(
 				*m_pCurrentBuffer,
 				GetPipelineStageFlags(memorybarrier.srcAccessMask),
 				GetPipelineStageFlags(memorybarrier.dstAccessMask),
@@ -504,8 +505,7 @@ namespace Xenon
 			bufferCopy.srcOffset = srcOffset;
 			bufferCopy.dstOffset = dstOffset;
 
-			issueCall(
-				m_pDevice->getDeviceTable().vkCmdCopyBuffer,
+			m_pDevice->getDeviceTable().vkCmdCopyBuffer(
 				*m_pCurrentBuffer,
 				pSource->as<VulkanBuffer>()->getBuffer(),
 				pDestination->as<VulkanBuffer>()->getBuffer(),
@@ -550,8 +550,7 @@ namespace Xenon
 			changeImageLayout(currentSwapchainImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT);
 
 			// Copy the image.
-			issueCall(
-				m_pDevice->getDeviceTable().vkCmdBlitImage,
+			m_pDevice->getDeviceTable().vkCmdBlitImage(
 				*m_pCurrentBuffer,
 				pVkImage->getImage(),
 				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
@@ -601,8 +600,7 @@ namespace Xenon
 			changeImageLayout(pVkDestinationImage->getImage(), pVkDestinationImage->getImageLayout(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, blit.dstSubresource.aspectMask);
 
 			// Copy the image.
-			issueCall(
-				m_pDevice->getDeviceTable().vkCmdBlitImage,
+			m_pDevice->getDeviceTable().vkCmdBlitImage(
 				*m_pCurrentBuffer,
 				pVkSourceImage->getImage(),
 				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
@@ -682,8 +680,7 @@ namespace Xenon
 			imageCopy.imageExtent.width = static_cast<uint32_t>(imageSize.x);
 			imageCopy.imageExtent.height = static_cast<uint32_t>(imageSize.y);
 
-			issueCall(
-				m_pDevice->getDeviceTable().vkCmdCopyBufferToImage,
+			m_pDevice->getDeviceTable().vkCmdCopyBufferToImage(
 				*m_pCurrentBuffer,
 				pSource->as<VulkanBuffer>()->getBuffer(),
 				pImage->as<VulkanImage>()->getImage(),
@@ -719,7 +716,7 @@ namespace Xenon
 			beginInfo.pClearValues = vkClearValues.data();
 
 			const auto contents = usingSecondaryCommandRecorders ? VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS : VK_SUBPASS_CONTENTS_INLINE;
-			issueCall(m_pDevice->getDeviceTable().vkCmdBeginRenderPass, *m_pCurrentBuffer, &beginInfo, contents);
+			m_pDevice->getDeviceTable().vkCmdBeginRenderPass(*m_pCurrentBuffer, &beginInfo, contents);
 			m_IsRenderTargetBound = true;
 
 			// Setup the inheritance info.
@@ -731,7 +728,7 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
-			issueCall(m_pDevice->getDeviceTable().vkCmdBindPipeline, *m_pCurrentBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pPipeline->as<VulkanRasterizingPipeline>()->getPipeline(vertexSpecification).m_Pipeline);
+			m_pDevice->getDeviceTable().vkCmdBindPipeline(*m_pCurrentBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pPipeline->as<VulkanRasterizingPipeline>()->getPipeline(vertexSpecification).m_Pipeline);
 		}
 
 		void VulkanCommandRecorder::bind(RasterizingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pCameraDescriptor)
@@ -741,8 +738,7 @@ namespace Xenon
 			if (pUserDefinedDescriptor)
 			{
 				auto descriptorSet = pUserDefinedDescriptor->as<VulkanDescriptor>()->getDescriptorSet();
-				issueCall(
-					m_pDevice->getDeviceTable().vkCmdBindDescriptorSets,
+				m_pDevice->getDeviceTable().vkCmdBindDescriptorSets(
 					*m_pCurrentBuffer,
 					VK_PIPELINE_BIND_POINT_GRAPHICS,
 					pPipeline->as<VulkanRasterizingPipeline>()->getPipelineLayout(),
@@ -757,8 +753,7 @@ namespace Xenon
 			if (pMaterialDescriptor)
 			{
 				auto descriptorSet = pMaterialDescriptor->as<VulkanDescriptor>()->getDescriptorSet();
-				issueCall(
-					m_pDevice->getDeviceTable().vkCmdBindDescriptorSets,
+				m_pDevice->getDeviceTable().vkCmdBindDescriptorSets(
 					*m_pCurrentBuffer,
 					VK_PIPELINE_BIND_POINT_GRAPHICS,
 					pPipeline->as<VulkanRasterizingPipeline>()->getPipelineLayout(),
@@ -773,8 +768,7 @@ namespace Xenon
 			if (pCameraDescriptor)
 			{
 				auto descriptorSet = pCameraDescriptor->as<VulkanDescriptor>()->getDescriptorSet();
-				issueCall(
-					m_pDevice->getDeviceTable().vkCmdBindDescriptorSets,
+				m_pDevice->getDeviceTable().vkCmdBindDescriptorSets(
 					*m_pCurrentBuffer,
 					VK_PIPELINE_BIND_POINT_GRAPHICS,
 					pPipeline->as<VulkanRasterizingPipeline>()->getPipelineLayout(),
@@ -793,7 +787,7 @@ namespace Xenon
 
 			VkDeviceSize offset = 0;
 			VkBuffer vertexBuffer = pVertexBuffer->as<VulkanBuffer>()->getBuffer();
-			issueCall(m_pDevice->getDeviceTable().vkCmdBindVertexBuffers, *m_pCurrentBuffer, 0, 1, &vertexBuffer, &offset);
+			m_pDevice->getDeviceTable().vkCmdBindVertexBuffers(*m_pCurrentBuffer, 0, 1, &vertexBuffer, &offset);
 		}
 
 		void VulkanCommandRecorder::bind(Buffer* pIndexBuffer, IndexBufferStride indexStride)
@@ -810,7 +804,7 @@ namespace Xenon
 			else
 				XENON_LOG_ERROR("Invalid or unsupported index stride!");
 
-			issueCall(m_pDevice->getDeviceTable().vkCmdBindIndexBuffer, *m_pCurrentBuffer, pIndexBuffer->as<VulkanBuffer>()->getBuffer(), 0, indexType);
+			m_pDevice->getDeviceTable().vkCmdBindIndexBuffer(*m_pCurrentBuffer, pIndexBuffer->as<VulkanBuffer>()->getBuffer(), 0, indexType);
 		}
 
 		void VulkanCommandRecorder::setViewport(float x, float y, float width, float height, float minDepth, float maxDepth)
@@ -822,7 +816,7 @@ namespace Xenon
 			viewport.height = height;
 			viewport.minDepth = minDepth;
 			viewport.maxDepth = maxDepth;
-			issueCall(m_pDevice->getDeviceTable().vkCmdSetViewport, *m_pCurrentBuffer, 0, 1, &viewport);
+			m_pDevice->getDeviceTable().vkCmdSetViewport(*m_pCurrentBuffer, 0, 1, &viewport);
 		}
 
 		void VulkanCommandRecorder::setViewportNatural(float x, float y, float width, float height, float minDepth, float maxDepth)
@@ -844,8 +838,8 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
-			// issueCall(m_pDevice->getDeviceTable().vkCmdSetPrimitiveTopology, *m_pCurrentBuffer, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
-			issueCall(m_pDevice->getDeviceTable().vkCmdDrawIndexed, *m_pCurrentBuffer, static_cast<uint32_t>(indexCount), instanceCount, static_cast<uint32_t>(indexOffset), static_cast<uint32_t>(vertexOffset), firstInstance);
+			// m_pDevice->getDeviceTable().vkCmdSetPrimitiveTopology(*m_pCurrentBuffer, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+			m_pDevice->getDeviceTable().vkCmdDrawIndexed(*m_pCurrentBuffer, static_cast<uint32_t>(indexCount), instanceCount, static_cast<uint32_t>(indexOffset), static_cast<uint32_t>(vertexOffset), firstInstance);
 		}
 
 		void VulkanCommandRecorder::executeChildren()
@@ -856,7 +850,7 @@ namespace Xenon
 			if (m_ChildCommandBuffers.empty())
 				return;
 
-			issueCall(m_pDevice->getDeviceTable().vkCmdExecuteCommands, *m_pCurrentBuffer, static_cast<uint32_t>(m_ChildCommandBuffers.size()), m_ChildCommandBuffers.data());
+			m_pDevice->getDeviceTable().vkCmdExecuteCommands(*m_pCurrentBuffer, static_cast<uint32_t>(m_ChildCommandBuffers.size()), m_ChildCommandBuffers.data());
 			m_ChildCommandBuffers.clear();
 		}
 
@@ -868,10 +862,10 @@ namespace Xenon
 			if (m_IsRenderTargetBound)
 			{
 				m_IsRenderTargetBound = false;
-				issueCall(m_pDevice->getDeviceTable().vkCmdEndRenderPass, *m_pCurrentBuffer);
+				m_pDevice->getDeviceTable().vkCmdEndRenderPass(*m_pCurrentBuffer);
 			}
 
-			issueCall(m_pDevice->getDeviceTable().vkEndCommandBuffer, *m_pCurrentBuffer);
+			m_pDevice->getDeviceTable().vkEndCommandBuffer(*m_pCurrentBuffer);
 		}
 
 		void VulkanCommandRecorder::next()
@@ -914,27 +908,6 @@ namespace Xenon
 			OPTICK_EVENT();
 
 			m_pCurrentBuffer->wait(timeout);
-		}
-
-		Xenon::Mutex<VkCommandPool>& VulkanCommandRecorder::getCommandPool()
-		{
-			switch (m_Usage)
-			{
-			case Xenon::Backend::CommandRecorderUsage::Compute:
-				return m_pDevice->getComputeCommandPool();
-
-			case Xenon::Backend::CommandRecorderUsage::Graphics:
-				return m_pDevice->getGraphicsCommandPool();
-
-			case Xenon::Backend::CommandRecorderUsage::Transfer:
-				return m_pDevice->getTransferCommandPool();
-
-			case Xenon::Backend::CommandRecorderUsage::Secondary:
-				return m_SecondaryPool;
-
-			default:
-				return m_pDevice->getGraphicsCommandPool();
-			}
 		}
 	}
 }

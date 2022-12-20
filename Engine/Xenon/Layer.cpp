@@ -8,6 +8,7 @@ namespace Xenon
 {
 	Layer::Layer(Renderer& renderer)
 		: m_Renderer(renderer)
+		, m_pCommandRecorder(renderer.getInstance().getFactory()->createCommandRecorder(renderer.getInstance().getBackendDevice(), Backend::CommandRecorderUsage::Graphics, renderer.getCommandRecorder()->getBufferCount()))
 	{
 	}
 }

@@ -37,15 +37,15 @@ ImGuiLayer::ImGuiLayer(Xenon::Renderer& renderer, Xenon::Backend::Camera* pCamer
 	setupDefaultMaterial();
 
 	// Setup the ImGui logger.
-	auto logger = std::make_shared<spdlog::logger>("XenonStudio", m_UIStorage.m_pLogs);
-	m_pDefaultLogger = spdlog::default_logger();
-	spdlog::register_logger(logger);
-	spdlog::set_default_logger(logger);
+	// auto logger = std::make_shared<spdlog::logger>("XenonStudio", m_UIStorage.m_pLogs);
+	// m_pDefaultLogger = spdlog::default_logger();
+	// spdlog::register_logger(logger);
+	// spdlog::set_default_logger(logger);
 }
 
 ImGuiLayer::~ImGuiLayer()
 {
-	spdlog::set_default_logger(m_pDefaultLogger);
+	// spdlog::set_default_logger(m_pDefaultLogger);
 
 	ImNodes::DestroyContext();
 	ImGui::DestroyContext();
@@ -229,7 +229,8 @@ void ImGuiLayer::endFrame() const
 void ImGuiLayer::bind(Xenon::Layer* pPreviousLayer, Xenon::Backend::CommandRecorder* pCommandRecorder)
 {
 	// Copy the vertex and index data if necessary.
-	prepareResources(pCommandRecorder);
+	const auto frameIndex = pCommandRecorder->getCurrentIndex();
+	prepareResources(pCommandRecorder, frameIndex);
 
 	// Draw.
 	const auto* pDrawData = ImGui::GetDrawData();
@@ -244,7 +245,6 @@ void ImGuiLayer::bind(Xenon::Layer* pPreviousLayer, Xenon::Backend::CommandRecor
 	m_UserData.m_Translate = glm::vec2(-1.0f - pDrawData->DisplayPos.x * m_UserData.m_Scale.x, -1.0f - pDrawData->DisplayPos.y * m_UserData.m_Scale.y);
 	m_pUniformBuffer->write(Xenon::ToBytes(&m_UserData), sizeof(UserData), 0, pCommandRecorder);
 
-	const auto frameIndex = pCommandRecorder->getCurrentIndex();
 	pCommandRecorder->bind(m_pVertexBuffers[frameIndex].get(), sizeof(ImDrawVert));
 	pCommandRecorder->bind(m_pIndexBuffers[frameIndex].get(), static_cast<Xenon::Backend::IndexBufferStride>(sizeof(ImDrawIdx)));
 	pCommandRecorder->setViewportNatural(0.0f, 0.0f, io.DisplaySize.x, io.DisplaySize.y, 0.0f, 1.0f);
@@ -277,6 +277,65 @@ void ImGuiLayer::bind(Xenon::Layer* pPreviousLayer, Xenon::Backend::CommandRecor
 		indexOffset += pCommandList->IdxBuffer.Size;
 		vertexOffset += pCommandList->VtxBuffer.Size;
 	}
+}
+
+void ImGuiLayer::onUpdate(Layer* pPreviousLayer, uint32_t imageIndex, uint32_t frameIndex)
+{
+	m_pCommandRecorder->begin();
+
+	// Copy the vertex and index data if necessary.
+	prepareResources(m_pCommandRecorder.get(), frameIndex);
+
+	// Draw.
+	const auto* pDrawData = ImGui::GetDrawData();
+	if (!pDrawData || pDrawData->CmdListsCount == 0)
+	{
+		m_pCommandRecorder->end();
+		return;
+	}
+
+	m_pCommandRecorder->bind(m_pRasterizer.get(), m_ClearValues);
+	m_pCommandRecorder->bind(m_pPipeline.get(), m_VertexSpecification);
+
+	const auto& io = ImGui::GetIO();
+	m_UserData.m_Scale = glm::vec2(2.0f / io.DisplaySize.x, 2.0f / io.DisplaySize.y);
+	m_UserData.m_Translate = glm::vec2(-1.0f - pDrawData->DisplayPos.x * m_UserData.m_Scale.x, -1.0f - pDrawData->DisplayPos.y * m_UserData.m_Scale.y);
+	m_pUniformBuffer->write(Xenon::ToBytes(&m_UserData), sizeof(UserData), 0, m_pCommandRecorder.get());
+
+	m_pCommandRecorder->bind(m_pVertexBuffers[frameIndex].get(), sizeof(ImDrawVert));
+	m_pCommandRecorder->bind(m_pIndexBuffers[frameIndex].get(), static_cast<Xenon::Backend::IndexBufferStride>(sizeof(ImDrawIdx)));
+	m_pCommandRecorder->setViewportNatural(0.0f, 0.0f, io.DisplaySize.x, io.DisplaySize.y, 0.0f, 1.0f);
+
+	uint64_t indexOffset = 0;
+	uint64_t vertexOffset = 0;
+	for (uint32_t i = 0; i < pDrawData->CmdListsCount; i++)
+	{
+		const auto* pCommandList = pDrawData->CmdLists[i];
+		for (uint32_t j = 0; j < pCommandList->CmdBuffer.Size; j++)
+		{
+			const auto* pCommandBuffer = &pCommandList->CmdBuffer[j];
+
+			const auto minClip = glm::vec2(pCommandBuffer->ClipRect.x - pDrawData->DisplayPos.x, pCommandBuffer->ClipRect.y - pDrawData->DisplayPos.y);
+			const auto maxClip = glm::vec2(pCommandBuffer->ClipRect.z - pDrawData->DisplayPos.x, pCommandBuffer->ClipRect.w - pDrawData->DisplayPos.y);
+			if (maxClip.x <= minClip.x || maxClip.y <= minClip.y)
+				continue;
+
+			m_pCommandRecorder->setScissor(
+				static_cast<int32_t>(minClip.x),
+				static_cast<int32_t>(minClip.y),
+				static_cast<uint32_t>(maxClip.x),
+				static_cast<uint32_t>(maxClip.y)
+			);
+
+			m_pCommandRecorder->bind(m_pPipeline.get(), m_pUserDescriptor.get(), m_pDescriptorSetMap[std::bit_cast<uint64_t>(pCommandBuffer->TextureId)].get(), nullptr);
+			m_pCommandRecorder->drawIndexed(pCommandBuffer->VtxOffset + vertexOffset, pCommandBuffer->IdxOffset + indexOffset, pCommandBuffer->ElemCount);
+		}
+
+		indexOffset += pCommandList->IdxBuffer.Size;
+		vertexOffset += pCommandList->VtxBuffer.Size;
+	}
+
+	m_pCommandRecorder->end();
 }
 
 void ImGuiLayer::registerMaterial(uint64_t hash, Xenon::MaterialIdentifier identifier)
@@ -363,7 +422,7 @@ void ImGuiLayer::setupDefaultMaterial()
 	m_VertexSpecification.addElement(Xenon::Backend::InputElement::VertexColor_0, Xenon::Backend::AttributeDataType::Vec4, Xenon::Backend::ComponentDataType::Uint8);
 }
 
-void ImGuiLayer::prepareResources(Xenon::Backend::CommandRecorder* pCommandRecorder)
+void ImGuiLayer::prepareResources(Xenon::Backend::CommandRecorder* pCommandRecorder, uint32_t frameIndex)
 {
 	// Copy the layer view.
 	m_UIStorage.m_LayerViewUI.copyLayerImage(pCommandRecorder);
@@ -381,7 +440,6 @@ void ImGuiLayer::prepareResources(Xenon::Backend::CommandRecorder* pCommandRecor
 	if (vertexBufferSize == 0 || indexBufferSize == 0)
 		return;
 
-	const auto frameIndex = pCommandRecorder->getCurrentIndex();
 	auto& pVertexBuffer = m_pVertexBuffers[frameIndex];
 	auto& pIndexBuffer = m_pIndexBuffers[frameIndex];
 

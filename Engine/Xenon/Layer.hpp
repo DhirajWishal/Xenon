@@ -84,6 +84,26 @@ namespace Xenon
 		 */
 		[[nodiscard]] const Renderer& getRenderer() const noexcept { return m_Renderer; }
 
+		/**
+		 * Get the command recorder pointer.
+		 *
+		 * @return The command recorder pointer.
+		 */
+		[[nodiscard]] Backend::CommandRecorder* getCommandRecorder() noexcept { return m_pCommandRecorder.get(); }
+
+		/**
+		 * Get the command recorder pointer.
+		 *
+		 * @return The command recorder pointer.
+		 */
+		[[nodiscard]] const Backend::CommandRecorder* getCommandRecorder() const noexcept { return m_pCommandRecorder.get(); }
+
+		/**
+		 * Select the next command buffer.
+		 * This is called by the renderer and the overriding class doesn't need to do this (and shouldn't!).
+		 */
+		void selectNextCommandBuffer() { m_pCommandRecorder->next(); }
+
 	protected:
 		Renderer& m_Renderer;
 

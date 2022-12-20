@@ -228,11 +228,11 @@ namespace Xenon
 			[[nodiscard]] const ID3D12GraphicsCommandList* getCurrentCommandList() const noexcept { return m_pCurrentCommandList; }
 
 		private:
-			std::vector<ComPtr<ID3D12CommandAllocator>> m_pCommandAllocators;
+			ComPtr<ID3D12CommandAllocator> m_CommandAllocator;
+
 			std::vector<ComPtr<ID3D12GraphicsCommandList>> m_pCommandLists;
 			std::vector<ComPtr<ID3D12Fence>> m_pCommandListFences;
 
-			ID3D12CommandAllocator* m_pCurrentCommandAllocator = nullptr;
 			ID3D12GraphicsCommandList* m_pCurrentCommandList = nullptr;
 			ID3D12Fence* m_pCurrentCommandListFence = nullptr;
 

@@ -222,17 +222,16 @@ namespace Xenon
 			else if (usage & CommandRecorderUsage::Transfer)
 				type = D3D12_COMMAND_LIST_TYPE_COPY;
 
+			// Create the command allocator.
+			XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommandAllocator(type, IID_PPV_ARGS(&m_CommandAllocator)), "Failed to create the command allocator!");
+
 			// Create the command lists.
 			m_pCommandLists.reserve(bufferCount);
 			for (uint32_t i = 0; i < bufferCount; i++)
 			{
-				// Create the command allocator.
-				ComPtr<ID3D12CommandAllocator> allocator;
-				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommandAllocator(type, IID_PPV_ARGS(&allocator)), "Failed to create the command allocator!");
-
 				// Create the command list.
 				ComPtr<ID3D12GraphicsCommandList> commandList;
-				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommandList(0, type, allocator.Get(), nullptr, IID_PPV_ARGS(&commandList)), "Failed to create the command list!");
+				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommandList(0, type, m_CommandAllocator.Get(), nullptr, IID_PPV_ARGS(&commandList)), "Failed to create the command list!");
 
 				// Create the fence.
 				ComPtr<ID3D12Fence> fence;
@@ -242,21 +241,26 @@ namespace Xenon
 				XENON_DX12_ASSERT(commandList->Close(), "Failed to stop the current command list!");
 
 				// Insert the created objects.
-				m_pCommandAllocators.emplace_back(std::move(allocator));
 				m_pCommandLists.emplace_back(std::move(commandList));
 				m_pCommandListFences.emplace_back(std::move(fence));
 			}
 
 			// Select the current objects.
-			m_pCurrentCommandAllocator = m_pCommandAllocators[m_CurrentIndex].Get();
 			m_pCurrentCommandList = m_pCommandLists[m_CurrentIndex].Get();
 			m_pCurrentCommandListFence = m_pCommandListFences[m_CurrentIndex].Get();
 		}
 
 		DX12CommandRecorder::~DX12CommandRecorder()
 		{
-			if (m_IsRecording)
-				end();
+			try
+			{
+				if (m_IsRecording)
+					end();
+			}
+			catch (...)
+			{
+				XENON_LOG_ERROR("Failed to end the command recorder!");
+			}
 		}
 
 		void DX12CommandRecorder::begin()
@@ -265,8 +269,8 @@ namespace Xenon
 
 			wait();
 
-			XENON_DX12_ASSERT(m_pCurrentCommandAllocator->Reset(), "Failed to reset the command list allocator!");
-			XENON_DX12_ASSERT(m_pCurrentCommandList->Reset(m_pCurrentCommandAllocator, nullptr), "Failed to reset the command list!");
+			XENON_DX12_ASSERT(m_CommandAllocator->Reset(), "Failed to reset the command list allocator!");
+			XENON_DX12_ASSERT(m_pCurrentCommandList->Reset(m_CommandAllocator.Get(), nullptr), "Failed to reset the command list!");
 			m_IsRecording = true;
 		}
 
@@ -642,7 +646,6 @@ namespace Xenon
 			OPTICK_EVENT();
 
 			const auto index = incrementIndex();
-			m_pCurrentCommandAllocator = m_pCommandAllocators[index].Get();
 			m_pCurrentCommandList = m_pCommandLists[index].Get();
 			m_pCurrentCommandListFence = m_pCommandListFences[index].Get();
 		}

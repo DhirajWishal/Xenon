@@ -159,48 +159,6 @@ namespace Xenon
 			[[nodiscard]] const Mutex<VulkanQueue>& getTransferQueue() const;
 
 			/**
-			 * Get the compute command pool.
-			 *
-			 * @return The compute command pool.
-			 */
-			[[nodiscard]] Mutex<VkCommandPool>& getComputeCommandPool() { return m_ComputeCommandPool; }
-
-			/**
-			 * Get the compute command pool.
-			 *
-			 * @return The compute command pool.
-			 */
-			[[nodiscard]] const Mutex<VkCommandPool>& getComputeCommandPool() const { return m_ComputeCommandPool; }
-
-			/**
-			 * Get the graphics command pool.
-			 *
-			 * @return The graphics command pool.
-			 */
-			[[nodiscard]] Mutex<VkCommandPool>& getGraphicsCommandPool() { return m_GraphicsCommandPool; }
-
-			/**
-			 * Get the graphics command pool.
-			 *
-			 * @return The graphics command pool.
-			 */
-			[[nodiscard]] const Mutex<VkCommandPool>& getGraphicsCommandPool() const { return m_GraphicsCommandPool; }
-
-			/**
-			 * Get the transfer command pool.
-			 *
-			 * @return The transfer command pool.
-			 */
-			[[nodiscard]] Mutex<VkCommandPool>& getTransferCommandPool() { return m_TransferCommandPool; }
-
-			/**
-			 * Get the transfer command pool.
-			 *
-			 * @return The transfer command pool.
-			 */
-			[[nodiscard]] const Mutex<VkCommandPool>& getTransferCommandPool() const { return m_TransferCommandPool; }
-
-			/**
 			 * Get the descriptor set manager.
 			 *
 			 * @return The descriptor set manager pointer.
@@ -230,11 +188,6 @@ namespace Xenon
 			 */
 			void createMemoryAllocator();
 
-			/**
-			 * Create the compute, graphics and transfer command pools.
-			 */
-			void createCommandPools();
-
 		private:
 			VkPhysicalDeviceProperties m_PhysicalDeviceProperties = {};
 			VolkDeviceTable m_DeviceTable;
@@ -247,10 +200,6 @@ namespace Xenon
 
 			VkDevice m_LogicalDevice = VK_NULL_HANDLE;
 			VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;
-
-			Mutex<VkCommandPool> m_ComputeCommandPool = VK_NULL_HANDLE;
-			Mutex<VkCommandPool> m_GraphicsCommandPool = VK_NULL_HANDLE;
-			Mutex<VkCommandPool> m_TransferCommandPool = VK_NULL_HANDLE;
 
 			VmaAllocator m_Allocator = nullptr;
 

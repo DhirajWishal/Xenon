@@ -8,8 +8,7 @@
 #include "../XenonCore/TaskGraph.hpp"
 
 #include "../XenonBackend/Camera.hpp"
-#include "../XenonBackend/Swapchain.hpp"
-#include "../XenonBackend/CommandRecorder.hpp"
+#include "../XenonBackend/CommandSubmitter.hpp"
 
 namespace Xenon
 {
@@ -51,7 +50,9 @@ namespace Xenon
 		{
 			auto pLayer = std::make_unique<LayerType>(*this, std::forward<Arguments>(arguments)...);
 			auto pRawPointer = pLayer.get();
+
 			m_pLayers.emplace_back(std::move(pLayer));
+			m_pSubmitCommandRecorders.emplace_back(pRawPointer->getCommandRecorder());
 
 			return pRawPointer;
 		}
@@ -146,9 +147,20 @@ namespace Xenon
 		[[nodiscard]] const Backend::CommandRecorder* getCommandRecorder() const { return m_pCommandRecorder.get(); }
 
 	private:
+		/**
+		 * Copy the previous layer to the swapchain.
+		 *
+		 * @param pPreviousLayer The previous layer pointer.
+		 * @param frameIndex The current frame index.
+		 */
+		void copyToSwapchainAndSubmit(Layer* pPreviousLayer, uint32_t frameIndex);
+
+	private:
 		TaskGraph m_TaskGraph = TaskGraph(std::thread::hardware_concurrency());
 
 		std::vector<std::unique_ptr<Layer>> m_pLayers;
+		std::vector<std::unique_ptr<Backend::CommandSubmitter>> m_pCommandSubmitters;
+		std::vector<Backend::CommandRecorder*> m_pSubmitCommandRecorders;
 
 		std::unique_ptr<Backend::Swapchain> m_pSwapChain = nullptr;
 		std::unique_ptr<Backend::CommandRecorder> m_pCommandRecorder = nullptr;

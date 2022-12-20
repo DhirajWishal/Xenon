@@ -50,6 +50,16 @@ namespace Xenon
 		void bind(Layer* pPreviousLayer, Backend::CommandRecorder* pCommandRecorder) override;
 
 		/**
+		 * Update the layer.
+		 * This is called by the renderer and all the required commands must be updated (if required) in this call.
+		 *
+		 * @param pPreviousLayer The previous layer pointer. This will be nullptr if this layer is the first.
+		 * @param imageIndex The image's index.
+		 * @param frameIndex The frame's index.
+		 */
+		void onUpdate(Layer* pPreviousLayer, uint32_t imageIndex, uint32_t frameIndex) override;
+
+		/**
 		 * Add draw data to the layer to be rendered.
 		 *
 		 * @param storage The storage to render.

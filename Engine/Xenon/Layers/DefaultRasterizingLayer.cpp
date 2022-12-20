@@ -34,29 +34,36 @@ namespace Xenon
 
 		m_Renderer.getTaskGraph().complete();
 		pCommandRecorder->executeChildren();
+	}
 
-		// pCommandRecorder->bind(m_pRasterizer.get(), { glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), 1.0f, static_cast<uint32_t>(0) });
-		// pCommandRecorder->setViewport(0.0f, 0.0f, static_cast<float>(m_Renderer.getCamera()->getWidth()), static_cast<float>(m_Renderer.getCamera()->getHeight()), 0.0f, 1.0f);
-		// pCommandRecorder->setScissor(0, 0, m_Renderer.getCamera()->getWidth(), m_Renderer.getCamera()->getHeight());
-		// 
-		// for (auto& drawData : m_DrawData)
-		// {
-		// 	pCommandRecorder->bind(drawData.m_pPipeline, drawData.m_Storage.getVertexSpecification());
-		// 	pCommandRecorder->bind(drawData.m_Storage.getVertexBuffer(), drawData.m_Storage.getVertexSpecification().getSize());
-		// 
-		// 	uint32_t materialIndex = 0;
-		// 	for (const auto& mesh : drawData.m_Storage.getMeshes())
-		// 	{
-		// 		for (const auto& subMesh : mesh.m_SubMeshes)
-		// 		{
-		// 			pCommandRecorder->bind(drawData.m_Storage.getIndexBuffer(), static_cast<Backend::IndexBufferStride>(subMesh.m_IndexSize));
-		// 			pCommandRecorder->bind(drawData.m_pPipeline, nullptr, drawData.m_pMaterialDescriptors[materialIndex].get(), drawData.m_pCameraDescriptor.get());
-		// 
-		// 			pCommandRecorder->drawIndexed(subMesh.m_VertexOffset, subMesh.m_IndexOffset, subMesh.m_IndexCount);
-		// 			materialIndex++;
-		// 		}
-		// 	}
-		// }
+	void DefaultRasterizingLayer::onUpdate(Layer* pPreviousLayer, uint32_t imageIndex, uint32_t frameIndex)
+	{
+		m_pCommandRecorder->begin();
+		m_pCommandRecorder->bind(m_pRasterizer.get(), { glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), 1.0f, static_cast<uint32_t>(0) });
+		m_pCommandRecorder->setViewport(0.0f, 0.0f, static_cast<float>(m_Renderer.getCamera()->getWidth()), static_cast<float>(m_Renderer.getCamera()->getHeight()), 0.0f, 1.0f);
+		m_pCommandRecorder->setScissor(0, 0, m_Renderer.getCamera()->getWidth(), m_Renderer.getCamera()->getHeight());
+
+		for (auto& drawData : m_DrawData)
+		{
+			m_pCommandRecorder->bind(drawData.m_pPipeline, drawData.m_Storage.getVertexSpecification());
+			m_pCommandRecorder->bind(drawData.m_Storage.getVertexBuffer(), drawData.m_Storage.getVertexSpecification().getSize());
+
+			uint32_t materialIndex = 0;
+			for (const auto& mesh : drawData.m_Storage.getMeshes())
+			{
+				for (const auto& subMesh : mesh.m_SubMeshes)
+				{
+					m_pCommandRecorder->bind(drawData.m_Storage.getIndexBuffer(), static_cast<Backend::IndexBufferStride>(subMesh.m_IndexSize));
+					m_pCommandRecorder->bind(drawData.m_pPipeline, nullptr, drawData.m_pMaterialDescriptors[materialIndex].get(), drawData.m_pCameraDescriptor.get());
+
+					m_pCommandRecorder->drawIndexed(subMesh.m_VertexOffset, subMesh.m_IndexOffset, subMesh.m_IndexCount);
+
+					materialIndex++;
+				}
+			}
+		}
+
+		m_pCommandRecorder->end();
 	}
 
 	void DefaultRasterizingLayer::addDrawData(MeshStorage&& storage, Backend::RasterizingPipeline* pPipeline)
@@ -68,25 +75,25 @@ namespace Xenon
 			subMeshCount += mesh.m_SubMeshes.size();
 
 		// Create a new draw entry.
-		auto& drawEntry = m_DrawData.emplace_back(
-			std::move(storage),
-			pPipeline,
-			m_Renderer.getInstance().getFactory()->createCommandRecorder(m_Renderer.getInstance().getBackendDevice(), Backend::CommandRecorderUsage::Secondary, subMeshCount * m_Renderer.getCommandRecorder()->getBufferCount())
-		);
+		DrawData drawEntry = {};
+		drawEntry.m_Storage = std::move(storage);
+		drawEntry.m_pPipeline = pPipeline;
+		// drawEntry.m_pCommandRecorder = m_Renderer.getInstance().getFactory()->createCommandRecorder(m_Renderer.getInstance().getBackendDevice(), Backend::CommandRecorderUsage::Secondary, subMeshCount * m_Renderer.getCommandRecorder()->getBufferCount());
 
 		// Setup the camera descriptor.
 		drawEntry.m_pCameraDescriptor = pPipeline->createDescriptor(Backend::DescriptorType::Camera);
 		drawEntry.m_pCameraDescriptor->attach(0, m_Renderer.getCamera()->getViewports().front().m_pUniformBuffer);
 
 		// Setup the material descriptors.
+		drawEntry.m_pMaterialDescriptors.reserve(subMeshCount);
 		for (const auto& mesh : drawEntry.m_Storage.getMeshes())
 		{
 			for (const auto& subMesh : mesh.m_SubMeshes)
-			{
 				drawEntry.m_pMaterialDescriptors.emplace_back(subMesh.m_MaterialIdentifier.m_pMaterial->createDescriptor(pPipeline));
-
-			}
 		}
+
+		// Insert the created draw entry.
+		m_DrawData.emplace_back(std::move(drawEntry));
 	}
 
 	void DefaultRasterizingLayer::bindDrawData(DrawData& drawData, Backend::CommandRecorder* pCommandRecorder) const

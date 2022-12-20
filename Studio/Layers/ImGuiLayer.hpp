@@ -87,6 +87,16 @@ public:
 	void bind(Xenon::Layer* pPreviousLayer, Xenon::Backend::CommandRecorder* pCommandRecorder) override;
 
 	/**
+	 * Update the layer.
+	 * This is called by the renderer and all the required commands must be updated (if required) in this call.
+	 *
+	 * @param pPreviousLayer The previous layer pointer. This will be nullptr if this layer is the first.
+	 * @param imageIndex The image's index.
+	 * @param frameIndex The frame's index.
+	 */
+	void onUpdate(Layer* pPreviousLayer, uint32_t imageIndex, uint32_t frameIndex) override;
+
+	/**
 	 * Register a material to the layer.
 	 *
 	 * @param hash The material's hash.
@@ -116,8 +126,9 @@ private:
 	 * Prepare the resources to render.
 	 *
 	 * @param pCommandRecorder The command recorder to record the copy commands to.
+	 * @param frameIndex The current frame index.
 	 */
-	void prepareResources(Xenon::Backend::CommandRecorder* pCommandRecorder);
+	void prepareResources(Xenon::Backend::CommandRecorder* pCommandRecorder, uint32_t frameIndex);
 
 	/**
 	 * Calculate the next buffer size with some overhead.

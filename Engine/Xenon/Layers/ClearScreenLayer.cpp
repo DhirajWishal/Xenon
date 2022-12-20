@@ -20,4 +20,13 @@ namespace Xenon
 
 		pCommandRecorder->bind(m_pRasterizer.get(), { m_ClearColor });
 	}
+
+	void ClearScreenLayer::onUpdate(Layer* pPreviousLayer, uint32_t imageIndex, uint32_t frameIndex)
+	{
+		OPTICK_EVENT();
+
+		m_pCommandRecorder->begin();
+		m_pCommandRecorder->bind(m_pRasterizer.get(), { m_ClearColor });
+		m_pCommandRecorder->end();
+	}
 }
