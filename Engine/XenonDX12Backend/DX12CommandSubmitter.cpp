@@ -5,6 +5,8 @@
 #include "DX12Macros.hpp"
 #include "DX12CommandRecorder.hpp"
 
+#include <optick.h>
+
 namespace Xenon
 {
 	namespace Backend
@@ -31,21 +33,47 @@ namespace Xenon
 
 		void DX12CommandSubmitter::submit(const std::vector<CommandRecorder*>& pCommandRecorders, Swapchain* pSwapchain /*= nullptr*/)
 		{
-			wait();
+			OPTICK_EVENT();
 
-			m_pCommandLists.reserve(m_pCommandLists.size());
 			for (const auto& pCommandRecorder : pCommandRecorders)
-				m_pCommandLists.emplace_back(pCommandRecorder->as<DX12CommandRecorder>()->getCurrentCommandList());
+			{
+				wait();
 
-			m_ConditionVariable.notify_one();
-			m_bIsWaiting = true;
+				std::array<ID3D12CommandList*, 1> pCommandLists = { pCommandRecorder->as<DX12CommandRecorder>()->getCurrentCommandList() };
+				m_pDevice->getDirectQueue()->ExecuteCommandLists(1, pCommandLists.data());
+				XENON_DX12_ASSERT(m_pDevice->getDirectQueue()->Signal(m_Fence.Get(), 1), "Failed to signal the fence!");
+
+				m_bIsWaiting = true;
+			}
 		}
 
 		void DX12CommandSubmitter::wait(std::chrono::milliseconds timeout /*= std::chrono::milliseconds(UINT64_MAX)*/)
 		{
-			const auto nextTimePoint = std::chrono::system_clock::now() + timeout;
-			while (nextTimePoint > std::chrono::system_clock::now() && !m_bIsWaiting)
-				std::this_thread::sleep_for(std::chrono::microseconds(100));
+			OPTICK_EVENT();
+
+			if (m_bIsWaiting)
+			{
+				const auto nextFence = m_Fence->GetCompletedValue() + 1;
+				XENON_DX12_ASSERT(m_pDevice->getDirectQueue()->Signal(m_Fence.Get(), nextFence), "Failed to signal the fence!");
+
+				if (m_Fence->GetCompletedValue() < nextFence)
+				{
+					const auto eventHandle = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
+
+					// Validate the created event handle.
+					if (eventHandle == nullptr)
+					{
+						XENON_LOG_ERROR("DirectX 12: The created fence event is nullptr!");
+						return;
+					}
+
+					XENON_DX12_ASSERT(m_Fence->SetEventOnCompletion(nextFence, eventHandle), "Failed to set the event completion handle!");
+					WaitForSingleObject(eventHandle, std::numeric_limits<DWORD>::max());
+					CloseHandle(eventHandle);
+				}
+
+				m_bIsWaiting = false;
+			}
 		}
 
 		void DX12CommandSubmitter::worker()

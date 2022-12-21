@@ -9,6 +9,8 @@
 #include "../../XenonCore/TaskNode.hpp"
 #include "../../XenonBackend/RasterizingPipeline.hpp"
 
+#include <latch>
+
 namespace Xenon
 {
 	/**
@@ -31,6 +33,20 @@ namespace Xenon
 			std::vector<std::shared_ptr<TaskNode>> m_pNodes;
 		};
 
+		/**
+		 * Draw entry structure.
+		 * This is used by the worker thread to draw.
+		 */
+		struct DrawEntry final
+		{
+			SubMesh m_SubMesh;
+			DrawData* m_pDrawData = nullptr;
+
+			Backend::Descriptor* m_pUserDefinedDescriptor = nullptr;
+			Backend::Descriptor* m_pMaterialDescriptor = nullptr;
+			Backend::Descriptor* m_pCameraDescriptor = nullptr;
+		};
+
 	public:
 		/**
 		 * Explicit constructor.
@@ -39,6 +55,11 @@ namespace Xenon
 		 * @param pCamera The camera pointer used by the renderer.
 		 */
 		explicit DefaultRasterizingLayer(Renderer& renderer, Backend::Camera* pCamera);
+
+		/**
+		 * Destructor.
+		 */
+		~DefaultRasterizingLayer() override;
 
 		/**
 		 * Bind the layer to the command recorder.
@@ -76,7 +97,21 @@ namespace Xenon
 		 */
 		void bindDrawData(DrawData& drawData, Backend::CommandRecorder* pCommandRecorder) const;
 
+		/**
+		 * Sub mesh binder function.
+		 * This is a worker function which will run on another thread and will be used to bind sub-meshes to a secondary command recorder which then will be executed
+		 * via the main graphics command recorder.
+		 */
+		void subMeshBinder();
+
 	private:
+		std::vector<std::jthread> m_Workers;
+		std::mutex m_Mutex;
+		std::condition_variable m_ConditionVariable;
+		std::unique_ptr<std::latch> m_pLatch = nullptr;
+		std::atomic_bool m_bShouldRun = true;
+
 		std::vector<DrawData> m_DrawData;
+		std::list<DrawEntry> m_DrawEntries;
 	};
 }
