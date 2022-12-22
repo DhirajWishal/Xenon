@@ -182,12 +182,15 @@ namespace Xenon
 
 			// Validate if we were able to create an image or not.
 			XENON_DX12_ASSERT(m_pAllocation == nullptr ? -1 : S_OK, "Failed to create the image!");
+			XENON_DX12_NAME_OBJECT(getResource(), "Image");
 
 			// Create the allocator.
 			XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_CommandAllocator)), "Failed to create the copy command allocator!");
+			XENON_DX12_NAME_OBJECT(m_CommandAllocator, "Image Command Allocator");
 
 			// Create the command list.
 			XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_CommandAllocator.Get(), nullptr, IID_PPV_ARGS(&m_CommandList)), "Failed to create the copy command list!");
+			XENON_DX12_NAME_OBJECT(m_CommandList, "Image Command List");
 
 			// End the command list.
 			XENON_DX12_ASSERT(m_CommandList->Close(), "Failed to stop the current command list!");
@@ -282,6 +285,8 @@ namespace Xenon
 			// Wait till the command is done executing.
 			ComPtr<ID3D12Fence> fence;
 			XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence)), "Failed to create the fence!");
+			XENON_DX12_NAME_OBJECT(fence, "Image Buffer Copy Fence");
+
 			XENON_DX12_ASSERT(m_pDevice->getDirectQueue()->Signal(fence.Get(), 1), "Failed to signal the fence!");
 
 			// Setup synchronization.
@@ -376,6 +381,8 @@ namespace Xenon
 			// Wait till the command is done executing.
 			ComPtr<ID3D12Fence> fence;
 			XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence)), "Failed to create the fence!");
+			XENON_DX12_NAME_OBJECT(fence, "Image Image Copy Fence");
+
 			XENON_DX12_ASSERT(m_pDevice->getDirectQueue()->Signal(fence.Get(), 1), "Failed to signal the fence!");
 
 			// Setup synchronization.

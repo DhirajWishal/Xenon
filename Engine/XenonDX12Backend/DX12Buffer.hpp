@@ -125,6 +125,12 @@ namespace Xenon
 			[[nodiscard]] D3D12_RESOURCE_STATES getResourceState() const noexcept { return m_CurrentState; }
 
 		private:
+			/**
+			 * Setup the required command structures.
+			 */
+			void setupCommandStructures();
+
+		private:
 			D3D12MA::Allocation* m_pAllocation = nullptr;
 
 			ComPtr<ID3D12CommandAllocator> m_CommandAllocator;

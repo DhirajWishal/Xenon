@@ -54,6 +54,7 @@ namespace Xenon
 			swapchainImageHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 			swapchainImageHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 			XENON_DX12_ASSERT(pDevice->getDevice()->CreateDescriptorHeap(&swapchainImageHeapDesc, IID_PPV_ARGS(&m_SwapchainImageHeap)), "Failed to create the swapchain image heap!");
+			XENON_DX12_NAME_OBJECT(m_SwapchainImageHeap, "Swapchain Image Heap");
 
 			// Get the heap descriptor size.
 			m_SwapchainImageHeapDescriptorSize = pDevice->getDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
@@ -68,10 +69,13 @@ namespace Xenon
 				XENON_DX12_ASSERT(m_SwapChain->GetBuffer(i, IID_PPV_ARGS(&m_SwapchainImages[i])), "Failed to get the swapchain back buffer!");
 				pDevice->getDevice()->CreateRenderTargetView(m_SwapchainImages[i].Get(), nullptr, swapchainImageHeapHandle);
 				swapchainImageHeapHandle.Offset(1, m_SwapchainImageHeapDescriptorSize);
+
+				XENON_DX12_NAME_OBJECT(m_SwapchainImages[i], "Swapchain Image");
 			}
 
 			// Create the fence.
 			XENON_DX12_ASSERT(pDevice->getDevice()->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_FrameFence)), "Failed to create the frame fence!");
+			XENON_DX12_NAME_OBJECT(m_FrameFence, "Swapchain Frame Fence");
 			m_FenceValues.resize(m_FrameCount);
 
 			// Setup the image copy container.
@@ -175,6 +179,7 @@ namespace Xenon
 				srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 				srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&m_ImageCopyContainer.m_DescriptorHeap)), "Failed to create the image-to-swapchain copy descriptor!");
+				XENON_DX12_NAME_OBJECT(m_ImageCopyContainer.m_DescriptorHeap, "Swapchain Image Copy Descriptor Heap");
 			}
 
 			// Setup the root signature.
@@ -215,6 +220,7 @@ namespace Xenon
 				ComPtr<ID3DBlob> error;
 				XENON_DX12_ASSERT(D3DX12SerializeVersionedRootSignature(&rootSignatureDesc, featureData.HighestVersion, &signature, &error), "Failed to serialize the version-ed root signature for the I2SC root signature!");
 				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&m_ImageCopyContainer.m_RootSignature)), "Failed to create the I2SC root signature!");
+				XENON_DX12_NAME_OBJECT(m_ImageCopyContainer.m_RootSignature, "Swapchain Image Copy Root Signature");
 			}
 
 			/**
@@ -254,6 +260,7 @@ namespace Xenon
 				psoDesc.SampleDesc.Count = 1;
 
 				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_ImageCopyContainer.m_PipelineState)), "Failed to create the I2SC pipeline state object!");
+				XENON_DX12_NAME_OBJECT(m_ImageCopyContainer.m_PipelineState, "Swapchain Image Copy Pipeline State");
 			}
 
 			// Setup the vertex data.
@@ -282,6 +289,8 @@ namespace Xenon
 					D3D12_RESOURCE_STATE_GENERIC_READ,
 					nullptr,
 					IID_PPV_ARGS(&m_ImageCopyContainer.m_VertexBuffer)), "Failed to create the I2SC vertex buffer!");
+
+				XENON_DX12_NAME_OBJECT(m_ImageCopyContainer.m_VertexBuffer, "Swapchain Image Copy Vertex Buffer");
 
 				// Copy the triangle data to the vertex buffer.
 				UINT8* pVertexDataBegin = nullptr;

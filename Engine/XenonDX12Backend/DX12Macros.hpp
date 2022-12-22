@@ -17,3 +17,11 @@
 	const auto XENON_DX12_UNIQUE_LINE_VARIABLE(__LINE__) = XENON_DX12_BLOB_TO_STRING(blob);	\
 	if(!XENON_DX12_UNIQUE_LINE_VARIABLE(__LINE__).empty())									\
 		XENON_LOG_FATAL("D3D12 blob: {}", XENON_DX12_UNIQUE_LINE_VARIABLE(__LINE__))
+
+#ifdef XENON_DEBUG
+#define XENON_DX12_NAME_OBJECT(object, name)	object->SetName(TEXT(name))
+
+#else 
+#define XENON_DX12_NAME_OBJECT(object, name)	::Xenon::NoOp()
+
+#endif

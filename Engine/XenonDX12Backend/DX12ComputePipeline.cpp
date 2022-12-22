@@ -170,6 +170,7 @@ namespace Xenon
 			XENON_DX12_ASSERT_BLOB(error);
 
 			XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature)), "Failed to create the root signature!");
+			XENON_DX12_NAME_OBJECT(m_RootSignature, "Compute Root Signature");
 		}
 
 		std::vector<std::byte> DX12ComputePipeline::loadPipelineSateCache() const
@@ -215,6 +216,7 @@ namespace Xenon
 				computeDesc.CachedPSO.CachedBlobSizeInBytes = 0;
 
 				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateComputePipelineState(&computeDesc, IID_PPV_ARGS(&m_PipelineState)), "Failed to create the compute pipeline!");
+				XENON_DX12_NAME_OBJECT(m_PipelineState, "Compute Pipeline State");
 			}
 
 			// Store the pipeline cache.

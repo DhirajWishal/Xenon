@@ -224,6 +224,7 @@ namespace Xenon
 
 			// Create the command allocator.
 			XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommandAllocator(type, IID_PPV_ARGS(&m_CommandAllocator)), "Failed to create the command allocator!");
+			XENON_DX12_NAME_OBJECT(m_CommandAllocator, "Command Recorder Allocator");
 
 			// Create the command lists.
 			m_pCommandLists.reserve(bufferCount);
@@ -232,10 +233,12 @@ namespace Xenon
 				// Create the command list.
 				ComPtr<ID3D12GraphicsCommandList> commandList;
 				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommandList(0, type, m_CommandAllocator.Get(), nullptr, IID_PPV_ARGS(&commandList)), "Failed to create the command list!");
+				XENON_DX12_NAME_OBJECT(commandList, "Command Recorder Command List");
 
 				// Create the fence.
 				ComPtr<ID3D12Fence> fence;
 				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence)), "Failed to create the fence!");
+				XENON_DX12_NAME_OBJECT(fence, "Command Recorder Fence");
 
 				// Close the command list.
 				XENON_DX12_ASSERT(commandList->Close(), "Failed to stop the current command list!");

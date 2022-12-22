@@ -69,14 +69,10 @@ namespace Xenon
 				IID_NULL,
 				nullptr), "Failed to create the buffer!");
 
-			// Create the allocator.
-			XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_CommandAllocator)), "Failed to create the copy command allocator!");
+			XENON_DX12_NAME_OBJECT(getResource(), "Buffer");
 
-			// Create the command list.
-			XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_CommandAllocator.Get(), nullptr, IID_PPV_ARGS(&m_CommandList)), "Failed to create the copy command list!");
-
-			// End the command list.
-			XENON_DX12_ASSERT(m_CommandList->Close(), "Failed to stop the current command list!");
+			// Setup the command structures.
+			setupCommandStructures();
 		}
 
 		DX12Buffer::DX12Buffer(DX12Device* pDevice, uint64_t size, D3D12_HEAP_TYPE heapType, D3D12_RESOURCE_STATES resourceStates, D3D12_RESOURCE_FLAGS resourceFlags /*= D3D12_RESOURCE_FLAG_NONE*/)
@@ -99,14 +95,10 @@ namespace Xenon
 				IID_NULL,
 				nullptr), "Failed to create the buffer!");
 
-			// Create the allocator.
-			XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_CommandAllocator)), "Failed to create the copy command allocator!");
+			XENON_DX12_NAME_OBJECT(getResource(), "Buffer");
 
-			// Create the command list.
-			XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_CommandAllocator.Get(), nullptr, IID_PPV_ARGS(&m_CommandList)), "Failed to create the copy command list!");
-
-			// End the command list.
-			XENON_DX12_ASSERT(m_CommandList->Close(), "Failed to stop the current command list!");
+			// Setup the command structures.
+			setupCommandStructures();
 		}
 
 		DX12Buffer::~DX12Buffer()
@@ -247,6 +239,20 @@ namespace Xenon
 				barrier = CD3DX12_RESOURCE_BARRIER::Transition(pSourceBuffer->getResource(), D3D12_RESOURCE_STATE_COPY_SOURCE, pSourceBuffer->m_CurrentState);
 				pCommandlist->ResourceBarrier(1, &barrier);
 			}
+		}
+
+		void DX12Buffer::setupCommandStructures()
+		{
+			// Create the allocator.
+			XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_CommandAllocator)), "Failed to create the copy command allocator!");
+			XENON_DX12_NAME_OBJECT(m_CommandAllocator, "Buffer Command Allocator");
+
+			// Create the command list.
+			XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_CommandAllocator.Get(), nullptr, IID_PPV_ARGS(&m_CommandList)), "Failed to create the copy command list!");
+			XENON_DX12_NAME_OBJECT(m_CommandList, "Buffer Command List");
+
+			// End the command list.
+			XENON_DX12_ASSERT(m_CommandList->Close(), "Failed to stop the current command list!");
 		}
 	}
 }

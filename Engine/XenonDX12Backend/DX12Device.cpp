@@ -232,7 +232,12 @@ namespace Xenon
 
 			// Check if we were able to create a device.
 			if (!m_Device)
+			{
 				XENON_LOG_FATAL("Failed to create a DirectX device!");
+				return;
+			}
+
+			XENON_DX12_NAME_OBJECT(m_Device, "Device");
 		}
 
 		void DX12Device::createCommandStructures()

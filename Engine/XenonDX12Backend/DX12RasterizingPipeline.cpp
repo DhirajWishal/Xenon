@@ -729,6 +729,7 @@ namespace Xenon
 					pipelineState.CachedPSO.CachedBlobSizeInBytes = 0;
 
 					XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateGraphicsPipelineState(&pipelineState, IID_PPV_ARGS(&pipeline.m_PipelineState)), "Failed to create the pipeline state!");
+					XENON_DX12_NAME_OBJECT(pipeline.m_PipelineState, "Rasterizing Pipeline State");
 				}
 
 				// Save the pipeline cache.
@@ -760,6 +761,7 @@ namespace Xenon
 			XENON_DX12_ASSERT_BLOB(error);
 
 			XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature)), "Failed to create the root signature!");
+			XENON_DX12_NAME_OBJECT(m_RootSignature, "Rasterizing Root Signature");
 		}
 
 		void DX12RasterizingPipeline::setupPipelineStateDescriptor()

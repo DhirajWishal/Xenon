@@ -112,6 +112,7 @@ namespace Xenon
 					heapDesc.NumDescriptors = m_CbvSrvUavDescriptorCount;
 					heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 					XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&m_ShaderVisibleCbvSrvUavDescriptorHeap)), "Failed to create the CBV SRV UAV descriptor heap!");
+					XENON_DX12_NAME_OBJECT(m_ShaderVisibleCbvSrvUavDescriptorHeap, "Shader Visible CBV, SRV, UAV Descriptor Heap");
 
 					// Copy the old data to the new heap.
 					if (m_CbvSrvUavDescriptorHeap)
@@ -132,6 +133,7 @@ namespace Xenon
 					heapDesc.NumDescriptors = m_SamplerDescriptorCount;
 					heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
 					XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&m_ShaderVisibleSamplerDescriptorHeap)), "Failed to create the sampler descriptor heap!");
+					XENON_DX12_NAME_OBJECT(m_ShaderVisibleSamplerDescriptorHeap, "Shader Visible Sampler Descriptor Heap");
 
 					// Copy the old data to the new heap.
 					if (m_SamplerDescriptorHeap)
@@ -192,6 +194,7 @@ namespace Xenon
 
 				ComPtr<ID3D12DescriptorHeap> newHeap;
 				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&newHeap)), "Failed to create the CBV SRV UAV descriptor heap!");
+				XENON_DX12_NAME_OBJECT(newHeap, "CBV, SRV, UAV Descriptor Heap");
 
 				// Copy the old data to the new heap.
 				if (m_CbvSrvUavDescriptorHeap)
@@ -215,6 +218,7 @@ namespace Xenon
 
 				ComPtr<ID3D12DescriptorHeap> newHeap;
 				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&newHeap)), "Failed to create the sampler descriptor heap!");
+				XENON_DX12_NAME_OBJECT(newHeap, "Sampler Descriptor Heap");
 
 				// Copy the old data to the new heap.
 				if (m_SamplerDescriptorHeap)

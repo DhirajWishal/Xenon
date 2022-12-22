@@ -38,12 +38,14 @@ namespace Xenon
 				rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&m_ColorTargetHeap)), "Failed to create the Render Target View heap!");
 				m_ColorHeapSize = m_pDevice->getDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+				XENON_DX12_NAME_OBJECT(m_ColorTargetHeap, "Rasterizer Color Target Heap");
 
 				D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
 				srvHeapDesc.NumDescriptors = 1;
 				srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 				srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&m_ColorShaderViewHeap)), "Failed to create the Render Target Shader View heap!");
+				XENON_DX12_NAME_OBJECT(m_ColorShaderViewHeap, "Rasterizer Shader Visible Color Target Heap");
 			}
 
 			if (depthDescriptorCount > 0)
@@ -54,12 +56,14 @@ namespace Xenon
 				dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&m_DepthTargetHeap)));
 				m_DepthHeapSize = m_pDevice->getDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+				XENON_DX12_NAME_OBJECT(m_DepthTargetHeap, "Rasterizer Depth Target Heap");
 
 				D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
 				srvHeapDesc.NumDescriptors = 1;
 				srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 				srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&m_DepthShaderViewHeap)), "Failed to create the Depth Target Shader View heap!");
+				XENON_DX12_NAME_OBJECT(m_DepthShaderViewHeap, "Rasterizer Shader Visible Depth Target Heap");
 			}
 
 			// Setup the render targets.

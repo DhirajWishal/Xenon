@@ -17,6 +17,7 @@ namespace Xenon
 			, m_Worker([this] { worker(); })
 		{
 			XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_Fence)), "Failed to create the fence!");
+			XENON_DX12_NAME_OBJECT(m_Fence, "Command Submitter Fence");
 		}
 
 		DX12CommandSubmitter::~DX12CommandSubmitter()
@@ -35,16 +36,15 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
+			std::vector<ID3D12CommandList*> pCommandLists;
+			pCommandLists.reserve(pCommandRecorders.size());
 			for (const auto& pCommandRecorder : pCommandRecorders)
-			{
-				wait();
+				pCommandLists.emplace_back(pCommandRecorder->as<DX12CommandRecorder>()->getCurrentCommandList());
 
-				std::array<ID3D12CommandList*, 1> pCommandLists = { pCommandRecorder->as<DX12CommandRecorder>()->getCurrentCommandList() };
-				m_pDevice->getDirectQueue()->ExecuteCommandLists(1, pCommandLists.data());
-				XENON_DX12_ASSERT(m_pDevice->getDirectQueue()->Signal(m_Fence.Get(), 1), "Failed to signal the fence!");
+			m_pDevice->getDirectQueue()->ExecuteCommandLists(static_cast<UINT>(pCommandLists.size()), pCommandLists.data());
+			XENON_DX12_ASSERT(m_pDevice->getDirectQueue()->Signal(m_Fence.Get(), 1), "Failed to signal the fence!");
 
-				m_bIsWaiting = true;
-			}
+			m_bIsWaiting = true;
 		}
 
 		void DX12CommandSubmitter::wait(std::chrono::milliseconds timeout /*= std::chrono::milliseconds(UINT64_MAX)*/)
