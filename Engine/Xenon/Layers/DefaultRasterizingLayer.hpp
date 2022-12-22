@@ -48,6 +48,13 @@ namespace Xenon
 			Backend::Descriptor* m_pCameraDescriptor = nullptr;
 		};
 
+		/**
+		 * Get the usable thread count.
+		 *
+		 * @return The usable thread count.
+		 */
+		[[nodiscard]] static uint32_t GetUsableThreadCount() { return std::thread::hardware_concurrency() / 2; }
+
 	public:
 		/**
 		 * Explicit constructor.
@@ -107,7 +114,6 @@ namespace Xenon
 		CountingFence m_Synchronization;
 
 		std::vector<DrawData> m_DrawData;
-		// std::list<DrawEntry> m_DrawEntries;
-		std::vector<std::vector<DrawEntry>> m_DrawEntries;
+		std::vector<std::vector<DrawEntry>> m_DrawEntries = std::vector<std::vector<DrawEntry>>(GetUsableThreadCount());
 	};
 }

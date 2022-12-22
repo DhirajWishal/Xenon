@@ -144,6 +144,26 @@ private:
 	void showMainMenu();
 
 	/**
+	 * Show the file menu.
+	 */
+	void showFileMenu();
+
+	/**
+	 * Show the edit menu.
+	 */
+	void showEditMenu();
+
+	/**
+	 * Show the view menu.
+	 */
+	void showViewMenu();
+
+	/**
+	 * Show the help menu.
+	 */
+	void showHelpMenu();
+
+	/**
 	 * Show all the UIs.
 	 *
 	 * @param delta The time taken from the previous frame to this.

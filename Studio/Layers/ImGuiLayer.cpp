@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "ImGuiLayer.hpp"
+
+#include "../Globals.hpp"
 #include "../CacheHandler.hpp"
 #include "../Materials/ImGuiMaterial.hpp"
 
@@ -477,6 +479,17 @@ uint64_t ImGuiLayer::getNextBufferSize(uint64_t requiredSize) const
 void ImGuiLayer::showMainMenu()
 {
 	ImGui::BeginMenuBar();
+
+	showFileMenu();
+	showEditMenu();
+	showViewMenu();
+	showHelpMenu();
+
+	ImGui::EndMenuBar();
+}
+
+void ImGuiLayer::showFileMenu()
+{
 	if (ImGui::BeginMenu("File"))
 	{
 		if (ImGui::MenuItem("Open", "Ctrl+O"));
@@ -484,11 +497,36 @@ void ImGuiLayer::showMainMenu()
 		if (ImGui::MenuItem("Save As", "Ctrl+Shift+S"));
 
 		ImGui::Separator();
-		if (ImGui::MenuItem("Close")) m_Renderer.close();
+		if (ImGui::MenuItem("Close"))
+		{
+			m_Renderer.close();
+			g_Globals.m_bExitAppliation = true;
+		}
+
+		ImGui::Separator();
+		if (ImGui::BeginMenu("Settings"))
+		{
+			if (ImGui::Selectable("Vulkan Backend", g_Globals.m_CurrentBackendType == Xenon::BackendType::Vulkan) && g_Globals.m_CurrentBackendType != Xenon::BackendType::Vulkan)
+			{
+				g_Globals.m_RequiredBackendType = Xenon::BackendType::Vulkan;
+				m_Renderer.close();
+			}
+
+			if (ImGui::Selectable("DirectX 12 Backend", g_Globals.m_CurrentBackendType == Xenon::BackendType::DirectX_12) && g_Globals.m_CurrentBackendType != Xenon::BackendType::DirectX_12)
+			{
+				g_Globals.m_RequiredBackendType = Xenon::BackendType::DirectX_12;
+				m_Renderer.close();
+			}
+
+			ImGui::EndMenu();
+		}
 
 		ImGui::EndMenu();
 	}
+}
 
+void ImGuiLayer::showEditMenu()
+{
 	if (ImGui::BeginMenu("Edit"))
 	{
 		if (ImGui::MenuItem("Cut", "Ctrl+X"));
@@ -497,7 +535,10 @@ void ImGuiLayer::showMainMenu()
 
 		ImGui::EndMenu();
 	}
+}
 
+void ImGuiLayer::showViewMenu()
+{
 	if (ImGui::BeginMenu("View"))
 	{
 		if (ImGui::MenuItem("Layer View", "Ctrl+L", nullptr, !m_UIStorage.m_LayerViewUI.isVisible())) m_UIStorage.m_LayerViewUI.show();
@@ -508,7 +549,10 @@ void ImGuiLayer::showMainMenu()
 
 		ImGui::EndMenu();
 	}
+}
 
+void ImGuiLayer::showHelpMenu()
+{
 	if (ImGui::BeginMenu("Help"))
 	{
 		if (ImGui::MenuItem("What's New?"));
@@ -520,16 +564,8 @@ void ImGuiLayer::showMainMenu()
 		ImGui::Separator();
 		ImGui::MenuItem("Version: 1.0.0", "", false, false);
 
-		if (m_Renderer.getInstance().getBackendType() == Xenon::BackendType::Vulkan)
-			ImGui::MenuItem("Backend API: Vulkan", "", false, false);
-
-		else
-			ImGui::MenuItem("Backend API: DirectX 12", "", false, false);
-
 		ImGui::EndMenu();
 	}
-
-	ImGui::EndMenuBar();
 }
 
 void ImGuiLayer::showUIs(std::chrono::nanoseconds delta)

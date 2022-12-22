@@ -12,10 +12,9 @@ namespace Xenon
 {
 	DefaultRasterizingLayer::DefaultRasterizingLayer(Renderer& renderer, Backend::Camera* pCamera)
 		: RasterizingLayer(renderer, pCamera, Backend::AttachmentType::Color | Backend::AttachmentType::Depth | Backend::AttachmentType::Stencil)
-		, m_DrawEntries(std::thread::hardware_concurrency() / 2)
 	{
-		m_Workers.reserve(std::thread::hardware_concurrency() / 2);
-		for (uint8_t i = 0; i < std::thread::hardware_concurrency() / 2; i++)
+		m_Workers.reserve(GetUsableThreadCount());
+		for (uint8_t i = 0; i < GetUsableThreadCount(); i++)
 			m_Workers.emplace_back([this, i] { subMeshBinder(i); });
 	}
 
@@ -88,6 +87,9 @@ namespace Xenon
 
 	void DefaultRasterizingLayer::subMeshBinder(uint8_t index)
 	{
+		const auto threadID = fmt::format("DefaultRasterizingLayer::subMeshBinder({})", index);
+		OPTICK_THREAD(threadID.c_str());
+
 		// Setup the secondary command recorder.
 		auto pCommandRecorder = m_Renderer.getInstance().getFactory()->createCommandRecorder(
 			m_Renderer.getInstance().getBackendDevice(),
@@ -107,6 +109,8 @@ namespace Xenon
 			if (m_bShouldRun == false)
 				return;
 
+			OPTICK_EVENT_DYNAMIC("Binding Sub-Meshes");
+
 			// Begin the command recorder.
 			pCommandRecorder->begin(m_pCommandRecorder.get());
 
@@ -115,6 +119,8 @@ namespace Xenon
 
 			for (const auto& entry : entries)
 			{
+				OPTICK_EVENT_DYNAMIC("Binding Sub-Mesh");
+
 				pCommandRecorder->bind(entry.m_pPipeline, entry.m_VertexSpecification);
 				if (lock) lock.unlock();
 

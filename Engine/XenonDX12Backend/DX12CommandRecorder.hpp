@@ -238,6 +238,8 @@ namespace Xenon
 
 			ID3D12GraphicsCommandList* m_pBundleCommandList = nullptr;
 
+			DX12CommandRecorder* m_pParentCommandRecorder = nullptr;
+
 			bool m_IsRecording = false;
 		};
 	}

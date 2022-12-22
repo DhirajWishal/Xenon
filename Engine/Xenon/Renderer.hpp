@@ -52,7 +52,15 @@ namespace Xenon
 			auto pRawPointer = pLayer.get();
 
 			m_pLayers.emplace_back(std::move(pLayer));
-			m_pSubmitCommandRecorders.emplace_back(pRawPointer->getCommandRecorder());
+
+			// Reset the command recorders.
+			m_pSubmitCommandRecorders.clear();
+			m_pSubmitCommandRecorders.reserve(m_pLayers.size() + 1);
+
+			for (const auto& pRegisteredLayer : m_pLayers)
+				m_pSubmitCommandRecorders.emplace_back(pRegisteredLayer->getCommandRecorder());
+
+			m_pSubmitCommandRecorders.emplace_back(m_pCommandRecorder.get());
 
 			return pRawPointer;
 		}

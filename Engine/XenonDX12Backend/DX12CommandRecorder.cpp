@@ -279,7 +279,8 @@ namespace Xenon
 			OPTICK_EVENT();
 
 			begin();
-			pParent->as<DX12CommandRecorder>()->setBundle(m_pCurrentCommandList);
+			m_pParentCommandRecorder = pParent->as<DX12CommandRecorder>();
+			m_pParentCommandRecorder->setBundle(m_pCurrentCommandList);
 		}
 
 		void DX12CommandRecorder::copy(Buffer* pSource, uint64_t srcOffset, Buffer* pDestination, uint64_t dstOffset, uint64_t size)
@@ -597,20 +598,41 @@ namespace Xenon
 
 		void DX12CommandRecorder::setViewport(float x, float y, float width, float height, float minDepth, float maxDepth)
 		{
-			const D3D12_VIEWPORT viewport = CD3DX12_VIEWPORT(x, y, width, height, minDepth, maxDepth);
-			m_pCurrentCommandList->RSSetViewports(1, &viewport);
+			if (m_Usage & CommandRecorderUsage::Secondary && m_pParentCommandRecorder)
+			{
+				m_pParentCommandRecorder->setViewport(x, y, width, height, minDepth, maxDepth);
+			}
+			else
+			{
+				const D3D12_VIEWPORT viewport = CD3DX12_VIEWPORT(x, y, width, height, minDepth, maxDepth);
+				m_pCurrentCommandList->RSSetViewports(1, &viewport);
+			}
 		}
 
 		void DX12CommandRecorder::setViewportNatural(float x, float y, float width, float height, float minDepth, float maxDepth)
 		{
-			const D3D12_VIEWPORT viewport = CD3DX12_VIEWPORT(x, height - y, width, -height, minDepth, maxDepth);
-			m_pCurrentCommandList->RSSetViewports(1, &viewport);
+			if (m_Usage & CommandRecorderUsage::Secondary && m_pParentCommandRecorder)
+			{
+				m_pParentCommandRecorder->setViewportNatural(x, y, width, height, minDepth, maxDepth);
+			}
+			else
+			{
+				const D3D12_VIEWPORT viewport = CD3DX12_VIEWPORT(x, height - y, width, -height, minDepth, maxDepth);
+				m_pCurrentCommandList->RSSetViewports(1, &viewport);
+			}
 		}
 
 		void DX12CommandRecorder::setScissor(int32_t x, int32_t y, uint32_t width, uint32_t height)
 		{
-			const D3D12_RECT scissor = CD3DX12_RECT(x, y, width, height);
-			m_pCurrentCommandList->RSSetScissorRects(1, &scissor);
+			if (m_Usage & CommandRecorderUsage::Secondary && m_pParentCommandRecorder)
+			{
+				m_pParentCommandRecorder->setScissor(x, y, width, height);
+			}
+			else
+			{
+				const D3D12_RECT scissor = CD3DX12_RECT(x, y, width, height);
+				m_pCurrentCommandList->RSSetScissorRects(1, &scissor);
+			}
 		}
 
 		void DX12CommandRecorder::drawIndexed(uint64_t vertexOffset, uint64_t indexOffset, uint64_t indexCount, uint32_t instanceCount /*= 1*/, uint32_t firstInstance /*= 0*/)

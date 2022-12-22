@@ -32,6 +32,7 @@ set(
 	"CacheHandler.cpp"
 	"CacheHandler.hpp"
 	"UIComponent.hpp"
+	"Globals.hpp"
 
 	"Layers/ImGuiLayer.cpp"
 	"Layers/ImGuiLayer.hpp"

@@ -85,12 +85,8 @@ namespace Xenon
 		// End the command recorder.
 		m_pCommandRecorder->end();
 
-		// TODO: Find a better system for this.
-		std::vector<Backend::CommandRecorder*> pSubmitCommandBuffers = m_pSubmitCommandRecorders;
-		pSubmitCommandBuffers.emplace_back(m_pCommandRecorder.get());
-
 		// Submit the commands to the GPU.
-		m_pCommandSubmitters[m_pCommandRecorder->getCurrentIndex()]->submit(pSubmitCommandBuffers, m_pSwapChain.get());
+		m_pCommandSubmitters[m_pCommandRecorder->getCurrentIndex()]->submit(m_pSubmitCommandRecorders, m_pSwapChain.get());
 
 		// Present the swapchain.
 		m_pSwapChain->present();

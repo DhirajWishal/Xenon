@@ -2,17 +2,21 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "Studio.hpp"
+#include "Globals.hpp"
 
 void run(Xenon::BackendType backend)
 {
+	g_Globals.m_CurrentBackendType = backend;
+
 	auto studio = Studio(backend);
 	studio.run();
 }
 
 int main()
 {
-	run(Xenon::BackendType::Vulkan);
-	run(Xenon::BackendType::DirectX_12);
+	g_Globals.m_RequiredBackendType = Xenon::BackendType::Vulkan;
+	while (!g_Globals.m_bExitAppliation)
+		run(g_Globals.m_RequiredBackendType);
 
 	return 0;
 }
