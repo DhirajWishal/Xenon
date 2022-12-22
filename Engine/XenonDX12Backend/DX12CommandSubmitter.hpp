@@ -45,17 +45,6 @@ namespace Xenon
 			void wait(std::chrono::milliseconds timeout = std::chrono::milliseconds(UINT64_MAX)) override;
 
 		private:
-			/**
-			 * Worker function.
-			 */
-			void worker();
-
-		private:
-			std::jthread m_Worker;
-			std::condition_variable m_ConditionVariable;
-			std::mutex m_Mutex;
-			std::atomic_bool m_bShouldRun = true;
-
 			std::vector<ID3D12CommandList*> m_pCommandLists;
 
 			ComPtr<ID3D12Fence> m_Fence;

@@ -14,7 +14,6 @@ namespace Xenon
 		DX12CommandSubmitter::DX12CommandSubmitter(DX12Device* pDevice)
 			: CommandSubmitter(pDevice)
 			, DX12DeviceBoundObject(pDevice)
-			, m_Worker([this] { worker(); })
 		{
 			XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_Fence)), "Failed to create the fence!");
 			XENON_DX12_NAME_OBJECT(m_Fence, "Command Submitter Fence");
@@ -36,13 +35,13 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
-			std::vector<ID3D12CommandList*> pCommandLists;
-			pCommandLists.reserve(pCommandRecorders.size());
-			for (const auto& pCommandRecorder : pCommandRecorders)
-				pCommandLists.emplace_back(pCommandRecorder->as<DX12CommandRecorder>()->getCurrentCommandList());
-
-			m_pDevice->getDirectQueue()->ExecuteCommandLists(static_cast<UINT>(pCommandLists.size()), pCommandLists.data());
-			XENON_DX12_ASSERT(m_pDevice->getDirectQueue()->Signal(m_Fence.Get(), 1), "Failed to signal the fence!");
+			m_Fence->Signal(0);
+			for (UINT i = 0; i < static_cast<UINT>(pCommandRecorders.size()); i++)
+			{
+				std::array<ID3D12CommandList*, 1> pCommandLists = { pCommandRecorders[i]->as<DX12CommandRecorder>()->getCurrentCommandList() };
+				m_pDevice->getDirectQueue()->ExecuteCommandLists(1, pCommandLists.data());
+				XENON_DX12_ASSERT(m_pDevice->getDirectQueue()->Signal(m_Fence.Get(), i + 1), "Failed to signal the fence!");
+			}
 
 			m_bIsWaiting = true;
 		}
@@ -53,6 +52,7 @@ namespace Xenon
 
 			if (m_bIsWaiting)
 			{
+				const auto completedValue = m_Fence->GetCompletedValue();
 				const auto nextFence = m_Fence->GetCompletedValue() + 1;
 				XENON_DX12_ASSERT(m_pDevice->getDirectQueue()->Signal(m_Fence.Get(), nextFence), "Failed to signal the fence!");
 
@@ -74,53 +74,6 @@ namespace Xenon
 
 				m_bIsWaiting = false;
 			}
-		}
-
-		void DX12CommandSubmitter::worker()
-		{
-			auto lock = std::unique_lock(m_Mutex);
-
-			do
-			{
-				// Wait till the previous command list has been executed.
-				if (m_bIsWaiting)
-				{
-					const auto nextFence = m_Fence->GetCompletedValue() + 1;
-					XENON_DX12_ASSERT(m_pDevice->getDirectQueue()->Signal(m_Fence.Get(), nextFence), "Failed to signal the fence!");
-
-					if (m_Fence->GetCompletedValue() < nextFence)
-					{
-						const auto eventHandle = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
-
-						// Validate the created event handle.
-						if (eventHandle == nullptr)
-						{
-							XENON_LOG_ERROR("DirectX 12: The created fence event is nullptr!");
-							return;
-						}
-
-						XENON_DX12_ASSERT(m_Fence->SetEventOnCompletion(nextFence, eventHandle), "Failed to set the event completion handle!");
-						WaitForSingleObject(eventHandle, std::numeric_limits<DWORD>::max());
-						CloseHandle(eventHandle);
-					}
-
-					m_bIsWaiting = false;
-				}
-
-				// Wait till the condition variable is signaled, or if we should terminate or if there are commands to be executed.
-				m_ConditionVariable.wait(lock, [this] {return m_bShouldRun == false || m_pCommandLists.empty() == false; });
-
-				// Execute the next command list if there are any.
-				if (!m_pCommandLists.empty())
-				{
-					m_pDevice->getDirectQueue()->ExecuteCommandLists(1, &m_pCommandLists.front());
-					XENON_DX12_ASSERT(m_pDevice->getDirectQueue()->Signal(m_Fence.Get(), 1), "Failed to signal the fence!");
-					m_pCommandLists.erase(m_pCommandLists.begin());
-
-					m_bIsWaiting = true;
-				}
-
-			} while (m_bShouldRun || !m_pCommandLists.empty());
 		}
 	}
 }

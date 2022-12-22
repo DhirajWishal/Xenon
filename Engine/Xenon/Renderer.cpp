@@ -94,6 +94,7 @@ namespace Xenon
 		// Select the next command buffer.
 		m_pCommandRecorder->next();
 
+		// Do the same for the layers.
 		for (const auto& pLayer : m_pLayers)
 			pLayer->selectNextCommandBuffer();
 	}

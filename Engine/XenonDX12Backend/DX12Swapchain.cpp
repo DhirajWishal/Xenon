@@ -45,7 +45,6 @@ namespace Xenon
 
 			// This sample does not support full screen transitions.
 			XENON_DX12_ASSERT(pDevice->getFactory()->MakeWindowAssociation(windowHandle, DXGI_MWA_NO_ALT_ENTER), "Failed to make the window association!");
-
 			XENON_DX12_ASSERT(swapChain.As(&m_SwapChain), "Failed to assign the swapchain!");
 
 			// Create the swapchain image heap.
@@ -192,8 +191,7 @@ namespace Xenon
 				if (FAILED(m_pDevice->getDevice()->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &featureData, sizeof(featureData))))
 					featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
 
-				CD3DX12_DESCRIPTOR_RANGE1 range = {};
-				range.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC);
+				const auto range = CD3DX12_DESCRIPTOR_RANGE1(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC);
 
 				CD3DX12_ROOT_PARAMETER1 rootParameter = {};
 				rootParameter.InitAsDescriptorTable(1, &range, D3D12_SHADER_VISIBILITY_PIXEL);

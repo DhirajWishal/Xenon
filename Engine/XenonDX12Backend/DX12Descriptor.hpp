@@ -54,11 +54,25 @@ namespace Xenon
 			[[nodiscard]] UINT getCbvSrvUavDescriptorHeapStart() const { return m_CbvSrvUavDescriptorHeapStart; }
 
 			/**
+			 * Get the CBV, SRV and UAV descriptor heap increment size.
+			 *
+			 * @return The heap increment size.
+			 */
+			[[nodiscard]] UINT getCbvSrvUavDescriptorHeapIncrementSize() const { return m_pManager->getCbvSrvUavHeapIncrementSize(); }
+
+			/**
 			 * Get the sampler descriptor heap start.
 			 *
 			 * @return The heap start.
 			 */
-			[[nodiscard]] UINT getSamplerescriptorHeapStart() const { return m_SamplerDescriptorHeapStart; }
+			[[nodiscard]] UINT getSamplerDescriptorHeapStart() const { return m_SamplerDescriptorHeapStart; }
+
+			/**
+			 * Get the sampler descriptor heap increment size.
+			 *
+			 * @return The heap increment size.
+			 */
+			[[nodiscard]] UINT getSamplerDescriptorHeapIncrementSize() const { return m_pManager->getSamplerHeapIncrementSize(); }
 
 			/**
 			 * Check if the descriptor has buffers.

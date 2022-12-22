@@ -233,7 +233,49 @@ namespace Xenon
 				// Create the command list.
 				ComPtr<ID3D12GraphicsCommandList> commandList;
 				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommandList(0, type, m_CommandAllocator.Get(), nullptr, IID_PPV_ARGS(&commandList)), "Failed to create the command list!");
-				XENON_DX12_NAME_OBJECT(commandList, "Command Recorder Command List");
+
+#ifdef XENON_DEBUG
+				switch (type)
+				{
+				case D3D12_COMMAND_LIST_TYPE_DIRECT:
+					XENON_DX12_NAME_OBJECT(commandList, "Command Recorder Direct Command List");
+					break;
+
+				case D3D12_COMMAND_LIST_TYPE_BUNDLE:
+					XENON_DX12_NAME_OBJECT(commandList, "Command Recorder Bundle Command List");
+					break;
+
+				case D3D12_COMMAND_LIST_TYPE_COMPUTE:
+					XENON_DX12_NAME_OBJECT(commandList, "Command Recorder Compute Command List");
+					break;
+
+				case D3D12_COMMAND_LIST_TYPE_COPY:
+					XENON_DX12_NAME_OBJECT(commandList, "Command Recorder Copy Command List");
+					break;
+
+				case D3D12_COMMAND_LIST_TYPE_VIDEO_DECODE:
+					XENON_DX12_NAME_OBJECT(commandList, "Command Recorder Video Decode Command List");
+					break;
+
+				case D3D12_COMMAND_LIST_TYPE_VIDEO_PROCESS:
+					XENON_DX12_NAME_OBJECT(commandList, "Command Recorder Video Process Command List");
+					break;
+
+				case D3D12_COMMAND_LIST_TYPE_VIDEO_ENCODE:
+					XENON_DX12_NAME_OBJECT(commandList, "Command Recorder Video Encode Command List");
+					break;
+
+				case D3D12_COMMAND_LIST_TYPE_NONE:
+					XENON_DX12_NAME_OBJECT(commandList, "Command Recorder None Command List");
+					break;
+
+				default:
+					XENON_DX12_NAME_OBJECT(commandList, "Command Recorder Unknown Command List");
+					break;
+				}
+
+#endif // XENON_DEBUG
+
 
 				// Create the fence.
 				ComPtr<ID3D12Fence> fence;
@@ -522,47 +564,44 @@ namespace Xenon
 			const auto& heaps = pPipeline->as<DX12RasterizingPipeline>()->getDescriptorHeapStorage();
 			m_pCurrentCommandList->SetDescriptorHeaps(static_cast<UINT>(heaps.size()), heaps.data());
 
-			const auto cbvSrvUavIncementSize = m_pDevice->getDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-			const auto smaplerIncementSize = m_pDevice->getDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
-
 			UINT index = 0;
 			if (pUserDefinedDescriptor)
 			{
 				auto pDx12UserDefinedDescriptor = pUserDefinedDescriptor->as<DX12Descriptor>();
 				const auto cbvSrvUavStart = pDx12UserDefinedDescriptor->getCbvSrvUavDescriptorHeapStart();
-				const auto samplerStart = pDx12UserDefinedDescriptor->getSamplerescriptorHeapStart();
+				const auto samplerStart = pDx12UserDefinedDescriptor->getSamplerDescriptorHeapStart();
 
 				if (pDx12UserDefinedDescriptor->hasBuffers())
-					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[0]->GetGPUDescriptorHandleForHeapStart(), cbvSrvUavStart, cbvSrvUavIncementSize));
+					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[0]->GetGPUDescriptorHandleForHeapStart(), cbvSrvUavStart, pDx12UserDefinedDescriptor->getCbvSrvUavDescriptorHeapIncrementSize()));
 
 				if (pDx12UserDefinedDescriptor->hasSampler())
-					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[1]->GetGPUDescriptorHandleForHeapStart(), samplerStart, smaplerIncementSize));
+					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[1]->GetGPUDescriptorHandleForHeapStart(), samplerStart, pDx12UserDefinedDescriptor->getSamplerDescriptorHeapIncrementSize()));
 			}
 
 			if (pMaterialDescriptor)
 			{
 				auto pDx12MaterialDescriptor = pMaterialDescriptor->as<DX12Descriptor>();
 				const auto cbvSrvUavStart = pDx12MaterialDescriptor->getCbvSrvUavDescriptorHeapStart();
-				const auto samplerStart = pDx12MaterialDescriptor->getSamplerescriptorHeapStart();
+				const auto samplerStart = pDx12MaterialDescriptor->getSamplerDescriptorHeapStart();
 
 				if (pDx12MaterialDescriptor->hasBuffers())
-					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[0]->GetGPUDescriptorHandleForHeapStart(), cbvSrvUavStart, cbvSrvUavIncementSize));
+					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[0]->GetGPUDescriptorHandleForHeapStart(), cbvSrvUavStart, pDx12MaterialDescriptor->getCbvSrvUavDescriptorHeapIncrementSize()));
 
 				if (pDx12MaterialDescriptor->hasSampler())
-					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[1]->GetGPUDescriptorHandleForHeapStart(), samplerStart, smaplerIncementSize));
+					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[1]->GetGPUDescriptorHandleForHeapStart(), samplerStart, pDx12MaterialDescriptor->getSamplerDescriptorHeapIncrementSize()));
 			}
 
 			if (pCameraDescriptor)
 			{
 				auto pDx12CameraDescriptor = pCameraDescriptor->as<DX12Descriptor>();
 				const auto cbvSrvUavStart = pDx12CameraDescriptor->getCbvSrvUavDescriptorHeapStart();
-				const auto samplerStart = pDx12CameraDescriptor->getSamplerescriptorHeapStart();
+				const auto samplerStart = pDx12CameraDescriptor->getSamplerDescriptorHeapStart();
 
 				if (pDx12CameraDescriptor->hasBuffers())
-					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[0]->GetGPUDescriptorHandleForHeapStart(), cbvSrvUavStart, cbvSrvUavIncementSize));
+					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[0]->GetGPUDescriptorHandleForHeapStart(), cbvSrvUavStart, pDx12CameraDescriptor->getCbvSrvUavDescriptorHeapIncrementSize()));
 
 				if (pDx12CameraDescriptor->hasSampler())
-					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[1]->GetGPUDescriptorHandleForHeapStart(), samplerStart, smaplerIncementSize));
+					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[1]->GetGPUDescriptorHandleForHeapStart(), samplerStart, pDx12CameraDescriptor->getSamplerDescriptorHeapIncrementSize()));
 			}
 		}
 
