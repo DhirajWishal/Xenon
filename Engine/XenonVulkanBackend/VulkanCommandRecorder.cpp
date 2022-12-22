@@ -367,6 +367,7 @@ namespace Xenon
 			m_pDevice->getDeviceTable().vkBeginCommandBuffer(*m_pCurrentBuffer, &beginInfo);
 
 			// Insert he child (this) command buffer.
+			auto lock = std::scoped_lock(m_ChildCommandMutex);
 			pVkParent->m_ChildCommandBuffers.emplace_back(m_pCurrentBuffer->getCommandBuffer());
 		}
 
@@ -809,6 +810,8 @@ namespace Xenon
 
 		void VulkanCommandRecorder::setViewport(float x, float y, float width, float height, float minDepth, float maxDepth)
 		{
+			OPTICK_EVENT();
+
 			VkViewport viewport = {};
 			viewport.x = x;
 			viewport.y = y;
@@ -821,11 +824,15 @@ namespace Xenon
 
 		void VulkanCommandRecorder::setViewportNatural(float x, float y, float width, float height, float minDepth, float maxDepth)
 		{
+			OPTICK_EVENT();
+
 			setViewport(x, y, width, height, minDepth, maxDepth);
 		}
 
 		void VulkanCommandRecorder::setScissor(int32_t x, int32_t y, uint32_t width, uint32_t height)
 		{
+			OPTICK_EVENT();
+
 			VkRect2D scissorRect = {};
 			scissorRect.offset.x = x;
 			scissorRect.offset.y = y;
@@ -845,6 +852,8 @@ namespace Xenon
 		void VulkanCommandRecorder::executeChildren()
 		{
 			OPTICK_EVENT();
+
+			auto lock = std::scoped_lock(m_ChildCommandMutex);
 
 			// Skip if we don't have any children :(
 			if (m_ChildCommandBuffers.empty())

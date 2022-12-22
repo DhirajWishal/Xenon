@@ -107,7 +107,7 @@ namespace Xenon
 			 *
 			 * @return The increment size.
 			 */
-			[[nodiscard]] UINT getCbvSrvUavHeapIncrementSize() const { return m_pDevice->getDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV); }
+			[[nodiscard]] UINT getCbvSrvUavHeapIncrementSize() const { return m_CbvSrvUavHeapIncrementSize; }
 
 			/**
 			 * Get the CPU sampler heap start.
@@ -128,7 +128,7 @@ namespace Xenon
 			 *
 			 * @return The increment size.
 			 */
-			[[nodiscard]] UINT getSamplerHeapIncrementSize() const { return m_pDevice->getDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER); }
+			[[nodiscard]] UINT getSamplerHeapIncrementSize() const { return m_SamplerHeapIncrementSize; }
 
 		private:
 			/**
@@ -159,6 +159,9 @@ namespace Xenon
 
 			ComPtr<ID3D12DescriptorHeap> m_ShaderVisibleCbvSrvUavDescriptorHeap;
 			ComPtr<ID3D12DescriptorHeap> m_ShaderVisibleSamplerDescriptorHeap;
+
+			UINT m_CbvSrvUavHeapIncrementSize = 0;
+			UINT m_SamplerHeapIncrementSize = 0;
 
 			UINT m_CbvSrvUavDescriptorCount = 0;
 			UINT m_SamplerDescriptorCount = 0;

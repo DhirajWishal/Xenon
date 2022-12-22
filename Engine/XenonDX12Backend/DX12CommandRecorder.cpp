@@ -325,7 +325,7 @@ namespace Xenon
 
 			begin();
 			m_pParentCommandRecorder = pParent->as<DX12CommandRecorder>();
-			m_pParentCommandRecorder->setBundle(m_pCurrentCommandList);
+			m_pParentCommandRecorder->addBundle(m_pCurrentCommandList);
 		}
 
 		void DX12CommandRecorder::copy(Buffer* pSource, uint64_t srcOffset, Buffer* pDestination, uint64_t dstOffset, uint64_t size)
@@ -640,6 +640,8 @@ namespace Xenon
 
 		void DX12CommandRecorder::setViewport(float x, float y, float width, float height, float minDepth, float maxDepth)
 		{
+			OPTICK_EVENT();
+
 			if (m_Usage & CommandRecorderUsage::Secondary && m_pParentCommandRecorder)
 			{
 				m_pParentCommandRecorder->setViewport(x, y, width, height, minDepth, maxDepth);
@@ -653,6 +655,8 @@ namespace Xenon
 
 		void DX12CommandRecorder::setViewportNatural(float x, float y, float width, float height, float minDepth, float maxDepth)
 		{
+			OPTICK_EVENT();
+
 			if (m_Usage & CommandRecorderUsage::Secondary && m_pParentCommandRecorder)
 			{
 				m_pParentCommandRecorder->setViewportNatural(x, y, width, height, minDepth, maxDepth);
@@ -666,6 +670,8 @@ namespace Xenon
 
 		void DX12CommandRecorder::setScissor(int32_t x, int32_t y, uint32_t width, uint32_t height)
 		{
+			OPTICK_EVENT();
+
 			if (m_Usage & CommandRecorderUsage::Secondary && m_pParentCommandRecorder)
 			{
 				m_pParentCommandRecorder->setScissor(x, y, width, height);
@@ -689,11 +695,11 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
-			if (m_pBundleCommandList != nullptr)
-			{
-				m_pCurrentCommandList->ExecuteBundle(m_pBundleCommandList);
-				m_pBundleCommandList = nullptr;
-			}
+			auto lock = std::scoped_lock(m_CommandBundleMutex);
+			for (const auto pBundleCommandList : m_pBundleCommandLists)
+				m_pCurrentCommandList->ExecuteBundle(pBundleCommandList);
+
+			m_pBundleCommandLists.clear();
 		}
 
 		void DX12CommandRecorder::end()
@@ -760,6 +766,12 @@ namespace Xenon
 				WaitForSingleObject(eventHandle, static_cast<DWORD>(timeout));
 				CloseHandle(eventHandle);
 			}
+		}
+
+		void DX12CommandRecorder::addBundle(ID3D12GraphicsCommandList* pCommandList)
+		{
+			auto lock = std::scoped_lock(m_CommandBundleMutex);
+			m_pBundleCommandLists.emplace_back(pCommandList);
 		}
 	}
 }

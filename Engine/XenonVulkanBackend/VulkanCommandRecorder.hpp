@@ -232,6 +232,7 @@ namespace Xenon
 			[[nodiscard]] const VulkanCommandBuffer* getCurrentCommandBuffer() const noexcept { return m_pCurrentBuffer; }
 
 		private:
+			std::mutex m_ChildCommandMutex;
 			VkCommandBufferInheritanceInfo m_InheritanceInfo = {};
 
 			VkCommandPool m_CommandPool = VK_NULL_HANDLE;
