@@ -7,9 +7,8 @@
 #include "../MeshStorage.hpp"
 
 #include "../../XenonCore/TaskNode.hpp"
+#include "../../XenonCore/CountingFence.hpp"
 #include "../../XenonBackend/RasterizingPipeline.hpp"
-
-#include <latch>
 
 namespace Xenon
 {
@@ -25,12 +24,8 @@ namespace Xenon
 		struct DrawData final
 		{
 			MeshStorage m_Storage;
-			Backend::RasterizingPipeline* m_pPipeline = nullptr;
-			std::unique_ptr<Backend::CommandRecorder> m_pCommandRecorder = nullptr;
 
 			std::unique_ptr<Backend::Descriptor> m_pCameraDescriptor = nullptr;
-			std::vector<std::unique_ptr<Backend::Descriptor>> m_pMaterialDescriptors;
-			std::vector<std::shared_ptr<TaskNode>> m_pNodes;
 		};
 
 		/**
@@ -40,10 +35,16 @@ namespace Xenon
 		struct DrawEntry final
 		{
 			SubMesh m_SubMesh;
-			DrawData* m_pDrawData = nullptr;
+
+			Backend::VertexSpecification m_VertexSpecification;
+
+			Backend::Buffer* m_pVertexBuffer = nullptr;
+			Backend::Buffer* m_pIndexBuffer = nullptr;
+
+			Backend::RasterizingPipeline* m_pPipeline = nullptr;
 
 			Backend::Descriptor* m_pUserDefinedDescriptor = nullptr;
-			Backend::Descriptor* m_pMaterialDescriptor = nullptr;
+			std::unique_ptr<Backend::Descriptor> m_pMaterialDescriptor = nullptr;
 			Backend::Descriptor* m_pCameraDescriptor = nullptr;
 		};
 
@@ -90,28 +91,23 @@ namespace Xenon
 
 	private:
 		/**
-		 * Bind the draw data on another thread.
-		 *
-		 * @param drawData The draw data reference.
-		 * @param pCommandRecorder The command recorder pointer.
-		 */
-		void bindDrawData(DrawData& drawData, Backend::CommandRecorder* pCommandRecorder) const;
-
-		/**
 		 * Sub mesh binder function.
 		 * This is a worker function which will run on another thread and will be used to bind sub-meshes to a secondary command recorder which then will be executed
 		 * via the main graphics command recorder.
+		 *
+		 * @param index The index of the current thread.
 		 */
-		void subMeshBinder();
+		void subMeshBinder(uint8_t index);
 
 	private:
 		std::vector<std::jthread> m_Workers;
 		std::mutex m_Mutex;
 		std::condition_variable m_ConditionVariable;
-		std::unique_ptr<std::latch> m_pLatch = nullptr;
 		std::atomic_bool m_bShouldRun = true;
+		CountingFence m_Synchronization;
 
 		std::vector<DrawData> m_DrawData;
-		std::list<DrawEntry> m_DrawEntries;
+		// std::list<DrawEntry> m_DrawEntries;
+		std::vector<std::vector<DrawEntry>> m_DrawEntries;
 	};
 }

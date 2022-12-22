@@ -27,6 +27,8 @@ set(
 	"TaskGraph.hpp"
 	"ThreadPool.cpp"
 	"ThreadPool.hpp"
+	"CountingFence.cpp"
+	"CountingFence.hpp"
 )
 
 # Add the source group.
