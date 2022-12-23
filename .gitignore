@@ -354,3 +354,4 @@ CMakeSettings.json
 out/
 
 Build/
+!Developer/*/*.opt

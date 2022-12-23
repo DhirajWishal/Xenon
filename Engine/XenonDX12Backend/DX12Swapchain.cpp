@@ -130,12 +130,19 @@ namespace Xenon
 
 		void DX12Swapchain::prepareDescriptorForImageCopy(DX12Image* pImage)
 		{
+			OPTICK_EVENT();
+
+			// Skip if we have already created the required resource view for the image.
+			if (m_ImageCopyContainer.m_pPreviousColorImage == pImage)
+				return;
+
+			// Else setup the resource view.
 			D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 			srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 			srvDesc.Format = m_pDevice->convertFormat(pImage->getDataFormat());
 			srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 			srvDesc.Texture2D.MipLevels = 1;
-			m_pDevice->getDevice()->CreateShaderResourceView(pImage->getResource(), &srvDesc, m_ImageCopyContainer.m_DescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+			m_pDevice->getDevice()->CreateShaderResourceView(pImage->getResource(), &srvDesc, m_ImageCopyContainer.m_CbvSrvUavDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 		}
 
 		DXGI_FORMAT DX12Swapchain::getBestSwapchainFormat() const
@@ -173,12 +180,38 @@ namespace Xenon
 		{
 			// Setup the descriptor heap for the incoming image.
 			{
+				// Setup the texture descriptor.
 				D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
 				srvHeapDesc.NumDescriptors = 1;
 				srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 				srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&m_ImageCopyContainer.m_DescriptorHeap)), "Failed to create the image-to-swapchain copy descriptor!");
-				XENON_DX12_NAME_OBJECT(m_ImageCopyContainer.m_DescriptorHeap, "Swapchain Image Copy Descriptor Heap");
+				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&m_ImageCopyContainer.m_CbvSrvUavDescriptorHeap)), "Failed to create the image-to-swapchain copy CBV, SRV and UAV descriptor!");
+				XENON_DX12_NAME_OBJECT(m_ImageCopyContainer.m_CbvSrvUavDescriptorHeap, "Swapchain Image Copy CBV, SRV and UAV Descriptor Heap");
+
+				// Setup the sampler descriptor.
+				D3D12_DESCRIPTOR_HEAP_DESC samplerHeapDesc = {};
+				samplerHeapDesc.NumDescriptors = 1;
+				samplerHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
+				samplerHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateDescriptorHeap(&samplerHeapDesc, IID_PPV_ARGS(&m_ImageCopyContainer.m_SamplerDescriptorHeap)), "Failed to create the image-to-swapchain copy sampler descriptor!");
+				XENON_DX12_NAME_OBJECT(m_ImageCopyContainer.m_SamplerDescriptorHeap, "Swapchain Image Copy Sampler Descriptor Heap");
+
+				// Setup the sampler to improve performance.
+				D3D12_SAMPLER_DESC sampler = {};
+				sampler.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
+				sampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+				sampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+				sampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+				sampler.MipLODBias = 0;
+				sampler.MaxAnisotropy = 0;
+				sampler.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+				sampler.BorderColor[0] = 0.0f;
+				sampler.BorderColor[1] = 0.0f;
+				sampler.BorderColor[2] = 0.0f;
+				sampler.BorderColor[3] = 0.0f;
+				sampler.MinLOD = 0.0f;
+				sampler.MaxLOD = D3D12_FLOAT32_MAX;
+				m_pDevice->getDevice()->CreateSampler(&sampler, m_ImageCopyContainer.m_SamplerDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 			}
 
 			// Setup the root signature.
@@ -191,28 +224,18 @@ namespace Xenon
 				if (FAILED(m_pDevice->getDevice()->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &featureData, sizeof(featureData))))
 					featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
 
-				const auto range = CD3DX12_DESCRIPTOR_RANGE1(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC);
+				const std::array<D3D12_DESCRIPTOR_RANGE1, 2> range = { CD3DX12_DESCRIPTOR_RANGE1(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0), CD3DX12_DESCRIPTOR_RANGE1(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 0) };
+				std::array<CD3DX12_ROOT_PARAMETER1, 2> rootParameters = {};
 
 				CD3DX12_ROOT_PARAMETER1 rootParameter = {};
-				rootParameter.InitAsDescriptorTable(1, &range, D3D12_SHADER_VISIBILITY_PIXEL);
+				rootParameter.InitAsDescriptorTable(1, &range[0], D3D12_SHADER_VISIBILITY_PIXEL);
+				rootParameters[0] = rootParameter;
 
-				D3D12_STATIC_SAMPLER_DESC sampler = {};
-				sampler.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
-				sampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
-				sampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
-				sampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
-				sampler.MipLODBias = 0;
-				sampler.MaxAnisotropy = 0;
-				sampler.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
-				sampler.BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;
-				sampler.MinLOD = 0.0f;
-				sampler.MaxLOD = D3D12_FLOAT32_MAX;
-				sampler.ShaderRegister = 0;
-				sampler.RegisterSpace = 0;
-				sampler.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+				rootParameter.InitAsDescriptorTable(1, &range[1], D3D12_SHADER_VISIBILITY_PIXEL);
+				rootParameters[1] = rootParameter;
 
 				CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc = {};
-				rootSignatureDesc.Init_1_1(1, &rootParameter, 1, &sampler, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+				rootSignatureDesc.Init_1_1(static_cast<UINT>(rootParameters.size()), rootParameters.data(), 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 				ComPtr<ID3DBlob> signature;
 				ComPtr<ID3DBlob> error;

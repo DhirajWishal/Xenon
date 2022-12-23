@@ -27,9 +27,12 @@ namespace Xenon
 			{
 				ComPtr<ID3D12RootSignature> m_RootSignature;
 				ComPtr<ID3D12PipelineState> m_PipelineState;
-				ComPtr<ID3D12DescriptorHeap> m_DescriptorHeap;
+				ComPtr<ID3D12DescriptorHeap> m_CbvSrvUavDescriptorHeap;
+				ComPtr<ID3D12DescriptorHeap> m_SamplerDescriptorHeap;
 				ComPtr<ID3D12Resource> m_VertexBuffer;
 				D3D12_VERTEX_BUFFER_VIEW m_VertexBufferView;
+
+				const DX12Image* m_pPreviousColorImage = nullptr;
 			};
 
 		public:

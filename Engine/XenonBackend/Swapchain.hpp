@@ -47,14 +47,21 @@ namespace Xenon
 			 *
 			 * @return The window pointer.
 			 */
-			[[nodiscard]] Platform::Window* getWindow() { return m_pWindow.get(); }
+			[[nodiscard]] Platform::Window* getWindow() noexcept { return m_pWindow.get(); }
 
 			/**
 			 * Get the swapchain's window pointer.
 			 *
 			 * @return The const window pointer.
 			 */
-			[[nodiscard]] const Platform::Window* getWindow() const { return m_pWindow.get(); }
+			[[nodiscard]] const Platform::Window* getWindow() const noexcept { return m_pWindow.get(); }
+
+			/**
+			 * Get the current frame index.
+			 *
+			 * @return The frame index.
+			 */
+			[[nodiscard]] uint32_t getFrameIndex() const noexcept { return m_FrameIndex; }
 
 		protected:
 			/**

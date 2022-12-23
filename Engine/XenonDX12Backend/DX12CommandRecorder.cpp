@@ -343,6 +343,8 @@ namespace Xenon
 			auto pDxSwapchin = pDestination->as<DX12Swapchain>();
 			auto pDestinationResource = pDxSwapchin->getCurrentSwapchainImageResource();
 
+			const auto previousImageState = pDxSource->getCurrentState();
+
 			// Change the destination resource state.
 			{
 				const auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pDestinationResource, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
@@ -351,7 +353,7 @@ namespace Xenon
 
 			// Change the source resource state.
 			{
-				const auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pDxSource->getResource(), pDxSource->getCurrentState(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+				const auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pDxSource->getResource(), previousImageState, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 				m_pCurrentCommandList->ResourceBarrier(1, &barrier);
 				pDxSource->setCurrentState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 			}
@@ -375,9 +377,10 @@ namespace Xenon
 			m_pCurrentCommandList->SetPipelineState(container.m_PipelineState.Get());
 
 			// Bind the descriptor heap.
-			const auto descriptor = container.m_DescriptorHeap.Get();
-			m_pCurrentCommandList->SetDescriptorHeaps(1, &descriptor);
-			m_pCurrentCommandList->SetGraphicsRootDescriptorTable(0, descriptor->GetGPUDescriptorHandleForHeapStart());
+			const std::array<ID3D12DescriptorHeap*, 2> descriptors = { container.m_CbvSrvUavDescriptorHeap.Get(), container.m_SamplerDescriptorHeap.Get() };
+			m_pCurrentCommandList->SetDescriptorHeaps(static_cast<UINT>(descriptors.size()), descriptors.data());
+			m_pCurrentCommandList->SetGraphicsRootDescriptorTable(0, descriptors[0]->GetGPUDescriptorHandleForHeapStart());
+			m_pCurrentCommandList->SetGraphicsRootDescriptorTable(1, descriptors[1]->GetGPUDescriptorHandleForHeapStart());
 
 			// Bind the vertex buffer and set the primitive topology.
 			m_pCurrentCommandList->IASetVertexBuffers(0, 1, &container.m_VertexBufferView);
@@ -390,6 +393,13 @@ namespace Xenon
 			{
 				const auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pDestinationResource, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 				m_pCurrentCommandList->ResourceBarrier(1, &barrier);
+			}
+
+			// Change the source resource state.
+			{
+				const auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pDxSource->getResource(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, previousImageState);
+				m_pCurrentCommandList->ResourceBarrier(1, &barrier);
+				pDxSource->setCurrentState(previousImageState);
 			}
 		}
 
@@ -518,19 +528,6 @@ namespace Xenon
 			const auto pDxRasterizer = pRasterizer->as<DX12Rasterizer>();
 			const auto hasDepthAttachment = pDxRasterizer->hasTarget(AttachmentType::Depth | AttachmentType::Stencil);
 			const auto colorAttachmentCount = pDxRasterizer->getColorTargetCount();
-
-			// Set the proper color image state if needed.
-			if (colorAttachmentCount > 0)
-			{
-				auto& colorTarget = pDxRasterizer->getRenderTargets().front();
-
-				if (colorTarget.getCurrentState() != D3D12_RESOURCE_STATE_RENDER_TARGET)
-				{
-					auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(colorTarget.getResource(), colorTarget.getCurrentState(), D3D12_RESOURCE_STATE_RENDER_TARGET);
-					m_pCurrentCommandList->ResourceBarrier(1, &barrier);
-					colorTarget.setCurrentState(D3D12_RESOURCE_STATE_RENDER_TARGET);
-				}
-			}
 
 			// Setup the color target heap.
 			D3D12_CPU_DESCRIPTOR_HANDLE colorTargetHeapStart = {};

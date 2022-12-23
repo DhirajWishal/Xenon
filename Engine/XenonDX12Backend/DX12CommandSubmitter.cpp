@@ -38,7 +38,7 @@ namespace Xenon
 			m_Fence->Signal(0);
 			for (UINT i = 0; i < static_cast<UINT>(pCommandRecorders.size()); i++)
 			{
-				std::array<ID3D12CommandList*, 1> pCommandLists = { pCommandRecorders[i]->as<DX12CommandRecorder>()->getCurrentCommandList() };
+				const std::array<ID3D12CommandList*, 1> pCommandLists = { pCommandRecorders[i]->as<DX12CommandRecorder>()->getCurrentCommandList() };
 				m_pDevice->getDirectQueue()->ExecuteCommandLists(1, pCommandLists.data());
 				XENON_DX12_ASSERT(m_pDevice->getDirectQueue()->Signal(m_Fence.Get(), i + 1), "Failed to signal the fence!");
 			}
@@ -52,7 +52,6 @@ namespace Xenon
 
 			if (m_bIsWaiting)
 			{
-				const auto completedValue = m_Fence->GetCompletedValue();
 				const auto nextFence = m_Fence->GetCompletedValue() + 1;
 				XENON_DX12_ASSERT(m_pDevice->getDirectQueue()->Signal(m_Fence.Get(), nextFence), "Failed to signal the fence!");
 
