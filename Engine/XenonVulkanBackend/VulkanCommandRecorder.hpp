@@ -177,6 +177,14 @@ namespace Xenon
 			void setScissor(int32_t x, int32_t y, uint32_t width, uint32_t height) override;
 
 			/**
+			 * Begin the occlusion query.
+			 *
+			 * @param pOcclusionQuery The occlusion query to start recording.
+			 * @param index The sample index.
+			 */
+			void beginQuery(OcclusionQuery* pOcclusionQuery, uint32_t index) override;
+
+			/**
 			 * Draw using the bound index buffers.
 			 *
 			 * @param vertexOffset The vertex offset.
@@ -186,6 +194,14 @@ namespace Xenon
 			 * @param firstInstance The first instance position. Default is 0.
 			 */
 			void drawIndexed(uint64_t vertexOffset, uint64_t indexOffset, uint64_t indexCount, uint32_t instanceCount = 1, uint32_t firstInstance = 0) override;
+
+			/**
+			 * End the occlusion query.
+			 *
+			 * @param pOcclusionQuery The occlusion query to end recording.
+			 * @param index The sample index.
+			 */
+			void endQuery(OcclusionQuery* pOcclusionQuery, uint32_t index) override;
 
 			/**
 			 * Execute all the child command recorders.

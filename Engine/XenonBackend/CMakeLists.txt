@@ -36,6 +36,8 @@ set(
 	"ImageSampler.hpp"
 	"ComputePipeline.hpp"
 	"CommandSubmitter.hpp"
+	"Query.hpp"
+	"OcclusionQuery.hpp"
 )
 
 # Add the source group.

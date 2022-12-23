@@ -143,6 +143,14 @@ namespace Xenon
 			 * @return The command submitter pointer.
 			 */
 			[[nodiscard]] std::unique_ptr<CommandSubmitter> createCommandSubmitter(Device* pDevice) override;
+
+			/**
+			 * Create a new occlusion query.
+			 *
+			 * @param pDevice The device pointer.
+			 * @param sampleCount The maximum sample count the query can hold.
+			 */
+			[[nodiscard]] std::unique_ptr<OcclusionQuery> createOcclusionQuery(Device* pDevice, uint64_t sampleCount) override;
 		};
 	}
 }

@@ -7,6 +7,7 @@
 #include "Swapchain.hpp"
 #include "RasterizingPipeline.hpp"
 #include "Descriptor.hpp"
+#include "OcclusionQuery.hpp"
 
 namespace Xenon
 {
@@ -185,6 +186,14 @@ namespace Xenon
 			virtual void setScissor(int32_t x, int32_t y, uint32_t width, uint32_t height) = 0;
 
 			/**
+			 * Begin the occlusion query.
+			 *
+			 * @param pOcclusionQuery The occlusion query to start recording.
+			 * @param index The sample index.
+			 */
+			virtual void beginQuery(OcclusionQuery* pOcclusionQuery, uint32_t index) = 0;
+
+			/**
 			 * Draw using the bound index buffers.
 			 *
 			 * @param vertexOffset The vertex offset.
@@ -194,6 +203,14 @@ namespace Xenon
 			 * @param firstInstance The first instance position. Default is 0.
 			 */
 			virtual void drawIndexed(uint64_t vertexOffset, uint64_t indexOffset, uint64_t indexCount, uint32_t instanceCount = 1, uint32_t firstInstance = 0) = 0;
+
+			/**
+			 * End the occlusion query.
+			 *
+			 * @param pOcclusionQuery The occlusion query to end recording.
+			 * @param index The sample index.
+			 */
+			virtual void endQuery(OcclusionQuery* pOcclusionQuery, uint32_t index) = 0;
 
 			/**
 			 * Execute all the child command recorders.

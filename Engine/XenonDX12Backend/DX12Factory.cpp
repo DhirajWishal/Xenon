@@ -13,6 +13,7 @@
 #include "DX12RasterizingPipeline.hpp"
 #include "DX12ComputePipeline.hpp"
 #include "DX12CommandSubmitter.hpp"
+#include "DX12OcclusionQuery.hpp"
 
 namespace Xenon
 {
@@ -76,6 +77,11 @@ namespace Xenon
 		std::unique_ptr<Xenon::Backend::CommandSubmitter> DX12Factory::createCommandSubmitter(Device* pDevice)
 		{
 			return std::make_unique<DX12CommandSubmitter>(pDevice->as<DX12Device>());
+		}
+
+		std::unique_ptr<Xenon::Backend::OcclusionQuery> DX12Factory::createOcclusionQuery(Device* pDevice, uint64_t sampleCount)
+		{
+			return std::make_unique<DX12OcclusionQuery>(pDevice->as<DX12Device>(), sampleCount);
 		}
 	}
 }

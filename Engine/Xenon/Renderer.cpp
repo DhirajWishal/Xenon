@@ -38,14 +38,14 @@ namespace Xenon
 		const auto imageIndex = m_pSwapChain->prepare();
 
 		// Create the parent task.
-		auto pParentTask = m_TaskGraph.create(nullptr);
+		m_pInitialNode = m_TaskGraph.create(nullptr);
 
 		// Bind the layers.
 		Layer* pPreviousLayer = nullptr;
 		std::vector<std::shared_ptr<TaskNode>> pTasks;
 		for (const auto& pLayer : m_pLayers)
 		{
-			pTasks.emplace_back(m_TaskGraph.create([pLayer = pLayer.get(), pPreviousLayer, imageIndex, frameIndex] { pLayer->onUpdate(pPreviousLayer, imageIndex, frameIndex); }, pParentTask));
+			pTasks.emplace_back(m_TaskGraph.create([pLayer = pLayer.get(), pPreviousLayer, imageIndex, frameIndex] { pLayer->onUpdate(pPreviousLayer, imageIndex, frameIndex); }, m_pInitialNode));
 			pPreviousLayer = pLayer.get();
 		}
 
@@ -53,7 +53,7 @@ namespace Xenon
 		m_pFinalNode = m_TaskGraph.create([this, pPreviousLayer] { copyToSwapchainAndSubmit(pPreviousLayer); }, pTasks);
 
 		// Start the parent task.
-		pParentTask->start();
+		m_pInitialNode->start();
 
 		m_pFinalNode->wait();
 

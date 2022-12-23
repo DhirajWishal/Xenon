@@ -163,12 +163,13 @@ namespace Xenon
 		void copyToSwapchainAndSubmit(Layer* pPreviousLayer);
 
 	private:
-		TaskGraph m_TaskGraph = TaskGraph(std::thread::hardware_concurrency());
+		TaskGraph m_TaskGraph = TaskGraph(GetJobSystem());
 
 		std::vector<std::unique_ptr<Layer>> m_pLayers;
 		std::vector<std::unique_ptr<Backend::CommandSubmitter>> m_pCommandSubmitters;
 		std::vector<Backend::CommandRecorder*> m_pSubmitCommandRecorders;
 
+		std::shared_ptr<TaskNode> m_pInitialNode = nullptr;
 		std::shared_ptr<TaskNode> m_pFinalNode = nullptr;
 
 		std::unique_ptr<Backend::Swapchain> m_pSwapChain = nullptr;

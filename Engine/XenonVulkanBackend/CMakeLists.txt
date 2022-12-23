@@ -51,6 +51,8 @@ set(
 	"VulkanComputePipeline.hpp"
 	"VulkanCommandSubmitter.cpp"
 	"VulkanCommandSubmitter.hpp"
+	"VulkanOcclusionQuery.cpp"
+	"VulkanOcclusionQuery.hpp"
 )
 
 # Add the source group.

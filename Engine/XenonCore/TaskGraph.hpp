@@ -17,9 +17,9 @@ namespace Xenon
 		/**
 		 * Explicit constructor.
 		 *
-		 * @param threadCount The number of threads in the job system.
+		 * @param jobSystem The job system to use.
 		 */
-		explicit TaskGraph(uint32_t threadCount) : m_JobSystem(threadCount) {}
+		explicit TaskGraph(JobSystem& jobSystem) : m_JobSystem(jobSystem) {}
 
 		/**
 		 * Create a new task node.
@@ -68,6 +68,6 @@ namespace Xenon
 		void complete() { m_JobSystem.wait(); }
 
 	private:
-		JobSystem m_JobSystem;
+		JobSystem& m_JobSystem;
 	};
 }

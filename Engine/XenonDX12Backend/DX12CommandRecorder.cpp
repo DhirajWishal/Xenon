@@ -7,6 +7,7 @@
 #include "DX12Swapchain.hpp"
 #include "DX12RasterizingPipeline.hpp"
 #include "DX12Descriptor.hpp"
+#include "DX12OcclusionQuery.hpp"
 
 #include <optick.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -680,12 +681,26 @@ namespace Xenon
 			}
 		}
 
+		void DX12CommandRecorder::beginQuery(OcclusionQuery* pOcclusionQuery, uint32_t index)
+		{
+			OPTICK_EVENT();
+
+			m_pCurrentCommandList->BeginQuery(pOcclusionQuery->as<DX12OcclusionQuery>()->getHeap(), D3D12_QUERY_TYPE_BINARY_OCCLUSION, index);
+		}
+
 		void DX12CommandRecorder::drawIndexed(uint64_t vertexOffset, uint64_t indexOffset, uint64_t indexCount, uint32_t instanceCount /*= 1*/, uint32_t firstInstance /*= 0*/)
 		{
 			OPTICK_EVENT();
 
 			m_pCurrentCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			m_pCurrentCommandList->DrawIndexedInstanced(static_cast<UINT>(indexCount), instanceCount, static_cast<UINT>(indexOffset), static_cast<UINT>(vertexOffset), firstInstance);
+		}
+
+		void DX12CommandRecorder::endQuery(OcclusionQuery* pOcclusionQuery, uint32_t index)
+		{
+			OPTICK_EVENT();
+
+			m_pCurrentCommandList->EndQuery(pOcclusionQuery->as<DX12OcclusionQuery>()->getHeap(), D3D12_QUERY_TYPE_BINARY_OCCLUSION, index);
 		}
 
 		void DX12CommandRecorder::executeChildren()

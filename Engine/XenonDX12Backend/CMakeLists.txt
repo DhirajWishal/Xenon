@@ -45,6 +45,8 @@ set(
 	"DX12ComputePipeline.hpp"
 	"DX12CommandSubmitter.cpp"
 	"DX12CommandSubmitter.hpp"
+	"DX12OcclusionQuery.cpp"
+	"DX12OcclusionQuery.hpp"
 )
 
 # Add the source group.

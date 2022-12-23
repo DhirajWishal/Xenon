@@ -8,6 +8,7 @@
 #include "VulkanRasterizer.hpp"
 #include "VulkanRasterizingPipeline.hpp"
 #include "VulkanDescriptor.hpp"
+#include "VulkanOcclusionQuery.hpp"
 
 #include <optick.h>
 
@@ -841,12 +842,26 @@ namespace Xenon
 			m_pDevice->getDeviceTable().vkCmdSetScissor(*m_pCurrentBuffer, 0, 1, &scissorRect);
 		}
 
+		void VulkanCommandRecorder::beginQuery(OcclusionQuery* pOcclusionQuery, uint32_t index)
+		{
+			OPTICK_EVENT();
+
+			m_pDevice->getDeviceTable().vkCmdBeginQuery(*m_pCurrentBuffer, pOcclusionQuery->as<VulkanOcclusionQuery>()->getQueryPool(), index, 0);
+		}
+
 		void VulkanCommandRecorder::drawIndexed(uint64_t vertexOffset, uint64_t indexOffset, uint64_t indexCount, uint32_t instanceCount /*= 1*/, uint32_t firstInstance /*= 0*/)
 		{
 			OPTICK_EVENT();
 
 			// m_pDevice->getDeviceTable().vkCmdSetPrimitiveTopology(*m_pCurrentBuffer, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
 			m_pDevice->getDeviceTable().vkCmdDrawIndexed(*m_pCurrentBuffer, static_cast<uint32_t>(indexCount), instanceCount, static_cast<uint32_t>(indexOffset), static_cast<uint32_t>(vertexOffset), firstInstance);
+		}
+
+		void VulkanCommandRecorder::endQuery(OcclusionQuery* pOcclusionQuery, uint32_t index)
+		{
+			OPTICK_EVENT();
+
+			m_pDevice->getDeviceTable().vkCmdEndQuery(*m_pCurrentBuffer, pOcclusionQuery->as<VulkanOcclusionQuery>()->getQueryPool(), index);
 		}
 
 		void VulkanCommandRecorder::executeChildren()
