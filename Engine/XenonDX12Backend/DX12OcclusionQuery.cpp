@@ -23,6 +23,7 @@ namespace Xenon
 			heapDesc.Count = 1;
 			heapDesc.Type = D3D12_QUERY_HEAP_TYPE_OCCLUSION;
 			XENON_DX12_ASSERT(pDevice->getDevice()->CreateQueryHeap(&heapDesc, IID_PPV_ARGS(&m_QueryHeap)), "Failed to create the occlusion query heap!");
+			XENON_DX12_NAME_OBJECT(m_QueryHeap, "Occlusion Query Heap");
 
 			// Create the query buffer.
 			D3D12MA::ALLOCATION_DESC allocationDesc = {};
@@ -37,6 +38,7 @@ namespace Xenon
 				&m_pAllocation,
 				IID_NULL,
 				nullptr), "Failed to create the occlusion query buffer!");
+			XENON_DX12_NAME_OBJECT(getBuffer(), "Occlusion Query Buffer");
 		}
 
 		DX12OcclusionQuery::~DX12OcclusionQuery()

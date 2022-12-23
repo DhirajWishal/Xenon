@@ -106,6 +106,13 @@ namespace Xenon
 			virtual void copy(Buffer* pSource, uint64_t bufferOffset, Image* pImage, glm::vec3 imageSize, glm::vec3 imageOffset = glm::vec3(0)) = 0;
 
 			/**
+			 * Reset the occlusion query.
+			 *
+			 * @param pOcclusionQuery The query to reset.
+			 */
+			virtual void resetQuery(OcclusionQuery* pOcclusionQuery) = 0;
+
+			/**
 			 * Bind a rasterizer to the command recorder.
 			 *
 			 * @param pRasterizer The rasterizer pointer.

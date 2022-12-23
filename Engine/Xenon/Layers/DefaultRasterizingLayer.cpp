@@ -13,9 +13,13 @@ namespace Xenon
 	DefaultRasterizingLayer::DefaultRasterizingLayer(Renderer& renderer, Backend::Camera* pCamera)
 		: RasterizingLayer(renderer, pCamera, Backend::AttachmentType::Color | Backend::AttachmentType::Depth | Backend::AttachmentType::Stencil)
 	{
+		// Setup the workers.
 		m_Workers.reserve(GetUsableThreadCount());
 		for (uint8_t i = 0; i < GetUsableThreadCount(); i++)
 			m_Workers.emplace_back([this, i] { subMeshBinder(i); });
+
+		// Setup the occlusion pipeline.
+		setupOcclusionPipeline();
 	}
 
 	DefaultRasterizingLayer::~DefaultRasterizingLayer()
@@ -36,7 +40,15 @@ namespace Xenon
 	{
 		OPTICK_EVENT();
 
+
 		m_pCommandRecorder->begin();
+
+		if (m_pOcclusionQuery)
+		{
+			[[maybe_unused]] const auto samples = m_pOcclusionQuery->getResults();
+			m_pCommandRecorder->resetQuery(m_pOcclusionQuery.get());
+		}
+
 		m_pCommandRecorder->bind(m_pRasterizer.get(), { glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), 1.0f, static_cast<uint32_t>(0) }, true);
 
 		m_Synchronization.reset(m_Workers.size());
@@ -76,6 +88,7 @@ namespace Xenon
 				entry.m_pUserDefinedDescriptor = nullptr;
 				entry.m_pMaterialDescriptor = subMesh.m_MaterialIdentifier.m_pMaterial->createDescriptor(pPipeline);
 				entry.m_pCameraDescriptor = drawData.m_pCameraDescriptor.get();
+				entry.m_QueryIndex = m_SubMeshCount++;
 
 				threadIndex++;
 			}
@@ -83,6 +96,9 @@ namespace Xenon
 
 		// Insert the newly created draw data.
 		m_DrawData.emplace_back(std::move(drawData));
+
+		// Re-create the occlusion query.
+		m_pOcclusionQuery = m_Renderer.getInstance().getFactory()->createOcclusionQuery(m_Renderer.getInstance().getBackendDevice(), m_SubMeshCount);
 	}
 
 	void DefaultRasterizingLayer::subMeshBinder(uint8_t index)
@@ -121,16 +137,8 @@ namespace Xenon
 			{
 				OPTICK_EVENT_DYNAMIC("Binding Sub-Mesh");
 
-				pCommandRecorder->bind(entry.m_pPipeline, entry.m_VertexSpecification);
-				if (lock) lock.unlock();
-
-				pCommandRecorder->bind(entry.m_pVertexBuffer, entry.m_VertexSpecification.getSize());
-				pCommandRecorder->bind(entry.m_pIndexBuffer, static_cast<Backend::IndexBufferStride>(entry.m_SubMesh.m_IndexSize));
-				pCommandRecorder->bind(entry.m_pPipeline, entry.m_pUserDefinedDescriptor, entry.m_pMaterialDescriptor.get(), entry.m_pCameraDescriptor);
-
-				pCommandRecorder->drawIndexed(entry.m_SubMesh.m_VertexOffset, entry.m_SubMesh.m_IndexOffset, entry.m_SubMesh.m_IndexCount);
-
-				if (!lock) lock.lock();
+				occlusionPass(pCommandRecorder.get(), lock, entry);
+				geometryPass(pCommandRecorder.get(), lock, entry);
 			}
 
 			// End the command recorder.
@@ -141,6 +149,53 @@ namespace Xenon
 
 			// Notify the parent that we're done.
 			m_Synchronization.arrive();
+		}
+	}
+
+	void DefaultRasterizingLayer::setupOcclusionPipeline()
+	{
+		Backend::RasterizingPipelineSpecification specification = {};
+		specification.m_VertexShader = Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Occlusion/Shader.vert.spv");
+		specification.m_FragmentShader = Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Occlusion/Shader.frag.spv");
+
+		m_pOcclusionPipeline = m_Renderer.getInstance().getFactory()->createRasterizingPipeline(m_Renderer.getInstance().getBackendDevice(), nullptr, m_pRasterizer.get(), specification);
+	}
+
+	void DefaultRasterizingLayer::occlusionPass(Backend::CommandRecorder* pCommandRecorder, std::unique_lock<std::mutex>& lock, const DrawEntry& entry)
+	{
+		OPTICK_EVENT();
+
+		pCommandRecorder->bind(m_pOcclusionPipeline.get(), entry.m_VertexSpecification);
+		if (lock) lock.unlock();
+
+		pCommandRecorder->bind(entry.m_pVertexBuffer, entry.m_VertexSpecification.getSize());
+		pCommandRecorder->bind(entry.m_pIndexBuffer, static_cast<Backend::IndexBufferStride>(entry.m_SubMesh.m_IndexSize));
+		pCommandRecorder->bind(m_pOcclusionPipeline.get(), nullptr, nullptr, entry.m_pCameraDescriptor);
+
+		m_pCommandRecorder->beginQuery(m_pOcclusionQuery.get(), static_cast<uint32_t>(entry.m_QueryIndex));
+		pCommandRecorder->drawIndexed(entry.m_SubMesh.m_VertexOffset, entry.m_SubMesh.m_IndexOffset, entry.m_SubMesh.m_IndexCount);
+		m_pCommandRecorder->endQuery(m_pOcclusionQuery.get(), static_cast<uint32_t>(entry.m_QueryIndex));
+
+		if (!lock) lock.lock();
+	}
+
+	void DefaultRasterizingLayer::geometryPass(Backend::CommandRecorder* pCommandRecorder, std::unique_lock<std::mutex>& lock, const DrawEntry& entry) const
+	{
+		OPTICK_EVENT();
+
+		// Draw only if we're in the camera's view frustum.
+		if (m_pOcclusionQuery->getSamples()[entry.m_QueryIndex] > 0)
+		{
+			pCommandRecorder->bind(entry.m_pPipeline, entry.m_VertexSpecification);
+			if (lock) lock.unlock();
+
+			pCommandRecorder->bind(entry.m_pVertexBuffer, entry.m_VertexSpecification.getSize());
+			pCommandRecorder->bind(entry.m_pIndexBuffer, static_cast<Backend::IndexBufferStride>(entry.m_SubMesh.m_IndexSize));
+			pCommandRecorder->bind(entry.m_pPipeline, entry.m_pUserDefinedDescriptor, entry.m_pMaterialDescriptor.get(), entry.m_pCameraDescriptor);
+
+			pCommandRecorder->drawIndexed(entry.m_SubMesh.m_VertexOffset, entry.m_SubMesh.m_IndexOffset, entry.m_SubMesh.m_IndexCount);
+
+			if (!lock) lock.lock();
 		}
 	}
 }

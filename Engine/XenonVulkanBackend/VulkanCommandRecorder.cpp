@@ -692,6 +692,14 @@ namespace Xenon
 			);
 		}
 
+		void VulkanCommandRecorder::resetQuery(OcclusionQuery* pOcclusionQuery)
+		{
+			OPTICK_EVENT();
+
+			// Unlike dumb ass DirectX 12, we need to reset our query.
+			m_pDevice->getDeviceTable().vkCmdResetQueryPool(*m_pCurrentBuffer, pOcclusionQuery->as<VulkanOcclusionQuery>()->getQueryPool(), 0, static_cast<uint32_t>(pOcclusionQuery->getSamples().size()));
+		}
+
 		void VulkanCommandRecorder::bind(Rasterizer* pRasterizer, const std::vector<Rasterizer::ClearValueType>& clearValues, bool usingSecondaryCommandRecorders /*= false*/)
 		{
 			OPTICK_EVENT();

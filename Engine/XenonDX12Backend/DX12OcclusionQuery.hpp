@@ -51,6 +51,20 @@ namespace Xenon
 			 */
 			[[nodiscard]] const ID3D12QueryHeap* getHeap() const noexcept { return m_QueryHeap.Get(); }
 
+			/**
+			 * Get the resource buffer pointer.
+			 *
+			 * @return The resource pointer.
+			 */
+			[[nodiscard]] ID3D12Resource* getBuffer() noexcept { return m_pAllocation->GetResource(); }
+
+			/**
+			 * Get the resource buffer pointer.
+			 *
+			 * @return The resource pointer.
+			 */
+			[[nodiscard]] const ID3D12Resource* getBuffer() const noexcept { return m_pAllocation->GetResource(); }
+
 		private:
 			ComPtr<ID3D12QueryHeap> m_QueryHeap;
 			ComPtr<ID3D12Resource> m_QueryBuffer;

@@ -34,7 +34,7 @@ namespace Xenon
 				m_Samples.size() * sizeof(uint64_t),
 				m_Samples.data(),
 				sizeof(uint64_t),
-				VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT), "Failed to get the query pool results!");
+				VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_PARTIAL_BIT), "Failed to get the query pool results!");
 
 			return m_Samples;
 		}

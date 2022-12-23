@@ -46,6 +46,8 @@ namespace Xenon
 			Backend::Descriptor* m_pUserDefinedDescriptor = nullptr;
 			std::unique_ptr<Backend::Descriptor> m_pMaterialDescriptor = nullptr;
 			Backend::Descriptor* m_pCameraDescriptor = nullptr;
+
+			uint64_t m_QueryIndex = 0;
 		};
 
 		/**
@@ -106,6 +108,29 @@ namespace Xenon
 		 */
 		void subMeshBinder(uint8_t index);
 
+		/**
+		 * Setup the occlusion pipeline.
+		 */
+		void setupOcclusionPipeline();
+
+		/**
+		 * Draw the occlusion pass of the sub-mesh.
+		 *
+		 * @param pCommandRecorder The command recorder to bind to.
+		 * @param lock The thread's resource lock.
+		 * @param entry The draw entry.
+		 */
+		void occlusionPass(Backend::CommandRecorder* pCommandRecorder, std::unique_lock<std::mutex>& lock, const DrawEntry& entry);
+
+		/**
+		 * Draw the geometry pass of the sub-mesh.
+		 *
+		 * @param pCommandRecorder The command recorder to bind to.
+		 * @param lock The thread's resource lock.
+		 * @param entry The draw entry.
+		 */
+		void geometryPass(Backend::CommandRecorder* pCommandRecorder, std::unique_lock<std::mutex>& lock, const DrawEntry& entry) const;
+
 	private:
 		std::vector<std::jthread> m_Workers;
 		std::mutex m_Mutex;
@@ -115,5 +140,10 @@ namespace Xenon
 
 		std::vector<DrawData> m_DrawData;
 		std::vector<std::vector<DrawEntry>> m_DrawEntries = std::vector<std::vector<DrawEntry>>(GetUsableThreadCount());
+
+		std::unique_ptr<Backend::RasterizingPipeline> m_pOcclusionPipeline = nullptr;
+		std::unique_ptr<Backend::OcclusionQuery> m_pOcclusionQuery = nullptr;
+
+		uint64_t m_SubMeshCount = 0;
 	};
 }

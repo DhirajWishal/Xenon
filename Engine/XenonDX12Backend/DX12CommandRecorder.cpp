@@ -522,6 +522,26 @@ namespace Xenon
 			}
 		}
 
+		void DX12CommandRecorder::resetQuery(OcclusionQuery* pOcclusionQuery)
+		{
+			OPTICK_EVENT();
+
+			// Unlike dumb ass Vulkan, we need to copy the data from the query to the query buffer. Let's do it real quick.
+			auto pDxOcclusionQuery = pOcclusionQuery->as<DX12OcclusionQuery>();
+
+			{
+				const auto transition = CD3DX12_RESOURCE_BARRIER::Transition(pDxOcclusionQuery->getBuffer(), D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_COPY_DEST);
+				m_pCurrentCommandList->ResourceBarrier(1, &transition);
+			}
+
+			m_pCurrentCommandList->ResolveQueryData(pDxOcclusionQuery->getHeap(), D3D12_QUERY_TYPE_BINARY_OCCLUSION, 0, static_cast<UINT>(pOcclusionQuery->getSamples().size()), pDxOcclusionQuery->getBuffer(), 0);
+
+			{
+				const auto transition = CD3DX12_RESOURCE_BARRIER::Transition(pDxOcclusionQuery->getBuffer(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ);
+				m_pCurrentCommandList->ResourceBarrier(1, &transition);
+			}
+		}
+
 		void DX12CommandRecorder::bind(Rasterizer* pRasterizer, const std::vector<Rasterizer::ClearValueType>& clearValues, bool usingSecondaryCommandRecorders /*= false*/)
 		{
 			OPTICK_EVENT();
