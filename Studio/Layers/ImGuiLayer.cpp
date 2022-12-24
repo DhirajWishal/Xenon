@@ -350,6 +350,11 @@ void ImGuiLayer::showLayer(Xenon::Layer* pLayer)
 	m_UIStorage.m_LayerViewUI.setLayer(pLayer);
 }
 
+void ImGuiLayer::setDrawCallCount(uint64_t totalCount, uint64_t actualCount)
+{
+	m_UIStorage.m_PerformanceMetricsUI.setDrawCallCount(totalCount, actualCount);
+}
+
 void ImGuiLayer::configureImGui() const
 {
 	auto& io = ImGui::GetIO();

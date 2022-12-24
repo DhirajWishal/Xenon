@@ -31,13 +31,6 @@ namespace Xenon
 			~VulkanOcclusionQuery() override;
 
 			/**
-			 * Get the results form the query.
-			 *
-			 * @return The samples
-			 */
-			[[nodiscard]] const std::vector<uint64_t>& getResults() override;
-
-			/**
 			 * Get the query pool.
 			 *
 			 * @return The query pool.

@@ -23,20 +23,5 @@ namespace Xenon
 		{
 			m_pDevice->getDeviceTable().vkDestroyQueryPool(m_pDevice->getLogicalDevice(), m_QueryPool, nullptr);
 		}
-
-		const std::vector<uint64_t>& VulkanOcclusionQuery::getResults()
-		{
-			XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkGetQueryPoolResults(
-				m_pDevice->getLogicalDevice(),
-				m_QueryPool,
-				0,
-				2,
-				m_Samples.size() * sizeof(uint64_t),
-				m_Samples.data(),
-				sizeof(uint64_t),
-				VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_PARTIAL_BIT), "Failed to get the query pool results!");
-
-			return m_Samples;
-		}
 	}
 }

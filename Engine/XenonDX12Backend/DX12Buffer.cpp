@@ -23,39 +23,39 @@ namespace Xenon
 			case Xenon::Backend::BufferType::Index:
 				m_CurrentState = D3D12_RESOURCE_STATE_INDEX_BUFFER;
 				allocationDesc.HeapType = m_HeapType;
-				resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(size, D3D12_RESOURCE_FLAG_NONE);
+				resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(size);
 				break;
 
 			case Xenon::Backend::BufferType::Vertex:
 				m_CurrentState = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
 				allocationDesc.HeapType = m_HeapType;
-				resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(size, D3D12_RESOURCE_FLAG_NONE);
+				resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(size);
 				break;
 
 			case Xenon::Backend::BufferType::Staging:
 				m_CurrentState = D3D12_RESOURCE_STATE_COMMON;
 				allocationDesc.HeapType = m_HeapType;
-				resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(size, D3D12_RESOURCE_FLAG_NONE);
+				resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(size);
 				break;
 
 			case Xenon::Backend::BufferType::Storage:
 				m_CurrentState = D3D12_RESOURCE_STATE_COMMON;
 				allocationDesc.HeapType = m_HeapType;
-				resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(size, D3D12_RESOURCE_FLAG_NONE);
+				resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(size);
 				break;
 
 			case Xenon::Backend::BufferType::Uniform:
 				m_CurrentState = D3D12_RESOURCE_STATE_COMMON;
 				allocationDesc.HeapType = m_HeapType;
 				m_Size = static_cast<uint64_t>(std::ceil(static_cast<float>(size) / D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT) * D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
-				resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(m_Size, D3D12_RESOURCE_FLAG_NONE);
+				resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(m_Size);
 				break;
 
 			default:
 				m_Type = BufferType::Staging;
 				m_CurrentState = D3D12_RESOURCE_STATE_COMMON;
 				allocationDesc.HeapType = m_HeapType;
-				resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(size, D3D12_RESOURCE_FLAG_NONE);
+				resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(size);
 				XENON_LOG_ERROR("Invalid or unsupported buffer type! Defaulting to staging.");
 				break;
 			}

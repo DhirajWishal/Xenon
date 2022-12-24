@@ -88,26 +88,26 @@ namespace /* anonymous */
 		auto function2 = builder.createFunction(std::function([](Xenon::ShaderBuilder::VertexShader& builder, Xenon::ShaderBuilder::Function<glm::vec2, glm::vec2>& function, Xenon::ShaderBuilder::Parameter<glm::vec2> val)
 			{
 				auto variable = function.createVariable<glm::vec2>();
-				variable = val;
-				function.exit(variable);
+		variable = val;
+		function.exit(variable);
 			}
 		));
 
 		auto function = builder.createFunction(std::function([&buffer, &inPos, &inUV, &inColor, &outUV, &outColor, &function2](Xenon::ShaderBuilder::VertexShader& builder, Xenon::ShaderBuilder::Function<void>& function)
 			{
 				auto scale = buffer.access(&UserData::m_Scale);
-				auto translation = buffer.access(&UserData::m_Translation);
+		auto translation = buffer.access(&UserData::m_Translation);
 
-				float val = 1.0f;
-				const auto result = builder.createVariable<glm::vec2>(1.0f, val);
+		float val = 1.0f;
+		const auto result = builder.createVariable<glm::vec2>(1.0f, val);
 
-				outUV = function2(inUV);
-				outColor = inColor;
-				auto temp = function.createVariable<glm::vec4>();
+		outUV = function2(inUV);
+		outColor = inColor;
+		auto temp = function.createVariable<glm::vec4>();
 
-				// Next is to do OpCompositeConstruct
+		// Next is to do OpCompositeConstruct
 
-				builder.gl_PerVertex.access(&Xenon::ShaderBuilder::PerVertexStruct::gl_Position) = temp;
+		builder.gl_PerVertex.access(&Xenon::ShaderBuilder::PerVertexStruct::gl_Position) = temp;
 			}
 		));
 
@@ -161,6 +161,9 @@ void Studio::run()
 		do
 		{
 			const auto delta = timer.tick();
+
+			// Set the draw call count.
+			pImGui->setDrawCallCount(pLayer->getTotalDrawCount(), pLayer->getDrawCount());
 
 			// Begin the ImGui scene.
 			// Handle the inputs and update the camera only if we need to.

@@ -225,6 +225,13 @@ namespace Xenon
 			virtual void executeChildren() = 0;
 
 			/**
+			 * Get the query results from the command recorder.
+			 *
+			 * @param pOcclusionQuery The occlusion query pointer.
+			 */
+			virtual void getQueryResults(OcclusionQuery* pOcclusionQuery) = 0;
+
+			/**
 			 * End the command recorder recording.
 			 */
 			virtual void end() = 0;

@@ -31,6 +31,17 @@ public:
 	 */
 	void end() override;
 
+	/**
+	 * Set the draw call count.
+	 *
+	 * @param totalCount The total draw call count.
+	 * @param actualCount The actual draw call count.
+	 */
+	void setDrawCallCount(uint64_t totalCount, uint64_t actualCount);
+
 private:
 	std::vector<float> m_FrameRates = std::vector<float>(10);
+
+	uint64_t m_TotalDrawCount = 0;
+	uint64_t m_ActualDrawCount = 0;
 };

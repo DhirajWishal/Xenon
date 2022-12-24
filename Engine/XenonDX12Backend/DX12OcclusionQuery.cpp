@@ -4,12 +4,6 @@
 #include "DX12OcclusionQuery.hpp"
 #include "DX12Macros.hpp"
 
-#ifdef XENON_PLATFORM_WINDOWS
-#include <execution> 
-
-#endif // XENON_PLATFORM_WINDOWS
-
-
 namespace Xenon
 {
 	namespace Backend
@@ -27,13 +21,14 @@ namespace Xenon
 
 			// Create the query buffer.
 			D3D12MA::ALLOCATION_DESC allocationDesc = {};
-			allocationDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
+			// allocationDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
+			allocationDesc.HeapType = D3D12_HEAP_TYPE_READBACK;
 
 			const auto queryBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(sampleCount * sizeof(uint64_t));
 			XENON_DX12_ASSERT(pDevice->getAllocator()->CreateResource(
 				&allocationDesc,
 				&queryBufferDesc,
-				D3D12_RESOURCE_STATE_GENERIC_READ,
+				D3D12_RESOURCE_STATE_COPY_DEST,
 				nullptr,
 				&m_pAllocation,
 				IID_NULL,
@@ -44,25 +39,6 @@ namespace Xenon
 		DX12OcclusionQuery::~DX12OcclusionQuery()
 		{
 			m_pAllocation->Release();
-		}
-
-		const std::vector<uint64_t>& DX12OcclusionQuery::getResults()
-		{
-			const D3D12_RANGE mapRange = CD3DX12_RANGE(1, 0);
-
-			uint64_t* pSampleData = nullptr;
-			XENON_DX12_ASSERT(m_pAllocation->GetResource()->Map(0, nullptr, std::bit_cast<void**>(&pSampleData)), "Failed to map the occlusion query buffer!");
-			m_pAllocation->GetResource()->Unmap(0, &mapRange);
-
-#ifdef XENON_PLATFORM_WINDOWS
-			std::copy_n(std::execution::unseq, pSampleData, m_Samples.size(), m_Samples.data());
-
-#else
-			std::copy_n(pSampleData, m_Samples.size(), m_Samples.data());
-
-#endif // XENON_PLATFORM_WINDOWS
-
-			return m_Samples;
 		}
 	}
 }

@@ -11,14 +11,14 @@ namespace Xenon
 	{
 		/**
 		 * DirectX 12 pipeline descriptor heap storage type.
-		 * This is an array of two components where,
+		 * This vector can contain 2 possible entries.
 		 * 1. Index 0 contains the CBV, SRV and UAV descriptor heap.
 		 * 2. Index 1 contains the Sampler descriptor heap.
 		 *
-		 * The heaps in the array are freshly copied from a non shader-visible heap to a shader-visible descriptor heap(s) which can be attached to a command list
+		 * The heaps in the vector are freshly copied from a non shader-visible heap to a shader-visible descriptor heap(s) which can be attached to a command list
 		 * to be executed using shaders.
 		 */
-		using DX12PipelineDescriptorHeapStorage = std::array<ID3D12DescriptorHeap*, 2>;
+		using DX12PipelineDescriptorHeapStorage = std::vector<ID3D12DescriptorHeap*>;
 
 		/**
 		 * DirectX 12 descriptor heap manager class.
@@ -146,6 +146,8 @@ namespace Xenon
 			void incrementHeaps();
 
 		public:
+			std::mutex m_Mutex;
+
 			std::unordered_map<DescriptorType, std::vector<DescriptorBindingInfo>> m_BindingMap;
 			std::unordered_map<DescriptorType, std::pair<UINT, UINT>> m_GroupSizes;	// [buffer, sampler]
 

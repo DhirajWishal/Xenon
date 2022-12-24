@@ -12,6 +12,7 @@ namespace Xenon
 {
 	DefaultRasterizingLayer::DefaultRasterizingLayer(Renderer& renderer, Backend::Camera* pCamera)
 		: RasterizingLayer(renderer, pCamera, Backend::AttachmentType::Color | Backend::AttachmentType::Depth | Backend::AttachmentType::Stencil)
+		, m_pOcclusionQuery(renderer.getInstance().getFactory()->createOcclusionQuery(m_Renderer.getInstance().getBackendDevice(), 1))
 	{
 		// Setup the workers.
 		m_Workers.reserve(GetUsableThreadCount());
@@ -40,22 +41,39 @@ namespace Xenon
 	{
 		OPTICK_EVENT();
 
-
+		// Begin recording.
 		m_pCommandRecorder->begin();
 
-		if (m_pOcclusionQuery)
+		// Re-create the occlusion query if needed.
 		{
-			[[maybe_unused]] const auto samples = m_pOcclusionQuery->getResults();
-			m_pCommandRecorder->resetQuery(m_pOcclusionQuery.get());
+			auto lock = std::scoped_lock(m_Mutex);
+			if (m_SubMeshCount > 0 && m_pOcclusionQuery->getSampleCount() != m_SubMeshCount)
+			{
+				m_Renderer.getInstance().getBackendDevice()->waitIdle();
+				m_pOcclusionQuery = m_Renderer.getInstance().getFactory()->createOcclusionQuery(m_Renderer.getInstance().getBackendDevice(), m_SubMeshCount);
+			}
 		}
 
+		// Reset the query.
+		m_pCommandRecorder->resetQuery(m_pOcclusionQuery.get());
+
+		// Bind the render target.
 		m_pCommandRecorder->bind(m_pRasterizer.get(), { glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), 1.0f, static_cast<uint32_t>(0) }, true);
 
+		// Run the workers and wait till they're executed.
+		m_DrawCount = 0;
 		m_Synchronization.reset(m_Workers.size());
 		m_ConditionVariable.notify_all();
 		m_Synchronization.wait();
 
+		// Execute all the secondary command recorders (children).
 		m_pCommandRecorder->executeChildren();
+
+		// Query the results only if we have drawn something.
+		if (m_SubMeshCount > 0)
+			m_pCommandRecorder->getQueryResults(m_pOcclusionQuery.get());
+
+		// End the command recorder recording.
 		m_pCommandRecorder->end();
 	}
 
@@ -71,6 +89,10 @@ namespace Xenon
 		drawData.m_pCameraDescriptor = pPipeline->createDescriptor(Backend::DescriptorType::Camera);
 		drawData.m_pCameraDescriptor->attach(0, m_Renderer.getCamera()->getViewports().front().m_pUniformBuffer);
 
+		// Wait if we're in the process of rendering.
+		m_Synchronization.wait();
+
+		// Lock the resources for loading.
 		auto lock = std::scoped_lock(m_Mutex);
 
 		// Setup the material descriptors.
@@ -96,9 +118,6 @@ namespace Xenon
 
 		// Insert the newly created draw data.
 		m_DrawData.emplace_back(std::move(drawData));
-
-		// Re-create the occlusion query.
-		m_pOcclusionQuery = m_Renderer.getInstance().getFactory()->createOcclusionQuery(m_Renderer.getInstance().getBackendDevice(), m_SubMeshCount);
 	}
 
 	void DefaultRasterizingLayer::subMeshBinder(uint8_t index)
@@ -154,14 +173,19 @@ namespace Xenon
 
 	void DefaultRasterizingLayer::setupOcclusionPipeline()
 	{
+		// Create the pipeline.
 		Backend::RasterizingPipelineSpecification specification = {};
 		specification.m_VertexShader = Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Occlusion/Shader.vert.spv");
-		specification.m_FragmentShader = Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Occlusion/Shader.frag.spv");
+		// specification.m_FragmentShader = Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Occlusion/Shader.frag.spv");
 
 		m_pOcclusionPipeline = m_Renderer.getInstance().getFactory()->createRasterizingPipeline(m_Renderer.getInstance().getBackendDevice(), nullptr, m_pRasterizer.get(), specification);
+
+		// Setup the occlusion camera descriptor.
+		m_pOcclusionCameraDescriptor = m_pOcclusionPipeline->createDescriptor(Backend::DescriptorType::Camera);
+		m_pOcclusionCameraDescriptor->attach(0, m_Renderer.getCamera()->getViewports().front().m_pUniformBuffer);
 	}
 
-	void DefaultRasterizingLayer::occlusionPass(Backend::CommandRecorder* pCommandRecorder, std::unique_lock<std::mutex>& lock, const DrawEntry& entry)
+	void DefaultRasterizingLayer::occlusionPass(Backend::CommandRecorder* pCommandRecorder, std::unique_lock<std::mutex>& lock, const DrawEntry& entry) const
 	{
 		OPTICK_EVENT();
 
@@ -170,16 +194,16 @@ namespace Xenon
 
 		pCommandRecorder->bind(entry.m_pVertexBuffer, entry.m_VertexSpecification.getSize());
 		pCommandRecorder->bind(entry.m_pIndexBuffer, static_cast<Backend::IndexBufferStride>(entry.m_SubMesh.m_IndexSize));
-		pCommandRecorder->bind(m_pOcclusionPipeline.get(), nullptr, nullptr, entry.m_pCameraDescriptor);
+		pCommandRecorder->bind(m_pOcclusionPipeline.get(), nullptr, nullptr, m_pOcclusionCameraDescriptor.get());
 
-		m_pCommandRecorder->beginQuery(m_pOcclusionQuery.get(), static_cast<uint32_t>(entry.m_QueryIndex));
+		pCommandRecorder->beginQuery(m_pOcclusionQuery.get(), static_cast<uint32_t>(entry.m_QueryIndex));
 		pCommandRecorder->drawIndexed(entry.m_SubMesh.m_VertexOffset, entry.m_SubMesh.m_IndexOffset, entry.m_SubMesh.m_IndexCount);
-		m_pCommandRecorder->endQuery(m_pOcclusionQuery.get(), static_cast<uint32_t>(entry.m_QueryIndex));
+		pCommandRecorder->endQuery(m_pOcclusionQuery.get(), static_cast<uint32_t>(entry.m_QueryIndex));
 
 		if (!lock) lock.lock();
 	}
 
-	void DefaultRasterizingLayer::geometryPass(Backend::CommandRecorder* pCommandRecorder, std::unique_lock<std::mutex>& lock, const DrawEntry& entry) const
+	void DefaultRasterizingLayer::geometryPass(Backend::CommandRecorder* pCommandRecorder, std::unique_lock<std::mutex>& lock, const DrawEntry& entry)
 	{
 		OPTICK_EVENT();
 
@@ -196,6 +220,7 @@ namespace Xenon
 			pCommandRecorder->drawIndexed(entry.m_SubMesh.m_VertexOffset, entry.m_SubMesh.m_IndexOffset, entry.m_SubMesh.m_IndexCount);
 
 			if (!lock) lock.lock();
+			m_DrawCount++;
 		}
 	}
 }

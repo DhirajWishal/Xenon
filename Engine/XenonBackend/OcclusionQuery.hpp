@@ -25,19 +25,33 @@ namespace Xenon
 			explicit OcclusionQuery(const Device* pDevice, uint64_t sampleCount) : Query(pDevice), m_Samples(sampleCount) {}
 
 			/**
-			 * Get the results form the query.
-			 *
-			 * @return The samples
-			 */
-			[[nodiscard]] virtual const std::vector<uint64_t>& getResults() = 0;
-
-			/**
 			 * Get the samples.
 			 * This will not query the samples from the backend.
 			 *
 			 * @return The samples.
 			 */
 			[[nodiscard]] const std::vector<uint64_t>& getSamples() const noexcept { return m_Samples; }
+
+			/**
+			 * Get the samples data pointer.
+			 *
+			 * @return The pointer.
+			 */
+			[[nodiscard]] uint64_t* getSamplesPointer() noexcept { return m_Samples.data(); }
+
+			/**
+			 * Get the samples data pointer.
+			 *
+			 * @return The pointer.
+			 */
+			[[nodiscard]] const uint64_t* getSamplesPointer() const noexcept { return m_Samples.data(); }
+
+			/**
+			 * Get the sample count.
+			 *
+			 * @return The sample count.
+			 */
+			[[nodiscard]] uint64_t getSampleCount() const noexcept { return m_Samples.size(); }
 
 		protected:
 			std::vector<uint64_t> m_Samples;

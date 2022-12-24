@@ -204,6 +204,13 @@ namespace Xenon
 			void executeChildren() override;
 
 			/**
+			 * Get the query results from the command recorder.
+			 *
+			 * @param pOcclusionQuery The occlusion query pointer.
+			 */
+			void getQueryResults(OcclusionQuery* pOcclusionQuery) override;
+
+			/**
 			 * End the command recorder recording.
 			 */
 			void end() override;

@@ -98,6 +98,22 @@ namespace Xenon
 		 */
 		void addDrawData(MeshStorage&& storage, Backend::RasterizingPipeline* pPipeline);
 
+		/**
+		 * Get the total draw count.
+		 * This is the number of sub-meshes the layer will render.
+		 *
+		 * @return The count.
+		 */
+		[[nodiscard]] uint64_t getTotalDrawCount() const noexcept { return m_SubMeshCount; }
+
+		/**
+		 * Get the draw count.
+		 * This is the number of sub-meshes the layer rendered in the previous frame.
+		 *
+		 * @return The count.
+		 */
+		[[nodiscard]] uint64_t getDrawCount() const noexcept { return m_DrawCount; }
+
 	private:
 		/**
 		 * Sub mesh binder function.
@@ -120,7 +136,7 @@ namespace Xenon
 		 * @param lock The thread's resource lock.
 		 * @param entry The draw entry.
 		 */
-		void occlusionPass(Backend::CommandRecorder* pCommandRecorder, std::unique_lock<std::mutex>& lock, const DrawEntry& entry);
+		void occlusionPass(Backend::CommandRecorder* pCommandRecorder, std::unique_lock<std::mutex>& lock, const DrawEntry& entry) const;
 
 		/**
 		 * Draw the geometry pass of the sub-mesh.
@@ -129,7 +145,7 @@ namespace Xenon
 		 * @param lock The thread's resource lock.
 		 * @param entry The draw entry.
 		 */
-		void geometryPass(Backend::CommandRecorder* pCommandRecorder, std::unique_lock<std::mutex>& lock, const DrawEntry& entry) const;
+		void geometryPass(Backend::CommandRecorder* pCommandRecorder, std::unique_lock<std::mutex>& lock, const DrawEntry& entry);
 
 	private:
 		std::vector<std::jthread> m_Workers;
@@ -143,7 +159,9 @@ namespace Xenon
 
 		std::unique_ptr<Backend::RasterizingPipeline> m_pOcclusionPipeline = nullptr;
 		std::unique_ptr<Backend::OcclusionQuery> m_pOcclusionQuery = nullptr;
+		std::unique_ptr<Backend::Descriptor> m_pOcclusionCameraDescriptor = nullptr;
 
+		std::atomic_uint64_t m_DrawCount = 0;
 		uint64_t m_SubMeshCount = 0;
 	};
 }

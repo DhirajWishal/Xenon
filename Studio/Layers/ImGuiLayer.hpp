@@ -111,6 +111,14 @@ public:
 	 */
 	void showLayer(Xenon::Layer* pLayer);
 
+	/**
+	 * Set the draw call count.
+	 * 
+	 * @param totalCount The total draw call count.
+	 * @param actualCount The actual draw call count.
+	 */
+	void setDrawCallCount(uint64_t totalCount, uint64_t actualCount);
+
 private:
 	/**
 	 * Configure ImGui.

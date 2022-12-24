@@ -103,13 +103,15 @@ namespace Xenon
 		Xenon::Backend::DX12PipelineDescriptorHeapStorage& DX12DescriptorHeapManager::getDescriptorHeapStorage()
 		{
 			OPTICK_EVENT();
+			auto lock = std::scoped_lock(m_Mutex);
 
 			if (m_IsUpdated)
 			{
 				D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
 				heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+				m_ShaderVisibleHeaps.clear();
 
-				if (m_CbvSrvUavCount > 0)
+				if (m_CbvSrvUavCount > 0 && m_CbvSrvUavDescriptorCount > 0)
 				{
 					heapDesc.NumDescriptors = m_CbvSrvUavDescriptorCount;
 					heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
@@ -126,11 +128,11 @@ namespace Xenon
 							D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV
 						);
 
-						m_ShaderVisibleHeaps[0] = m_ShaderVisibleCbvSrvUavDescriptorHeap.Get();
+						m_ShaderVisibleHeaps.emplace_back(m_ShaderVisibleCbvSrvUavDescriptorHeap.Get());
 					}
 				}
 
-				if (m_SamplerCount > 0)
+				if (m_SamplerCount > 0 && m_SamplerDescriptorCount > 0)
 				{
 					heapDesc.NumDescriptors = m_SamplerDescriptorCount;
 					heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
@@ -148,7 +150,7 @@ namespace Xenon
 						);
 					}
 
-					m_ShaderVisibleHeaps[1] = m_ShaderVisibleSamplerDescriptorHeap.Get();
+					m_ShaderVisibleHeaps.emplace_back(m_ShaderVisibleSamplerDescriptorHeap.Get());
 				}
 			}
 
@@ -159,6 +161,7 @@ namespace Xenon
 		std::pair<UINT, UINT> DX12DescriptorHeapManager::setupDescriptor(DescriptorType type)
 		{
 			OPTICK_EVENT();
+			auto lock = std::scoped_lock(m_Mutex);
 
 			auto newPair = std::make_pair(m_CbvSrvUavDescriptorCount, m_SamplerDescriptorCount);
 

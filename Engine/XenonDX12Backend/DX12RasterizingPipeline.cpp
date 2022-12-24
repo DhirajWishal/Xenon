@@ -767,8 +767,12 @@ namespace Xenon
 		void DX12RasterizingPipeline::setupPipelineStateDescriptor()
 		{
 			m_PipelineStateDescriptor.pRootSignature = m_RootSignature.Get();
-			m_PipelineStateDescriptor.VS = CD3DX12_SHADER_BYTECODE(m_VertexShader.Get());
-			m_PipelineStateDescriptor.PS = CD3DX12_SHADER_BYTECODE(m_PixelShader.Get());
+
+			if (m_VertexShader)
+				m_PipelineStateDescriptor.VS = CD3DX12_SHADER_BYTECODE(m_VertexShader.Get());
+
+			if (m_PixelShader)
+				m_PipelineStateDescriptor.PS = CD3DX12_SHADER_BYTECODE(m_PixelShader.Get());
 
 			m_PipelineStateDescriptor.RasterizerState.FillMode = GetFillMode(m_Specification.m_PolygonMode);
 			m_PipelineStateDescriptor.RasterizerState.CullMode = GetCullMode(m_Specification.m_CullMode);

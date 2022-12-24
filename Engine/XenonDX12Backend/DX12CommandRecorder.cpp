@@ -12,6 +12,11 @@
 #include <optick.h>
 #include <glm/gtc/type_ptr.hpp>
 
+#ifdef XENON_PLATFORM_WINDOWS
+#include <execution> 
+
+#endif // XENON_PLATFORM_WINDOWS
+
 namespace /* anonymous */
 {
 	/**
@@ -525,21 +530,6 @@ namespace Xenon
 		void DX12CommandRecorder::resetQuery(OcclusionQuery* pOcclusionQuery)
 		{
 			OPTICK_EVENT();
-
-			// Unlike dumb ass Vulkan, we need to copy the data from the query to the query buffer. Let's do it real quick.
-			auto pDxOcclusionQuery = pOcclusionQuery->as<DX12OcclusionQuery>();
-
-			{
-				const auto transition = CD3DX12_RESOURCE_BARRIER::Transition(pDxOcclusionQuery->getBuffer(), D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_COPY_DEST);
-				m_pCurrentCommandList->ResourceBarrier(1, &transition);
-			}
-
-			m_pCurrentCommandList->ResolveQueryData(pDxOcclusionQuery->getHeap(), D3D12_QUERY_TYPE_BINARY_OCCLUSION, 0, static_cast<UINT>(pOcclusionQuery->getSamples().size()), pDxOcclusionQuery->getBuffer(), 0);
-
-			{
-				const auto transition = CD3DX12_RESOURCE_BARRIER::Transition(pDxOcclusionQuery->getBuffer(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ);
-				m_pCurrentCommandList->ResourceBarrier(1, &transition);
-			}
 		}
 
 		void DX12CommandRecorder::bind(Rasterizer* pRasterizer, const std::vector<Rasterizer::ClearValueType>& clearValues, bool usingSecondaryCommandRecorders /*= false*/)
@@ -732,6 +722,39 @@ namespace Xenon
 				m_pCurrentCommandList->ExecuteBundle(pBundleCommandList);
 
 			m_pBundleCommandLists.clear();
+		}
+
+		void DX12CommandRecorder::getQueryResults(OcclusionQuery* pOcclusionQuery)
+		{
+			OPTICK_EVENT();
+
+			auto pDxOcclusionQuery = pOcclusionQuery->as<DX12OcclusionQuery>();
+
+			{
+				OPTICK_EVENT_DYNAMIC("Resolve Query Data");
+
+				// Copy the occlusion data from the queue to the buffer.
+				m_pCurrentCommandList->ResolveQueryData(pDxOcclusionQuery->getHeap(), D3D12_QUERY_TYPE_BINARY_OCCLUSION, 0, static_cast<UINT>(pOcclusionQuery->getSampleCount()), pDxOcclusionQuery->getBuffer(), 0);
+			}
+
+			{
+				OPTICK_EVENT_DYNAMIC("Copy Query Data");
+
+				// Copy the available data.
+				const D3D12_RANGE mapRange = CD3DX12_RANGE(1, 0);
+
+				uint64_t* pSampleData = nullptr;
+				XENON_DX12_ASSERT(pDxOcclusionQuery->getBuffer()->Map(0, nullptr, std::bit_cast<void**>(&pSampleData)), "Failed to map the occlusion query buffer!");
+				pDxOcclusionQuery->getBuffer()->Unmap(0, &mapRange);
+
+#ifdef XENON_PLATFORM_WINDOWS
+				std::copy_n(std::execution::unseq, pSampleData, pDxOcclusionQuery->getSampleCount(), pDxOcclusionQuery->getSamplesPointer());
+
+#else
+				std::copy_n(pSampleData, pDxOcclusionQuery->getSampleCount(), pDxOcclusionQuery->getSamplesPointer());
+
+#endif // XENON_PLATFORM_WINDOWS
+			}
 		}
 
 		void DX12CommandRecorder::end()
