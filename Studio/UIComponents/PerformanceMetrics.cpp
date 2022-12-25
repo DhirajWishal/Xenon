@@ -20,7 +20,7 @@ void PerformanceMetrics::begin(std::chrono::nanoseconds delta)
 			ImGui::Text("Frame Timing");
 			ImGui::Separator();
 			ImGui::PlotLines("Frame Rate", m_FrameRates.data(), static_cast<int32_t>(m_FrameRates.size()));
-			ImGui::Text("Average frame rate: %f", std::accumulate(m_FrameRates.begin(), m_FrameRates.end(), 0.0f) / static_cast<float>(m_FrameRates.size()));
+			ImGui::Text("Average frame rate: %f FPS", std::accumulate(m_FrameRates.begin(), m_FrameRates.end(), 0.0f) / static_cast<float>(m_FrameRates.size()));
 			ImGui::Spacing();
 
 			// Show the draw call count.
