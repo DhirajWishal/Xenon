@@ -258,7 +258,7 @@ namespace Xenon
 			[[nodiscard]] const ID3D12GraphicsCommandList* getCurrentCommandList() const noexcept { return m_pCurrentCommandList; }
 
 		private:
-			std::mutex m_CommandBundleMutex;
+			std::mutex m_Mutex;
 
 			ComPtr<ID3D12CommandAllocator> m_CommandAllocator;
 

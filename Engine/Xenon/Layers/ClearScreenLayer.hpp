@@ -26,15 +26,6 @@ namespace Xenon
 		explicit ClearScreenLayer(Renderer& renderer, Backend::Camera* pCamera, const glm::vec4& color);
 
 		/**
-		 * Bind the layer to the command recorder.
-		 * This is where all the required commands must be submitted to the command recorder to be executed by the GPU.
-		 *
-		 * @param pPreviousLayer The previous layer pointer. This will be nullptr if this layer is the first.
-		 * @param pCommandRecorder The command recorder pointer to bind the commands to.
-		 */
-		void bind(Layer* pPreviousLayer, Backend::CommandRecorder* pCommandRecorder) override;
-
-		/**
 		 * Update the layer.
 		 * This is called by the renderer and all the required commands must be updated (if required) in this call.
 		 *

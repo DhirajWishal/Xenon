@@ -105,6 +105,8 @@ namespace Xenon
 		private:
 			D3D12_GRAPHICS_PIPELINE_STATE_DESC m_PipelineStateDescriptor = {};
 
+			std::mutex m_Mutex;
+
 			std::unordered_map<uint64_t, PipelineStorage> m_Pipelines;
 			std::vector<D3D12_INPUT_ELEMENT_DESC> m_Inputs;
 

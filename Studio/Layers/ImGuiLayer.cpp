@@ -228,59 +228,6 @@ void ImGuiLayer::endFrame() const
 	ImGui::Render();
 }
 
-void ImGuiLayer::bind(Xenon::Layer* pPreviousLayer, Xenon::Backend::CommandRecorder* pCommandRecorder)
-{
-	// Copy the vertex and index data if necessary.
-	const auto frameIndex = pCommandRecorder->getCurrentIndex();
-	prepareResources(pCommandRecorder, frameIndex);
-
-	// Draw.
-	const auto* pDrawData = ImGui::GetDrawData();
-	if (!pDrawData || pDrawData->CmdListsCount == 0)
-		return;
-
-	pCommandRecorder->bind(m_pRasterizer.get(), m_ClearValues);
-	pCommandRecorder->bind(m_pPipeline.get(), m_VertexSpecification);
-
-	const auto& io = ImGui::GetIO();
-	m_UserData.m_Scale = glm::vec2(2.0f / io.DisplaySize.x, 2.0f / io.DisplaySize.y);
-	m_UserData.m_Translate = glm::vec2(-1.0f - pDrawData->DisplayPos.x * m_UserData.m_Scale.x, -1.0f - pDrawData->DisplayPos.y * m_UserData.m_Scale.y);
-	m_pUniformBuffer->write(Xenon::ToBytes(&m_UserData), sizeof(UserData), 0, pCommandRecorder);
-
-	pCommandRecorder->bind(m_pVertexBuffers[frameIndex].get(), sizeof(ImDrawVert));
-	pCommandRecorder->bind(m_pIndexBuffers[frameIndex].get(), static_cast<Xenon::Backend::IndexBufferStride>(sizeof(ImDrawIdx)));
-	pCommandRecorder->setViewportNatural(0.0f, 0.0f, io.DisplaySize.x, io.DisplaySize.y, 0.0f, 1.0f);
-
-	uint64_t indexOffset = 0;
-	uint64_t vertexOffset = 0;
-	for (uint32_t i = 0; i < pDrawData->CmdListsCount; i++)
-	{
-		const auto* pCommandList = pDrawData->CmdLists[i];
-		for (uint32_t j = 0; j < pCommandList->CmdBuffer.Size; j++)
-		{
-			const auto* pCommandBuffer = &pCommandList->CmdBuffer[j];
-
-			const auto minClip = glm::vec2(pCommandBuffer->ClipRect.x - pDrawData->DisplayPos.x, pCommandBuffer->ClipRect.y - pDrawData->DisplayPos.y);
-			const auto maxClip = glm::vec2(pCommandBuffer->ClipRect.z - pDrawData->DisplayPos.x, pCommandBuffer->ClipRect.w - pDrawData->DisplayPos.y);
-			if (maxClip.x <= minClip.x || maxClip.y <= minClip.y)
-				continue;
-
-			pCommandRecorder->setScissor(
-				static_cast<int32_t>(minClip.x),
-				static_cast<int32_t>(minClip.y),
-				static_cast<uint32_t>(maxClip.x),
-				static_cast<uint32_t>(maxClip.y)
-			);
-
-			pCommandRecorder->bind(m_pPipeline.get(), m_pUserDescriptor.get(), m_pDescriptorSetMap[std::bit_cast<uint64_t>(pCommandBuffer->TextureId)].get(), nullptr);
-			pCommandRecorder->drawIndexed(pCommandBuffer->VtxOffset + vertexOffset, pCommandBuffer->IdxOffset + indexOffset, pCommandBuffer->ElemCount);
-		}
-
-		indexOffset += pCommandList->IdxBuffer.Size;
-		vertexOffset += pCommandList->VtxBuffer.Size;
-	}
-}
-
 void ImGuiLayer::onUpdate(Layer* pPreviousLayer, uint32_t imageIndex, uint32_t frameIndex)
 {
 	m_pCommandRecorder->begin();

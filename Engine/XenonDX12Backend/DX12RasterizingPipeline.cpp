@@ -676,6 +676,8 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
+			auto lock = std::scoped_lock(m_Mutex);
+
 			const auto hash = vertexSpecification.generateHash();
 
 			if (!m_Pipelines.contains(hash))

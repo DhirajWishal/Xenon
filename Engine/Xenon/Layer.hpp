@@ -27,15 +27,6 @@ namespace Xenon
 		explicit Layer(Renderer& renderer);
 
 		/**
-		 * Bind the layer to the command recorder.
-		 * This is where all the required commands must be submitted to the command recorder to be executed by the GPU.
-		 *
-		 * @param pPreviousLayer The previous layer pointer. This will be nullptr if this layer is the first.
-		 * @param pCommandRecorder The command recorder pointer to bind the commands to.
-		 */
-		virtual void bind(Layer* pPreviousLayer, Backend::CommandRecorder* pCommandRecorder) = 0;
-
-		/**
 		 * Update the layer.
 		 * This is called by the renderer and all the required commands must be updated (if required) in this call.
 		 *
@@ -43,7 +34,7 @@ namespace Xenon
 		 * @param imageIndex The image's index.
 		 * @param frameIndex The frame's index.
 		 */
-		virtual void onUpdate(Layer* pPreviousLayer, uint32_t imageIndex, uint32_t frameIndex) {}
+		virtual void onUpdate(Layer* pPreviousLayer, uint32_t imageIndex, uint32_t frameIndex) = 0;
 
 		/**
 		 * Get the color attachment from the layer.

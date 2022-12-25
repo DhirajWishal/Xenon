@@ -7,7 +7,7 @@ namespace Xenon
 {
 	Xenon::JobSystem& XObject::GetJobSystem()
 	{
-		static JobSystem jobSystem = JobSystem(std::thread::hardware_concurrency());
+		static auto jobSystem = JobSystem(std::thread::hardware_concurrency() - 1);	// We leave one here for the parent thread..
 		return jobSystem;
 	}
 }

@@ -656,6 +656,8 @@ namespace Xenon
 			}
 			else
 			{
+				auto lock = std::scoped_lock(m_Mutex);
+
 				const D3D12_VIEWPORT viewport = CD3DX12_VIEWPORT(x, y, width, height, minDepth, maxDepth);
 				m_pCurrentCommandList->RSSetViewports(1, &viewport);
 			}
@@ -671,6 +673,8 @@ namespace Xenon
 			}
 			else
 			{
+				auto lock = std::scoped_lock(m_Mutex);
+
 				const D3D12_VIEWPORT viewport = CD3DX12_VIEWPORT(x, height - y, width, -height, minDepth, maxDepth);
 				m_pCurrentCommandList->RSSetViewports(1, &viewport);
 			}
@@ -686,6 +690,8 @@ namespace Xenon
 			}
 			else
 			{
+				auto lock = std::scoped_lock(m_Mutex);
+
 				const D3D12_RECT scissor = CD3DX12_RECT(x, y, width, height);
 				m_pCurrentCommandList->RSSetScissorRects(1, &scissor);
 			}
@@ -717,7 +723,7 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
-			auto lock = std::scoped_lock(m_CommandBundleMutex);
+			auto lock = std::scoped_lock(m_Mutex);
 			for (const auto pBundleCommandList : m_pBundleCommandLists)
 				m_pCurrentCommandList->ExecuteBundle(pBundleCommandList);
 
@@ -825,7 +831,9 @@ namespace Xenon
 
 		void DX12CommandRecorder::addBundle(ID3D12GraphicsCommandList* pCommandList)
 		{
-			auto lock = std::scoped_lock(m_CommandBundleMutex);
+			OPTICK_EVENT();
+
+			auto lock = std::scoped_lock(m_Mutex);
 			m_pBundleCommandLists.emplace_back(pCommandList);
 		}
 	}

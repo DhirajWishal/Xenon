@@ -55,7 +55,7 @@ namespace Xenon
 		 *
 		 * @return The usable thread count.
 		 */
-		[[nodiscard]] static uint32_t GetUsableThreadCount() { return std::thread::hardware_concurrency() / 2; }
+		[[nodiscard]] static uint64_t GetUsableThreadCount() { return GetJobSystem().getThreadCount(); }
 
 	public:
 		/**
@@ -69,16 +69,7 @@ namespace Xenon
 		/**
 		 * Destructor.
 		 */
-		~DefaultRasterizingLayer() override;
-
-		/**
-		 * Bind the layer to the command recorder.
-		 * This is where all the required commands must be submitted to the command recorder to be executed by the GPU.
-		 *
-		 * @param pPreviousLayer The previous layer pointer. This will be nullptr if this layer is the first.
-		 * @param pCommandRecorder The command recorder pointer to bind the commands to.
-		 */
-		void bind(Layer* pPreviousLayer, Backend::CommandRecorder* pCommandRecorder) override;
+		~DefaultRasterizingLayer() override = default;
 
 		/**
 		 * Update the layer.
@@ -116,43 +107,37 @@ namespace Xenon
 
 	private:
 		/**
-		 * Sub mesh binder function.
-		 * This is a worker function which will run on another thread and will be used to bind sub-meshes to a secondary command recorder which then will be executed
-		 * via the main graphics command recorder.
-		 *
-		 * @param index The index of the current thread.
-		 */
-		void subMeshBinder(uint8_t index);
-
-		/**
 		 * Setup the occlusion pipeline.
 		 */
 		void setupOcclusionPipeline();
 
 		/**
-		 * Draw the occlusion pass of the sub-mesh.
+		 * Binding call function.
+		 * This function is passed to the job system to bind the required passes.
 		 *
-		 * @param pCommandRecorder The command recorder to bind to.
-		 * @param lock The thread's resource lock.
 		 * @param entry The draw entry.
 		 */
-		void occlusionPass(Backend::CommandRecorder* pCommandRecorder, std::unique_lock<std::mutex>& lock, const DrawEntry& entry) const;
+		void bindingCall(const DrawEntry& entry);
+
+		/**
+		 * Draw the occlusion pass of the sub-mesh.
+		 *
+		 * @param entry The draw entry.
+		 */
+		void occlusionPass(const DrawEntry& entry) const;
 
 		/**
 		 * Draw the geometry pass of the sub-mesh.
 		 *
-		 * @param pCommandRecorder The command recorder to bind to.
-		 * @param lock The thread's resource lock.
 		 * @param entry The draw entry.
 		 */
-		void geometryPass(Backend::CommandRecorder* pCommandRecorder, std::unique_lock<std::mutex>& lock, const DrawEntry& entry);
+		void geometryPass(const DrawEntry& entry);
 
 	private:
-		std::vector<std::jthread> m_Workers;
 		std::mutex m_Mutex;
-		std::condition_variable m_ConditionVariable;
-		std::atomic_bool m_bShouldRun = true;
 		CountingFence m_Synchronization;
+
+		std::unordered_map<std::thread::id, std::unique_ptr<Backend::CommandRecorder>> m_pThreadLocalCommandRecorder;
 
 		std::vector<DrawData> m_DrawData;
 		std::vector<std::vector<DrawEntry>> m_DrawEntries = std::vector<std::vector<DrawEntry>>(GetUsableThreadCount());

@@ -125,6 +125,8 @@ namespace Xenon
 			VkPipelineDepthStencilStateCreateInfo m_DepthStencilStateCreateInfo = {};
 			VkPipelineDynamicStateCreateInfo m_DynamicStateCreateInfo = {};
 
+			std::mutex m_Mutex;
+
 			std::unordered_map<DescriptorType, std::vector<DescriptorBindingInfo>> m_BindingMap;
 			std::unordered_map<uint64_t, PipelineStorage> m_Pipelines;
 

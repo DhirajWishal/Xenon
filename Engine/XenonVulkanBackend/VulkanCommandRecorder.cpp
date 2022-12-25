@@ -367,9 +367,8 @@ namespace Xenon
 			m_pCurrentBuffer->wait();
 			m_pDevice->getDeviceTable().vkBeginCommandBuffer(*m_pCurrentBuffer, &beginInfo);
 
-			// Insert he child (this) command buffer.
-			auto lock = std::scoped_lock(m_ChildCommandMutex);
-			pVkParent->m_ChildCommandBuffers.emplace_back(m_pCurrentBuffer->getCommandBuffer());
+			// Insert the child (this) command buffer.
+			pVkParent->addChild(*m_pCurrentBuffer);
 		}
 
 		void VulkanCommandRecorder::changeImageLayout(VkImage image, VkImageLayout currentLayout, VkImageLayout newLayout, VkImageAspectFlags aspectFlags, uint32_t mipLevels /*= 1*/, uint32_t layers /*= 1*/)
@@ -888,6 +887,8 @@ namespace Xenon
 
 		void VulkanCommandRecorder::getQueryResults(OcclusionQuery* pOcclusionQuery)
 		{
+			OPTICK_EVENT();
+
 			auto pVkOcclusionQuery = pOcclusionQuery->as<VulkanOcclusionQuery>();
 
 			const auto result = m_pDevice->getDeviceTable().vkGetQueryPoolResults(
@@ -958,6 +959,14 @@ namespace Xenon
 			OPTICK_EVENT();
 
 			m_pCurrentBuffer->wait(timeout);
+		}
+
+		void VulkanCommandRecorder::addChild(VkCommandBuffer commandBuffer)
+		{
+			OPTICK_EVENT();
+
+			auto lock = std::scoped_lock(m_ChildCommandMutex);
+			m_ChildCommandBuffers.emplace_back(commandBuffer);
 		}
 	}
 }

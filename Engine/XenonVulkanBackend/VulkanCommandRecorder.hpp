@@ -262,6 +262,14 @@ namespace Xenon
 			[[nodiscard]] const VulkanCommandBuffer* getCurrentCommandBuffer() const noexcept { return m_pCurrentBuffer; }
 
 		private:
+			/**
+			 * Add a child to the command recorder to be executed.
+			 *
+			 * @param commandBuffer The child command buffer.
+			 */
+			void addChild(VkCommandBuffer commandBuffer);
+
+		private:
 			std::mutex m_ChildCommandMutex;
 			VkCommandBufferInheritanceInfo m_InheritanceInfo = {};
 
