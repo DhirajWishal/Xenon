@@ -49,7 +49,7 @@ namespace Xenon
 	{
 		OPTICK_EVENT();
 
-		while (!completed());
+		while (!isComplete());
 	}
 
 	void JobSystem::waitFor(std::chrono::nanoseconds timeout)
@@ -57,7 +57,7 @@ namespace Xenon
 		OPTICK_EVENT();
 
 		const auto targetTimeStamp = std::chrono::high_resolution_clock::now() + timeout;
-		while (!completed() && targetTimeStamp > std::chrono::high_resolution_clock::now());
+		while (!isComplete() && targetTimeStamp > std::chrono::high_resolution_clock::now());
 	}
 
 	void JobSystem::clear()
@@ -70,7 +70,7 @@ namespace Xenon
 		m_WorkerState.clear();
 	}
 
-	bool JobSystem::completed()
+	bool JobSystem::isComplete()
 	{
 		const auto lock = std::scoped_lock(m_JobMutex);
 

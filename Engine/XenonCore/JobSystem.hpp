@@ -109,9 +109,10 @@ namespace Xenon
 		/**
 		 * Check if all the submitted work has been completed.
 		 *
-		 * @return Whether the jobs have been completed.
+		 * @return True if the jobs have been completed.
+		 * @return False if the jobs have not been completed.
 		 */
-		[[nodiscard]] bool completed();
+		[[nodiscard]] bool isComplete();
 
 		/**
 		 * Get the number of threads used by the system.

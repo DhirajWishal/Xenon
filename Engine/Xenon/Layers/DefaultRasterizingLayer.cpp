@@ -37,8 +37,11 @@ namespace Xenon
 			}
 		}
 
+#ifdef ENABLE_OCCLUSION_CULL
 		// Reset the query.
 		m_pCommandRecorder->resetQuery(m_pOcclusionQuery.get());
+
+#endif // ENABLE_OCCLUSION_CULL
 
 		// Bind the render target.
 		m_pCommandRecorder->bind(m_pRasterizer.get(), { glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), 1.0f, static_cast<uint32_t>(0) }, true);
@@ -102,6 +105,7 @@ namespace Xenon
 
 	void DefaultRasterizingLayer::setupOcclusionPipeline()
 	{
+#ifdef ENABLE_OCCLUSION_CULL
 		// Create the pipeline.
 		Backend::RasterizingPipelineSpecification specification = {};
 		specification.m_VertexShader = Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Occlusion/Shader.vert.spv");
@@ -112,6 +116,8 @@ namespace Xenon
 		// Setup the occlusion camera descriptor.
 		m_pOcclusionCameraDescriptor = m_pOcclusionPipeline->createDescriptor(Backend::DescriptorType::Camera);
 		m_pOcclusionCameraDescriptor->attach(0, m_Renderer.getCamera()->getViewports().front().m_pUniformBuffer);
+
+#endif // ENABLE_OCCLUSION_CULL
 	}
 
 	void DefaultRasterizingLayer::issueDrawCalls()
@@ -125,6 +131,8 @@ namespace Xenon
 		// Begin the command recorders and set the viewport and scissor.
 		for (const auto& [id, pCommandRecorder] : m_pThreadLocalCommandRecorder)
 		{
+			OPTICK_EVENT_DYNAMIC("Begin Secondary Recorders");
+
 			// Begin the command recorder.
 			pCommandRecorder->begin(m_pCommandRecorder.get());
 
@@ -152,6 +160,8 @@ namespace Xenon
 		// End the command recorders and select the next one.
 		for (const auto& [id, pCommandRecorder] : m_pThreadLocalCommandRecorder)
 		{
+			OPTICK_EVENT_DYNAMIC("End Secondary Recorders");
+
 			// End the command recorder.
 			pCommandRecorder->end();
 
