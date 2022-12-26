@@ -43,49 +43,8 @@ namespace Xenon
 		// Bind the render target.
 		m_pCommandRecorder->bind(m_pRasterizer.get(), { glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), 1.0f, static_cast<uint32_t>(0) }, true);
 
-		// Reset the counters.
-		m_DrawCount = 0;
-		m_Synchronization.reset(m_SubMeshCount);
-
-		// Begin the command recorders and set the viewport and scissor.
-		for (const auto& [id, pCommandRecorder] : m_pThreadLocalCommandRecorder)
-		{
-			// Begin the command recorder.
-			pCommandRecorder->begin(m_pCommandRecorder.get());
-
-			// Set the scissor and view port.
-			pCommandRecorder->setViewport(0.0f, 0.0f, static_cast<float>(m_Renderer.getCamera()->getWidth()), static_cast<float>(m_Renderer.getCamera()->getHeight()), 0.0f, 1.0f);
-			pCommandRecorder->setScissor(0, 0, m_Renderer.getCamera()->getWidth(), m_Renderer.getCamera()->getHeight());
-		}
-
-		// Issue the binding calls.
-		for (const auto& drawEntry : m_DrawEntries)
-		{
-			OPTICK_EVENT_DYNAMIC("Binding Draw Entries");
-
-			for (const auto& entry : drawEntry)
-			{
-				OPTICK_EVENT_DYNAMIC("Binding Entry");
-
-				GetJobSystem().insert([this, &entry] { bindingCall(entry); });
-			}
-		}
-
-		// Wait till all the work is done.
-		m_Synchronization.wait();
-
-		// End the command recorders and select the next one.
-		for (const auto& [id, pCommandRecorder] : m_pThreadLocalCommandRecorder)
-		{
-			// End the command recorder.
-			pCommandRecorder->end();
-
-			// Select the next command recorder.
-			pCommandRecorder->next();
-		}
-
-		// Execute all the secondary command recorders (children).
-		m_pCommandRecorder->executeChildren();
+		// Issue the draw calls.
+		issueDrawCalls();
 
 #ifdef ENABLE_OCCLUSION_CULL
 		// Query the results only if we have drawn something.
@@ -155,6 +114,55 @@ namespace Xenon
 		m_pOcclusionCameraDescriptor->attach(0, m_Renderer.getCamera()->getViewports().front().m_pUniformBuffer);
 	}
 
+	void DefaultRasterizingLayer::issueDrawCalls()
+	{
+		OPTICK_EVENT();
+
+		// Reset the counters.
+		m_DrawCount = 0;
+		m_Synchronization.reset(m_SubMeshCount);
+
+		// Begin the command recorders and set the viewport and scissor.
+		for (const auto& [id, pCommandRecorder] : m_pThreadLocalCommandRecorder)
+		{
+			// Begin the command recorder.
+			pCommandRecorder->begin(m_pCommandRecorder.get());
+
+			// Set the scissor and view port.
+			pCommandRecorder->setViewport(0.0f, 0.0f, static_cast<float>(m_Renderer.getCamera()->getWidth()), static_cast<float>(m_Renderer.getCamera()->getHeight()), 0.0f, 1.0f);
+			pCommandRecorder->setScissor(0, 0, m_Renderer.getCamera()->getWidth(), m_Renderer.getCamera()->getHeight());
+		}
+
+		// Issue the binding calls.
+		for (const auto& drawEntry : m_DrawEntries)
+		{
+			OPTICK_EVENT_DYNAMIC("Binding Draw Entries");
+
+			for (const auto& entry : drawEntry)
+			{
+				OPTICK_EVENT_DYNAMIC("Binding Entry");
+
+				GetJobSystem().insert([this, &entry] { bindingCall(entry); });
+			}
+		}
+
+		// Wait till all the work is done.
+		m_Synchronization.wait();
+
+		// End the command recorders and select the next one.
+		for (const auto& [id, pCommandRecorder] : m_pThreadLocalCommandRecorder)
+		{
+			// End the command recorder.
+			pCommandRecorder->end();
+
+			// Select the next command recorder.
+			pCommandRecorder->next();
+		}
+
+		// Execute all the secondary command recorders (children).
+		m_pCommandRecorder->executeChildren();
+	}
+
 	void DefaultRasterizingLayer::bindingCall(const DrawEntry& entry)
 	{
 		OPTICK_EVENT();
@@ -222,6 +230,8 @@ namespace Xenon
 #endif // ENABLE_OCCLUSION_CULL
 
 		{
+			OPTICK_EVENT_DYNAMIC("Issuing Draw Calls");
+
 			pCommandRecorder->bind(entry.m_pPipeline, entry.m_VertexSpecification);
 			pCommandRecorder->bind(entry.m_pVertexBuffer, entry.m_VertexSpecification.getSize());
 			pCommandRecorder->bind(entry.m_pIndexBuffer, static_cast<Backend::IndexBufferStride>(entry.m_SubMesh.m_IndexSize));
@@ -230,6 +240,6 @@ namespace Xenon
 			pCommandRecorder->drawIndexed(entry.m_SubMesh.m_VertexOffset, entry.m_SubMesh.m_IndexOffset, entry.m_SubMesh.m_IndexCount);
 
 			m_DrawCount++;
+		}
 	}
-}
 }

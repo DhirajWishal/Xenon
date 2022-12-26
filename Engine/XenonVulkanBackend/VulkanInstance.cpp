@@ -286,6 +286,5 @@ namespace Xenon
 			// Load the instance functions.
 			volkLoadInstance(m_Instance);
 		}
-
 	}
 }

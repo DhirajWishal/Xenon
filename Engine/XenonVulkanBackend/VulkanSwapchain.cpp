@@ -305,6 +305,8 @@ namespace Xenon
 
 		VkSurfaceCapabilitiesKHR VulkanSwapchain::getSurfaceCapabilities() const
 		{
+			OPTICK_EVENT();
+
 			VkSurfaceCapabilitiesKHR capabilities = {};
 			XENON_VK_ASSERT(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_pDevice->getPhysicalDevice(), m_Surface, &capabilities), "Failed to get the surface capabilities!");
 

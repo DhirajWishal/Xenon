@@ -29,7 +29,16 @@ namespace Xenon
 		void arrive(uint64_t decrement = 1);
 
 		/**
+		 * Check if the fence is complete.
+		 *
+		 * @return True if the fence is complete (the counter is 0).
+		 * @return False if the fence is not complete (the counter is not 0).
+		 */
+		[[nodiscard]] bool isComplete() const noexcept { return m_Counter == 0; }
+
+		/**
 		 * Wait till the counter has reached 0.
+		 * This internally uses a spin lock.
 		 */
 		void wait() const;
 

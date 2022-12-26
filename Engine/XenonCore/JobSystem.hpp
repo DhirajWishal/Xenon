@@ -49,30 +49,32 @@ namespace Xenon
 			auto pPromise = new std::promise<ReturnType>();
 			auto future = pPromise->get_future();
 
+			// Setup the job function.
+			const auto jobFunction = [pPromise, job = std::move(job)]
+			{
+				try
+				{
+					if constexpr (std::is_void_v<ReturnType>)
+					{
+						job();
+						pPromise->set_value();
+					}
+					else
+					{
+						pPromise->set_value(job());
+					}
+
+					delete pPromise;
+				}
+				catch (std::exception_ptr ptr)
+				{
+					pPromise->set_exception(ptr);
+				}
+			};
+
 			// Insert the job to the system.
 			const auto lock = std::scoped_lock(m_JobMutex);
-			const auto jobStatus = m_JobEntries.emplace_back([pPromise, job = std::move(job)]
-				{
-					try
-			{
-				if constexpr (std::is_void_v<ReturnType>)
-				{
-					job();
-					pPromise->set_value();
-				}
-				else
-				{
-					pPromise->set_value(job());
-				}
-
-				delete pPromise;
-			}
-			catch (std::exception_ptr ptr)
-			{
-				pPromise->set_exception(ptr);
-			}
-				}
-			);
+			const auto jobStatus = m_JobEntries.emplace_back(std::move(jobFunction));
 
 			m_ConditionVariable.notify_one();
 			return future;
@@ -116,7 +118,7 @@ namespace Xenon
 		 *
 		 * @return The thread count.
 		 */
-		[[nodiscard]] uint64_t getThreadCount() const { return m_Workers.size(); }
+		[[nodiscard]] uint64_t getThreadCount() const noexcept { return m_Workers.size(); }
 
 	private:
 		/**

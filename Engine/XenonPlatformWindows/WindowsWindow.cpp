@@ -148,6 +148,8 @@ namespace Xenon
 
 		LRESULT WindowsWindow::handleEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
+			OPTICK_EVENT();
+
 			switch (uMsg)
 			{
 			case WM_DESTROY:
@@ -268,6 +270,8 @@ namespace Xenon
 
 		LRESULT WindowsWindow::handleKeyInput(WPARAM wParam, bool state)
 		{
+			OPTICK_EVENT();
+
 			switch (wParam)
 			{
 			case VK_LBUTTON:

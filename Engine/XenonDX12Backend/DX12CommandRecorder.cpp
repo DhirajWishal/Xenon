@@ -282,7 +282,6 @@ namespace Xenon
 
 #endif // XENON_DEBUG
 
-
 				// Create the fence.
 				ComPtr<ID3D12Fence> fence;
 				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence)), "Failed to create the fence!");

@@ -56,73 +56,6 @@ namespace /* anonymous */
 	{
 		return f.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
 	}
-
-	/**
-	 * Build the test shader.
-	 * This is mainly used for debugging.
-	 */
-	void buildTestShader()
-	{
-		Xenon::FrameTimer timer;
-
-		class UserData final : public Xenon::ShaderBuilder::Buffer<UserData>
-		{
-		public:
-			explicit UserData(Xenon::ShaderBuilder::AssemblyStorage& storage, uint32_t set, uint32_t binding)
-				: Buffer<UserData>(storage, set, binding, &UserData::m_Scale, &UserData::m_Translation) {}
-
-			glm::vec2 m_Scale;
-			glm::vec2 m_Translation;
-		};
-
-		Xenon::ShaderBuilder::VertexShader builder;
-		const auto inPos = builder.createInput<glm::vec2>(0);
-		const auto inUV = builder.createInput<glm::vec2>(11);
-		const auto inColor = builder.createInput<glm::vec4>(3);
-
-		auto outUV = builder.createOutput<glm::vec2>(0);
-		auto outColor = builder.createOutput<glm::vec4>(1);
-
-		auto buffer = builder.createBuffer<UserData>(0, 0);
-
-		auto function2 = builder.createFunction(std::function([](Xenon::ShaderBuilder::VertexShader& builder, Xenon::ShaderBuilder::Function<glm::vec2, glm::vec2>& function, Xenon::ShaderBuilder::Parameter<glm::vec2> val)
-			{
-				auto variable = function.createVariable<glm::vec2>();
-		variable = val;
-		function.exit(variable);
-			}
-		));
-
-		auto function = builder.createFunction(std::function([&buffer, &inPos, &inUV, &inColor, &outUV, &outColor, &function2](Xenon::ShaderBuilder::VertexShader& builder, Xenon::ShaderBuilder::Function<void>& function)
-			{
-				auto scale = buffer.access(&UserData::m_Scale);
-		auto translation = buffer.access(&UserData::m_Translation);
-
-		float val = 1.0f;
-		const auto result = builder.createVariable<glm::vec2>(1.0f, val);
-
-		outUV = function2(inUV);
-		outColor = inColor;
-		auto temp = function.createVariable<glm::vec4>();
-
-		// Next is to do OpCompositeConstruct
-
-		builder.gl_PerVertex.access(&Xenon::ShaderBuilder::PerVertexStruct::gl_Position) = temp;
-			}
-		));
-
-		builder.addEntryPoint("main", function, inPos, inUV, inColor, outUV, outColor, buffer, builder.gl_PerVertex/*.gl_Position*/);
-
-		auto timeTaken = timer.tick();
-		XENON_LOG_INFORMATION("Time taken to record the shader: {} s", static_cast<float>(timeTaken.count()) / std::nano::den);
-
-		const auto shader = builder.generate();
-		timeTaken += timer.tick();
-		XENON_LOG_INFORMATION("Time taken to compile the shader: {} s", static_cast<float>(timeTaken.count()) / std::nano::den);
-
-		timeTaken += timer.tick();
-		XENON_LOG_INFORMATION("Total time taken to build the shader: {} s", static_cast<float>(timeTaken.count()) / std::nano::den);
-	}
 }
 
 Studio::Studio(Xenon::BackendType type /*= Xenon::BackendType::Any*/)
@@ -131,8 +64,6 @@ Studio::Studio(Xenon::BackendType type /*= Xenon::BackendType::Any*/)
 	, m_Renderer(m_Instance, &m_Camera, GetRendererTitle(type))
 {
 	XENON_LOG_INFORMATION("Starting the {}", GetRendererTitle(m_Instance.getBackendType()));
-
-	buildTestShader();
 }
 
 void Studio::run()

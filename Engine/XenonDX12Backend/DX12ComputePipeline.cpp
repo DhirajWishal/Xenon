@@ -175,6 +175,8 @@ namespace Xenon
 
 		std::vector<std::byte> DX12ComputePipeline::loadPipelineSateCache() const
 		{
+			OPTICK_EVENT();
+
 			if (m_pCacheHandler)
 				return m_pCacheHandler->load(m_PipelineHash ^ g_MagicNumber);
 
@@ -184,6 +186,8 @@ namespace Xenon
 
 		void DX12ComputePipeline::storePipelineStateCache() const
 		{
+			OPTICK_EVENT();
+
 			if (m_pCacheHandler)
 			{
 				ComPtr<ID3DBlob> cacheBlob;

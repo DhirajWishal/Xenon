@@ -211,6 +211,8 @@ namespace Xenon
 
 		void DX12Buffer::performCopy(ID3D12GraphicsCommandList* pCommandlist, Buffer* pBuffer, uint64_t size, uint64_t srcOffset /*= 0*/, uint64_t dstOffset /*= 0*/)
 		{
+			OPTICK_EVENT();
+
 			auto pSourceBuffer = pBuffer->as<DX12Buffer>();
 
 			// Set the proper resource states.
