@@ -925,10 +925,10 @@ namespace Xenon
 		const VulkanRasterizingPipeline::PipelineStorage& VulkanRasterizingPipeline::getPipeline(const VertexSpecification& vertexSpecification)
 		{
 			OPTICK_EVENT();
-			auto lock = std::scoped_lock(m_Mutex);
 
 			const auto hash = vertexSpecification.generateHash();
 
+			auto lock = std::scoped_lock(m_Mutex);
 			if (!m_Pipelines.contains(hash))
 			{
 				auto& pipeline = m_Pipelines[hash];
