@@ -21,7 +21,6 @@ namespace Xenon
 
 			// Create the query buffer.
 			D3D12MA::ALLOCATION_DESC allocationDesc = {};
-			// allocationDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
 			allocationDesc.HeapType = D3D12_HEAP_TYPE_READBACK;
 
 			const auto queryBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(sampleCount * sizeof(uint64_t));

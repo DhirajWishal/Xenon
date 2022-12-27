@@ -29,8 +29,9 @@ namespace Xenon
 	void TaskNode::addDependency(const std::shared_ptr<TaskNode>& pNode)
 	{
 		if (m_Completed)
+		{
 			pNode->onParentCompletion(false);
-
+		}
 		else
 		{
 			auto lock = std::scoped_lock(m_Mutex);

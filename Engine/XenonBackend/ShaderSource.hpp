@@ -73,7 +73,7 @@ namespace Xenon
 			 *
 			 * @return The shader binary.
 			 */
-			[[nodiscard]] const BinaryType& getBinary() const { return m_Binary; }
+			[[nodiscard]] const BinaryType& getBinary() const noexcept { return m_Binary; }
 
 			/**
 			 * Get the shader binary without the last padding bytes.
@@ -89,28 +89,28 @@ namespace Xenon
 			 * @return True if the shader source is valid.
 			 * @return False if the shader source is not valid.
 			 */
-			[[nodiscard]] bool isValid() const { return !m_Binary.empty(); }
+			[[nodiscard]] bool isValid() const noexcept { return !m_Binary.empty(); }
 
 			/**
 			 * Get the shader's input attributes.
 			 *
 			 * @return The input attributes.
 			 */
-			[[nodiscard]] const std::vector<ShaderAttribute>& getInputAttributes() const { return m_InputAttributes; }
+			[[nodiscard]] const std::vector<ShaderAttribute>& getInputAttributes() const noexcept { return m_InputAttributes; }
 
 			/**
 			 * Get the shader's output attributes.
 			 *
 			 * @return The output attributes.
 			 */
-			[[nodiscard]] const std::vector<ShaderAttribute>& getOutputAttributes() const { return m_OutputAttributes; }
+			[[nodiscard]] const std::vector<ShaderAttribute>& getOutputAttributes() const noexcept { return m_OutputAttributes; }
 
 			/**
 			 * Get the resources.
 			 *
 			 * @return The shader resources.
 			 */
-			[[nodiscard]] const std::vector<ShaderResource>& getResources() const { return m_Resources; }
+			[[nodiscard]] const std::vector<ShaderResource>& getResources() const noexcept { return m_Resources; }
 
 		private:
 			/**

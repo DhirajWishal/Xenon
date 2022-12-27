@@ -37,25 +37,33 @@ namespace Xenon
 		// Prepare the swapchain for a new frame.
 		const auto imageIndex = m_pSwapChain->prepare();
 
-		// Create the parent task.
-		m_pInitialNode = m_TaskGraph.create(nullptr);
-
 		// Bind the layers.
 		Layer* pPreviousLayer = nullptr;
-		std::vector<std::shared_ptr<TaskNode>> pTasks;
+		m_CountingFence.reset(m_pLayers.size() + 1);
 		for (const auto& pLayer : m_pLayers)
 		{
-			pTasks.emplace_back(m_TaskGraph.create([pLayer = pLayer.get(), pPreviousLayer, imageIndex, frameIndex] { pLayer->onUpdate(pPreviousLayer, imageIndex, frameIndex); }, m_pInitialNode));
+			GetJobSystem().insert([this, pLayer = pLayer.get(), pPreviousLayer, imageIndex, frameIndex] { updateLayer(pLayer, pPreviousLayer, imageIndex, frameIndex); });
 			pPreviousLayer = pLayer.get();
 		}
 
-		// Issue the final task.
-		m_pFinalNode = m_TaskGraph.create([this, pPreviousLayer] { copyToSwapchainAndSubmit(pPreviousLayer); }, pTasks);
+		// Copy the previous layer to the swapchain.
+		GetJobSystem().insert([this, pPreviousLayer] { copyToSwapchainAndSubmit(pPreviousLayer); });
 
-		// Start the parent task.
-		m_pInitialNode->start();
+		// Wait till all the required jobs are done.
+		m_CountingFence.wait();
 
-		m_pFinalNode->wait();
+		// Submit the commands to the GPU.
+		m_pCommandSubmitters[m_pCommandRecorder->getCurrentIndex()]->submit(m_pSubmitCommandRecorders, m_pSwapChain.get());
+
+		// Present the swapchain.
+		m_pSwapChain->present();
+
+		// Select the next command buffer.
+		m_pCommandRecorder->next();
+
+		// Do the same for the layers.
+		for (const auto& pLayer : m_pLayers)
+			pLayer->selectNextCommandBuffer();
 
 		return m_pSwapChain->getWindow()->isOpen();
 	}
@@ -69,6 +77,17 @@ namespace Xenon
 	void Renderer::close()
 	{
 		m_IsOpen = false;
+	}
+
+	void Renderer::updateLayer(Layer* pLayer, Layer* pPreviousLayer, uint32_t imageIndex, uint32_t frameIndex)
+	{
+		OPTICK_EVENT();
+
+		// Update the layer.
+		pLayer->onUpdate(pPreviousLayer, imageIndex, frameIndex);
+
+		// Notify that we're done.
+		m_CountingFence.arrive();
 	}
 
 	void Renderer::copyToSwapchainAndSubmit(Layer* pPreviousLayer)
@@ -85,17 +104,7 @@ namespace Xenon
 		// End the command recorder.
 		m_pCommandRecorder->end();
 
-		// Submit the commands to the GPU.
-		m_pCommandSubmitters[m_pCommandRecorder->getCurrentIndex()]->submit(m_pSubmitCommandRecorders, m_pSwapChain.get());
-
-		// Present the swapchain.
-		m_pSwapChain->present();
-
-		// Select the next command buffer.
-		m_pCommandRecorder->next();
-
-		// Do the same for the layers.
-		for (const auto& pLayer : m_pLayers)
-			pLayer->selectNextCommandBuffer();
+		// Notify that we're done.
+		m_CountingFence.arrive();
 	}
 }

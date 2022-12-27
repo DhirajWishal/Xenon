@@ -112,6 +112,11 @@ namespace Xenon
 		void setupOcclusionPipeline();
 
 		/**
+		 * Issue the draw calls.
+		 */
+		void issueDrawCalls();
+
+		/**
 		 * Binding call function.
 		 * This function is passed to the job system to bind the required passes.
 		 *

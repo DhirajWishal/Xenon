@@ -163,6 +163,16 @@ namespace Xenon
 			OPTICK_EVENT();
 			auto lock = std::scoped_lock(m_Mutex);
 
+			// Return from an existing range rather than making a new one.
+			if (!m_ReUsableDescriptors.empty())
+			{
+				auto newPair = m_ReUsableDescriptors.back();
+				m_ReUsableDescriptors.pop_back();
+
+				return newPair;
+			}
+
+			// If we don't have any to reuse, let's just make a new one.
 			auto newPair = std::make_pair(m_CbvSrvUavDescriptorCount, m_SamplerDescriptorCount);
 
 			const auto& [bufferCount, samplerCount] = m_GroupSizes[type];
@@ -171,6 +181,19 @@ namespace Xenon
 			incrementHeaps();
 
 			return newPair;
+		}
+
+		void DX12DescriptorHeapManager::freeDescriptor(UINT cbvUavSrvStart, UINT samplerStart) noexcept
+		{
+			try
+			{
+				auto lock = std::scoped_lock(m_Mutex);
+				m_ReUsableDescriptors.emplace_back(cbvUavSrvStart, samplerStart);
+			}
+			catch (...)
+			{
+				XENON_LOG_ERROR("An error occurred while adding a reusable descriptor!");
+			}
 		}
 
 		UINT DX12DescriptorHeapManager::getNextSize(UINT newSize, UINT oldSize) const

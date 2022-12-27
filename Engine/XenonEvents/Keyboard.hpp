@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include "Common.hpp"
-
 namespace Xenon
 {
 	/**

@@ -111,21 +111,29 @@ namespace Xenon
 
 		D3D12_CPU_DESCRIPTOR_HANDLE DX12Rasterizer::getColorTargetHeapStartCPU() const
 		{
+			OPTICK_EVENT();
+
 			return CD3DX12_CPU_DESCRIPTOR_HANDLE(m_ColorTargetHeap->GetCPUDescriptorHandleForHeapStart(), static_cast<UINT>(m_FrameIndex * getColorTargetCount()), m_ColorHeapSize);
 		}
 
 		D3D12_CPU_DESCRIPTOR_HANDLE DX12Rasterizer::getColorTargetHeapStartCPU()
 		{
+			OPTICK_EVENT();
+
 			return CD3DX12_CPU_DESCRIPTOR_HANDLE(m_ColorTargetHeap->GetCPUDescriptorHandleForHeapStart(), static_cast<UINT>(m_FrameIndex * getColorTargetCount()), m_ColorHeapSize);
 		}
 
 		D3D12_CPU_DESCRIPTOR_HANDLE DX12Rasterizer::getDepthTargetHeapStartCPU()
 		{
+			OPTICK_EVENT();
+
 			return CD3DX12_CPU_DESCRIPTOR_HANDLE(m_DepthTargetHeap->GetCPUDescriptorHandleForHeapStart(), m_FrameIndex, m_DepthHeapSize);
 		}
 
 		D3D12_CPU_DESCRIPTOR_HANDLE DX12Rasterizer::getDepthTargetHeapStartCPU() const
 		{
+			OPTICK_EVENT();
+
 			return CD3DX12_CPU_DESCRIPTOR_HANDLE(m_DepthTargetHeap->GetCPUDescriptorHandleForHeapStart(), m_FrameIndex, m_DepthHeapSize);
 		}
 

@@ -40,21 +40,21 @@ namespace Xenon
 			 *
 			 * @return The attachment types.
 			 */
-			[[nodiscard]] AttachmentType getAttachmentTypes() const { return m_AttachmentTypes; }
+			[[nodiscard]] AttachmentType getAttachmentTypes() const noexcept { return m_AttachmentTypes; }
 
 			/**
 			 * Get the camera pointer.
 			 *
 			 * @return The camera pointer.
 			 */
-			[[nodiscard]] Camera* getCamera() { return m_pCamera; }
+			[[nodiscard]] Camera* getCamera() noexcept { return m_pCamera; }
 
 			/**
 			 * Get the camera pointer.
 			 *
 			 * @return The const camera pointer.
 			 */
-			[[nodiscard]] const Camera* getCamera() const { return m_pCamera; }
+			[[nodiscard]] const Camera* getCamera() const noexcept { return m_pCamera; }
 
 		protected:
 			Camera* m_pCamera = nullptr;

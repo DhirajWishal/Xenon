@@ -25,8 +25,6 @@ set(
 	"TaskNode.cpp"
 	"TaskNode.hpp"
 	"TaskGraph.hpp"
-	"ThreadPool.cpp"
-	"ThreadPool.hpp"
 	"CountingFence.cpp"
 	"CountingFence.hpp"
 )

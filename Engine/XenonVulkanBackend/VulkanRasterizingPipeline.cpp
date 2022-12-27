@@ -925,10 +925,10 @@ namespace Xenon
 		const VulkanRasterizingPipeline::PipelineStorage& VulkanRasterizingPipeline::getPipeline(const VertexSpecification& vertexSpecification)
 		{
 			OPTICK_EVENT();
-			auto lock = std::scoped_lock(m_Mutex);
 
 			const auto hash = vertexSpecification.generateHash();
 
+			auto lock = std::scoped_lock(m_Mutex);
 			if (!m_Pipelines.contains(hash))
 			{
 				auto& pipeline = m_Pipelines[hash];
@@ -1009,6 +1009,8 @@ namespace Xenon
 
 		void VulkanRasterizingPipeline::loadPipelineCache(uint64_t hash, PipelineStorage& pipeline) const
 		{
+			OPTICK_EVENT();
+
 			std::vector<std::byte> cacheData;
 			if (m_pCacheHandler)
 				cacheData = m_pCacheHandler->load(hash ^ g_MagicNumber);
@@ -1028,6 +1030,8 @@ namespace Xenon
 
 		void VulkanRasterizingPipeline::savePipelineCache(uint64_t hash, PipelineStorage& pipeline) const
 		{
+			OPTICK_EVENT();
+
 			if (m_pCacheHandler)
 			{
 				size_t cacheSize = 0;

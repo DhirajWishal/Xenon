@@ -104,6 +104,8 @@ namespace Xenon
 
 		void VulkanComputePipeline::loadPipelineCache()
 		{
+			OPTICK_EVENT();
+
 			std::vector<std::byte> cacheData;
 			if (m_pCacheHandler)
 				cacheData = m_pCacheHandler->load(m_PipelineHash ^ g_MagicNumber);
@@ -123,6 +125,8 @@ namespace Xenon
 
 		void VulkanComputePipeline::storePipelineCache()
 		{
+			OPTICK_EVENT();
+
 			if (m_pCacheHandler)
 			{
 				size_t cacheSize = 0;
@@ -141,6 +145,8 @@ namespace Xenon
 
 		void VulkanComputePipeline::createPipeline()
 		{
+			OPTICK_EVENT();
+
 			// Setup the shader module.
 			VkPipelineShaderStageCreateInfo shaderStageCreateInfo = {};
 			shaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;

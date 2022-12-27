@@ -125,6 +125,8 @@ namespace Xenon
 
 		D3D12_CPU_DESCRIPTOR_HANDLE DX12Swapchain::getCPUDescriptorHandle() const
 		{
+			OPTICK_EVENT();
+
 			return CD3DX12_CPU_DESCRIPTOR_HANDLE(m_SwapchainImageHeap->GetCPUDescriptorHandleForHeapStart(), m_ImageIndex, m_SwapchainImageHeapDescriptorSize);
 		}
 
