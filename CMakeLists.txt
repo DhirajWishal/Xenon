@@ -208,7 +208,6 @@ if (MSVC)
 		core_tables
 		enum_string_mapping
 		extinst_tables
-		re2
 		spirv-tools-pkg-config
 		spirv-tools-shared-pkg-config
 
