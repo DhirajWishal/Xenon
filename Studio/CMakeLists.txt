@@ -92,3 +92,6 @@ set(SHADER_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Shaders)
 set(SHADER_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/Shaders)
 
 CompileShaders(XenonStudio ${SHADER_SOURCE_DIR} ${SHADER_BINARY_DIR})
+
+# Copy the font files to the output directory.
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Fonts DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
