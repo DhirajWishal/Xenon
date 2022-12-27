@@ -83,6 +83,7 @@ namespace Xenon
 	{
 		OPTICK_EVENT();
 
+		// Update the layer.
 		pLayer->onUpdate(pPreviousLayer, imageIndex, frameIndex);
 
 		// Notify that we're done.

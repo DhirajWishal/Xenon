@@ -17,8 +17,6 @@ project(
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(PREDEFINED_TARGETS_FOLDER "PredefinedTargets")
 
-include(ExternalProject)
-
 # Set the caches.
 set(XENON_LOG_LEVEL 5 CACHE INTERNAL "This defines what to log. Checkout the wiki page for more information.")
 
@@ -59,6 +57,11 @@ if (SPIRV_TOOLS_INIT_STATUS)
 	message(FATAL_ERROR "SPIR-V Tools initialization failed with ${SPIRV_TOOLS_INIT_STATUS}")
 endif ()
 
+# Set the required variables for assimp.
+set(SPIRV_SKIP_TESTS ON CACHE BOOL "Disable the SPIR-V Tools tests.")
+set(SPIRV_SKIP_EXECUTABLES ON CACHE BOOL "We don't need the SPIR-V Tools executable either.")
+
+# Add the SPIR-V Tools as a subdirectory.
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/SPIRV-Tools)
 
 # Add the Optick library as a third party static link.
