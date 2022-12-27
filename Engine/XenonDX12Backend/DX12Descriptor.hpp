@@ -28,6 +28,11 @@ namespace Xenon
 			explicit DX12Descriptor(DX12Device* pDevice, const std::vector<DescriptorBindingInfo>& bindingInfo, DescriptorType type, DX12DescriptorHeapManager* pManager);
 
 			/**
+			 * Destructor.
+			 */
+			~DX12Descriptor() override;
+
+			/**
 			 * Attach a buffer to the descriptor.
 			 *
 			 * @param binding The binding of the buffer.

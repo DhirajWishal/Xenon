@@ -76,6 +76,14 @@ namespace Xenon
 			[[nodiscard]] std::pair<UINT, UINT> getGroupSize(DescriptorType type) const { return m_GroupSizes.at(type); }
 
 			/**
+			 * Free the descriptor.
+			 *
+			 * @param cbvUavSrvStart The start of the CBV, UAV, SRV descriptor.
+			 * @param samplerStart The start of the sampler descriptor.
+			 */
+			void freeDescriptor(UINT cbvUavSrvStart, UINT samplerStart) noexcept;
+
+			/**
 			 * Get the sampler index.
 			 *
 			 * @param index The index to access.
@@ -153,6 +161,7 @@ namespace Xenon
 
 			std::vector<UINT> m_SamplerIndex;
 			std::vector<CD3DX12_DESCRIPTOR_RANGE1> m_Ranges;
+			std::vector<std::pair<UINT, UINT>> m_ReUsableDescriptors;
 
 			DX12PipelineDescriptorHeapStorage m_ShaderVisibleHeaps{};
 

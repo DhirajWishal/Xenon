@@ -12,11 +12,9 @@ project(
 set(
 	SOURCES
 
-	"Common.hpp"
+	"Dummy.cpp"
 	"Mouse.hpp"
 	"Keyboard.hpp"
-	"GlobalEvents.cpp"
-	"GlobalEvents.hpp"
 )
 
 # Add the source group.

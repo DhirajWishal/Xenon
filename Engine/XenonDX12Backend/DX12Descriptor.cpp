@@ -76,6 +76,11 @@ namespace Xenon
 			m_SamplerDescriptorHeapStart = samplers;
 		}
 
+		DX12Descriptor::~DX12Descriptor()
+		{
+			m_pManager->freeDescriptor(m_CbvSrvUavDescriptorHeapStart, m_SamplerDescriptorHeapStart);
+		}
+
 		void DX12Descriptor::attach(uint32_t binding, Buffer* pBuffer)
 		{
 			OPTICK_EVENT();
