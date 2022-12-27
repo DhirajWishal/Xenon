@@ -24,7 +24,6 @@ namespace Xenon
 			m_pFactory = std::make_unique<Backend::VulkanFactory>();
 			m_BackendType = BackendType::Vulkan;
 		}
-
 		else
 		{
 			m_pFactory = std::make_unique<Backend::DX12Factory>();

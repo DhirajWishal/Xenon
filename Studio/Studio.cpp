@@ -160,7 +160,9 @@ void Studio::updateCamera(std::chrono::nanoseconds delta)
 		m_Camera.updatePitch(yoffset, delta);
 	}
 	else
+	{
 		m_bFirstMouse = true;
+	}
 
 	m_Camera.update();
 }

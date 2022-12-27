@@ -6,6 +6,8 @@
 
 #include "../XenonCore/Logging.hpp"
 
+#include <optick.h>
+
 namespace Xenon
 {
 	RasterizingLayer::RasterizingLayer(Renderer& renderer, Backend::Camera* pCamera, Backend::AttachmentType attachmentTypes, bool enableTripleBuffering /*= false*/, Backend::MultiSamplingCount multiSampleCount /*= Backend::MultiSamplingCount::x1*/)
@@ -16,6 +18,8 @@ namespace Xenon
 
 	Xenon::Backend::Image* RasterizingLayer::getColorAttachment()
 	{
+		OPTICK_EVENT();
+
 		const auto attachmentTypes = m_pRasterizer->getAttachmentTypes();
 
 		if (attachmentTypes & Backend::AttachmentType::Color)
