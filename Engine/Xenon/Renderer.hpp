@@ -5,7 +5,7 @@
 
 #include "Layer.hpp"
 
-#include "../XenonCore/TaskGraph.hpp"
+#include "../XenonCore/CountingFence.hpp"
 
 #include "../XenonBackend/Camera.hpp"
 #include "../XenonBackend/CommandSubmitter.hpp"
@@ -106,20 +106,6 @@ namespace Xenon
 		[[nodiscard]] const Instance& getInstance() const { return m_Instance; }
 
 		/**
-		 * Get the renderer's task graph.
-		 *
-		 * @return The task graph.
-		 */
-		[[nodsicard]] TaskGraph& getTaskGraph() { return m_TaskGraph; }
-
-		/**
-		 * Get the renderer's task graph.
-		 *
-		 * @return The task graph.
-		 */
-		[[nodsicard]] const TaskGraph& getTaskGraph() const { return m_TaskGraph; }
-
-		/**
 		 * Get the window pointer.
 		 *
 		 * @return The window pointer.
@@ -156,6 +142,16 @@ namespace Xenon
 
 	private:
 		/**
+		 * Update a layer on a separate job.
+		 *
+		 * @param pLayer The layer pointer to update.
+		 * @param pPreviousLayer The previous layer pointer.
+		 * @param imageIndex The image index.
+		 * @param frameIndex The frame index.
+		 */
+		void updateLayer(Layer* pLayer, Layer* pPreviousLayer, uint32_t imageIndex, uint32_t frameIndex);
+
+		/**
 		 * Copy the previous layer to the swapchain.
 		 *
 		 * @param pPreviousLayer The previous layer pointer.
@@ -163,14 +159,11 @@ namespace Xenon
 		void copyToSwapchainAndSubmit(Layer* pPreviousLayer);
 
 	private:
-		TaskGraph m_TaskGraph = TaskGraph(GetJobSystem());
+		CountingFence m_CountingFence;
 
 		std::vector<std::unique_ptr<Layer>> m_pLayers;
 		std::vector<std::unique_ptr<Backend::CommandSubmitter>> m_pCommandSubmitters;
 		std::vector<Backend::CommandRecorder*> m_pSubmitCommandRecorders;
-
-		std::shared_ptr<TaskNode> m_pInitialNode = nullptr;
-		std::shared_ptr<TaskNode> m_pFinalNode = nullptr;
 
 		std::unique_ptr<Backend::Swapchain> m_pSwapChain = nullptr;
 		std::unique_ptr<Backend::CommandRecorder> m_pCommandRecorder = nullptr;

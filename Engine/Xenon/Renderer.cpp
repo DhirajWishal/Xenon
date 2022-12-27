@@ -37,25 +37,20 @@ namespace Xenon
 		// Prepare the swapchain for a new frame.
 		const auto imageIndex = m_pSwapChain->prepare();
 
-		// Create the parent task.
-		m_pInitialNode = m_TaskGraph.create(nullptr);
-
 		// Bind the layers.
 		Layer* pPreviousLayer = nullptr;
-		std::vector<std::shared_ptr<TaskNode>> pTasks;
+		m_CountingFence.reset(m_pLayers.size());
 		for (const auto& pLayer : m_pLayers)
 		{
-			pTasks.emplace_back(m_TaskGraph.create([pLayer = pLayer.get(), pPreviousLayer, imageIndex, frameIndex] { pLayer->onUpdate(pPreviousLayer, imageIndex, frameIndex); }, m_pInitialNode));
+			GetJobSystem().insert([this, pLayer = pLayer.get(), pPreviousLayer, imageIndex, frameIndex] { updateLayer(pLayer, pPreviousLayer, imageIndex, frameIndex); });
 			pPreviousLayer = pLayer.get();
 		}
 
-		// Issue the final task.
-		m_pFinalNode = m_TaskGraph.create([this, pPreviousLayer] { copyToSwapchainAndSubmit(pPreviousLayer); }, pTasks);
+		// Wait till all the required jobs are done.
+		m_CountingFence.wait();
 
-		// Start the parent task.
-		m_pInitialNode->start();
-
-		m_pFinalNode->wait();
+		// Copy the previous layer and submit.
+		copyToSwapchainAndSubmit(pPreviousLayer);
 
 		return m_pSwapChain->getWindow()->isOpen();
 	}
@@ -69,6 +64,16 @@ namespace Xenon
 	void Renderer::close()
 	{
 		m_IsOpen = false;
+	}
+
+	void Renderer::updateLayer(Layer* pLayer, Layer* pPreviousLayer, uint32_t imageIndex, uint32_t frameIndex)
+	{
+		OPTICK_EVENT();
+
+		pLayer->onUpdate(pPreviousLayer, imageIndex, frameIndex);
+
+		// Notify that we're done.
+		m_CountingFence.arrive();
 	}
 
 	void Renderer::copyToSwapchainAndSubmit(Layer* pPreviousLayer)
