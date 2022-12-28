@@ -173,6 +173,10 @@ namespace Xenon
 				m_DeviceExtensions.emplace_back(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME);
 				m_DeviceExtensions.emplace_back(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME);
 				m_DeviceExtensions.emplace_back(VK_KHR_RAY_QUERY_EXTENSION_NAME);
+				m_DeviceExtensions.emplace_back(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME);
+				m_DeviceExtensions.emplace_back(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
+				m_DeviceExtensions.emplace_back(VK_KHR_SPIRV_1_4_EXTENSION_NAME);
+				m_DeviceExtensions.emplace_back(VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME);
 			}
 
 			// Select the physical device.
@@ -563,10 +567,24 @@ namespace Xenon
 			features.tessellationShader = VK_TRUE;
 			features.geometryShader = VK_TRUE;
 
+			VkPhysicalDeviceBufferDeviceAddressFeatures bufferDeviceAddressFeatures = {};
+			bufferDeviceAddressFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES;
+			bufferDeviceAddressFeatures.bufferDeviceAddress = VK_TRUE;
+
+			VkPhysicalDeviceRayTracingPipelineFeaturesKHR rayTracingPipelineFeatures = {};
+			rayTracingPipelineFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
+			rayTracingPipelineFeatures.rayTracingPipeline = VK_TRUE;
+			rayTracingPipelineFeatures.pNext = &bufferDeviceAddressFeatures;
+
+			VkPhysicalDeviceAccelerationStructureFeaturesKHR accelerationStructureFeatures = {};
+			accelerationStructureFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
+			accelerationStructureFeatures.accelerationStructure = VK_TRUE;
+			accelerationStructureFeatures.pNext = &rayTracingPipelineFeatures;
+
 			// Setup the device create info.
 			VkDeviceCreateInfo deviceCreateInfo = {};
 			deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-			deviceCreateInfo.pNext = nullptr;
+			deviceCreateInfo.pNext = &accelerationStructureFeatures;
 			deviceCreateInfo.flags = 0;
 			deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
 			deviceCreateInfo.pQueueCreateInfos = queueCreateInfos.data();

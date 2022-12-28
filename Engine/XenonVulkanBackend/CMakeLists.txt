@@ -53,6 +53,8 @@ set(
 	"VulkanCommandSubmitter.hpp"
 	"VulkanOcclusionQuery.cpp"
 	"VulkanOcclusionQuery.hpp"
+	"VulkanRayTracer.cpp"
+	"VulkanRayTracer.hpp"
 )
 
 # Add the source group.
