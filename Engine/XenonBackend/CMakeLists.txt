@@ -38,6 +38,7 @@ set(
 	"CommandSubmitter.hpp"
 	"Query.hpp"
 	"OcclusionQuery.hpp"
+	"AccelerationStructure.hpp"
 )
 
 # Add the source group.

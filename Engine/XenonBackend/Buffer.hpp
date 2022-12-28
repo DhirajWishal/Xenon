@@ -17,12 +17,14 @@ namespace Xenon
 		 */
 		enum class BufferType : uint8_t
 		{
-			// This buffer can store index data and can be used for rendering.
 			Index,
 			Vertex,
 			Staging,
 			Storage,
 			Uniform,
+
+			// The scratch buffer is used by acceleration structures to pass in geometry data.
+			Scratch,
 
 			// This buffer type is not available for normal use, but is only defined in backend(s).
 			BackendSpecific
