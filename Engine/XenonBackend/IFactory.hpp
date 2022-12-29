@@ -15,6 +15,7 @@
 #include "CommandSubmitter.hpp"
 #include "RayTracer.hpp"
 #include "TopLevelAccelerationStructure.hpp"
+#include "RayTracingPipeline.hpp"
 
 namespace Xenon
 {
@@ -190,6 +191,17 @@ namespace Xenon
 			 * @return The ray tracer pointer.
 			 */
 			[[nodiscard]] virtual std::unique_ptr<RayTracer> createRayTracer(Device* pDevice, Camera* pCamera) = 0;
+
+			/**
+			 * Create anew ray tracing pipeline.
+			 *
+			 * @param pDevice The device pointer.
+			 * @param pCacheHandler The cache handler pointer. This can be null in which case the pipeline creation might get slow.
+			 * @param shaderGroups The shader groups.
+			 * @param maxRayRecursion The maximum ray recursion depth. Default is 4.
+			 * @return The pipeline pointer.
+			 */
+			[[nodiscard]] virtual std::unique_ptr<RayTracingPipeline> createRayTracingPipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const std::vector<ShaderGroup>& shaderGroups, uint32_t maxRayRecursion = 4) = 0;
 		};
 	}
 }

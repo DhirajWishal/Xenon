@@ -18,6 +18,7 @@
 #include "VulkanRayTracer.hpp"
 #include "VulkanBottomLevelAccelerationStructure.hpp"
 #include "VulkanTopLevelAccelerationStructure.hpp"
+#include "VulkanRayTracingPipeline.hpp"
 
 namespace Xenon
 {
@@ -101,6 +102,11 @@ namespace Xenon
 		std::unique_ptr<Xenon::Backend::RayTracer> VulkanFactory::createRayTracer(Device* pDevice, Camera* pCamera)
 		{
 			return std::make_unique<VulkanRayTracer>(pDevice->as<VulkanDevice>(), pCamera);
+		}
+
+		std::unique_ptr<Xenon::Backend::RayTracingPipeline> VulkanFactory::createRayTracingPipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const std::vector<ShaderGroup>& shaderGroups, uint32_t maxRayRecursion /*= 4*/)
+		{
+			return std::make_unique<VulkanRayTracingPipeline>(pDevice->as<VulkanDevice>(), std::move(pCacheHandler), shaderGroups, maxRayRecursion);
 		}
 	}
 }

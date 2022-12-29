@@ -499,6 +499,20 @@ namespace Xenon
 				return;
 			}
 
+			m_RayTracingPipelineProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR;
+
+			VkPhysicalDeviceProperties2 deviceProperties2 = {};
+			deviceProperties2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+			deviceProperties2.pNext = &m_RayTracingPipelineProperties;
+			vkGetPhysicalDeviceProperties2(m_PhysicalDevice, &deviceProperties2);
+
+			m_AccelerationStructureFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
+
+			VkPhysicalDeviceFeatures2 deviceFeatures2 = {};
+			deviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+			deviceFeatures2.pNext = &m_AccelerationStructureFeatures;
+			vkGetPhysicalDeviceFeatures2(m_PhysicalDevice, &deviceFeatures2);
+
 			// Get the unsupported render target types.
 			const auto unsupportedExtensions = GetUnsupportedDeviceExtensions(m_PhysicalDevice, m_DeviceExtensions, &m_SupportedRenderTargetTypes);
 			for (const auto& extension : unsupportedExtensions)

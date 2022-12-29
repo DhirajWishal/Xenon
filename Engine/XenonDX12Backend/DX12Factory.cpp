@@ -101,5 +101,10 @@ namespace Xenon
 		{
 			return std::make_unique<DX12RayTracer>(pDevice->as<DX12Device>(), pCamera);
 		}
+
+		std::unique_ptr<Xenon::Backend::RayTracingPipeline> DX12Factory::createRayTracingPipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const std::vector<ShaderGroup>& shaderGroups, uint32_t maxRayRecursion /*= 4*/)
+		{
+			return nullptr;
+		}
 	}
 }

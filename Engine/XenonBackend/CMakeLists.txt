@@ -42,6 +42,7 @@ set(
 	"RayTracer.hpp"
 	"BottomLevelAccelerationStructure.hpp"
 	"TopLevelAccelerationStructure.hpp"
+	"RayTracingPipeline.hpp"
 )
 
 # Add the source group.

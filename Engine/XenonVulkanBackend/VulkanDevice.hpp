@@ -117,6 +117,20 @@ namespace Xenon
 			[[nodiscard]] const VkPhysicalDeviceProperties& getPhysicalDeviceProperties() const { return m_PhysicalDeviceProperties; }
 
 			/**
+			 * Get the physical device ray tracing pipeline properties.
+			 *
+			 * @return The properties.
+			 */
+			[[nodiscard]] const VkPhysicalDeviceRayTracingPipelinePropertiesKHR& getPhysicalDeviceRayTracingPipelineProperties() const { return m_RayTracingPipelineProperties; }
+
+			/**
+			 * Get the physical device acceleration structure features.
+			 *
+			 * @return The features.
+			 */
+			[[nodiscard]] const VkPhysicalDeviceAccelerationStructureFeaturesKHR& getPhysicalDeviceAccelerationStructureProperties() const { return m_AccelerationStructureFeatures; }
+
+			/**
 			 * Get the compute queue from the device.
 			 *
 			 * @return The compute queue.
@@ -190,6 +204,9 @@ namespace Xenon
 
 		private:
 			VkPhysicalDeviceProperties m_PhysicalDeviceProperties = {};
+			VkPhysicalDeviceRayTracingPipelinePropertiesKHR m_RayTracingPipelineProperties = {};
+			VkPhysicalDeviceAccelerationStructureFeaturesKHR m_AccelerationStructureFeatures = {};
+
 			VolkDeviceTable m_DeviceTable;
 
 			std::vector<Mutex<VulkanQueue>> m_Queues;

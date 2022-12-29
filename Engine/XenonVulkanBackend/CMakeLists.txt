@@ -61,6 +61,8 @@ set(
 	"VulkanBottomLevelAccelerationStructure.hpp"
 	"VulkanTopLevelAccelerationStructure.cpp"
 	"VulkanTopLevelAccelerationStructure.hpp"
+	"VulkanRayTracingPipeline.cpp"
+	"VulkanRayTracingPipeline.hpp"
 )
 
 # Add the source group.

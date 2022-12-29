@@ -57,6 +57,21 @@ namespace /* anonymous */
 	{
 		return f.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
 	}
+
+	/**
+	 * Create the shader groups for the ray tracer.
+	 *
+	 * @return The shader groups.
+	 */
+	std::vector<Xenon::Backend::ShaderGroup> GetShaderGroups()
+	{
+		std::vector<Xenon::Backend::ShaderGroup> groups;
+		groups.emplace_back().m_RayGenShader = Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Testing/RayTracing/raygen.rgen.spv");
+		groups.emplace_back().m_MissShader = Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Testing/RayTracing/miss.rmiss.spv");
+		groups.emplace_back().m_ClosestHitShader = Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Testing/RayTracing/closesthit.rchit.spv");
+
+		return groups;
+	}
 }
 
 Studio::Studio(Xenon::BackendType type /*= Xenon::BackendType::Any*/)
@@ -82,6 +97,7 @@ void Studio::run()
 	specification.m_VertexShader = Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Debugging/Shader.vert.spv");
 	specification.m_FragmentShader = Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Debugging/Shader.frag.spv");
 	auto pPipeline = m_Instance.getFactory()->createRasterizingPipeline(m_Instance.getBackendDevice(), std::make_unique<CacheHandler>(), pRasterizer->getRasterizer(), specification);
+	auto pPipelineRT = m_Instance.getFactory()->createRayTracingPipeline(m_Instance.getBackendDevice(), std::make_unique<CacheHandler>(), GetShaderGroups());
 
 	{
 		auto ret = Xenon::XObject::GetJobSystem().insert([this, &pPipeline, &pRasterizer, &pRayTracer]

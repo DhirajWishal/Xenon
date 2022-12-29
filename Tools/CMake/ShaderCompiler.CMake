@@ -49,7 +49,7 @@ function(CompileShaders SHADER_TARGET SHADER_SOURCE_DIR SHADER_BINARY_DIR)
 			message("Compiling " ${SOURCE_FILE} " as " ${FILE_NAME}.spv)
 	
 			add_custom_command(
-				COMMAND ${SHADER_COMPILER} -V ${SHADER_SOURCE_DIR}/${SOURCE_FILE} -o ${SHADER_BINARY_DIR}/${SOURCE_FILE}.spv
+				COMMAND ${SHADER_COMPILER} -V ${SHADER_SOURCE_DIR}/${SOURCE_FILE} -o ${SHADER_BINARY_DIR}/${SOURCE_FILE}.spv --target-env vulkan1.2
 				OUTPUT ${SHADER_BINARY_DIR}/${SOURCE_FILE}.spv
 				COMMENT "Compiling ${FILE_NAME}"
 			)
