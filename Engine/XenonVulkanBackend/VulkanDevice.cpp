@@ -642,7 +642,7 @@ namespace Xenon
 
 			// Setup create info.
 			VmaAllocatorCreateInfo createInfo = {};
-			createInfo.flags = VMA_ALLOCATOR_CREATE_EXTERNALLY_SYNCHRONIZED_BIT;
+			createInfo.flags = VMA_ALLOCATOR_CREATE_EXTERNALLY_SYNCHRONIZED_BIT | VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
 			createInfo.physicalDevice = m_PhysicalDevice;
 			createInfo.device = m_LogicalDevice;
 			createInfo.pVulkanFunctions = &functions;

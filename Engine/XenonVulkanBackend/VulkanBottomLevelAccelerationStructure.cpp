@@ -201,6 +201,8 @@ namespace Xenon
 			}
 
 			VkAccelerationStructureBuildGeometryInfoKHR accelerationStructureBuildGeometryInfo = {};
+			accelerationStructureBuildGeometryInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_GEOMETRY_INFO_KHR;
+			accelerationStructureBuildGeometryInfo.pNext = nullptr;
 			accelerationStructureBuildGeometryInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR;
 			accelerationStructureBuildGeometryInfo.flags = VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR;
 			accelerationStructureBuildGeometryInfo.geometryCount = static_cast<uint32_t>(accelerationStructureGeometries.size());
@@ -209,6 +211,7 @@ namespace Xenon
 			VkAccelerationStructureBuildSizesInfoKHR accelerationStructureBuildSizesInfo = {};
 			accelerationStructureBuildSizesInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_SIZES_INFO_KHR;
 			accelerationStructureBuildSizesInfo.pNext = nullptr;
+
 			pDevice->getDeviceTable().vkGetAccelerationStructureBuildSizesKHR(
 				pDevice->getLogicalDevice(),
 				VK_ACCELERATION_STRUCTURE_BUILD_TYPE_DEVICE_KHR,
@@ -262,6 +265,8 @@ namespace Xenon
 			auto scratchBuffer = VulkanBuffer(m_pDevice, sizeInfo.buildScratchSize, BufferType::Scratch);
 
 			VkAccelerationStructureBuildGeometryInfoKHR accelerationBuildGeometryInfo = {};
+			accelerationBuildGeometryInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_GEOMETRY_INFO_KHR;
+			accelerationBuildGeometryInfo.pNext = nullptr;
 			accelerationBuildGeometryInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR;
 			accelerationBuildGeometryInfo.flags = VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR;
 			accelerationBuildGeometryInfo.mode = VK_BUILD_ACCELERATION_STRUCTURE_MODE_BUILD_KHR;

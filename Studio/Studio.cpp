@@ -12,6 +12,7 @@
 #include "XenonBackend/ShaderSource.hpp"
 
 #include "Xenon/Layers/DefaultRasterizingLayer.hpp"
+#include "Xenon/Layers/DefaultRayTracingLayer.hpp"
 
 #include "XenonShaderBuilder/VertexShader.hpp"
 
@@ -69,22 +70,24 @@ Studio::Studio(Xenon::BackendType type /*= Xenon::BackendType::Any*/)
 void Studio::run()
 {
 	// Create the layers.
-	auto pLayer = m_Renderer.createLayer<Xenon::DefaultRasterizingLayer>(&m_Camera);
+	auto pRasterizer = m_Renderer.createLayer<Xenon::DefaultRasterizingLayer>(&m_Camera);
+	auto pRayTracer = m_Renderer.createLayer<Xenon::DefaultRayTracingLayer>(&m_Camera);
 	auto pImGui = m_Renderer.createLayer<ImGuiLayer>(&m_Camera);
 
 	// Set the layer to be shown.
-	pImGui->showLayer(pLayer);
+	pImGui->showLayer(pRasterizer);
 
 	// Setup the pipeline.
 	Xenon::Backend::RasterizingPipelineSpecification specification;
 	specification.m_VertexShader = Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Debugging/Shader.vert.spv");
 	specification.m_FragmentShader = Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Debugging/Shader.frag.spv");
-	auto pPipeline = m_Instance.getFactory()->createRasterizingPipeline(m_Instance.getBackendDevice(), std::make_unique<CacheHandler>(), pLayer->getRasterizer(), specification);
+	auto pPipeline = m_Instance.getFactory()->createRasterizingPipeline(m_Instance.getBackendDevice(), std::make_unique<CacheHandler>(), pRasterizer->getRasterizer(), specification);
 
 	{
-		auto ret = Xenon::XObject::GetJobSystem().insert([this, &pPipeline, &pLayer]
+		auto ret = Xenon::XObject::GetJobSystem().insert([this, &pPipeline, &pRasterizer, &pRayTracer]
 			{
-				pLayer->addDrawData(Xenon::MeshStorage::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"), pPipeline.get());
+				// pRasterizer->addDrawData(Xenon::MeshStorage::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"), pPipeline.get());
+				pRayTracer->addDrawData(Xenon::MeshStorage::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"));
 			}
 		);
 
@@ -94,7 +97,7 @@ void Studio::run()
 			const auto delta = timer.tick();
 
 			// Set the draw call count.
-			pImGui->setDrawCallCount(pLayer->getTotalDrawCount(), pLayer->getDrawCount());
+			pImGui->setDrawCallCount(pRasterizer->getTotalDrawCount(), pRasterizer->getDrawCount());
 
 			// Begin the ImGui scene.
 			// Handle the inputs and update the camera only if we need to.
