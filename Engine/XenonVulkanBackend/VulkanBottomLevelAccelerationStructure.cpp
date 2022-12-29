@@ -179,10 +179,13 @@ namespace Xenon
 			{
 				triangleCount += static_cast<uint32_t>(geometry.m_pIndexBuffer->getSize() / EnumToInt(geometry.m_IndexBufferStride)) / 3;
 				const auto vertexStride = geometry.m_VertexSpecification.getSize();
-				const uint32_t vertexCount = static_cast<uint32_t>(geometry.m_pVertexBuffer->getSize()) / vertexStride;
 
-				const auto vertexFormat = GetElementFormat(GetAttributeDataTypeComponentCount(geometry.m_VertexSpecification.getElementAttributeDataType(InputElement::VertexPosition)), geometry.m_VertexSpecification.getElementComponentDataType(InputElement::VertexPosition));
-				const auto indexType = geometry.m_IndexBufferStride == IndexBufferStride::Uint16 ? VK_INDEX_TYPE_UINT16 : VK_INDEX_TYPE_UINT32;
+				const auto vertexFormat = GetElementFormat(
+					GetAttributeDataTypeComponentCount(
+						geometry.m_VertexSpecification.getElementAttributeDataType(InputElement::VertexPosition)
+					),
+					geometry.m_VertexSpecification.getElementComponentDataType(InputElement::VertexPosition)
+				);
 
 				auto& accelerationStructureGeometry = accelerationStructureGeometries.emplace_back();
 				accelerationStructureGeometry.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR;
@@ -192,9 +195,9 @@ namespace Xenon
 				accelerationStructureGeometry.geometry.triangles.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_TRIANGLES_DATA_KHR;
 				accelerationStructureGeometry.geometry.triangles.vertexFormat = vertexFormat;
 				accelerationStructureGeometry.geometry.triangles.vertexData.deviceAddress = geometry.m_pVertexBuffer->as<VulkanBuffer>()->getDeviceAddress();
-				accelerationStructureGeometry.geometry.triangles.maxVertex = vertexCount;
+				accelerationStructureGeometry.geometry.triangles.maxVertex = static_cast<uint32_t>(geometry.m_pVertexBuffer->getSize()) / vertexStride;
 				accelerationStructureGeometry.geometry.triangles.vertexStride = vertexStride;
-				accelerationStructureGeometry.geometry.triangles.indexType = indexType;
+				accelerationStructureGeometry.geometry.triangles.indexType = geometry.m_IndexBufferStride == IndexBufferStride::Uint16 ? VK_INDEX_TYPE_UINT16 : VK_INDEX_TYPE_UINT32;
 				accelerationStructureGeometry.geometry.triangles.indexData.deviceAddress = geometry.m_pIndexBuffer->as<VulkanBuffer>()->getDeviceAddress();
 				accelerationStructureGeometry.geometry.triangles.transformData.deviceAddress = 0;
 				accelerationStructureGeometry.geometry.triangles.transformData.hostAddress = nullptr;
@@ -224,6 +227,12 @@ namespace Xenon
 
 			// Build the acceleration structure.
 			buildAccelerationStructure(accelerationStructureBuildSizesInfo, accelerationStructureGeometries, triangleCount);
+		}
+
+		VulkanBottomLevelAccelerationStructure::~VulkanBottomLevelAccelerationStructure()
+		{
+			m_pDevice->getDeviceTable().vkDestroyAccelerationStructureKHR(m_pDevice->getLogicalDevice(), m_AccelerationStructure, nullptr);
+			vmaDestroyBuffer(m_pDevice->getAllocator(), m_Buffer, m_Allocation);
 		}
 
 		void VulkanBottomLevelAccelerationStructure::createAccelerationStructure(const VkAccelerationStructureBuildSizesInfoKHR& sizeInfo)
@@ -280,11 +289,10 @@ namespace Xenon
 			accelerationStructureBuildRangeInfo.primitiveOffset = 0;
 			accelerationStructureBuildRangeInfo.firstVertex = 0;
 			accelerationStructureBuildRangeInfo.transformOffset = 0;
-			std::vector<VkAccelerationStructureBuildRangeInfoKHR*> accelerationBuildStructureRangeInfos = { &accelerationStructureBuildRangeInfo };
 
 			auto commandBuffers = VulkanCommandRecorder(m_pDevice, CommandRecorderUsage::Transfer);
 			commandBuffers.begin();
-			commandBuffers.buildAccelerationStructure(accelerationBuildGeometryInfo, accelerationBuildStructureRangeInfos);
+			commandBuffers.buildAccelerationStructure(accelerationBuildGeometryInfo, { &accelerationStructureBuildRangeInfo });
 			commandBuffers.end();
 			commandBuffers.submit();
 			commandBuffers.wait();

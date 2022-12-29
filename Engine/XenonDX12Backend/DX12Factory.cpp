@@ -15,6 +15,7 @@
 #include "DX12CommandSubmitter.hpp"
 #include "DX12OcclusionQuery.hpp"
 #include "DX12RayTracer.hpp"
+#include "DX12BottomLevelAccelerationStructure.hpp"
 
 namespace Xenon
 {
@@ -87,7 +88,7 @@ namespace Xenon
 
 		std::unique_ptr<Xenon::Backend::BottomLevelAccelerationStructure> DX12Factory::createBottomLevelAccelerationStructure(Device* pDevice, const std::vector<AccelerationStructureGeometry>& geometries)
 		{
-			return nullptr;
+			return std::make_unique<DX12BottomLevelAccelerationStructure>(pDevice->as<DX12Device>(), geometries);
 		}
 
 		std::unique_ptr<Xenon::Backend::RayTracer> DX12Factory::createRayTracer(Device* pDevice, Camera* pCamera)

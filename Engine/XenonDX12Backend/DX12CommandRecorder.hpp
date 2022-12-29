@@ -211,6 +211,13 @@ namespace Xenon
 			void getQueryResults(OcclusionQuery* pOcclusionQuery) override;
 
 			/**
+			 * Build the acceleration structure.
+			 *
+			 * @param desc The acceleration structure description.
+			 */
+			void buildAccelerationStructure(const D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC& desc);
+
+			/**
 			 * End the command recorder recording.
 			 */
 			void end() override;
@@ -262,11 +269,11 @@ namespace Xenon
 
 			ComPtr<ID3D12CommandAllocator> m_CommandAllocator;
 
-			std::vector<ComPtr<ID3D12GraphicsCommandList>> m_pCommandLists;
+			std::vector<ComPtr<ID3D12GraphicsCommandList5 >> m_pCommandLists;
 			std::vector<ComPtr<ID3D12Fence>> m_pCommandListFences;
 			std::vector<ID3D12GraphicsCommandList*> m_pBundleCommandLists;
 
-			ID3D12GraphicsCommandList* m_pCurrentCommandList = nullptr;
+			ID3D12GraphicsCommandList5* m_pCurrentCommandList = nullptr;
 			ID3D12Fence* m_pCurrentCommandListFence = nullptr;
 
 			DX12CommandRecorder* m_pParentCommandRecorder = nullptr;

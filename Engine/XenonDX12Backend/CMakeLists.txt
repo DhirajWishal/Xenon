@@ -49,6 +49,8 @@ set(
 	"DX12OcclusionQuery.hpp"
 	"DX12RayTracer.cpp"
 	"DX12RayTracer.hpp"
+	"DX12BottomLevelAccelerationStructure.cpp"
+	"DX12BottomLevelAccelerationStructure.hpp"
 )
 
 # Add the source group.

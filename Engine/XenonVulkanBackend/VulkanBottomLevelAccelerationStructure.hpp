@@ -25,6 +25,11 @@ namespace Xenon
 			 */
 			explicit VulkanBottomLevelAccelerationStructure(VulkanDevice* pDevice, const std::vector<AccelerationStructureGeometry>& geometries);
 
+			/**
+			 * Destructor.
+			 */
+			~VulkanBottomLevelAccelerationStructure() override;
+
 		private:
 			/**
 			 * Create the acceleration structure.

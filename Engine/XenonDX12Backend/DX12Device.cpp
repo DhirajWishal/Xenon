@@ -284,7 +284,7 @@ namespace Xenon
 						continue;
 
 					// Check to see whether the adapter supports the feature level.
-					if (SUCCEEDED(D3D12CreateDevice(adapter.Get(), featureLevel, _uuidof(ID3D12Device), nullptr)))
+					if (SUCCEEDED(D3D12CreateDevice(adapter.Get(), featureLevel, _uuidof(ID3D12Device5), nullptr)))
 						break;
 				}
 			}
@@ -302,7 +302,7 @@ namespace Xenon
 						continue;
 
 					// Check to see whether the adapter supports the feature level.
-					if (SUCCEEDED(D3D12CreateDevice(adapter.Get(), featureLevel, _uuidof(ID3D12Device), nullptr)))
+					if (SUCCEEDED(D3D12CreateDevice(adapter.Get(), featureLevel, _uuidof(ID3D12Device5), nullptr)))
 						break;
 				}
 			}

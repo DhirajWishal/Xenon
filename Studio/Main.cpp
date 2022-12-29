@@ -14,7 +14,8 @@ void run(Xenon::BackendType backend)
 
 int main()
 {
-	g_Globals.m_RequiredBackendType = Xenon::BackendType::Vulkan;
+	// g_Globals.m_RequiredBackendType = Xenon::BackendType::Vulkan;
+	g_Globals.m_RequiredBackendType = Xenon::BackendType::DirectX_12;
 	while (!g_Globals.m_bExitAppliation)
 		run(g_Globals.m_RequiredBackendType);
 

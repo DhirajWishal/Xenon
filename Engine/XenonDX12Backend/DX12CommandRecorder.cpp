@@ -237,7 +237,7 @@ namespace Xenon
 			for (uint32_t i = 0; i < bufferCount; i++)
 			{
 				// Create the command list.
-				ComPtr<ID3D12GraphicsCommandList> commandList;
+				ComPtr<ID3D12GraphicsCommandList5> commandList;
 				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommandList(0, type, m_CommandAllocator.Get(), nullptr, IID_PPV_ARGS(&commandList)), "Failed to create the command list!");
 
 #ifdef XENON_DEBUG
@@ -760,6 +760,13 @@ namespace Xenon
 
 #endif // XENON_PLATFORM_WINDOWS
 			}
+		}
+
+		void DX12CommandRecorder::buildAccelerationStructure(const D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC& desc)
+		{
+			OPTICK_EVENT();
+
+			m_pCurrentCommandList->BuildRaytracingAccelerationStructure(&desc, 0, nullptr);
 		}
 
 		void DX12CommandRecorder::end()
