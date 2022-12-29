@@ -86,6 +86,11 @@ namespace Xenon
 			return std::make_unique<DX12OcclusionQuery>(pDevice->as<DX12Device>(), sampleCount);
 		}
 
+		std::unique_ptr<Xenon::Backend::TopLevelAccelerationStructure> DX12Factory::createTopLevelAccelerationStructure(Device* pDevice, const std::vector<BottomLevelAccelerationStructure*>& pBottomLevelAccelerationStructures)
+		{
+			return nullptr;
+		}
+
 		std::unique_ptr<Xenon::Backend::BottomLevelAccelerationStructure> DX12Factory::createBottomLevelAccelerationStructure(Device* pDevice, const std::vector<AccelerationStructureGeometry>& geometries)
 		{
 			return std::make_unique<DX12BottomLevelAccelerationStructure>(pDevice->as<DX12Device>(), geometries);

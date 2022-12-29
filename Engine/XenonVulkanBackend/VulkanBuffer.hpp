@@ -27,6 +27,17 @@ namespace Xenon
 			explicit VulkanBuffer(VulkanDevice* pDevice, uint64_t size, BufferType type);
 
 			/**
+			 * Explicit constructor.
+			 *
+			 * @param pDevice The device pointer.
+			 * @param size The size of the buffer in bytes.
+			 * @param usageFlags The buffer's usage flags.
+			 * @param allocationCreateFlags The allocation create flags.
+			 * @param memoryUsage The buffer's memory usage.
+			 */
+			explicit VulkanBuffer(VulkanDevice* pDevice, uint64_t size, VkBufferUsageFlags usageFlags, VmaAllocationCreateFlags allocationCreateFlags, VmaMemoryUsage memoryUsage);
+
+			/**
 			 * Destructor.
 			 */
 			~VulkanBuffer() override;

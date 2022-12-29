@@ -5,7 +5,7 @@
 
 #include "../XenonBackend/BottomLevelAccelerationStructure.hpp"
 
-#include "VulkanBuffer.hpp"
+#include "VulkanAccelerationStructure.hpp"
 
 namespace Xenon
 {
@@ -14,7 +14,7 @@ namespace Xenon
 		/**
 		 * Vulkan bottom level acceleration structure class.
 		 */
-		class VulkanBottomLevelAccelerationStructure final : public BottomLevelAccelerationStructure, public VulkanDeviceBoundObject
+		class VulkanBottomLevelAccelerationStructure final : public BottomLevelAccelerationStructure, public VulkanAccelerationStructure
 		{
 		public:
 			/**
@@ -28,30 +28,7 @@ namespace Xenon
 			/**
 			 * Destructor.
 			 */
-			~VulkanBottomLevelAccelerationStructure() override;
-
-		private:
-			/**
-			 * Create the acceleration structure.
-			 *
-			 * @param sizeInfo The acceleration structure's size information.
-			 */
-			void createAccelerationStructure(const VkAccelerationStructureBuildSizesInfoKHR& sizeInfo);
-
-			/**
-			 * Build the created acceleration structure.
-			 *
-			 * @param sizeInfo The acceleration structure's size information.
-			 * @param geometries The geometries to be stored in the acceleration structure.
-			 * @param triangleCount The number of triangles in the structure.
-			 */
-			void buildAccelerationStructure(const VkAccelerationStructureBuildSizesInfoKHR& sizeInfo, const std::vector<VkAccelerationStructureGeometryKHR>& geometries, uint32_t triangleCount);
-
-		private:
-			VkAccelerationStructureKHR  m_AccelerationStructure = VK_NULL_HANDLE;
-			VkBuffer m_Buffer = VK_NULL_HANDLE;
-			VkDeviceAddress m_DeviceAddress = 0;
-			VmaAllocation m_Allocation = nullptr;
+			~VulkanBottomLevelAccelerationStructure() override = default;
 		};
 	}
 }

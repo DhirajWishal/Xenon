@@ -3,6 +3,7 @@
 
 #include "VulkanBottomLevelAccelerationStructure.hpp"
 #include "VulkanMacros.hpp"
+#include "VulkanBuffer.hpp"
 #include "VulkanCommandRecorder.hpp"
 
 namespace /* anonymous */
@@ -168,7 +169,7 @@ namespace Xenon
 	{
 		VulkanBottomLevelAccelerationStructure::VulkanBottomLevelAccelerationStructure(VulkanDevice* pDevice, const std::vector<AccelerationStructureGeometry>& geometries)
 			: BottomLevelAccelerationStructure(pDevice, geometries)
-			, VulkanDeviceBoundObject(pDevice)
+			, VulkanAccelerationStructure(pDevice)
 		{
 			// Setup geometry information.
 			std::vector<VkAccelerationStructureGeometryKHR> accelerationStructureGeometries;
@@ -206,8 +207,8 @@ namespace Xenon
 			VkAccelerationStructureBuildGeometryInfoKHR accelerationStructureBuildGeometryInfo = {};
 			accelerationStructureBuildGeometryInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_GEOMETRY_INFO_KHR;
 			accelerationStructureBuildGeometryInfo.pNext = nullptr;
-			accelerationStructureBuildGeometryInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR;
 			accelerationStructureBuildGeometryInfo.flags = VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR;
+			accelerationStructureBuildGeometryInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR;
 			accelerationStructureBuildGeometryInfo.geometryCount = static_cast<uint32_t>(accelerationStructureGeometries.size());
 			accelerationStructureBuildGeometryInfo.pGeometries = accelerationStructureGeometries.data();
 
@@ -223,79 +224,10 @@ namespace Xenon
 				&accelerationStructureBuildSizesInfo);
 
 			// Create the acceleration structure.
-			createAccelerationStructure(accelerationStructureBuildSizesInfo);
+			createAccelerationStructure(accelerationStructureBuildSizesInfo, VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR);
 
 			// Build the acceleration structure.
-			buildAccelerationStructure(accelerationStructureBuildSizesInfo, accelerationStructureGeometries, triangleCount);
-		}
-
-		VulkanBottomLevelAccelerationStructure::~VulkanBottomLevelAccelerationStructure()
-		{
-			m_pDevice->getDeviceTable().vkDestroyAccelerationStructureKHR(m_pDevice->getLogicalDevice(), m_AccelerationStructure, nullptr);
-			vmaDestroyBuffer(m_pDevice->getAllocator(), m_Buffer, m_Allocation);
-		}
-
-		void VulkanBottomLevelAccelerationStructure::createAccelerationStructure(const VkAccelerationStructureBuildSizesInfoKHR& sizeInfo)
-		{
-			// Create the buffer.
-			VkBufferCreateInfo createInfo = {};
-			createInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-			createInfo.pNext = nullptr;
-			createInfo.flags = 0;
-			createInfo.size = sizeInfo.accelerationStructureSize;
-			createInfo.usage = VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
-			createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-			createInfo.queueFamilyIndexCount = 0;
-			createInfo.pQueueFamilyIndices = nullptr;
-
-			VmaAllocationCreateInfo allocationCreateInfo = {};
-			allocationCreateInfo.flags = 0;
-			allocationCreateInfo.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
-
-			XENON_VK_ASSERT(vmaCreateBuffer(m_pDevice->getAllocator(), &createInfo, &allocationCreateInfo, &m_Buffer, &m_Allocation, nullptr), "Failed to create the bottom level acceleration structure buffer!");
-
-			// Acceleration structure
-			VkAccelerationStructureCreateInfoKHR accelerationStructureCreateInfo = {};
-			accelerationStructureCreateInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_CREATE_INFO_KHR;
-			accelerationStructureCreateInfo.buffer = m_Buffer;
-			accelerationStructureCreateInfo.size = sizeInfo.accelerationStructureSize;
-			accelerationStructureCreateInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR;
-			m_pDevice->getDeviceTable().vkCreateAccelerationStructureKHR(m_pDevice->getLogicalDevice(), &accelerationStructureCreateInfo, nullptr, &m_AccelerationStructure);
-
-			// AS device address
-			VkAccelerationStructureDeviceAddressInfoKHR accelerationDeviceAddressInfo = {};
-			accelerationDeviceAddressInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_DEVICE_ADDRESS_INFO_KHR;
-			accelerationDeviceAddressInfo.accelerationStructure = m_AccelerationStructure;
-			m_DeviceAddress = m_pDevice->getDeviceTable().vkGetAccelerationStructureDeviceAddressKHR(m_pDevice->getLogicalDevice(), &accelerationDeviceAddressInfo);
-		}
-
-		void VulkanBottomLevelAccelerationStructure::buildAccelerationStructure(const VkAccelerationStructureBuildSizesInfoKHR& sizeInfo, const std::vector<VkAccelerationStructureGeometryKHR>& geometries, uint32_t triangleCount)
-		{
-			auto scratchBuffer = VulkanBuffer(m_pDevice, sizeInfo.buildScratchSize, BufferType::Scratch);
-
-			VkAccelerationStructureBuildGeometryInfoKHR accelerationBuildGeometryInfo = {};
-			accelerationBuildGeometryInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_GEOMETRY_INFO_KHR;
-			accelerationBuildGeometryInfo.pNext = nullptr;
-			accelerationBuildGeometryInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR;
-			accelerationBuildGeometryInfo.flags = VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR;
-			accelerationBuildGeometryInfo.mode = VK_BUILD_ACCELERATION_STRUCTURE_MODE_BUILD_KHR;
-			accelerationBuildGeometryInfo.dstAccelerationStructure = m_AccelerationStructure;
-			accelerationBuildGeometryInfo.geometryCount = static_cast<uint32_t>(geometries.size());
-			accelerationBuildGeometryInfo.pGeometries = geometries.data();
-			accelerationBuildGeometryInfo.scratchData.deviceAddress = scratchBuffer.getDeviceAddress();
-
-			VkAccelerationStructureBuildRangeInfoKHR accelerationStructureBuildRangeInfo = {};
-			accelerationStructureBuildRangeInfo.primitiveCount = triangleCount;
-			accelerationStructureBuildRangeInfo.primitiveOffset = 0;
-			accelerationStructureBuildRangeInfo.firstVertex = 0;
-			accelerationStructureBuildRangeInfo.transformOffset = 0;
-
-			auto commandBuffers = VulkanCommandRecorder(m_pDevice, CommandRecorderUsage::Transfer);
-			commandBuffers.begin();
-			commandBuffers.buildAccelerationStructure(accelerationBuildGeometryInfo, { &accelerationStructureBuildRangeInfo });
-			commandBuffers.end();
-			commandBuffers.submit();
-			commandBuffers.wait();
+			buildAccelerationStructure(accelerationStructureBuildSizesInfo, accelerationStructureGeometries, triangleCount, VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR);
 		}
 	}
 }

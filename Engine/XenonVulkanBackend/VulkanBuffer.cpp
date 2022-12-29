@@ -88,6 +88,33 @@ namespace Xenon
 			m_BufferInfo.range = size;
 		}
 
+		VulkanBuffer::VulkanBuffer(VulkanDevice* pDevice, uint64_t size, VkBufferUsageFlags usageFlags, VmaAllocationCreateFlags allocationCreateFlags, VmaMemoryUsage memoryUsage)
+			: Buffer(pDevice, size, BufferType::BackendSpecific)
+			, VulkanDeviceBoundObject(pDevice)
+		{
+			// Create the buffer.
+			VkBufferCreateInfo createInfo = {};
+			createInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+			createInfo.pNext = nullptr;
+			createInfo.flags = 0;
+			createInfo.size = size;
+			createInfo.usage = usageFlags;
+			createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+			createInfo.queueFamilyIndexCount = 0;
+			createInfo.pQueueFamilyIndices = nullptr;
+
+			VmaAllocationCreateInfo allocationCreateInfo = {};
+			allocationCreateInfo.flags = allocationCreateFlags;
+			allocationCreateInfo.usage = memoryUsage;
+
+			XENON_VK_ASSERT(vmaCreateBuffer(m_pDevice->getAllocator(), &createInfo, &allocationCreateInfo, &m_Buffer, &m_Allocation, nullptr), "Failed to create the buffer!");
+
+			// Set the descriptor buffer info.
+			m_BufferInfo.buffer = m_Buffer;
+			m_BufferInfo.offset = 0;
+			m_BufferInfo.range = size;
+		}
+
 		VulkanBuffer::~VulkanBuffer()
 		{
 			// Unmap the buffer if it's already mapped.

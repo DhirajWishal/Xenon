@@ -14,7 +14,7 @@
 #include "ComputePipeline.hpp"
 #include "CommandSubmitter.hpp"
 #include "RayTracer.hpp"
-#include "BottomLevelAccelerationStructure.hpp"
+#include "TopLevelAccelerationStructure.hpp"
 
 namespace Xenon
 {
@@ -163,6 +163,15 @@ namespace Xenon
 			 * @return The occlusion query pointer.
 			 */
 			[[nodiscard]] virtual std::unique_ptr<OcclusionQuery> createOcclusionQuery(Device* pDevice, uint64_t sampleCount) = 0;
+
+			/**
+			 * Create a new top level acceleration structure.
+			 *
+			 * @param pDevice The device pointer.
+			 * @param pBottomLevelAccelerationStructures The bottom level acceleration structures.
+			 * @return The acceleration structure pointer.
+			 */
+			[[nodiscard]] virtual std::unique_ptr<TopLevelAccelerationStructure> createTopLevelAccelerationStructure(Device* pDevice, const std::vector<BottomLevelAccelerationStructure*>& pBottomLevelAccelerationStructures) = 0;
 
 			/**
 			 * Create a new bottom level acceleration structure.

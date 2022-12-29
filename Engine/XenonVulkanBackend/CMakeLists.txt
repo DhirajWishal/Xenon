@@ -55,8 +55,12 @@ set(
 	"VulkanOcclusionQuery.hpp"
 	"VulkanRayTracer.cpp"
 	"VulkanRayTracer.hpp"
+	"VulkanAccelerationStructure.cpp"
+	"VulkanAccelerationStructure.hpp"
 	"VulkanBottomLevelAccelerationStructure.cpp"
 	"VulkanBottomLevelAccelerationStructure.hpp"
+	"VulkanTopLevelAccelerationStructure.cpp"
+	"VulkanTopLevelAccelerationStructure.hpp"
 )
 
 # Add the source group.

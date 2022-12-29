@@ -17,6 +17,7 @@
 #include "VulkanOcclusionQuery.hpp"
 #include "VulkanRayTracer.hpp"
 #include "VulkanBottomLevelAccelerationStructure.hpp"
+#include "VulkanTopLevelAccelerationStructure.hpp"
 
 namespace Xenon
 {
@@ -85,6 +86,11 @@ namespace Xenon
 		std::unique_ptr<Xenon::Backend::OcclusionQuery> VulkanFactory::createOcclusionQuery(Device* pDevice, uint64_t sampleCount)
 		{
 			return std::make_unique<VulkanOcclusionQuery>(pDevice->as<VulkanDevice>(), sampleCount);
+		}
+
+		std::unique_ptr<Xenon::Backend::TopLevelAccelerationStructure> VulkanFactory::createTopLevelAccelerationStructure(Device* pDevice, const std::vector<BottomLevelAccelerationStructure*>& pBottomLevelAccelerationStructures)
+		{
+			return std::make_unique<VulkanTopLevelAccelerationStructure>(pDevice->as<VulkanDevice>(), pBottomLevelAccelerationStructures);
 		}
 
 		std::unique_ptr<Xenon::Backend::BottomLevelAccelerationStructure> VulkanFactory::createBottomLevelAccelerationStructure(Device* pDevice, const std::vector<AccelerationStructureGeometry>& geometries)

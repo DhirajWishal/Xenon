@@ -25,6 +25,7 @@ namespace Xenon
 		geometry.m_pIndexBuffer = storage.getIndexBuffer();
 		geometry.m_IndexBufferStride = Backend::IndexBufferStride::Uint16;
 
-		auto pAccelerationStructure = m_Renderer.getInstance().getFactory()->createBottomLevelAccelerationStructure(m_Renderer.getInstance().getBackendDevice(), { geometry });
+		auto pBottomLevelAS = m_Renderer.getInstance().getFactory()->createBottomLevelAccelerationStructure(m_Renderer.getInstance().getBackendDevice(), { geometry });
+		auto pTopLevelAS = m_Renderer.getInstance().getFactory()->createTopLevelAccelerationStructure(m_Renderer.getInstance().getBackendDevice(), { pBottomLevelAS.get() });
 	}
 }

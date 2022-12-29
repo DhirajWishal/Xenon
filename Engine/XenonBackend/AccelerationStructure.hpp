@@ -23,20 +23,5 @@ namespace Xenon
 			 */
 			explicit AccelerationStructure([[maybe_unused]] const Device* pDevice) {}
 		};
-
-		/**
-		 * Top level acceleration structure class.
-		 * This structure contains the geometry instances.
-		 */
-		class TopLevelAccelerationStructure : public AccelerationStructure
-		{
-		public:
-			/**
-			 * Explicit constructor.
-			 *
-			 * @param pDevice The device pointer.
-			 */
-			explicit TopLevelAccelerationStructure(const Device* pDevice) : AccelerationStructure(pDevice) {}
-		};
 	}
 }
