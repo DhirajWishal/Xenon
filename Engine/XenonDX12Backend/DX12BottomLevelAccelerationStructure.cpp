@@ -3,6 +3,7 @@
 
 #include "DX12BottomLevelAccelerationStructure.hpp"
 #include "DX12Macros.hpp"
+#include "DX12Buffer.hpp"
 #include "DX12CommandRecorder.hpp"
 
 namespace /* anonymous */
@@ -132,7 +133,7 @@ namespace Xenon
 	{
 		DX12BottomLevelAccelerationStructure::DX12BottomLevelAccelerationStructure(DX12Device* pDevice, const std::vector<AccelerationStructureGeometry>& geometries)
 			: BottomLevelAccelerationStructure(pDevice, geometries)
-			, DX12DeviceBoundObject(pDevice)
+			, DX12AccelerationStructure(pDevice)
 		{
 			// Setup geometry data.
 			std::vector<D3D12_RAYTRACING_GEOMETRY_DESC> geometryDescs;
@@ -191,49 +192,6 @@ namespace Xenon
 			commandBuffers.end();
 			commandBuffers.submit();
 			commandBuffers.wait();
-		}
-
-		DX12BottomLevelAccelerationStructure::~DX12BottomLevelAccelerationStructure()
-		{
-			m_pScratchBuffer->Release();
-			m_pAccelerationStructure->Release();
-		}
-
-		void DX12BottomLevelAccelerationStructure::createScratchBuffer(UINT64 size)
-		{
-			D3D12MA::ALLOCATION_DESC allocationDesc = {};
-			allocationDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
-
-			CD3DX12_RESOURCE_DESC resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(size, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
-			XENON_DX12_ASSERT(m_pDevice->getAllocator()->CreateResource(
-				&allocationDesc,
-				&resourceDescriptor,
-				D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
-				nullptr,
-				&m_pScratchBuffer,
-				IID_NULL,
-				nullptr), "Failed to create the scratch buffer!");
-
-			XENON_DX12_NAME_OBJECT(m_pScratchBuffer, "ScratchBuffer");
-		}
-
-		void DX12BottomLevelAccelerationStructure::createAccelerationStructure(UINT64 size)
-		{
-			D3D12MA::ALLOCATION_DESC allocationDesc = {};
-			allocationDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
-
-			CD3DX12_RESOURCE_DESC resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(size, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
-			XENON_DX12_ASSERT(m_pDevice->getAllocator()->CreateResource(
-				&allocationDesc,
-				&resourceDescriptor,
-				D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE,
-				nullptr,
-				&m_pAccelerationStructure,
-				IID_NULL,
-				nullptr), "Failed to create the bottom level acceleration structure!");
-
-			XENON_DX12_NAME_OBJECT(m_pAccelerationStructure, "BottomLevelAccelerationStructure");
-			m_ResultDataMaxSizeInBytes = size;
 		}
 	}
 }

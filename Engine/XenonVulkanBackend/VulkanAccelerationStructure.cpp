@@ -38,7 +38,7 @@ namespace Xenon
 			allocationCreateInfo.flags = 0;
 			allocationCreateInfo.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
 
-			XENON_VK_ASSERT(vmaCreateBuffer(m_pDevice->getAllocator(), &createInfo, &allocationCreateInfo, &m_Buffer, &m_Allocation, nullptr), "Failed to create the bottom level acceleration structure buffer!");
+			XENON_VK_ASSERT(vmaCreateBuffer(m_pDevice->getAllocator(), &createInfo, &allocationCreateInfo, &m_Buffer, &m_Allocation, nullptr), "Failed to create the acceleration structure buffer!");
 
 			// Acceleration structure
 			VkAccelerationStructureCreateInfoKHR accelerationStructureCreateInfo = {};
@@ -46,7 +46,7 @@ namespace Xenon
 			accelerationStructureCreateInfo.buffer = m_Buffer;
 			accelerationStructureCreateInfo.size = sizeInfo.accelerationStructureSize;
 			accelerationStructureCreateInfo.type = type;
-			m_pDevice->getDeviceTable().vkCreateAccelerationStructureKHR(m_pDevice->getLogicalDevice(), &accelerationStructureCreateInfo, nullptr, &m_AccelerationStructure);
+			XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkCreateAccelerationStructureKHR(m_pDevice->getLogicalDevice(), &accelerationStructureCreateInfo, nullptr, &m_AccelerationStructure), "Failed to create the acceleration structure!");
 
 			// AS device address
 			VkAccelerationStructureDeviceAddressInfoKHR accelerationDeviceAddressInfo = {};
