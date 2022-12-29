@@ -905,6 +905,17 @@ namespace Xenon
 				XENON_VK_ASSERT(result, "Failed to get the query pool results!");
 		}
 
+		void VulkanCommandRecorder::buildAccelerationStructure(const VkAccelerationStructureBuildGeometryInfoKHR& geometryInfo, const std::vector<VkAccelerationStructureBuildRangeInfoKHR*>& buildRanges)
+		{
+			OPTICK_EVENT();
+
+			m_pDevice->getDeviceTable().vkCmdBuildAccelerationStructuresKHR(
+				*m_pCurrentBuffer,
+				1,
+				&geometryInfo,
+				buildRanges.data());
+		}
+
 		void VulkanCommandRecorder::end()
 		{
 			OPTICK_EVENT();

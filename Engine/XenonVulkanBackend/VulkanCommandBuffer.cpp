@@ -46,11 +46,11 @@ namespace Xenon
 		VulkanCommandBuffer::VulkanCommandBuffer(VulkanCommandBuffer&& other) noexcept
 			: VulkanDeviceBoundObject(std::move(other))
 			, m_SubmitInfo(std::exchange(other.m_SubmitInfo, {}))
-			, m_StageFlags(std::exchange(other.m_StageFlags, 0))
 			, m_CommandBuffer(std::exchange(other.m_CommandBuffer, VK_NULL_HANDLE))
 			, m_CommandPool(std::exchange(other.m_CommandPool, VK_NULL_HANDLE))
 			, m_SignalSemaphore(std::exchange(other.m_SignalSemaphore, VK_NULL_HANDLE))
 			, m_Fence(std::exchange(other.m_Fence, VK_NULL_HANDLE))
+			, m_StageFlags(std::exchange(other.m_StageFlags, 0))
 			, m_IsFenceFree(std::exchange(other.m_IsFenceFree, true))
 		{
 			m_SubmitInfo.pCommandBuffers = &m_CommandBuffer;
@@ -114,11 +114,11 @@ namespace Xenon
 			VulkanDeviceBoundObject::operator=(std::move(other));
 
 			m_SubmitInfo = std::exchange(other.m_SubmitInfo, {});
-			m_StageFlags = std::exchange(other.m_StageFlags, 0);
 			m_CommandBuffer = std::exchange(other.m_CommandBuffer, VK_NULL_HANDLE);
 			m_CommandPool = std::exchange(other.m_CommandPool, VK_NULL_HANDLE);
 			m_SignalSemaphore = std::exchange(other.m_SignalSemaphore, VK_NULL_HANDLE);
 			m_Fence = std::exchange(other.m_Fence, VK_NULL_HANDLE);
+			m_StageFlags = std::exchange(other.m_StageFlags, 0);
 			m_IsFenceFree = std::exchange(other.m_IsFenceFree, true);
 
 			m_SubmitInfo.pCommandBuffers = &m_CommandBuffer;

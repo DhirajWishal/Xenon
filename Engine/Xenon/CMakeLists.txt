@@ -33,11 +33,15 @@ set(
 	"AssetManager.hpp"
 	"Package.cpp"
 	"Package.hpp"
+	"RayTracingLayer.cpp"
+	"RayTracingLayer.hpp"
 
 	"Layers/ClearScreenLayer.cpp"
 	"Layers/ClearScreenLayer.hpp"
 	"Layers/DefaultRasterizingLayer.cpp"
 	"Layers/DefaultRasterizingLayer.hpp"
+	"Layers/DefaultRayTracingLayer.cpp"
+	"Layers/DefaultRayTracingLayer.hpp"
 
 	"Materials/DefaultMaterial.cpp"
 	"Materials/DefaultMaterial.hpp"

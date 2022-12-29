@@ -136,7 +136,6 @@ namespace Xenon
 
 		private:
 			VkSubmitInfo m_SubmitInfo = {};
-			VkPipelineStageFlags m_StageFlags = 0;
 
 			VkCommandBuffer m_CommandBuffer = VK_NULL_HANDLE;
 			VkCommandPool m_CommandPool = VK_NULL_HANDLE;
@@ -144,6 +143,9 @@ namespace Xenon
 			VkSemaphore m_SignalSemaphore = VK_NULL_HANDLE;
 
 			VkFence m_Fence = VK_NULL_HANDLE;
+
+			VkPipelineStageFlags m_StageFlags = 0;
+			
 			bool m_IsFenceFree = true;
 		};
 	}

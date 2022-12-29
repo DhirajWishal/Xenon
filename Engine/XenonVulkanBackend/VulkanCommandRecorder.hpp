@@ -223,6 +223,14 @@ namespace Xenon
 			void getQueryResults(OcclusionQuery* pOcclusionQuery) override;
 
 			/**
+			 * Build an acceleration structure.
+			 *
+			 * @param geometryInfo The acceleration structure's geometry information.
+			 * @param buildRanges The acceleration structure's build ranges.
+			 */
+			void buildAccelerationStructure(const VkAccelerationStructureBuildGeometryInfoKHR& geometryInfo, const std::vector<VkAccelerationStructureBuildRangeInfoKHR*>& buildRanges);
+
+			/**
 			 * End the command recorder recording.
 			 */
 			void end() override;

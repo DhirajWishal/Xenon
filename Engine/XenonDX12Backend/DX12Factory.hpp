@@ -154,6 +154,15 @@ namespace Xenon
 			[[nodiscard]] std::unique_ptr<OcclusionQuery> createOcclusionQuery(Device* pDevice, uint64_t sampleCount) override;
 
 			/**
+			 * Create a new bottom level acceleration structure.
+			 *
+			 * @param pDevice The device pointer.
+			 * @param geometries The geometries to store.
+			 * @return The acceleration structure pointer.
+			 */
+			[[nodiscard]] std::unique_ptr<BottomLevelAccelerationStructure> createBottomLevelAccelerationStructure(Device* pDevice, const std::vector<AccelerationStructureGeometry>& geometries) override;
+
+			/**
 			 * Create a new ray tracer.
 			 *
 			 * @param pDevice The device pointer.

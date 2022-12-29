@@ -28,15 +28,6 @@ namespace Xenon
 		XENON_DEFINE_ENUM_AND(CommandRecorderUsage);
 
 		/**
-		 * Index buffer stride enum.
-		 */
-		enum class IndexBufferStride : uint8_t
-		{
-			Uint16 = sizeof(uint16_t),
-			Uint32 = sizeof(uint32_t)
-		};
-
-		/**
 		 * Command recorder class.
 		 * This is used to record and submit commands to the GPU and execute them.
 		 */

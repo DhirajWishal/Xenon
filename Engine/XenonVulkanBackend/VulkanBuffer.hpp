@@ -77,6 +77,13 @@ namespace Xenon
 			 */
 			[[nodiscard]] const VkDescriptorBufferInfo& getDescriptorBufferInfo() const { return m_BufferInfo; }
 
+			/**
+			 * Get the buffer's device address.
+			 *
+			 * @return The device address.
+			 */
+			[[nodiscard]] VkDeviceAddress getDeviceAddress() const;
+
 		private:
 			/**
 			 * Map the buffer memory to the local address space.

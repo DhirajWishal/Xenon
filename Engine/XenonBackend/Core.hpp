@@ -561,6 +561,15 @@ namespace Xenon
 		};
 
 		/**
+		 * Index buffer stride enum.
+		 */
+		enum class IndexBufferStride : uint8_t
+		{
+			Uint16 = sizeof(uint16_t),
+			Uint32 = sizeof(uint32_t)
+		};
+
+		/**
 		 * Resource type enum.
 		 */
 		enum class ResourceType : uint8_t

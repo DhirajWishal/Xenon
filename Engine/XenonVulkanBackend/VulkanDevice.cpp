@@ -18,7 +18,7 @@ namespace /* anonymous */
 	 * @param flag The queue flag to check.
 	 * @return Whether or not the queues are supported.
 	 */
-	bool CheckQueueSupport(VkPhysicalDevice physicalDevice, VkQueueFlagBits flag)
+	[[nodiscard]] bool CheckQueueSupport(VkPhysicalDevice physicalDevice, VkQueueFlagBits flag)
 	{
 		// Get the queue family count.
 		uint32_t queueFamilyCount = 0;
@@ -58,7 +58,7 @@ namespace /* anonymous */
 	 * @return True if the device supports at least one of the device extensions.
 	 * @return False if the device does not support any of the required extensions.
 	 */
-	bool CheckDeviceExtensionSupport(VkPhysicalDevice physicalDevice, const std::vector<const char*>& deviceExtensions, Xenon::RenderTargetType* supportedTypes = nullptr)
+	[[nodiscard]] bool CheckDeviceExtensionSupport(VkPhysicalDevice physicalDevice, const std::vector<const char*>& deviceExtensions, Xenon::RenderTargetType* supportedTypes = nullptr)
 	{
 		// If there are no extension to check, we can just return true.
 		if (deviceExtensions.empty())
@@ -110,7 +110,7 @@ namespace /* anonymous */
 	 * @return True if the device supports at least one of the device extensions.
 	 * @return False if the device does not support any of the required extensions.
 	 */
-	std::set<std::string_view> GetUnsupportedDeviceExtensions(VkPhysicalDevice physicalDevice, const std::vector<const char*>& deviceExtensions, Xenon::RenderTargetType* supportedTypes = nullptr)
+	[[nodiscard]] std::set<std::string_view> GetUnsupportedDeviceExtensions(VkPhysicalDevice physicalDevice, const std::vector<const char*>& deviceExtensions, Xenon::RenderTargetType* supportedTypes = nullptr)
 	{
 		// If there are no extension to check, we can just return true.
 		if (deviceExtensions.empty())
@@ -133,14 +133,7 @@ namespace /* anonymous */
 
 		// If the required extension count did not change, we don't support any of those required extensions.
 		if (requiredExtensions.size() == deviceExtensions.size())
-		{
-			XENON_LOG_INFORMATION("The physical device {} does not support any of the required extensions.", fmt::ptr(physicalDevice));
 			return requiredExtensions;
-		}
-
-		// If the extension count is more than 0, that means it supports a few of those required extensions.
-		if (!requiredExtensions.empty())
-			XENON_LOG_INFORMATION("The physical device {} supports only some of the required extensions.", fmt::ptr(physicalDevice));
 
 		// Set the supported types if required.
 		if (supportedTypes && !requiredExtensions.contains(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME)

@@ -40,6 +40,7 @@ set(
 	"OcclusionQuery.hpp"
 	"AccelerationStructure.hpp"
 	"RayTracer.hpp"
+	"BottomLevelAccelerationStructure.hpp"
 )
 
 # Add the source group.
