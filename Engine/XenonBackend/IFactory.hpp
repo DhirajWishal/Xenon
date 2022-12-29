@@ -13,6 +13,7 @@
 #include "RasterizingPipeline.hpp"
 #include "ComputePipeline.hpp"
 #include "CommandSubmitter.hpp"
+#include "RayTracer.hpp"
 
 namespace Xenon
 {
@@ -158,8 +159,18 @@ namespace Xenon
 			 *
 			 * @param pDevice The device pointer.
 			 * @param sampleCount The maximum sample count the query can hold.
+			 * @return The occlusion query pointer.
 			 */
 			[[nodiscard]] virtual std::unique_ptr<OcclusionQuery> createOcclusionQuery(Device* pDevice, uint64_t sampleCount) = 0;
+
+			/**
+			 * Create a new ray tracer.
+			 *
+			 * @param pDevice The device pointer.
+			 * @param pCamera The camera pointer.
+			 * @return The ray tracer pointer.
+			 */
+			[[nodiscard]] virtual std::unique_ptr<RayTracer> createRayTracer(Device* pDevice, Camera* pCamera) = 0;
 		};
 	}
 }

@@ -14,6 +14,7 @@
 #include "DX12ComputePipeline.hpp"
 #include "DX12CommandSubmitter.hpp"
 #include "DX12OcclusionQuery.hpp"
+#include "DX12RayTracer.hpp"
 
 namespace Xenon
 {
@@ -82,6 +83,11 @@ namespace Xenon
 		std::unique_ptr<Xenon::Backend::OcclusionQuery> DX12Factory::createOcclusionQuery(Device* pDevice, uint64_t sampleCount)
 		{
 			return std::make_unique<DX12OcclusionQuery>(pDevice->as<DX12Device>(), sampleCount);
+		}
+
+		std::unique_ptr<Xenon::Backend::RayTracer> DX12Factory::createRayTracer(Device* pDevice, Camera* pCamera)
+		{
+			return std::make_unique<DX12RayTracer>(pDevice->as<DX12Device>(), pCamera);
 		}
 	}
 }

@@ -47,6 +47,8 @@ set(
 	"DX12CommandSubmitter.hpp"
 	"DX12OcclusionQuery.cpp"
 	"DX12OcclusionQuery.hpp"
+	"DX12RayTracer.cpp"
+	"DX12RayTracer.hpp"
 )
 
 # Add the source group.

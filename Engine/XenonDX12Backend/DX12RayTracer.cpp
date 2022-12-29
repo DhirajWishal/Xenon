@@ -1,8 +1,8 @@
 // Copyright 2022 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
-#include "VulkanRayTracer.hpp"
-#include "VulkanMacros.hpp"
+#include "DX12RayTracer.hpp"
+#include "DX12Macros.hpp"
 
 namespace /* anonymous */
 {
@@ -26,14 +26,14 @@ namespace Xenon
 {
 	namespace Backend
 	{
-		VulkanRayTracer::VulkanRayTracer(VulkanDevice* pDevice, Camera* pCamera)
+		DX12RayTracer::DX12RayTracer(DX12Device* pDevice, Camera* pCamera)
 			: RayTracer(pDevice, pCamera)
-			, VulkanDeviceBoundObject(pDevice)
+			, DX12DeviceBoundObject(pDevice)
 			, m_ColorImage(pDevice, GetImageSpecification(pCamera))
 		{
 		}
 
-		Image* VulkanRayTracer::getImageAttachment(AttachmentType type)
+		Image* DX12RayTracer::getImageAttachment(AttachmentType type)
 		{
 			if (type == AttachmentType::Color)
 				return &m_ColorImage;

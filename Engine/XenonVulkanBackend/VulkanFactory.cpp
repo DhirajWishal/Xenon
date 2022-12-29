@@ -15,6 +15,7 @@
 #include "VulkanComputePipeline.hpp"
 #include "VulkanCommandSubmitter.hpp"
 #include "VulkanOcclusionQuery.hpp"
+#include "VulkanRayTracer.hpp"
 
 namespace Xenon
 {
@@ -83,6 +84,11 @@ namespace Xenon
 		std::unique_ptr<Xenon::Backend::OcclusionQuery> VulkanFactory::createOcclusionQuery(Device* pDevice, uint64_t sampleCount)
 		{
 			return std::make_unique<VulkanOcclusionQuery>(pDevice->as<VulkanDevice>(), sampleCount);
+		}
+
+		std::unique_ptr<Xenon::Backend::RayTracer> VulkanFactory::createRayTracer(Device* pDevice, Camera* pCamera)
+		{
+			return std::make_unique<VulkanRayTracer>(pDevice->as<VulkanDevice>(), pCamera);
 		}
 	}
 }

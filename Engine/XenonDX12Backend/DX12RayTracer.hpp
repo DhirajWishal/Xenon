@@ -5,16 +5,16 @@
 
 #include "../XenonBackend/RayTracer.hpp"
 
-#include "VulkanImage.hpp"
+#include "DX12Image.hpp"
 
 namespace Xenon
 {
 	namespace Backend
 	{
 		/**
-		 * Vulkan ray tracer class.
+		 * DirectX 12 ray tracer class.
 		 */
-		class VulkanRayTracer final : public RayTracer, public VulkanDeviceBoundObject
+		class DX12RayTracer final : public RayTracer, public DX12DeviceBoundObject
 		{
 		public:
 			/**
@@ -23,12 +23,12 @@ namespace Xenon
 			 * @param pDevice The device pointer.
 			 * @param pCamera The camera pointer.
 			 */
-			explicit VulkanRayTracer(VulkanDevice* pDevice, Camera* pCamera);
+			explicit DX12RayTracer(DX12Device* pDevice, Camera* pCamera);
 
 			/**
 			 * Destructor.
 			 */
-			~VulkanRayTracer() override = default;
+			~DX12RayTracer() override = default;
 
 			/**
 			 * Get the image attachment of the relevant attachment type.
@@ -39,7 +39,7 @@ namespace Xenon
 			[[nodiscard]] Image* getImageAttachment(AttachmentType type) override;
 
 		private:
-			VulkanImage m_ColorImage;
+			DX12Image m_ColorImage;
 		};
 	}
 }
