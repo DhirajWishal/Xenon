@@ -93,8 +93,11 @@ function(CompileHLSL SHADER_SOURCE_DIR)
 		string(REPLACE "." "_" FILE_NAME_FORMATTED ${FILE_NAME})
 		string(TOUPPER ${FILE_NAME_FORMATTED} FILE_NAME_FORMATTED_UPPER)
 
+		string(REPLACE "_hlsl" "" FUNCTION_NAME ${FILE_NAME_FORMATTED})
+		string(REPLACE ".hlsl" "" TARGET_NAME ${FILE_NAME})
+
 		# Set the compile target file.
-		set(XENON_COMPILE_TARGET ${FILE_DIR}/${FILE_NAME}.hpp)
+		set(XENON_COMPILE_TARGET ${FILE_DIR}/${TARGET_NAME}.hpp)
 
 		# Write the initial contents of the HLSL source file which will include all the shaders.
 		file(
@@ -207,7 +210,7 @@ function(CompileHLSL SHADER_SOURCE_DIR)
 				APPEND 
 				${XENON_COMPILE_TARGET} 
 				
-				"namespace Xenon { namespace Generated { [[nodisacrd]] Xenon::Backend::Shader CreateShader${FILE_NAME_WE}() { return Xenon::Backend::Shader::Create(g_${FILE_NAME_FORMATTED_UPPER}_SPIRV, g_${FILE_NAME_FORMATTED_UPPER}_HLSL); } } }\n"
+				"namespace Xenon { namespace Generated { [[nodisacrd]] Xenon::Backend::Shader CreateShader${FUNCTION_NAME}() { return Xenon::Backend::Shader::Create(g_${FILE_NAME_FORMATTED_UPPER}_SPIRV, g_${FILE_NAME_FORMATTED_UPPER}_HLSL); } } }\n"
 			)
 
 		else()
@@ -215,7 +218,7 @@ function(CompileHLSL SHADER_SOURCE_DIR)
 				APPEND 
 				${XENON_COMPILE_TARGET} 
 				
-				"namespace Xenon { namespace Generated { [[nodisacrd]] Xenon::Backend::Shader CreateShader${FILE_NAME_WE}() { return Xenon::Backend::Shader::Create(g_${FILE_NAME_FORMATTED_UPPER}_SPIRV); } } }\n"
+				"namespace Xenon { namespace Generated { [[nodisacrd]] Xenon::Backend::Shader CreateShader${FUNCTION_NAME}() { return Xenon::Backend::Shader::Create(g_${FILE_NAME_FORMATTED_UPPER}_SPIRV); } } }\n"
 			)
 
 		endif()

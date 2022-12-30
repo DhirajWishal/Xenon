@@ -15,7 +15,7 @@
 #include "Xenon/Layers/DefaultRayTracingLayer.hpp"
 
 #include "XenonShaderBuilder/VertexShader.hpp"
-#include "XenonShaderBank/Core/Test.vert.hlsl.hpp"
+#include "XenonShaderBank/Core/Test.vert.hpp"
 
 #include <imgui.h>
 
@@ -93,7 +93,7 @@ void Studio::run()
 	// Set the layer to be shown.
 	pImGui->showLayer(pRasterizer);
 
-	auto shader = Xenon::Generated::CreateShaderTest();
+	auto shader = Xenon::Generated::CreateShaderTest_vert();
 
 	// Setup the pipeline.
 	Xenon::Backend::RasterizingPipelineSpecification specification;
