@@ -17,6 +17,7 @@
 #include "DX12RayTracer.hpp"
 #include "DX12BottomLevelAccelerationStructure.hpp"
 #include "DX12TopLevelAccelerationStructure.hpp"
+#include "DX12RayTracingPipeline.hpp"
 
 namespace Xenon
 {
@@ -104,7 +105,7 @@ namespace Xenon
 
 		std::unique_ptr<Xenon::Backend::RayTracingPipeline> DX12Factory::createRayTracingPipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const std::vector<ShaderGroup>& shaderGroups, uint32_t maxRayRecursion /*= 4*/)
 		{
-			return nullptr;
+			return std::make_unique<DX12RayTracingPipeline>(pDevice->as<DX12Device>(), std::move(pCacheHandler), shaderGroups, maxRayRecursion);
 		}
 	}
 }

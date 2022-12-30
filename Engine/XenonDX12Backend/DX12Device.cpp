@@ -7,6 +7,51 @@
 #include <optick.h>
 #include <spirv_hlsl.hpp>
 
+namespace /* anonymous */
+{
+	/**
+	 * Get the execution model from the shader type.
+	 *
+	 * @param type The shader type.
+	 * @return The execution model.
+	 */
+	[[nodiscard]] constexpr spv::ExecutionModel GetExecutionModel(Xenon::Backend::ShaderType type) noexcept
+	{
+		switch (type)
+		{
+		case Xenon::Backend::ShaderType::Vertex:
+			return spv::ExecutionModel::ExecutionModelVertex;
+
+		case Xenon::Backend::ShaderType::Fragment:
+			return spv::ExecutionModel::ExecutionModelFragment;
+
+		case Xenon::Backend::ShaderType::RayGen:
+			return spv::ExecutionModel::ExecutionModelRayGenerationKHR;
+
+		case Xenon::Backend::ShaderType::Intersection:
+			return spv::ExecutionModel::ExecutionModelIntersectionKHR;
+
+		case Xenon::Backend::ShaderType::AnyHit:
+			return spv::ExecutionModel::ExecutionModelAnyHitKHR;
+
+		case Xenon::Backend::ShaderType::ClosestHit:
+			return spv::ExecutionModel::ExecutionModelClosestHitKHR;
+
+		case Xenon::Backend::ShaderType::Miss:
+			return spv::ExecutionModel::ExecutionModelMissKHR;
+
+		case Xenon::Backend::ShaderType::Callable:
+			return spv::ExecutionModel::ExecutionModelCallableKHR;
+
+		case Xenon::Backend::ShaderType::Compute:
+			return spv::ExecutionModel::ExecutionModelGLCompute;
+
+		default:
+			return spv::ExecutionModel::ExecutionModelVertex;
+		}
+	}
+}
+
 namespace Xenon
 {
 	namespace Backend
@@ -122,7 +167,7 @@ namespace Xenon
 			);
 		}
 
-		ComPtr<ID3DBlob> DX12Device::CompileShader(const ShaderSource& shader, ShaderType type, const std::string_view& entryPoint /*= "main"*/)
+		ComPtr<ID3DBlob> DX12Device::CompileShader(const ShaderSource& shader, ShaderType type, const std::string_view& newEntryPoint /*= ""*/)
 		{
 			OPTICK_EVENT();
 
@@ -133,6 +178,14 @@ namespace Xenon
 			spirv_cross::CompilerHLSL::Options options;
 			options.shader_model = 50;
 			compiler.set_hlsl_options(options);
+
+			// Rename the entry point if we have to.
+			std::string_view entryPoint = shader.getEntryPoint();
+			if (!newEntryPoint.empty())
+			{
+				compiler.rename_entry_point(entryPoint.data(), newEntryPoint.data(), GetExecutionModel(type));
+				entryPoint = newEntryPoint;
+			}
 
 			// If we're in the vertex shader set the correct semantics.
 			if (type & ShaderType::Vertex)

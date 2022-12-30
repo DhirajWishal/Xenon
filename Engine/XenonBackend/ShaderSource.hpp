@@ -50,23 +50,26 @@ namespace Xenon
 			 * Explicit constructor.
 			 *
 			 * @param binary The binary data to set.
+			 * @param entryPoint The shader's entry point. Default is main.
 			 */
-			explicit ShaderSource(const BinaryType& binary);
+			explicit ShaderSource(const BinaryType& binary, const std::string& entryPoint = "main");
 
 			/**
 			 * Explicit constructor.
 			 *
 			 * @param binary The binary data to set.
+			 * @param entryPoint The shader's entry point. Default is main.
 			 */
-			explicit ShaderSource(BinaryType&& binary);
+			explicit ShaderSource(BinaryType&& binary, const std::string& entryPoint = "main");
 
 			/**
 			 * Load the shader source from a source file.
 			 *
 			 * @param shader The shader source file.
+			 * @param entryPoint The shader's entry point. Default is main.
 			 * @return The shader source object.
 			 */
-			[[nodiscard]] static ShaderSource FromFile(const std::filesystem::path& shader);
+			[[nodiscard]] static ShaderSource FromFile(const std::filesystem::path& shader, const std::string& entryPoint = "main");
 
 			/**
 			 * Get the shader binary.
@@ -81,6 +84,13 @@ namespace Xenon
 			 * @return The shader binary without padding.
 			 */
 			[[nodiscard]] BinaryType getBinaryWithoutPadding() const { return std::vector<uint32_t>(m_Binary.begin(), m_Binary.begin() + (m_Binary.size() / 4)); }
+
+			/**
+			 * Get the shader's entry point.
+			 *
+			 * @return The entry point.
+			 */
+			[[nodiscard]] std::string_view getEntryPoint() const { return m_EntryPoint; }
 
 			/**
 			 * Check if the shader source is valid or not.
@@ -120,6 +130,7 @@ namespace Xenon
 
 		private:
 			BinaryType m_Binary;
+			std::string m_EntryPoint;
 
 			std::vector<ShaderAttribute> m_InputAttributes;
 			std::vector<ShaderAttribute> m_OutputAttributes;

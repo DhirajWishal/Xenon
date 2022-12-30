@@ -314,7 +314,7 @@ namespace Xenon
 			shaderStageCreateInfo.flags = 0;
 			shaderStageCreateInfo.stage = shaderStage;
 			shaderStageCreateInfo.module = shaderModule;
-			shaderStageCreateInfo.pName = "main";
+			shaderStageCreateInfo.pName = source.getEntryPoint().data();
 			shaderStageCreateInfo.pSpecializationInfo = VK_NULL_HANDLE;
 
 			return shaderStageCreateInfo;

@@ -846,7 +846,7 @@ namespace Xenon
 				createInfo.pNext = nullptr;
 				createInfo.flags = 0;
 				createInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-				createInfo.pName = "main";
+				createInfo.pName = specification.m_VertexShader.getEntryPoint().data();
 				createInfo.pSpecializationInfo = nullptr;
 
 				VkShaderModuleCreateInfo moduleCreateInfo = {};
@@ -868,7 +868,7 @@ namespace Xenon
 				createInfo.pNext = nullptr;
 				createInfo.flags = 0;
 				createInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-				createInfo.pName = "main";
+				createInfo.pName = specification.m_FragmentShader.getEntryPoint().data();
 				createInfo.pSpecializationInfo = nullptr;
 
 				VkShaderModuleCreateInfo moduleCreateInfo = {};

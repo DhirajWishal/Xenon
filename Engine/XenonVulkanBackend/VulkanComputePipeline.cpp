@@ -153,7 +153,7 @@ namespace Xenon
 			shaderStageCreateInfo.pNext = nullptr;
 			shaderStageCreateInfo.flags = 0;
 			shaderStageCreateInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;
-			shaderStageCreateInfo.pName = "main";
+			shaderStageCreateInfo.pName = m_ComputeShaderSource.getEntryPoint().data();
 			shaderStageCreateInfo.pSpecializationInfo = nullptr;
 
 			VkShaderModuleCreateInfo moduleCreateInfo = {};

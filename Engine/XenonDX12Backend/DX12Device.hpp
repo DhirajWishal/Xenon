@@ -62,10 +62,10 @@ namespace Xenon
 			 *
 			 * @param shader The shader to compile.
 			 * @param type The shader type.
-			 * @param entryPoint The entry point name. Default is "main".
+			 * @param newEntryPoint The new entry point name. If this is not a null string, it'll rename the current entry point to this.
 			 * @return The compiled shader blob.
 			 */
-			[[nodiscard]] static ComPtr<ID3DBlob> CompileShader(const ShaderSource& shader, ShaderType type, const std::string_view& entryPoint = "main");
+			[[nodiscard]] static ComPtr<ID3DBlob> CompileShader(const ShaderSource& shader, ShaderType type, const std::string_view& newEntryPoint = "");
 
 		public:
 			/**
