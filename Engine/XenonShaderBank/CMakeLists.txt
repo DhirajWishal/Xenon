@@ -8,6 +8,12 @@ project(
 	DESCRIPTION "This project contains all the shaders used by the engine internally."
 )
 
+# Include the Shader compiler.
+include(${CMAKE_SOURCE_DIR}/Tools/CMake/ShaderCompiler.CMake)
+
+# Compile all the HLSL files.
+CompileHLSL(${CMAKE_CURRENT_SOURCE_DIR})
+
 # Add the shaders.
 file(GLOB_RECURSE SHADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_SOURCE_DIR}/**/*.vert
@@ -23,11 +29,27 @@ file(GLOB_RECURSE SHADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_SOURCE_DIR}/**/*.rmiss
 )
 
+file(GLOB_RECURSE HLSL_SHADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+	${CMAKE_CURRENT_SOURCE_DIR}/**/*.hlsl
+)
+
+file(GLOB_RECURSE SOURCE_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+	${CMAKE_CURRENT_SOURCE_DIR}/**/*.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/**/*.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/*.hpp
+
+)
+
 # Set the sources.
 set(
 	SOURCES
 	${SHADERS}
+	${HLSL_SHADERS}
+	${SOURCE_FILES}
 )
+
+set_property(SOURCE ${HLSL_SHADERS} PROPERTY VS_SETTINGS "ExcludedFromBuild=true")
 
 # Add the source group.
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCES})
@@ -47,6 +69,10 @@ if (DEFINED ENV{VULKAN_SDK})
 
 	# Iterate over the source shaders and compile them.
 	foreach(SOURCE_FILE IN ITEMS ${SOURCES})
+		if(${SOURCE_FILE} MATCHES "hlsl|hpp")
+			continue()
+		endif()
+
 		get_filename_component(FILE_NAME ${SOURCE_FILE} NAME)
 		get_filename_component(FILE_DIR ${CMAKE_CURRENT_BINARY_DIR}/${SOURCE_FILE}.spv DIRECTORY)
 

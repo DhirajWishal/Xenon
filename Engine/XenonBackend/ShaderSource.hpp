@@ -51,16 +51,18 @@ namespace Xenon
 			 *
 			 * @param binary The binary data to set.
 			 * @param entryPoint The shader's entry point. Default is main.
+			 * @param shouldPerformReflection Whether to perform reflection or not. Default is true. Set this to false if we're storing anything other than SPIR-V!
 			 */
-			explicit ShaderSource(const BinaryType& binary, const std::string& entryPoint = "main");
+			explicit ShaderSource(const BinaryType& binary, const std::string& entryPoint = "main", bool shouldPerformReflection = true);
 
 			/**
 			 * Explicit constructor.
 			 *
 			 * @param binary The binary data to set.
 			 * @param entryPoint The shader's entry point. Default is main.
+			 * @param shouldPerformReflection Whether to perform reflection or not. Default is true. Set this to false if we're storing anything other than SPIR-V!
 			 */
-			explicit ShaderSource(BinaryType&& binary, const std::string& entryPoint = "main");
+			explicit ShaderSource(BinaryType&& binary, const std::string& entryPoint = "main", bool shouldPerformReflection = true);
 
 			/**
 			 * Load the shader source from a source file.

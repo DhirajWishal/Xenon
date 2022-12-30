@@ -100,18 +100,20 @@ namespace Xenon
 	namespace Backend
 	{
 
-		ShaderSource::ShaderSource(const BinaryType& binary, const std::string& entryPoint /*= "main"*/)
+		ShaderSource::ShaderSource(const BinaryType& binary, const std::string& entryPoint /*= "main"*/, bool shouldPerformReflection /*= true*/)
 			: m_Binary(binary)
 			, m_EntryPoint(entryPoint)
 		{
-			performReflection();
+			if (shouldPerformReflection)
+				performReflection();
 		}
 
-		ShaderSource::ShaderSource(BinaryType&& binary, const std::string& entryPoint /*= "main"*/)
+		ShaderSource::ShaderSource(BinaryType&& binary, const std::string& entryPoint /*= "main"*/, bool shouldPerformReflection /*= true*/)
 			: m_Binary(std::move(binary))
 			, m_EntryPoint(entryPoint)
 		{
-			performReflection();
+			if (shouldPerformReflection)
+				performReflection();
 		}
 
 		Xenon::Backend::ShaderSource ShaderSource::FromFile(const std::filesystem::path& shader, const std::string& entryPoint /*= "main"*/)
@@ -138,7 +140,7 @@ namespace Xenon
 				XENON_LOG_ERROR("Failed to load the shader source @{}", shader.string());
 			}
 
-			return ShaderSource(std::move(binaryData), entryPoint);
+			return ShaderSource(std::move(binaryData), entryPoint, shader.extension() == ".spv");
 		}
 
 		void ShaderSource::performReflection()

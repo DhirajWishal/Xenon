@@ -43,6 +43,7 @@ set(
 	"BottomLevelAccelerationStructure.hpp"
 	"TopLevelAccelerationStructure.hpp"
 	"RayTracingPipeline.hpp"
+	"Shader.hpp"
 )
 
 # Add the source group.
