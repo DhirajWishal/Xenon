@@ -49,9 +49,18 @@ namespace Xenon
 			 */
 			void createDXILLibrary(CD3DX12_STATE_OBJECT_DESC& stateObject, ID3DBlob* pShaderBlob) const;
 
+			/**
+			 * Create the root signature.
+			 *
+			 * @param rangePairs The descriptor range maps.
+			 */
+			void createRootSignature(std::vector<std::pair<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>>&& rangePairs);
+
 		private:
 			ComPtr<ID3D12RootSignature> m_RootSignature;
 			ComPtr<ID3D12StateObject> m_PipelineState;
+
+			uint64_t m_PipelineHash = 0;
 		};
 	}
 }
