@@ -13,15 +13,6 @@ namespace Xenon
 	namespace Backend
 	{
 		/**
-		 * Shader source type enum.
-		 */
-		enum class ShaderSourceType : uint8_t
-		{
-			SPIRV,
-			HLSL
-		};
-
-		/**
 		 * Shader class.
 		 * This class is used to store information about a single shader file.
 		 *

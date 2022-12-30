@@ -137,9 +137,12 @@ function(CompileHLSL SHADER_SOURCE_DIR)
 
 			endif()
 
+			# Set the HLSL compile command.
+			set(HLSL_COMPILE_COMMAND ${TOOLS_DIR}/dxc -Fh ${SOURCE_FILE}.dxb.hpp -I ${CMAKE_SOURCE_DIR}/Engine/ShaderBank -HV 2021 -Vn g_${FILE_NAME_FORMATTED_UPPER}_HLSL -T ${TARGET_PROFILE} -E main ${SOURCE_FILE})
+
 			# Compile and store the HLSL binary in the header file.
 			execute_process(
-				COMMAND ${TOOLS_DIR}/dxc -Fh ${SOURCE_FILE}.dxb.hpp -I ${CMAKE_SOURCE_DIR}/Engine/ShaderBank -HV 2021 -Vn g_${FILE_NAME_FORMATTED_UPPER}_HLSL -T ${TARGET_PROFILE} -E main ${SOURCE_FILE}
+				COMMAND ${HLSL_COMPILE_COMMAND}
 				WORKING_DIRECTORY ${SHADER_SOURCE_DIR}
 				COMMAND_ECHO STDOUT
 				ERROR_VARIABLE SHADER_COMPILER_STATUS
@@ -147,6 +150,15 @@ function(CompileHLSL SHADER_SOURCE_DIR)
 
 			# Show the status.
 			message(STATUS ${SHADER_COMPILER_STATUS})
+
+			# Add a custom command for the file to compile HLSL to DXB.
+			set_source_files_properties(${SOURCE_FILE}.dxb.hpp PROPERTIES SYMBOLIC TRUE)
+			add_custom_command(
+			    OUTPUT ${SOURCE_FILE}.dxb.hpp
+			    COMMAND ${HLSL_COMPILE_COMMAND}
+				WORKING_DIRECTORY ${SHADER_SOURCE_DIR}
+			    DEPENDS ${SOURCE_FILE}
+			)
 
 			# Include the header file.
 			file(
@@ -158,9 +170,12 @@ function(CompileHLSL SHADER_SOURCE_DIR)
 
 		endif()
 
+		# Set the SPIR-V compile command.
+		set(SPIRV_COMPILE_COMMAND ${TOOLS_DIR}/glslangValidator -V ${SOURCE_FILE} -o ${SOURCE_FILE}.spv.hpp --variable-name g_${FILE_NAME_FORMATTED_UPPER}_SPIRV --target-env vulkan1.3 -I${CMAKE_SOURCE_DIR}/Engine/ShaderBank --entry-point main)
+
 		# Compile and store the SPIR-V binary in the header file.
 		execute_process(
-			COMMAND ${TOOLS_DIR}/glslangValidator -V ${SOURCE_FILE} -o ${SOURCE_FILE}.spv.hpp --variable-name g_${FILE_NAME_FORMATTED_UPPER}_SPIRV --target-env vulkan1.3 -I${CMAKE_SOURCE_DIR}/Engine/ShaderBank --entry-point main
+			COMMAND ${SPIRV_COMPILE_COMMAND}
 			WORKING_DIRECTORY ${SHADER_SOURCE_DIR}
 			COMMAND_ECHO STDOUT
 			ERROR_VARIABLE SHADER_COMPILER_STATUS
@@ -168,6 +183,15 @@ function(CompileHLSL SHADER_SOURCE_DIR)
 
 		# Show the status.
 		message(STATUS ${SHADER_COMPILER_STATUS})
+
+		# Add a custom command for the file to compile HLSL to SPIR-V.
+		set_source_files_properties(${SOURCE_FILE}.spv.hpp PROPERTIES SYMBOLIC TRUE)
+		add_custom_command(
+		    OUTPUT ${SOURCE_FILE}.spv.hpp
+		    COMMAND ${SPIRV_COMPILE_COMMAND}
+		    WORKING_DIRECTORY ${SHADER_SOURCE_DIR}
+			DEPENDS ${SOURCE_FILE}
+		)
 
 		# Include the header file.
 		file(
