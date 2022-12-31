@@ -14,8 +14,6 @@
 #include "Xenon/Layers/DefaultRasterizingLayer.hpp"
 #include "Xenon/Layers/DefaultRayTracingLayer.hpp"
 
-#include "XenonShaderBuilder/VertexShader.hpp"
-
 #include "XenonShaderBank/Debugging/Shader.vert.hpp"
 #include "XenonShaderBank/Debugging/Shader.frag.hpp"
 

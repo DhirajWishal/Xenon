@@ -78,7 +78,6 @@ target_include_directories(
 
 	PRIVATE ${DIRECT_X_HEADERS_INCLUDE_DIR}
 	PRIVATE ${D3DMA_INCLUDE_DIR}
-	PRIVATE ${SPIRV_CROSS_INCLUDE_DIR}
 )
 
 # Make sure to specify the C++ standard to C++20.
@@ -95,7 +94,6 @@ target_link_libraries(
 	PRIVATE "d3d12.lib" 
 	PRIVATE "dxgi.lib" 
 	PRIVATE "d3dcompiler.lib"
-	PRIVATE spirv-cross-hlsl
 )
 
 # Set compile definitions.

@@ -32,37 +32,10 @@ set(TINYGLTF_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/tinygltf)
 set(GLM_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/glm)
 set(SPIRV_REFLECT_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/SPIRV-Reflect)
 set(XXHASH_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/xxHash)
-set(SPIRV_CROSS_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/SPIRV-Cross)
 set(OPTICK_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/optick/src)
 set(IMGUI_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/imgui)
 set(IMNODES_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/imnodes)
 set(FMT_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/fmt/include)
-set(SPIRV_TOOLS_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/SPIRV-Tools/include)
-
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/SPIRV-Cross)
-
-# Find the python package.
-find_package(Python COMPONENTS Interpreter Development)
-
-# Execute the SPIR-V Tools initialization process.
-execute_process(
-	COMMAND ${Python_EXECUTABLE} "utils/git-sync-deps"
-	WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/SPIRV-Tools"
-	COMMAND_ECHO STDOUT
-	ERROR_VARIABLE SPIRV_TOOLS_INIT_STATUS
-)
-
-# If there was an error with the initialization process, print it out.
-if (SPIRV_TOOLS_INIT_STATUS)
-	message(FATAL_ERROR "SPIR-V Tools initialization failed with ${SPIRV_TOOLS_INIT_STATUS}")
-endif ()
-
-# Set the required variables for assimp.
-set(SPIRV_SKIP_TESTS ON CACHE BOOL "Disable the SPIR-V Tools tests.")
-set(SPIRV_SKIP_EXECUTABLES ON CACHE BOOL "We don't need the SPIR-V Tools executable either.")
-
-# Add the SPIR-V Tools as a subdirectory.
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/SPIRV-Tools)
 
 # Add the Optick library as a third party static link.
 add_library(
@@ -170,7 +143,6 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonDX12Backend)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonPlatform)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonPlatformWindows)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonEvents)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonShaderBuilder)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Studio)
 
 # Set the output directories.
@@ -195,22 +167,6 @@ if (MSVC)
 
 	# Add the third party targets to a third party folder.
 	set_target_properties(
-		spirv-cross 
-		spirv-cross-c
-		spirv-cross-core
-		spirv-cross-cpp
-		spirv-cross-glsl
-		spirv-cross-hlsl
-		spirv-cross-msl
-		spirv-cross-reflect
-		spirv-cross-util
-
-		core_tables
-		enum_string_mapping
-		extinst_tables
-		spirv-tools-pkg-config
-		spirv-tools-shared-pkg-config
-
 		XenonThirdParty_Optick
 		XenonThirdParty_ImGui
 		XenonThirdParty_imnodes

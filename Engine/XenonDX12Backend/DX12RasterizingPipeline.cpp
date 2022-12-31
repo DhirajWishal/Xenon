@@ -6,7 +6,6 @@
 #include "DX12Descriptor.hpp"
 
 #include <optick.h>
-#include <spirv_hlsl.hpp>
 
 // This magic number is used by the rasterizing pipeline to uniquely identify it's pipeline caches.
 constexpr uint64_t g_MagicNumber = 0b0011111000011111001000001010110101101110111001101000110000110001;
