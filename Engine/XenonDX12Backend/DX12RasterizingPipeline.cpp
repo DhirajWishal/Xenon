@@ -79,12 +79,6 @@ namespace /* anonymous */
 		std::vector<D3D12_INPUT_ELEMENT_DESC>& inputs,
 		Xenon::Backend::ShaderType type)
 	{
-		ComPtr<ID3D12ShaderReflection> pReflector;
-		XENON_DX12_ASSERT(D3DReflect(shader.getDXIL().getBinaryData(), shader.getDXIL().getBinarySizeInBytes(), IID_PPV_ARGS(&pReflector)), "Failed to reflect on the shader!");
-
-		D3D12_SHADER_DESC shaderDesc = {};
-		XENON_DX12_ASSERT(pReflector->GetDesc(&shaderDesc), "Failed to get the reflection description!");
-
 		// Setup resources.
 		for (const auto& resource : shader.getResources())
 		{
@@ -111,68 +105,124 @@ namespace /* anonymous */
 			if (rangeType == D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER)
 			{
 				const auto setIndex = static_cast<uint8_t>(Xenon::EnumToInt(resource.m_Set) * 2);
-				rangeMap[setIndex + 0].emplace_back().Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, resource.m_Binding);	// Set the texture buffer (SRV).
-				rangeMap[setIndex + 1].emplace_back().Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, resource.m_Binding);	// Set the texture sampler.
+				rangeMap[setIndex + 0].emplace_back().Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, resource.m_Binding, Xenon::EnumToInt(resource.m_Set));	// Set the texture buffer (SRV).
+				rangeMap[setIndex + 1].emplace_back().Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, resource.m_Binding, Xenon::EnumToInt(resource.m_Set));	// Set the texture sampler.
 			}
 
 			// Else just one entry for the buffer.
 			else
 			{
-				rangeMap[static_cast<uint8_t>(Xenon::EnumToInt(resource.m_Set) * 2)].emplace_back().Init(rangeType, 1, resource.m_Binding);
+				rangeMap[static_cast<uint8_t>(Xenon::EnumToInt(resource.m_Set) * 2)].emplace_back().Init(rangeType, 1, resource.m_Binding, Xenon::EnumToInt(resource.m_Set));
 			}
 		}
 
 		// Setup the inputs if it's the vertex shader.
 		if (type & Xenon::Backend::ShaderType::Vertex)
 		{
-			const auto& inputAttribute = shader.getInputAttributes();
-			for (UINT i = 0; i < shaderDesc.InputParameters; i++)
+			for (const auto& input : shader.getInputAttributes())
 			{
-				D3D12_SIGNATURE_PARAMETER_DESC input = {};
-				XENON_DX12_ASSERT(pReflector->GetInputParameterDesc(i, &input), "Failed to get the input parameter ({})!", i);
-
 				auto& desc = inputs.emplace_back();
-				desc.SemanticIndex = input.SemanticIndex;
 				desc.Format = DXGI_FORMAT_UNKNOWN;
 				desc.InputSlot = 0;
 				desc.AlignedByteOffset = 0;
 				desc.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
 				desc.InstanceDataStepRate = 0;
 
-				switch (static_cast<Xenon::Backend::InputElement>(inputAttribute[i].m_Location))
+				switch (static_cast<Xenon::Backend::InputElement>(input.m_Location))
 				{
 				case Xenon::Backend::InputElement::VertexPosition:
 					desc.SemanticName = "POSITION";
+					desc.SemanticIndex = 0;
 					break;
 
 				case Xenon::Backend::InputElement::VertexNormal:
 					desc.SemanticName = "NORMAL";
+					desc.SemanticIndex = 0;
 					break;
 
 				case Xenon::Backend::InputElement::VertexTangent:
 					desc.SemanticName = "TANGENT";
+					desc.SemanticIndex = 0;
 					break;
 
 				case Xenon::Backend::InputElement::VertexColor_0:
+					desc.SemanticName = "COLOR";
+					desc.SemanticIndex = 0;
+					break;
+
 				case Xenon::Backend::InputElement::VertexColor_1:
+					desc.SemanticName = "COLOR";
+					desc.SemanticIndex = 1;
+					break;
+
 				case Xenon::Backend::InputElement::VertexColor_2:
+					desc.SemanticName = "COLOR";
+					desc.SemanticIndex = 2;
+					break;
+
 				case Xenon::Backend::InputElement::VertexColor_3:
+					desc.SemanticName = "COLOR";
+					desc.SemanticIndex = 3;
+					break;
+
 				case Xenon::Backend::InputElement::VertexColor_4:
+					desc.SemanticName = "COLOR";
+					desc.SemanticIndex = 4;
+					break;
+
 				case Xenon::Backend::InputElement::VertexColor_5:
+					desc.SemanticName = "COLOR";
+					desc.SemanticIndex = 5;
+					break;
+
 				case Xenon::Backend::InputElement::VertexColor_6:
+					desc.SemanticName = "COLOR";
+					desc.SemanticIndex = 6;
+					break;
+
 				case Xenon::Backend::InputElement::VertexColor_7:
 					desc.SemanticName = "COLOR";
+					desc.SemanticIndex = 7;
 					break;
 
 				case Xenon::Backend::InputElement::VertexTextureCoordinate_0:
+					desc.SemanticName = "TEXCOORD";
+					desc.SemanticIndex = 0;
+					break;
+
 				case Xenon::Backend::InputElement::VertexTextureCoordinate_1:
+					desc.SemanticName = "TEXCOORD";
+					desc.SemanticIndex = 1;
+					break;
+
 				case Xenon::Backend::InputElement::VertexTextureCoordinate_2:
+					desc.SemanticName = "TEXCOORD";
+					desc.SemanticIndex = 2;
+					break;
+
 				case Xenon::Backend::InputElement::VertexTextureCoordinate_3:
+					desc.SemanticName = "TEXCOORD";
+					desc.SemanticIndex = 3;
+					break;
+
 				case Xenon::Backend::InputElement::VertexTextureCoordinate_4:
+					desc.SemanticName = "TEXCOORD";
+					desc.SemanticIndex = 4;
+					break;
+
 				case Xenon::Backend::InputElement::VertexTextureCoordinate_5:
+					desc.SemanticName = "TEXCOORD";
+					desc.SemanticIndex = 5;
+					break;
+
 				case Xenon::Backend::InputElement::VertexTextureCoordinate_6:
+					desc.SemanticName = "TEXCOORD";
+					desc.SemanticIndex = 6;
+					break;
+
 				case Xenon::Backend::InputElement::VertexTextureCoordinate_7:
 					desc.SemanticName = "TEXCOORD";
+					desc.SemanticIndex = 7;
 					break;
 
 				case Xenon::Backend::InputElement::InstancePosition:

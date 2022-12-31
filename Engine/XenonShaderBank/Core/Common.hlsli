@@ -4,13 +4,15 @@
 #ifndef COMMON_HLSLI
 #define COMMON_HLSLI
 
+#define XENON_NAME_CONCAT(first, second)	first##second
+
 #define XENON_SETUP_DESCRIPTOR(set, bindingIndex)	[[vk::binding(bindingIndex, set)]]
 
 #define XENON_DESCRIPTOR_TYPE_USER_DEFINED	0
 #define XENON_DESCRIPTOR_TYPE_MATERIAL		1
 #define XENON_DESCRIPTOR_TYPE_CAMERA		2
 
-#define XENON_NAME_CONCAT(first, second)	first##second
+#define XENON_DESCRIPTOR_SPACE(index)		XENON_NAME_CONCAT(space, index)
 
 float4x4 GetIdentityMatrix()
 {

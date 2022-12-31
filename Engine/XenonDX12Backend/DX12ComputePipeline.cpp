@@ -74,12 +74,6 @@ namespace /* anonymous */
 		std::vector<Xenon::Backend::DescriptorBindingInfo>& bindingInfos,
 		std::vector<CD3DX12_DESCRIPTOR_RANGE1>& descriptorRanges)
 	{
-		ComPtr<ID3D12ShaderReflection> pReflector;
-		XENON_DX12_ASSERT(D3DReflect(shader.getDXIL().getBinaryData(), shader.getDXIL().getBinarySizeInBytes(), IID_PPV_ARGS(&pReflector)), "Failed to reflect on the shader!");
-
-		D3D12_SHADER_DESC shaderDesc = {};
-		XENON_DX12_ASSERT(pReflector->GetDesc(&shaderDesc), "Failed to get the reflection description!");
-
 		// Setup resources.
 		for (const auto& resource : shader.getResources())
 		{
@@ -93,14 +87,14 @@ namespace /* anonymous */
 			// If it's a sampler, we need one for the texture (SRV) and another as the sampler.
 			if (rangeType == D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER)
 			{
-				descriptorRanges.emplace_back().Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, resource.m_Binding, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);	// Set the texture buffer (SRV).
-				descriptorRanges.emplace_back().Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, resource.m_Binding);	// Set the texture sampler.
+				descriptorRanges.emplace_back().Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, resource.m_Binding, Xenon::EnumToInt(resource.m_Set), D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);	// Set the texture buffer (SRV).
+				descriptorRanges.emplace_back().Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, resource.m_Binding, Xenon::EnumToInt(resource.m_Set));	// Set the texture sampler.
 			}
 
 			// Else just one entry for the buffer.
 			else
 			{
-				descriptorRanges.emplace_back().Init(rangeType, 1, resource.m_Binding, rangeType == D3D12_DESCRIPTOR_RANGE_TYPE_UAV ? D3D12_DESCRIPTOR_RANGE_FLAG_DATA_VOLATILE : D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);
+				descriptorRanges.emplace_back().Init(rangeType, 1, resource.m_Binding, Xenon::EnumToInt(resource.m_Set), rangeType == D3D12_DESCRIPTOR_RANGE_TYPE_UAV ? D3D12_DESCRIPTOR_RANGE_FLAG_DATA_VOLATILE : D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);
 			}
 		}
 	}

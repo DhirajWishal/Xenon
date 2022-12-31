@@ -74,12 +74,6 @@ namespace /* anonymous */
 		std::unordered_map<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>& rangeMap,
 		Xenon::Backend::ShaderType type)
 	{
-		ComPtr<ID3D12ShaderReflection> pReflector;
-		XENON_DX12_ASSERT(D3DReflect(shader.getDXIL().getBinaryData(), shader.getDXIL().getBinarySizeInBytes(), IID_PPV_ARGS(&pReflector)), "Failed to reflect on the shader!");
-
-		D3D12_SHADER_DESC shaderDesc = {};
-		XENON_DX12_ASSERT(pReflector->GetDesc(&shaderDesc), "Failed to get the reflection description!");
-
 		// Setup resources.
 		for (const auto& resource : shader.getResources())
 		{
@@ -106,14 +100,14 @@ namespace /* anonymous */
 			if (rangeType == D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER)
 			{
 				const auto setIndex = static_cast<uint8_t>(Xenon::EnumToInt(resource.m_Set) * 2);
-				rangeMap[setIndex + 0].emplace_back().Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, resource.m_Binding);	// Set the texture buffer (SRV).
-				rangeMap[setIndex + 1].emplace_back().Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, resource.m_Binding);	// Set the texture sampler.
+				rangeMap[setIndex + 0].emplace_back().Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, resource.m_Binding, Xenon::EnumToInt(resource.m_Set));	// Set the texture buffer (SRV).
+				rangeMap[setIndex + 1].emplace_back().Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, resource.m_Binding, Xenon::EnumToInt(resource.m_Set));	// Set the texture sampler.
 			}
 
 			// Else just one entry for the buffer.
 			else
 			{
-				rangeMap[static_cast<uint8_t>(Xenon::EnumToInt(resource.m_Set) * 2)].emplace_back().Init(rangeType, 1, resource.m_Binding);
+				rangeMap[static_cast<uint8_t>(Xenon::EnumToInt(resource.m_Set) * 2)].emplace_back().Init(rangeType, 1, resource.m_Binding, Xenon::EnumToInt(resource.m_Set));
 			}
 		}
 	}
