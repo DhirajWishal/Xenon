@@ -87,7 +87,7 @@ namespace /* anonymous */
 		const auto shaderStage = GetShaderStageFlagBit(type);
 
 		// Get the resources.
-		for (const auto& resource : shader.getSPIRV().getResources())
+		for (const auto& resource : shader.getResources())
 		{
 			auto& bindings = bindingMap[static_cast<Xenon::Backend::DescriptorType>(Xenon::EnumToInt(resource.m_Set))];
 			auto& indexToBinding = indexToBindingMap[Xenon::EnumToInt(resource.m_Set)];
@@ -118,7 +118,7 @@ namespace /* anonymous */
 		if (type & Xenon::Backend::ShaderType::Vertex)
 		{
 			bool hasInstanceInputs = false;
-			for (const auto& input : shader.getSPIRV().getInputAttributes())
+			for (const auto& input : shader.getInputAttributes())
 			{
 				const auto element = static_cast<Xenon::Backend::InputElement>(input.m_Location);
 				auto& attribute = inputAttributeDescriptions.emplace_back();

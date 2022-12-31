@@ -81,7 +81,7 @@ namespace /* anonymous */
 		XENON_DX12_ASSERT(pReflector->GetDesc(&shaderDesc), "Failed to get the reflection description!");
 
 		// Setup resources.
-		for (const auto& resource : shader.getSPIRV().getResources())
+		for (const auto& resource : shader.getResources())
 		{
 			// Fill up the binding info structure.
 			auto& bindings = bindingMap[static_cast<Xenon::Backend::DescriptorType>(Xenon::EnumToInt(resource.m_Set))];

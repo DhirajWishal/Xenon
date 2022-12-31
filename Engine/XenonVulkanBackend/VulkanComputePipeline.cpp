@@ -26,7 +26,7 @@ namespace /* anonymous */
 		std::vector<VkPushConstantRange>& pushConstants)
 	{
 		// Get the resources.
-		for (const auto& resource : shader.getSPIRV().getResources())
+		for (const auto& resource : shader.getResources())
 		{
 			auto& binding = bindingInfos.emplace_back();
 			binding.m_Type = resource.m_Type;

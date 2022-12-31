@@ -5,13 +5,30 @@
 
 #include "ShaderSource.hpp"
 
-#include <unordered_map>
-#include <string>
-
 namespace Xenon
 {
 	namespace Backend
 	{
+		/**
+		 * Shader attribute structure.
+		 */
+		struct ShaderAttribute final
+		{
+			uint32_t m_Location = 0;
+			AttributeDataType m_DataType = AttributeDataType::Scalar;
+		};
+
+		/**
+		 * Shader resource structure.
+		 */
+		struct ShaderResource final
+		{
+			uint32_t m_Binding = 0;
+
+			DescriptorType m_Set = DescriptorType::Camera;
+			ResourceType m_Type = ResourceType::Sampler;
+		};
+
 		/**
 		 * Shader class.
 		 * This class is used to store information about a single shader file.
@@ -19,7 +36,7 @@ namespace Xenon
 		 * In Xenon, a shader file outputs 2 shader binaries (on Windows).
 		 * 1. SPIR-V.
 		 * 2. DXIL.
-		 * 
+		 *
 		 * The actual backend will select which shader it may need. Because of this, the shader class holds two shader sources (to make the API simpler).
 		 * On Windows, both needs to be set. On Linux and any other platform, only the SPIR-V shader can be set (since only the Vulkan backend is supported).
 		 */
@@ -36,7 +53,7 @@ namespace Xenon
 			 *
 			 * @param spirv The SPIR-V binary.
 			 */
-			explicit Shader(const ShaderSource& spirv) : m_SPIRV(spirv) {}
+			explicit Shader(const ShaderSource& spirv);
 
 			/**
 			 * Explicit constructor.
@@ -44,7 +61,7 @@ namespace Xenon
 			 * @param spirv The SPIR-V binary.
 			 * @param dxil The DXIL binary.
 			 */
-			explicit Shader(const ShaderSource& spirv, const ShaderSource& dxil) : m_SPIRV(spirv), m_DXIL(dxil) {}
+			explicit Shader(const ShaderSource& spirv, const ShaderSource& dxil);
 
 			/**
 			 * Create a new shader.
@@ -83,7 +100,7 @@ namespace Xenon
 				auto dxilSource = std::vector<uint32_t>(DXILSize / sizeof(uint32_t));
 				std::copy_n(pDXILSource, dxilSource.size(), reinterpret_cast<unsigned char*>(dxilSource.data()));
 
-				return Shader(ShaderSource(std::move(spirvSource)), ShaderSource(std::move(dxilSource), "main", false));
+				return Shader(ShaderSource(std::move(spirvSource)), ShaderSource(std::move(dxilSource)));
 			}
 
 			/**
@@ -100,9 +117,40 @@ namespace Xenon
 			 */
 			[[nodiscard]] const ShaderSource& getDXIL() const noexcept { return m_DXIL; }
 
+			/**
+			 * Get the shader's input attributes.
+			 *
+			 * @return The input attributes.
+			 */
+			[[nodiscard]] const std::vector<ShaderAttribute>& getInputAttributes() const noexcept { return m_InputAttributes; }
+
+			/**
+			 * Get the shader's output attributes.
+			 *
+			 * @return The output attributes.
+			 */
+			[[nodiscard]] const std::vector<ShaderAttribute>& getOutputAttributes() const noexcept { return m_OutputAttributes; }
+
+			/**
+			 * Get the resources.
+			 *
+			 * @return The shader resources.
+			 */
+			[[nodiscard]] const std::vector<ShaderResource>& getResources() const noexcept { return m_Resources; }
+
+		private:
+			/**
+			 * Perform reflection over the binary source and get information about inputs, outputs and resources.
+			 */
+			void performReflection();
+
 		private:
 			ShaderSource m_SPIRV;
 			ShaderSource m_DXIL;
+
+			std::vector<ShaderAttribute> m_InputAttributes;
+			std::vector<ShaderAttribute> m_OutputAttributes;
+			std::vector<ShaderResource> m_Resources;
 		};
 	}
 }

@@ -87,7 +87,7 @@ namespace /* anonymous */
 		XENON_DX12_ASSERT(pReflector->GetDesc(&shaderDesc), "Failed to get the reflection description!");
 
 		// Setup resources.
-		for (const auto& resource : shader.getSPIRV().getResources())
+		for (const auto& resource : shader.getResources())
 		{
 			// Fill up the binding info structure.
 			auto& bindings = bindingMap[static_cast<Xenon::Backend::DescriptorType>(Xenon::EnumToInt(resource.m_Set))];
@@ -126,7 +126,7 @@ namespace /* anonymous */
 		// Setup the inputs if it's the vertex shader.
 		if (type & Xenon::Backend::ShaderType::Vertex)
 		{
-			const auto& inputAttribute = shader.getSPIRV().getInputAttributes();
+			const auto& inputAttribute = shader.getInputAttributes();
 			for (UINT i = 0; i < shaderDesc.InputParameters; i++)
 			{
 				D3D12_SIGNATURE_PARAMETER_DESC input = {};
@@ -674,7 +674,7 @@ namespace Xenon
 				auto& pipeline = m_Pipelines[hash];
 				pipeline.m_Inputs = m_Inputs;
 
-				auto itr = m_Specification.m_VertexShader.getSPIRV().getInputAttributes().begin();
+				auto itr = m_Specification.m_VertexShader.getInputAttributes().begin();
 				for (auto& input : pipeline.m_Inputs)
 				{
 					// Continue if the input is instance data.

@@ -71,7 +71,7 @@ namespace /* anonymous */
 		Xenon::Backend::ShaderType type)
 	{
 		// Get the resources.
-		for (const auto& resource : source.getSPIRV().getResources())
+		for (const auto& resource : source.getResources())
 		{
 			auto& bindings = bindingMap[static_cast<Xenon::Backend::DescriptorType>(Xenon::EnumToInt(resource.m_Set))];
 			auto& indexToBinding = indexToBindingMap[Xenon::EnumToInt(resource.m_Set)];
