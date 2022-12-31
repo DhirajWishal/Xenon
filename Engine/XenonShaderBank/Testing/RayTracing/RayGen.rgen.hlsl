@@ -20,7 +20,7 @@ struct RayPayload {
 };
 
 // Max. number of recursion is passed via a specialization constant
-[[vk::constant_id(0)]] const int MAX_RECURSION = 0;
+// [[vk::constant_id(0)]] const int MAX_RECURSION = 0;
 
 [shader("raygeneration")]
 void main()
@@ -41,7 +41,7 @@ void main()
 
 	float3 color = float3(0.0, 0.0, 0.0);
 
-	for (int i = 0; i < MAX_RECURSION; i++) {
+	for (int i = 0; i < 3 /*MAX_RECURSION*/; i++) {
 		RayPayload rayPayload;
 		TraceRay(rs, RAY_FLAG_FORCE_OPAQUE, 0xff, 0, 0, 0, rayDesc, rayPayload);
 		float3 hitColor = rayPayload.color;

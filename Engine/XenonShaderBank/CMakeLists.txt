@@ -8,12 +8,6 @@ project(
 	DESCRIPTION "This project contains all the shaders used by the engine internally."
 )
 
-# Include the Shader compiler.
-include(${CMAKE_SOURCE_DIR}/Tools/CMake/ShaderCompiler.CMake)
-
-# Compile all the HLSL files.
-CompileShaders()
-
 # Add the shaders.
 file(GLOB_RECURSE SHADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_SOURCE_DIR}/**/*.vert
@@ -42,6 +36,7 @@ file(GLOB_RECURSE SOURCE_FILES
 # Set the sources.
 set(
 	SOURCES
+
 	${SHADERS}
 	${HLSL_SHADERS}
 	${SOURCE_FILES}
@@ -53,5 +48,12 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCES})
 # Add the custom target.
 add_custom_target(
 	XenonShaderBank
+
 	SOURCES ${SOURCES}
 )
+
+# Include the Shader compiler.
+include(${CMAKE_SOURCE_DIR}/Tools/CMake/ShaderCompiler.CMake)
+
+# Compile all the HLSL files.
+CompileShaders()

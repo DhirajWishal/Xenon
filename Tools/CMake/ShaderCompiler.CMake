@@ -19,6 +19,9 @@ function(CompileShaders)
 		  *.hlsl
 	)
 
+	# Set the shader model for VS.
+	set_source_files_properties(${SHADERS} PROPERTIES ShaderModel "6_6")
+
 	# Iterate over the shader files and compile them.
 	foreach(SOURCE_FILE IN LISTS SHADERS)
 		get_filename_component(FILE_NAME ${SOURCE_FILE} NAME)
@@ -56,27 +59,37 @@ function(CompileShaders)
 		set(OUTPUT_FILE_NAME ${FILE_NAME_WE}${FILE_EXT})
 		set(OUTPUT_FILE ${COMPILED_OUTPUT_DIR}/${OUTPUT_FILE_NAME})
 
+		# Comment or uncomment if we want to enable/ disable warnings.
+		set(HIDE_WARNINGS -Wno-ignored-attributes)
+
 		if(MSVC)
 			# Resolve the target profile.
 			if (${SOURCE_FILE} MATCHES "vert")
+				set_source_files_properties(${SOURCE_FILE} PROPERTIES ShaderType "vs")
 				set(TARGET_PROFILE vs_6_6)
 
 			elseif (${SOURCE_FILE} MATCHES "frag")
+				set_source_files_properties(${SOURCE_FILE} PROPERTIES ShaderType "ps")
 				set(TARGET_PROFILE ps_6_6)
 
 			elseif (${SOURCE_FILE} MATCHES "comp")
+				set_source_files_properties(${SOURCE_FILE} PROPERTIES ShaderType "cs")
 				set(TARGET_PROFILE cs_6_6)
 
 			elseif (${SOURCE_FILE} MATCHES "geom")
+				set_source_files_properties(${SOURCE_FILE} PROPERTIES ShaderType "gs")
 				set(TARGET_PROFILE gs_6_6)
 
 			elseif (${SOURCE_FILE} MATCHES "tesc")
+				set_source_files_properties(${SOURCE_FILE} PROPERTIES ShaderType "hs")
 				set(TARGET_PROFILE hs_6_6)
 
 			elseif (${SOURCE_FILE} MATCHES "tese")
+				set_source_files_properties(${SOURCE_FILE} PROPERTIES ShaderType "ds")
 				set(TARGET_PROFILE ds_6_6)
 
 			else()
+				set_source_files_properties(${SOURCE_FILE} PROPERTIES ShaderType "lib")
 				set(TARGET_PROFILE lib_6_6)
 
 			endif()
@@ -85,7 +98,7 @@ function(CompileShaders)
 			set(DXIL_OUTPUT_FILE ${OUTPUT_FILE}.dxil.hpp)
 
 			# Set the HLSL compile command.
-			set(DXIL_COMPILE_COMMAND ${TOOLS_DIR}/dxc -Fh ${DXIL_OUTPUT_FILE} -I ${CMAKE_SOURCE_DIR}/Engine/XenonShaderBank -HV 2021 -Vn g_${FILE_NAME_FORMATTED_UPPER}_DXIL -T ${TARGET_PROFILE} -E main ${SOURCE_FILE})
+			set(DXIL_COMPILE_COMMAND ${TOOLS_DIR}/dxc ${HIDE_WARNINGS} -Fh ${DXIL_OUTPUT_FILE} -I ${CMAKE_SOURCE_DIR}/Engine/XenonShaderBank -HV 2021 -Vn g_${FILE_NAME_FORMATTED_UPPER}_DXIL -T ${TARGET_PROFILE} -E main ${SOURCE_FILE})
 
 			# Add a custom command for the file to compile HLSL to SPIR-V.
 			set_source_files_properties(${DXIL_OUTPUT_FILE} PROPERTIES SYMBOLIC TRUE)
@@ -105,7 +118,7 @@ function(CompileShaders)
 
 		# Set the SPIR-V compile command.
 		# set(SPIRV_COMPILE_COMMAND ${TOOLS_DIR}/glslangValidator -V ${SOURCE_FILE} -o ${SPIRV_OUTPUT_FILE} --variable-name g_${FILE_NAME_FORMATTED_UPPER}_SPIRV --target-env vulkan1.3 -I${CMAKE_SOURCE_DIR}/Engine/ShaderBank --entry-point main)
-		set(SPIRV_COMPILE_COMMAND ${TOOLS_DIR}/dxc -Fh ${SPIRV_OUTPUT_FILE} -I ${CMAKE_SOURCE_DIR}/Engine/XenonShaderBank -HV 2021 -Vn g_${FILE_NAME_FORMATTED_UPPER}_SPIRV -T ${TARGET_PROFILE} -fspv-target-env=vulkan1.3 -E main -spirv ${SOURCE_FILE})
+		set(SPIRV_COMPILE_COMMAND ${TOOLS_DIR}/dxc ${HIDE_WARNINGS} -Fh ${SPIRV_OUTPUT_FILE} -I ${CMAKE_SOURCE_DIR}/Engine/XenonShaderBank -HV 2021 -Vn g_${FILE_NAME_FORMATTED_UPPER}_SPIRV -T ${TARGET_PROFILE} -fspv-target-env=vulkan1.3 -E main -spirv ${SOURCE_FILE})
 
 		# Add a custom command for the file to compile HLSL to SPIR-V.
 		set_source_files_properties(${SPIRV_OUTPUT_FILE} PROPERTIES SYMBOLIC TRUE)
@@ -150,6 +163,7 @@ function(CompileShaders)
 
 		# Show the process status.
 		message(STATUS ${SHADER_COMPILER_STATUS})
+		set(SHADER_SOURCE_ABSOLUTE ${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE_FILE})
 
 		# Add the custom command to compile the shader.
 		add_custom_command(
@@ -158,10 +172,17 @@ function(CompileShaders)
 		    COMMAND ${DXIL_COMPILE_COMMAND}
 		    COMMAND ${SPIRV_COMPILE_COMMAND}
 		    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-			MAIN_DEPENDENCY ${SOURCE_FILE}
+			DEPENDS ${SHADER_SOURCE_ABSOLUTE}
 			COMMENT "Compiling ${SOURCE_FILE}"
 			VERBATIM
 		)
+
+		# Make sure dependencies are right.
+		set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${SHADER_SOURCE_ABSOLUTE})
+		configure_file(${SHADER_SOURCE_ABSOLUTE} ${SHADER_SOURCE_ABSOLUTE} COPYONLY)
+
+		# Stop VS from trying to compile HLSL files.
+		set_source_files_properties(${SOURCE_FILE} PROPERTIES VS_TOOL_OVERRIDE "None")
 
 	endforeach()
 

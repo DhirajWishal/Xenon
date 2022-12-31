@@ -78,7 +78,7 @@ if (MSVC)
 endif ()
 
 # Include the shader compile tool.
-include(../Tools/CMake/ShaderCompiler.CMake)
+include(${CMAKE_SOURCE_DIR}/Tools/CMake/ShaderCompiler.CMake)
 
 # Compile the shaders.
 CompileShaders()
