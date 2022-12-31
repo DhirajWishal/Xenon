@@ -4,6 +4,9 @@
 #include "DefaultMaterial.hpp"
 #include "../Instance.hpp"
 
+#include "../../XenonShaderBank/Default/Default.vert.hpp"
+#include "../../XenonShaderBank/Default/Default.frag.hpp"
+
 #include <optick.h>
 
 namespace Xenon
@@ -27,8 +30,8 @@ namespace Xenon
 		m_pSampler = instance.getFactory()->createImageSampler(instance.getBackendDevice(), imageSamplerSpecification);
 
 		// Setup the rasterizing pipeline specification.
-		m_RasterizingPipelineSpecification.m_VertexShader = Xenon::Backend::Shader(Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Default/Shader.vert.spv"));
-		m_RasterizingPipelineSpecification.m_FragmentShader = Xenon::Backend::Shader(Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Default/Shader.frag.spv"));
+		m_RasterizingPipelineSpecification.m_VertexShader = Generated::CreateShaderDefault_vert();
+		m_RasterizingPipelineSpecification.m_FragmentShader = Generated::CreateShaderDefault_frag();
 	}
 
 	Xenon::Backend::RasterizingPipelineSpecification DefaultMaterial::getRasterizingSpecification()

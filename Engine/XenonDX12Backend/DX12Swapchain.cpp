@@ -8,6 +8,9 @@
 
 #include "../XenonPlatformWindows/WindowsWindow.hpp"
 
+#include "../XenonShaderBank/Internal/DX12SwapchainCopy/DX12SwapchainCopy.vert.hpp"
+#include "../XenonShaderBank/Internal/DX12SwapchainCopy/DX12SwapchainCopy.frag.hpp"
+
 #include <optick.h>
 #include <glm/vec2.hpp>
 
@@ -259,8 +262,8 @@ namespace Xenon
 
 			// Setup the pipeline state.
 			{
-				const auto vertexShader = Shader(ShaderSource::FromFile(XENON_SHADER_DIR "Internal/DX12SwapchainCopy/Shader.vert.spv"));
-				const auto pixelShader = Shader(ShaderSource::FromFile(XENON_SHADER_DIR "Internal/DX12SwapchainCopy/Shader.frag.spv"));
+				const auto vertexShader = Generated::CreateShaderDX12SwapchainCopy_vert();
+				const auto pixelShader = Generated::CreateShaderDX12SwapchainCopy_frag();
 
 				// Define the vertex input layout.
 				constexpr std::array<D3D12_INPUT_ELEMENT_DESC, 2> inputElementDescs = {

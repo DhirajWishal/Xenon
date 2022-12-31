@@ -16,4 +16,17 @@ struct MonoCamera
 
 #define XENON_SETUP_CAMERA(camera, name)	cbuffer name : register(b0, space3) { camera name; }
 
+float4x4 GetIdentityMatrix() 
+{
+	float4x4 identity =
+	{
+		{ 1, 0, 0, 0 },
+		{ 0, 1, 0, 0 },
+		{ 0, 0, 1, 0 },
+		{ 0, 0, 0, 1 }
+	};
+
+	return identity;
+}
+
 #endif // CAMERA_HLSLI

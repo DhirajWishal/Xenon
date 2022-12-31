@@ -72,10 +72,10 @@ namespace Xenon
 			 * @return The shader.
 			 */
 			template<class SPIRVType, uint64_t SPIRVSize>
-			[[nodiscard]] static Shader Create(SPIRVType(&pSPIRVSource)[SPIRVSize])
+			[[nodiscard]] static Shader Create(const SPIRVType(&pSPIRVSource)[SPIRVSize])
 			{
-				auto spirvSource = std::vector<uint32_t>(SPIRVSize);
-				std::copy_n(pSPIRVSource, spirvSource.size(), spirvSource.begin());
+				auto spirvSource = std::vector<uint32_t>(SPIRVSize / (sizeof(uint32_t) / sizeof(SPIRVType)));
+				std::copy_n(pSPIRVSource, SPIRVSize, reinterpret_cast<std::remove_const_t<SPIRVType>*>(spirvSource.data()));
 
 				return Shader(ShaderSource(std::move(spirvSource)));
 			}
@@ -92,13 +92,13 @@ namespace Xenon
 			 * @return The shader.
 			 */
 			template<class SPIRVType, uint64_t SPIRVSize, class DXILType, uint64_t DXILSize>
-			[[nodiscard]] static Shader Create(SPIRVType(&pSPIRVSource)[SPIRVSize], DXILType(&pDXILSource)[DXILSize])
+			[[nodiscard]] static Shader Create(const SPIRVType(&pSPIRVSource)[SPIRVSize], const DXILType(&pDXILSource)[DXILSize])
 			{
-				auto spirvSource = std::vector<uint32_t>(SPIRVSize);
-				std::copy_n(pSPIRVSource, spirvSource.size(), spirvSource.begin());
+				auto spirvSource = std::vector<uint32_t>(SPIRVSize / (sizeof(uint32_t) / sizeof(SPIRVType)));
+				std::copy_n(pSPIRVSource, SPIRVSize, reinterpret_cast<std::remove_const_t<SPIRVType>*>(spirvSource.data()));
 
-				auto dxilSource = std::vector<uint32_t>(DXILSize / sizeof(uint32_t));
-				std::copy_n(pDXILSource, dxilSource.size(), reinterpret_cast<unsigned char*>(dxilSource.data()));
+				auto dxilSource = std::vector<uint32_t>(DXILSize / (sizeof(uint32_t) / sizeof(DXILType)));
+				std::copy_n(pDXILSource, DXILSize, reinterpret_cast<std::remove_const_t<DXILType>*>(dxilSource.data()));
 
 				return Shader(ShaderSource(std::move(spirvSource)), ShaderSource(std::move(dxilSource)));
 			}

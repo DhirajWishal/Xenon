@@ -17,6 +17,10 @@
 #include "XenonShaderBank/Debugging/Shader.vert.hpp"
 #include "XenonShaderBank/Debugging/Shader.frag.hpp"
 
+#include "XenonShaderBank/Testing/RayTracing/ClosestHit.rchit.hpp"
+#include "XenonShaderBank/Testing/RayTracing/Miss.rmiss.hpp"
+#include "XenonShaderBank/Testing/RayTracing/RayGen.rgen.hpp"
+
 #include <imgui.h>
 
 namespace /* anonymous */
@@ -67,9 +71,9 @@ namespace /* anonymous */
 	std::vector<Xenon::Backend::ShaderGroup> GetShaderGroups()
 	{
 		std::vector<Xenon::Backend::ShaderGroup> groups;
-		groups.emplace_back().m_RayGenShader = Xenon::Backend::Shader(Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Testing/RayTracing/raygen.rgen.spv"));
-		groups.emplace_back().m_MissShader = Xenon::Backend::Shader(Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Testing/RayTracing/miss.rmiss.spv"));
-		groups.emplace_back().m_ClosestHitShader = Xenon::Backend::Shader(Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Testing/RayTracing/closesthit.rchit.spv"));
+		groups.emplace_back().m_RayGenShader = Xenon::Generated::CreateShaderRayGen_rgen();
+		groups.emplace_back().m_MissShader = Xenon::Generated::CreateShaderMiss_rmiss();
+		groups.emplace_back().m_ClosestHitShader = Xenon::Generated::CreateShaderClosestHit_rchit();
 
 		return groups;
 	}

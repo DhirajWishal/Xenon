@@ -4,6 +4,9 @@
 #include "PBRMetallicRoughnessMaterial.hpp"
 #include "../Instance.hpp"
 
+#include "../../XenonShaderBank/PBRMetallicRoughness/PBRMetallicRoughness.vert.hpp"
+#include "../../XenonShaderBank/PBRMetallicRoughness/PBRMetallicRoughness.frag.hpp"
+
 #include <optick.h>
 
 namespace Xenon
@@ -14,8 +17,8 @@ namespace Xenon
 		, m_pImageView(std::move(pImageView))
 		, m_pSampler(std::move(pImageSampler))
 	{
-		m_RasterizingPipelineSpecification.m_VertexShader = Xenon::Backend::Shader(Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "PBRMetallicRoughness/Shader.vert.spv"));
-		m_RasterizingPipelineSpecification.m_FragmentShader = Xenon::Backend::Shader(Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "PBRMetallicRoughness/Shader.frag.spv"));
+		m_RasterizingPipelineSpecification.m_VertexShader = Generated::CreateShaderPBRMetallicRoughness_vert();
+		m_RasterizingPipelineSpecification.m_FragmentShader = Generated::CreateShaderPBRMetallicRoughness_frag();
 	}
 
 	Xenon::Backend::RasterizingPipelineSpecification PBRMetallicRoughnessMaterial::getRasterizingSpecification()

@@ -100,7 +100,7 @@ function(CompileHLSL SHADER_SOURCE_DIR)
 		# Set the compile target file.
 		set(XENON_COMPILE_TARGET ${FILE_DIR}/${TARGET_NAME}.hpp)
 
-		# Write the initial contents of the HLSL source file which will include all the shaders.
+		# Setup the file containing the target file's content.
 		file(
 			WRITE 
 			${XENON_COMPILE_TARGET} 
@@ -146,30 +146,14 @@ function(CompileHLSL SHADER_SOURCE_DIR)
 
 			endif()
 
+			# Specify DXIL the output file.
+			set(DXIL_OUTPUT_FILE ${OUTPUT_FILE}.dxil.hpp)
+
 			# Set the HLSL compile command.
-			set(HLSL_COMPILE_COMMAND ${TOOLS_DIR}/dxc -Fh ${OUTPUT_FILE}.dxil.hpp -I ${CMAKE_SOURCE_DIR}/Engine/ShaderBank -HV 2021 -Vn g_${FILE_NAME_FORMATTED_UPPER}_DXIL -T ${TARGET_PROFILE} -E main ${SOURCE_FILE})
+			set(DXIL_COMPILE_COMMAND ${TOOLS_DIR}/dxc -Fh ${DXIL_OUTPUT_FILE} -I ${CMAKE_SOURCE_DIR}/Engine/ShaderBank -HV 2021 -Vn g_${FILE_NAME_FORMATTED_UPPER}_DXIL -T ${TARGET_PROFILE} -E main ${SOURCE_FILE})
 
-			# Compile and store the HLSL binary in the header file.
-			execute_process(
-				COMMAND ${CMAKE_COMMAND} -E make_directory ${COMPILED_OUTPUT_DIR}
-				COMMAND ${HLSL_COMPILE_COMMAND}
-				WORKING_DIRECTORY ${SHADER_SOURCE_DIR}
-				COMMAND_ECHO STDOUT
-				ERROR_VARIABLE SHADER_COMPILER_STATUS
-			)
-
-			# Show the status.
-			message(STATUS ${SHADER_COMPILER_STATUS})
-
-			# Add a custom command for the file to compile HLSL to DXB.
-			set_source_files_properties(${OUTPUT_FILE}.dxil.hpp PROPERTIES SYMBOLIC TRUE)
-			add_custom_command(
-			    OUTPUT ${OUTPUT_FILE}.dxil.hpp
-				COMMAND ${CMAKE_COMMAND} -E make_directory ${COMPILED_OUTPUT_DIR}
-			    COMMAND ${HLSL_COMPILE_COMMAND}
-				WORKING_DIRECTORY ${SHADER_SOURCE_DIR}
-			    DEPENDS ${SOURCE_FILE}
-			)
+			# Add a custom command for the file to compile HLSL to SPIR-V.
+			set_source_files_properties(${DXIL_OUTPUT_FILE} PROPERTIES SYMBOLIC TRUE)
 
 			# Include the header file.
 			file(
@@ -181,30 +165,15 @@ function(CompileHLSL SHADER_SOURCE_DIR)
 
 		endif()
 
+		# Specify SPIR-V the output file.
+		set(SPIRV_OUTPUT_FILE ${OUTPUT_FILE}.spirv.hpp)
+
 		# Set the SPIR-V compile command.
-		set(SPIRV_COMPILE_COMMAND ${TOOLS_DIR}/glslangValidator -V ${SOURCE_FILE} -o ${OUTPUT_FILE}.spirv.hpp --variable-name g_${FILE_NAME_FORMATTED_UPPER}_SPIRV --target-env vulkan1.3 -I${CMAKE_SOURCE_DIR}/Engine/ShaderBank --entry-point main)
-
-		# Compile and store the SPIR-V binary in the header file.
-		execute_process(
-			COMMAND ${CMAKE_COMMAND} -E make_directory ${COMPILED_OUTPUT_DIR}
-			COMMAND ${SPIRV_COMPILE_COMMAND}
-			WORKING_DIRECTORY ${SHADER_SOURCE_DIR}
-			COMMAND_ECHO STDOUT
-			ERROR_VARIABLE SHADER_COMPILER_STATUS
-		)
-
-		# Show the status.
-		message(STATUS ${SHADER_COMPILER_STATUS})
+		# set(SPIRV_COMPILE_COMMAND ${TOOLS_DIR}/glslangValidator -V ${SOURCE_FILE} -o ${SPIRV_OUTPUT_FILE} --variable-name g_${FILE_NAME_FORMATTED_UPPER}_SPIRV --target-env vulkan1.3 -I${CMAKE_SOURCE_DIR}/Engine/ShaderBank --entry-point main)
+		set(SPIRV_COMPILE_COMMAND ${TOOLS_DIR}/dxc -Fh ${SPIRV_OUTPUT_FILE} -I ${CMAKE_SOURCE_DIR}/Engine/ShaderBank -HV 2021 -Vn g_${FILE_NAME_FORMATTED_UPPER}_SPIRV -T ${TARGET_PROFILE} -fspv-target-env=vulkan1.3 -E main -spirv ${SOURCE_FILE})
 
 		# Add a custom command for the file to compile HLSL to SPIR-V.
-		set_source_files_properties(${OUTPUT_FILE}.spirv.hpp PROPERTIES SYMBOLIC TRUE)
-		add_custom_command(
-		    OUTPUT ${OUTPUT_FILE}.spirv.hpp
-			COMMAND ${CMAKE_COMMAND} -E make_directory ${COMPILED_OUTPUT_DIR}
-		    COMMAND ${SPIRV_COMPILE_COMMAND}
-		    WORKING_DIRECTORY ${SHADER_SOURCE_DIR}
-			DEPENDS ${SOURCE_FILE}
-		)
+		set_source_files_properties(${SPIRV_OUTPUT_FILE} PROPERTIES SYMBOLIC TRUE)
 
 		# Include the header file.
 		file(
@@ -215,6 +184,7 @@ function(CompileHLSL SHADER_SOURCE_DIR)
 			"\n"
 		)
 
+		# Setup the platform specific crate functions.
 		if(MSVC)
 			file(
 				APPEND 
@@ -232,6 +202,31 @@ function(CompileHLSL SHADER_SOURCE_DIR)
 			)
 
 		endif()
+
+		# Compile the shader while configuring CMake.
+		execute_process(
+			COMMAND ${CMAKE_COMMAND} -E make_directory ${COMPILED_OUTPUT_DIR}
+		    COMMAND ${DXIL_COMPILE_COMMAND}
+		    COMMAND ${SPIRV_COMPILE_COMMAND}
+			WORKING_DIRECTORY ${SHADER_SOURCE_DIR}
+			COMMAND_ECHO STDOUT
+			ERROR_VARIABLE SHADER_COMPILER_STATUS
+		)
+
+		# Show the process status.
+		message(STATUS ${SHADER_COMPILER_STATUS})
+
+		# Add the custom command to compile the shader.
+		add_custom_command(
+		    OUTPUT ${DXIL_OUTPUT_FILE} ${SPIRV_OUTPUT_FILE}
+			COMMAND ${CMAKE_COMMAND} -E make_directory ${COMPILED_OUTPUT_DIR}
+		    COMMAND ${DXIL_COMPILE_COMMAND}
+		    COMMAND ${SPIRV_COMPILE_COMMAND}
+		    WORKING_DIRECTORY ${SHADER_SOURCE_DIR}
+			MAIN_DEPENDENCY ${SOURCE_FILE}
+			COMMENT "Compiling ${SOURCE_FILE}"
+			VERBATIM
+		)
 
 	endforeach()
 

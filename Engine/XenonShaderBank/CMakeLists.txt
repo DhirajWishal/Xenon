@@ -48,8 +48,6 @@ set(
 	${SOURCE_FILES}
 )
 
-set_property(SOURCE ${HLSL_SHADERS} PROPERTY VS_SETTINGS "ExcludedFromBuild=true")
-
 # Add the source group.
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCES})
 
