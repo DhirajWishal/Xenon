@@ -4,6 +4,8 @@
 #include "DX12Swapchain.hpp"
 #include "DX12Macros.hpp"
 
+#include "../XenonBackend/Shader.hpp"
+
 #include "../XenonPlatformWindows/WindowsWindow.hpp"
 
 #include <optick.h>
@@ -257,8 +259,8 @@ namespace Xenon
 
 			// Setup the pipeline state.
 			{
-				ComPtr<ID3DBlob> vertexShader = DX12Device::CompileShader(ShaderSource::FromFile(XENON_SHADER_DIR "Internal/DX12SwapchainCopy/Shader.vert.spv"), ShaderType::Vertex);
-				ComPtr<ID3DBlob> pixelShader = DX12Device::CompileShader(ShaderSource::FromFile(XENON_SHADER_DIR "Internal/DX12SwapchainCopy/Shader.frag.spv"), ShaderType::Fragment);
+				const auto vertexShader = Shader(ShaderSource::FromFile(XENON_SHADER_DIR "Internal/DX12SwapchainCopy/Shader.vert.spv"));
+				const auto pixelShader = Shader(ShaderSource::FromFile(XENON_SHADER_DIR "Internal/DX12SwapchainCopy/Shader.frag.spv"));
 
 				// Define the vertex input layout.
 				constexpr std::array<D3D12_INPUT_ELEMENT_DESC, 2> inputElementDescs = {
@@ -270,8 +272,8 @@ namespace Xenon
 				D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
 				psoDesc.InputLayout = { inputElementDescs.data(), inputElementDescs.size() };
 				psoDesc.pRootSignature = m_ImageCopyContainer.m_RootSignature.Get();
-				psoDesc.VS = CD3DX12_SHADER_BYTECODE(vertexShader.Get());
-				psoDesc.PS = CD3DX12_SHADER_BYTECODE(pixelShader.Get());
+				psoDesc.VS = CD3DX12_SHADER_BYTECODE(vertexShader.getDXIL().getBinaryData(), vertexShader.getDXIL().getBinarySizeInBytes());
+				psoDesc.PS = CD3DX12_SHADER_BYTECODE(pixelShader.getDXIL().getBinaryData(), pixelShader.getDXIL().getBinarySizeInBytes());
 				psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 				psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 				psoDesc.DepthStencilState.DepthEnable = FALSE;

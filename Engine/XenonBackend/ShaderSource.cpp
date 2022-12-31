@@ -146,17 +146,7 @@ namespace Xenon
 		void ShaderSource::performReflection()
 		{
 			SpvReflectShaderModule reflectionModule = {};
-
-			if (m_Binary.size() % 4 == 0)
-			{
-				// Prepare the shader code for reflection.
-				const auto reflectionSource = getBinaryWithoutPadding();
-				ValidateReflection(spvReflectCreateShaderModule(reflectionSource.size() * sizeof(uint32_t), reflectionSource.data(), &reflectionModule));
-			}
-			else
-			{
-				ValidateReflection(spvReflectCreateShaderModule(m_Binary.size() * sizeof(uint32_t), m_Binary.data(), &reflectionModule));
-			}
+			ValidateReflection(spvReflectCreateShaderModule(m_Binary.size() * sizeof(uint32_t), m_Binary.data(), &reflectionModule));
 
 			// Resolve shader inputs.
 			{

@@ -45,9 +45,10 @@ namespace Xenon
 			 * Create the DXIL library.
 			 *
 			 * @param stateObject The state object to create the sub-object from.
-			 * @param pShaderBlob The shader blob pointer.
+			 * @param shader The shader bytecode.
+			 * @param newExport The new export name. This is needed as all the shader export will be "main".
 			 */
-			void createDXILLibrary(CD3DX12_STATE_OBJECT_DESC& stateObject, ID3DBlob* pShaderBlob) const;
+			void createDXILLibrary(CD3DX12_STATE_OBJECT_DESC& stateObject, D3D12_SHADER_BYTECODE shader, const std::wstring_view& newExport) const;
 
 			/**
 			 * Create the root signature.

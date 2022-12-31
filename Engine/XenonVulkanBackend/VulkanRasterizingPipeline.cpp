@@ -76,7 +76,7 @@ namespace /* anonymous */
 	 * @param type The shader type.
 	 */
 	void GetShaderBindings(
-		const Xenon::Backend::ShaderSource& shader,
+		const Xenon::Backend::Shader& shader,
 		std::unordered_map<Xenon::Backend::DescriptorType, std::vector<Xenon::Backend::DescriptorBindingInfo>>& bindingMap,
 		std::unordered_map<uint32_t, std::unordered_map<uint32_t, size_t>>& indexToBindingMap,
 		std::vector<VkPushConstantRange>& pushConstants,
@@ -87,7 +87,7 @@ namespace /* anonymous */
 		const auto shaderStage = GetShaderStageFlagBit(type);
 
 		// Get the resources.
-		for (const auto& resource : shader.getResources())
+		for (const auto& resource : shader.getSPIRV().getResources())
 		{
 			auto& bindings = bindingMap[static_cast<Xenon::Backend::DescriptorType>(Xenon::EnumToInt(resource.m_Set))];
 			auto& indexToBinding = indexToBindingMap[Xenon::EnumToInt(resource.m_Set)];
@@ -118,7 +118,7 @@ namespace /* anonymous */
 		if (type & Xenon::Backend::ShaderType::Vertex)
 		{
 			bool hasInstanceInputs = false;
-			for (const auto& input : shader.getInputAttributes())
+			for (const auto& input : shader.getSPIRV().getInputAttributes())
 			{
 				const auto element = static_cast<Xenon::Backend::InputElement>(input.m_Location);
 				auto& attribute = inputAttributeDescriptions.emplace_back();
@@ -837,7 +837,7 @@ namespace Xenon
 			std::unordered_map<uint32_t, std::unordered_map<uint32_t, size_t>> indexToBindingMap;
 			std::vector<VkPushConstantRange> pushConstants;
 
-			if (specification.m_VertexShader.isValid())
+			if (specification.m_VertexShader.getSPIRV().isValid())
 			{
 				GetShaderBindings(specification.m_VertexShader, m_BindingMap, indexToBindingMap, pushConstants, m_VertexInputBindings, m_VertexInputAttributes, ShaderType::Vertex);
 
@@ -846,20 +846,20 @@ namespace Xenon
 				createInfo.pNext = nullptr;
 				createInfo.flags = 0;
 				createInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-				createInfo.pName = specification.m_VertexShader.getEntryPoint().data();
+				createInfo.pName = specification.m_VertexShader.getSPIRV().getEntryPoint().data();
 				createInfo.pSpecializationInfo = nullptr;
 
 				VkShaderModuleCreateInfo moduleCreateInfo = {};
 				moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 				moduleCreateInfo.pNext = nullptr;
 				moduleCreateInfo.flags = 0;
-				moduleCreateInfo.codeSize = specification.m_VertexShader.getBinary().size();
-				moduleCreateInfo.pCode = specification.m_VertexShader.getBinary().data();
+				moduleCreateInfo.codeSize = specification.m_VertexShader.getSPIRV().getBinarySize();
+				moduleCreateInfo.pCode = specification.m_VertexShader.getSPIRV().getBinaryData();
 
 				XENON_VK_ASSERT(pDevice->getDeviceTable().vkCreateShaderModule(pDevice->getLogicalDevice(), &moduleCreateInfo, nullptr, &createInfo.module), "Failed to create the vertex shader module!");
 			}
 
-			if (specification.m_FragmentShader.isValid())
+			if (specification.m_FragmentShader.getSPIRV().isValid())
 			{
 				GetShaderBindings(specification.m_FragmentShader, m_BindingMap, indexToBindingMap, pushConstants, m_VertexInputBindings, m_VertexInputAttributes, ShaderType::Fragment);
 
@@ -868,15 +868,15 @@ namespace Xenon
 				createInfo.pNext = nullptr;
 				createInfo.flags = 0;
 				createInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-				createInfo.pName = specification.m_FragmentShader.getEntryPoint().data();
+				createInfo.pName = specification.m_FragmentShader.getSPIRV().getEntryPoint().data();
 				createInfo.pSpecializationInfo = nullptr;
 
 				VkShaderModuleCreateInfo moduleCreateInfo = {};
 				moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 				moduleCreateInfo.pNext = nullptr;
 				moduleCreateInfo.flags = 0;
-				moduleCreateInfo.codeSize = specification.m_FragmentShader.getBinary().size();
-				moduleCreateInfo.pCode = specification.m_FragmentShader.getBinary().data();
+				moduleCreateInfo.codeSize = specification.m_FragmentShader.getSPIRV().getBinarySize();
+				moduleCreateInfo.pCode = specification.m_FragmentShader.getSPIRV().getBinaryData();
 
 				XENON_VK_ASSERT(pDevice->getDeviceTable().vkCreateShaderModule(pDevice->getLogicalDevice(), &moduleCreateInfo, nullptr, &createInfo.module), "Failed to create the fragment shader module!");
 			}

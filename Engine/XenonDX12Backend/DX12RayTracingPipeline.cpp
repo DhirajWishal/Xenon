@@ -65,69 +65,57 @@ namespace /* anonymous */
 	 *
 	 * @param shader The shader to get the data from.
 	 * @param rangeMap The descriptor range map.
-	 * @param newEntryPoint The shader's new entry point name.
 	 * @param type The shader's type.
-	 * @return The shader binary.
 	 */
-	[[nodiscard]] ComPtr<ID3DBlob> SetupShaderData(
-		const Xenon::Backend::ShaderSource& shader,
+	void SetupShaderData(
+		const Xenon::Backend::Shader& shader,
 		std::unordered_map<Xenon::Backend::DescriptorType, std::vector<Xenon::Backend::DescriptorBindingInfo>>& bindingMap,
 		std::unordered_map<uint32_t, std::unordered_map<uint32_t, size_t>>& indexToBindingMap,
 		std::unordered_map<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>& rangeMap,
-		const std::string_view& newEntryPoint,
 		Xenon::Backend::ShaderType type)
 	{
-		// Compile the shader.
-		ComPtr<ID3DBlob> shaderBlob = Xenon::Backend::DX12Device::CompileShader(shader, type, newEntryPoint);
+		ComPtr<ID3D12ShaderReflection> pReflector;
+		XENON_DX12_ASSERT(D3DReflect(shader.getDXIL().getBinaryData(), shader.getDXIL().getBinarySizeInBytes(), IID_PPV_ARGS(&pReflector)), "Failed to reflect on the shader!");
 
-		// Load the data if we were able to compile the shader.
-		if (shaderBlob)
+		D3D12_SHADER_DESC shaderDesc = {};
+		XENON_DX12_ASSERT(pReflector->GetDesc(&shaderDesc), "Failed to get the reflection description!");
+
+		// Setup resources.
+		for (const auto& resource : shader.getSPIRV().getResources())
 		{
-			ComPtr<ID3D12ShaderReflection> pReflector;
-			XENON_DX12_ASSERT(D3DReflect(shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), IID_PPV_ARGS(&pReflector)), "Failed to reflect on the shader!");
+			// Fill up the binding info structure.
+			auto& bindings = bindingMap[static_cast<Xenon::Backend::DescriptorType>(Xenon::EnumToInt(resource.m_Set))];
+			auto& indexToBinding = indexToBindingMap[Xenon::EnumToInt(resource.m_Set)];
 
-			D3D12_SHADER_DESC shaderDesc = {};
-			XENON_DX12_ASSERT(pReflector->GetDesc(&shaderDesc), "Failed to get the reflection description!");
-
-			// Setup resources.
-			for (const auto& resource : shader.getResources())
+			if (indexToBinding.contains(resource.m_Binding))
 			{
-				// Fill up the binding info structure.
-				auto& bindings = bindingMap[static_cast<Xenon::Backend::DescriptorType>(Xenon::EnumToInt(resource.m_Set))];
-				auto& indexToBinding = indexToBindingMap[Xenon::EnumToInt(resource.m_Set)];
+				bindings[indexToBinding[resource.m_Binding]].m_ApplicableShaders |= type;
+			}
+			else
+			{
+				indexToBinding[resource.m_Binding] = bindings.size();
+				auto& binding = bindings.emplace_back();
+				binding.m_Type = resource.m_Type;
+				binding.m_ApplicableShaders = type;
+			}
 
-				if (indexToBinding.contains(resource.m_Binding))
-				{
-					bindings[indexToBinding[resource.m_Binding]].m_ApplicableShaders |= type;
-				}
-				else
-				{
-					indexToBinding[resource.m_Binding] = bindings.size();
-					auto& binding = bindings.emplace_back();
-					binding.m_Type = resource.m_Type;
-					binding.m_ApplicableShaders = type;
-				}
+			// Setup the rest.
+			const auto rangeType = GetDescriptorRangeType(resource.m_Type);
 
-				// Setup the rest.
-				const auto rangeType = GetDescriptorRangeType(resource.m_Type);
+			// If it's a sampler, we need one for the texture (SRV) and another as the sampler.
+			if (rangeType == D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER)
+			{
+				const auto setIndex = static_cast<uint8_t>(Xenon::EnumToInt(resource.m_Set) * 2);
+				rangeMap[setIndex + 0].emplace_back().Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, resource.m_Binding);	// Set the texture buffer (SRV).
+				rangeMap[setIndex + 1].emplace_back().Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, resource.m_Binding);	// Set the texture sampler.
+			}
 
-				// If it's a sampler, we need one for the texture (SRV) and another as the sampler.
-				if (rangeType == D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER)
-				{
-					const auto setIndex = static_cast<uint8_t>(Xenon::EnumToInt(resource.m_Set) * 2);
-					rangeMap[setIndex + 0].emplace_back().Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, resource.m_Binding);	// Set the texture buffer (SRV).
-					rangeMap[setIndex + 1].emplace_back().Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, resource.m_Binding);	// Set the texture sampler.
-				}
-
-				// Else just one entry for the buffer.
-				else
-				{
-					rangeMap[static_cast<uint8_t>(Xenon::EnumToInt(resource.m_Set) * 2)].emplace_back().Init(rangeType, 1, resource.m_Binding);
-				}
+			// Else just one entry for the buffer.
+			else
+			{
+				rangeMap[static_cast<uint8_t>(Xenon::EnumToInt(resource.m_Set) * 2)].emplace_back().Init(rangeType, 1, resource.m_Binding);
 			}
 		}
-
-		return shaderBlob;
 	}
 }
 
@@ -145,8 +133,7 @@ namespace Xenon
 
 			// Setup shader groups.
 			uint32_t index = 0;
-			std::vector<ComPtr<ID3D10Blob>> pShaderBlobs;
-			std::vector<std::string> names;
+			std::vector<std::wstring> names;
 			std::vector<std::wstring> groupNames;
 			std::vector<std::wstring> importNames;
 
@@ -162,55 +149,55 @@ namespace Xenon
 				const auto& groupName = groupNames.emplace_back(fmt::format(L"group{}", index));
 				pHitGroup->SetHitGroupExport(groupName.c_str());
 
-				if (group.m_RayGenShader.isValid())
+				if (group.m_RayGenShader.getDXIL().isValid())
 				{
-					const auto& newName = names.emplace_back(fmt::format("rayGenMain_group{}", index));
-					const auto& pBlob = pShaderBlobs.emplace_back(SetupShaderData(group.m_RayGenShader, bindingMap, indexToBindingMap, rangeMap, newName, ShaderType::RayGen));
-					createDXILLibrary(rayTracingPipeline, pBlob.Get());
+					const auto& newName = names.emplace_back(fmt::format(L"rayGenMain_group{}", index));
+					SetupShaderData(group.m_RayGenShader, bindingMap, indexToBindingMap, rangeMap, ShaderType::RayGen);
+					createDXILLibrary(rayTracingPipeline, CD3DX12_SHADER_BYTECODE(group.m_RayGenShader.getDXIL().getBinaryData(), group.m_RayGenShader.getDXIL().getBinarySizeInBytes()), newName);
 				}
 
-				if (group.m_IntersectionShader.isValid())
+				if (group.m_IntersectionShader.getDXIL().isValid())
 				{
-					const auto& newName = names.emplace_back(fmt::format("intersectionMain_group{}", index));
-					const auto& pBlob = pShaderBlobs.emplace_back(SetupShaderData(group.m_IntersectionShader, bindingMap, indexToBindingMap, rangeMap, newName, ShaderType::Intersection));
-					createDXILLibrary(rayTracingPipeline, pBlob.Get());
+					const auto& newName = names.emplace_back(fmt::format(L"intersectionMain_group{}", index));
+					SetupShaderData(group.m_IntersectionShader, bindingMap, indexToBindingMap, rangeMap, ShaderType::Intersection);
+					createDXILLibrary(rayTracingPipeline, CD3DX12_SHADER_BYTECODE(group.m_IntersectionShader.getDXIL().getBinaryData(), group.m_IntersectionShader.getDXIL().getBinarySizeInBytes()), newName);
 
 					const auto& wNewName = importNames.emplace_back(fmt::format(L"rayGenMain_group{}", index));
 					pHitGroup->SetIntersectionShaderImport(wNewName.c_str());
 				}
 
-				if (group.m_AnyHitShader.isValid())
+				if (group.m_AnyHitShader.getDXIL().isValid())
 				{
-					const auto& newName = names.emplace_back(fmt::format("anyHitMain_group{}", index));
-					const auto& pBlob = pShaderBlobs.emplace_back(SetupShaderData(group.m_AnyHitShader, bindingMap, indexToBindingMap, rangeMap, newName, ShaderType::AnyHit));
-					createDXILLibrary(rayTracingPipeline, pBlob.Get());
+					const auto& newName = names.emplace_back(fmt::format(L"anyHitMain_group{}", index));
+					SetupShaderData(group.m_AnyHitShader, bindingMap, indexToBindingMap, rangeMap, ShaderType::AnyHit);
+					createDXILLibrary(rayTracingPipeline, CD3DX12_SHADER_BYTECODE(group.m_AnyHitShader.getDXIL().getBinaryData(), group.m_AnyHitShader.getDXIL().getBinarySizeInBytes()), newName);
 
 					const auto& wNewName = importNames.emplace_back(fmt::format(L"rayGenMain_group{}", index));
 					pHitGroup->SetAnyHitShaderImport(wNewName.c_str());
 				}
 
-				if (group.m_ClosestHitShader.isValid())
+				if (group.m_ClosestHitShader.getDXIL().isValid())
 				{
-					const auto& newName = names.emplace_back(fmt::format("closestHitMain_group{}", index));
-					const auto& pBlob = pShaderBlobs.emplace_back(SetupShaderData(group.m_ClosestHitShader, bindingMap, indexToBindingMap, rangeMap, newName, ShaderType::ClosestHit));
-					createDXILLibrary(rayTracingPipeline, pBlob.Get());
+					const auto& newName = names.emplace_back(fmt::format(L"closestHitMain_group{}", index));
+					SetupShaderData(group.m_ClosestHitShader, bindingMap, indexToBindingMap, rangeMap, ShaderType::ClosestHit);
+					createDXILLibrary(rayTracingPipeline, CD3DX12_SHADER_BYTECODE(group.m_ClosestHitShader.getDXIL().getBinaryData(), group.m_ClosestHitShader.getDXIL().getBinarySizeInBytes()), newName);
 
 					const auto& wNewName = importNames.emplace_back(fmt::format(L"rayGenMain_group{}", index));
 					pHitGroup->SetClosestHitShaderImport(wNewName.c_str());
 				}
 
-				if (group.m_MissShader.isValid())
+				if (group.m_MissShader.getDXIL().isValid())
 				{
-					const auto& newName = names.emplace_back(fmt::format("missMain_group{}", index));
-					const auto& pBlob = pShaderBlobs.emplace_back(SetupShaderData(group.m_MissShader, bindingMap, indexToBindingMap, rangeMap, newName, ShaderType::Miss));
-					createDXILLibrary(rayTracingPipeline, pBlob.Get());
+					const auto& newName = names.emplace_back(fmt::format(L"missMain_group{}", index));
+					SetupShaderData(group.m_MissShader, bindingMap, indexToBindingMap, rangeMap, ShaderType::Miss);
+					createDXILLibrary(rayTracingPipeline, CD3DX12_SHADER_BYTECODE(group.m_MissShader.getDXIL().getBinaryData(), group.m_MissShader.getDXIL().getBinarySizeInBytes()), newName);
 				}
 
-				if (group.m_CallableShader.isValid())
+				if (group.m_CallableShader.getDXIL().isValid())
 				{
-					const auto& newName = names.emplace_back(fmt::format("callableMain_group{}", index));
-					const auto& pBlob = pShaderBlobs.emplace_back(SetupShaderData(group.m_CallableShader, bindingMap, indexToBindingMap, rangeMap, newName, ShaderType::Callable));
-					createDXILLibrary(rayTracingPipeline, pBlob.Get());
+					const auto& newName = names.emplace_back(fmt::format(L"callableMain_group{}", index));
+					SetupShaderData(group.m_CallableShader, bindingMap, indexToBindingMap, rangeMap, ShaderType::Callable);
+					createDXILLibrary(rayTracingPipeline, CD3DX12_SHADER_BYTECODE(group.m_CallableShader.getDXIL().getBinaryData(), group.m_CallableShader.getDXIL().getBinarySizeInBytes()), newName);
 				}
 
 				index++;
@@ -245,13 +232,13 @@ namespace Xenon
 			return std::make_unique<DX12Descriptor>(m_pDevice, getBindingInfo(type), type, this);
 		}
 
-		void DX12RayTracingPipeline::createDXILLibrary(CD3DX12_STATE_OBJECT_DESC& stateObject, ID3DBlob* pShaderBlob) const
+		void DX12RayTracingPipeline::createDXILLibrary(CD3DX12_STATE_OBJECT_DESC& stateObject, D3D12_SHADER_BYTECODE shader, const std::wstring_view& newExport) const
 		{
 			OPTICK_EVENT();
 
 			auto pLibrary = stateObject.CreateSubobject<CD3DX12_DXIL_LIBRARY_SUBOBJECT>();
-			const D3D12_SHADER_BYTECODE shader = CD3DX12_SHADER_BYTECODE(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize());
 			pLibrary->SetDXILLibrary(&shader);
+			pLibrary->DefineExport(L"main", newExport.data());
 		}
 
 		void DX12RayTracingPipeline::createRootSignature(std::vector<std::pair<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>>&& rangePairs)

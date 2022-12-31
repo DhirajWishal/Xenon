@@ -27,8 +27,8 @@ namespace Xenon
 		m_pSampler = instance.getFactory()->createImageSampler(instance.getBackendDevice(), imageSamplerSpecification);
 
 		// Setup the rasterizing pipeline specification.
-		m_RasterizingPipelineSpecification.m_VertexShader = Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Default/Shader.vert.spv");
-		m_RasterizingPipelineSpecification.m_FragmentShader = Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Default/Shader.frag.spv");
+		m_RasterizingPipelineSpecification.m_VertexShader = Xenon::Backend::Shader(Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Default/Shader.vert.spv"));
+		m_RasterizingPipelineSpecification.m_FragmentShader = Xenon::Backend::Shader(Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Default/Shader.frag.spv"));
 	}
 
 	Xenon::Backend::RasterizingPipelineSpecification DefaultMaterial::getRasterizingSpecification()

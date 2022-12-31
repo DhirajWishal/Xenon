@@ -22,9 +22,9 @@ namespace Xenon
 			 *
 			 * @param pDevice The device pointer.
 			 * @param pCacheHandler The cache handler pointer. This can be null in which case the pipeline creation might get slow.
-			 * @param computeShader The compute shader source.
+			 * @param computeShader The compute shader.
 			 */
-			explicit VulkanComputePipeline(VulkanDevice* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const ShaderSource& computeShader);
+			explicit VulkanComputePipeline(VulkanDevice* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const Shader& computeShader);
 
 			/**
 			 * Destructor.

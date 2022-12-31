@@ -21,12 +21,12 @@ namespace /* anonymous */
 	 * @param pushConstants The push constants vector to load the data.
 	 */
 	void GetShaderBindings(
-		const Xenon::Backend::ShaderSource& shader,
+		const Xenon::Backend::Shader& shader,
 		std::vector<Xenon::Backend::DescriptorBindingInfo>& bindingInfos,
 		std::vector<VkPushConstantRange>& pushConstants)
 	{
 		// Get the resources.
-		for (const auto& resource : shader.getResources())
+		for (const auto& resource : shader.getSPIRV().getResources())
 		{
 			auto& binding = bindingInfos.emplace_back();
 			binding.m_Type = resource.m_Type;
@@ -48,7 +48,7 @@ namespace Xenon
 {
 	namespace Backend
 	{
-		VulkanComputePipeline::VulkanComputePipeline(VulkanDevice* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const ShaderSource& computeShader)
+		VulkanComputePipeline::VulkanComputePipeline(VulkanDevice* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const Shader& computeShader)
 			: ComputePipeline(pDevice, std::move(pCacheHandler), computeShader)
 			, VulkanDeviceBoundObject(pDevice)
 		{
@@ -57,7 +57,7 @@ namespace Xenon
 			GetShaderBindings(computeShader, m_BindingInfos, pushConstants);
 
 			// Generate the pipeline hash.
-			m_PipelineHash = GenerateHash(ToBytes(computeShader.getBinary().data()), computeShader.getBinary().size());
+			m_PipelineHash = GenerateHash(ToBytes(computeShader.getSPIRV().getBinary().data()), computeShader.getSPIRV().getBinary().size());
 
 			// Create the pipeline layout.
 			createPipelineLayout(std::move(pushConstants));
@@ -153,15 +153,15 @@ namespace Xenon
 			shaderStageCreateInfo.pNext = nullptr;
 			shaderStageCreateInfo.flags = 0;
 			shaderStageCreateInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;
-			shaderStageCreateInfo.pName = m_ComputeShaderSource.getEntryPoint().data();
+			shaderStageCreateInfo.pName = m_ComputeShader.getSPIRV().getEntryPoint().data();
 			shaderStageCreateInfo.pSpecializationInfo = nullptr;
 
 			VkShaderModuleCreateInfo moduleCreateInfo = {};
 			moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 			moduleCreateInfo.pNext = nullptr;
 			moduleCreateInfo.flags = 0;
-			moduleCreateInfo.codeSize = m_ComputeShaderSource.getBinary().size();
-			moduleCreateInfo.pCode = m_ComputeShaderSource.getBinary().data();
+			moduleCreateInfo.codeSize = m_ComputeShader.getSPIRV().getBinarySize();
+			moduleCreateInfo.pCode = m_ComputeShader.getSPIRV().getBinaryData();
 
 			XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkCreateShaderModule(m_pDevice->getLogicalDevice(), &moduleCreateInfo, nullptr, &shaderStageCreateInfo.module), "Failed to create the compute shader module!");
 

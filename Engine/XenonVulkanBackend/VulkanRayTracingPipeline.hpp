@@ -71,11 +71,11 @@ namespace Xenon
 			/**
 			 * Create the shader stage.
 			 *
-			 * @param source The shader source.
+			 * @param source The shader.
 			 * @param shaderStage The shader stage.
 			 * @return The create info structure.
 			 */
-			[[nodiscard]] VkPipelineShaderStageCreateInfo createShaderStage(const ShaderSource& source, VkShaderStageFlagBits shaderStage) const;
+			[[nodiscard]] VkPipelineShaderStageCreateInfo createShaderStage(const Shader& source, VkShaderStageFlagBits shaderStage) const;
 
 			/**
 			 * Create a shader binding table.

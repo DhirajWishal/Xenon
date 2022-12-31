@@ -65,13 +65,13 @@ namespace /* anonymous */
 	 * @param type The shader type.
 	 */
 	void GetShaderBindings(
-		const Xenon::Backend::ShaderSource& source,
+		const Xenon::Backend::Shader& source,
 		std::unordered_map<Xenon::Backend::DescriptorType, std::vector<Xenon::Backend::DescriptorBindingInfo>>& bindingMap,
 		std::unordered_map<uint32_t, std::unordered_map<uint32_t, size_t>>& indexToBindingMap,
 		Xenon::Backend::ShaderType type)
 	{
 		// Get the resources.
-		for (const auto& resource : source.getResources())
+		for (const auto& resource : source.getSPIRV().getResources())
 		{
 			auto& bindings = bindingMap[static_cast<Xenon::Backend::DescriptorType>(Xenon::EnumToInt(resource.m_Set))];
 			auto& indexToBinding = indexToBindingMap[Xenon::EnumToInt(resource.m_Set)];
@@ -124,60 +124,60 @@ namespace Xenon
 				vkShaderGroup.anyHitShader = VK_SHADER_UNUSED_KHR;
 				vkShaderGroup.intersectionShader = VK_SHADER_UNUSED_KHR;
 
-				if (group.m_RayGenShader.isValid())
+				if (group.m_RayGenShader.getSPIRV().isValid())
 				{
 					GetShaderBindings(group.m_RayGenShader, m_BindingMap, indexToBindingMap, ShaderType::RayGen);
-					shaderHashes.emplace_back(GenerateHash(ToBytes(group.m_RayGenShader.getBinary().data()), sizeof(uint32_t) * group.m_RayGenShader.getBinary().size()));
+					shaderHashes.emplace_back(GenerateHash(ToBytes(group.m_RayGenShader.getSPIRV().getBinaryData()), group.m_RayGenShader.getSPIRV().getBinarySizeInBytes()));
 					shaderStages.emplace_back(createShaderStage(group.m_RayGenShader, VK_SHADER_STAGE_RAYGEN_BIT_KHR));
 					vkShaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
 					vkShaderGroup.generalShader = static_cast<uint32_t>(shaderStages.size()) - 1;
 					rayGenCount++;
 				}
 
-				if (group.m_IntersectionShader.isValid())
+				if (group.m_IntersectionShader.getSPIRV().isValid())
 				{
 					GetShaderBindings(group.m_IntersectionShader, m_BindingMap, indexToBindingMap, ShaderType::Intersection);
-					shaderHashes.emplace_back(GenerateHash(ToBytes(group.m_IntersectionShader.getBinary().data()), sizeof(uint32_t) * group.m_IntersectionShader.getBinary().size()));
+					shaderHashes.emplace_back(GenerateHash(ToBytes(group.m_IntersectionShader.getSPIRV().getBinaryData()), group.m_IntersectionShader.getSPIRV().getBinarySizeInBytes()));
 					shaderStages.emplace_back(createShaderStage(group.m_IntersectionShader, VK_SHADER_STAGE_INTERSECTION_BIT_KHR));
 					vkShaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_PROCEDURAL_HIT_GROUP_KHR;
 					vkShaderGroup.intersectionShader = static_cast<uint32_t>(shaderStages.size()) - 1;
 					intersectionCount++;
 				}
 
-				if (group.m_AnyHitShader.isValid())
+				if (group.m_AnyHitShader.getSPIRV().isValid())
 				{
 					GetShaderBindings(group.m_AnyHitShader, m_BindingMap, indexToBindingMap, ShaderType::AnyHit);
-					shaderHashes.emplace_back(GenerateHash(ToBytes(group.m_AnyHitShader.getBinary().data()), sizeof(uint32_t) * group.m_AnyHitShader.getBinary().size()));
+					shaderHashes.emplace_back(GenerateHash(ToBytes(group.m_AnyHitShader.getSPIRV().getBinaryData()), group.m_AnyHitShader.getSPIRV().getBinarySizeInBytes()));
 					shaderStages.emplace_back(createShaderStage(group.m_AnyHitShader, VK_SHADER_STAGE_ANY_HIT_BIT_KHR));
 					vkShaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_TRIANGLES_HIT_GROUP_KHR;
 					vkShaderGroup.anyHitShader = static_cast<uint32_t>(shaderStages.size()) - 1;
 					anyHitCount++;
 				}
 
-				if (group.m_ClosestHitShader.isValid())
+				if (group.m_ClosestHitShader.getSPIRV().isValid())
 				{
 					GetShaderBindings(group.m_ClosestHitShader, m_BindingMap, indexToBindingMap, ShaderType::ClosestHit);
-					shaderHashes.emplace_back(GenerateHash(ToBytes(group.m_ClosestHitShader.getBinary().data()), sizeof(uint32_t) * group.m_ClosestHitShader.getBinary().size()));
+					shaderHashes.emplace_back(GenerateHash(ToBytes(group.m_ClosestHitShader.getSPIRV().getBinaryData()), group.m_ClosestHitShader.getSPIRV().getBinarySizeInBytes()));
 					shaderStages.emplace_back(createShaderStage(group.m_ClosestHitShader, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR));
 					vkShaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_TRIANGLES_HIT_GROUP_KHR;
 					vkShaderGroup.closestHitShader = static_cast<uint32_t>(shaderStages.size()) - 1;
 					closestHitCount++;
 				}
 
-				if (group.m_MissShader.isValid())
+				if (group.m_MissShader.getSPIRV().isValid())
 				{
 					GetShaderBindings(group.m_MissShader, m_BindingMap, indexToBindingMap, ShaderType::Miss);
-					shaderHashes.emplace_back(GenerateHash(ToBytes(group.m_MissShader.getBinary().data()), sizeof(uint32_t) * group.m_MissShader.getBinary().size()));
+					shaderHashes.emplace_back(GenerateHash(ToBytes(group.m_MissShader.getSPIRV().getBinaryData()), group.m_MissShader.getSPIRV().getBinarySizeInBytes()));
 					shaderStages.emplace_back(createShaderStage(group.m_MissShader, VK_SHADER_STAGE_MISS_BIT_KHR));
 					vkShaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
 					vkShaderGroup.generalShader = static_cast<uint32_t>(shaderStages.size()) - 1;
 					missCount++;
 				}
 
-				if (group.m_CallableShader.isValid())
+				if (group.m_CallableShader.getSPIRV().isValid())
 				{
 					GetShaderBindings(group.m_CallableShader, m_BindingMap, indexToBindingMap, ShaderType::Callable);
-					shaderHashes.emplace_back(GenerateHash(ToBytes(group.m_CallableShader.getBinary().data()), sizeof(uint32_t) * group.m_CallableShader.getBinary().size()));
+					shaderHashes.emplace_back(GenerateHash(ToBytes(group.m_CallableShader.getSPIRV().getBinaryData()), group.m_CallableShader.getSPIRV().getBinarySizeInBytes()));
 					shaderStages.emplace_back(createShaderStage(group.m_CallableShader, VK_SHADER_STAGE_CALLABLE_BIT_KHR));
 					vkShaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
 					vkShaderGroup.generalShader = static_cast<uint32_t>(shaderStages.size()) - 1;
@@ -294,7 +294,7 @@ namespace Xenon
 			}
 		}
 
-		VkPipelineShaderStageCreateInfo VulkanRayTracingPipeline::createShaderStage(const ShaderSource& source, VkShaderStageFlagBits shaderStage) const
+		VkPipelineShaderStageCreateInfo VulkanRayTracingPipeline::createShaderStage(const Shader& source, VkShaderStageFlagBits shaderStage) const
 		{
 			OPTICK_EVENT();
 
@@ -302,8 +302,8 @@ namespace Xenon
 			shaderModuleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 			shaderModuleCreateInfo.pNext = nullptr;
 			shaderModuleCreateInfo.flags = 0;
-			shaderModuleCreateInfo.codeSize = source.getBinary().size();
-			shaderModuleCreateInfo.pCode = source.getBinary().data();
+			shaderModuleCreateInfo.codeSize = source.getSPIRV().getBinarySize();
+			shaderModuleCreateInfo.pCode = source.getSPIRV().getBinaryData();
 
 			VkShaderModule shaderModule = VK_NULL_HANDLE;
 			XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkCreateShaderModule(m_pDevice->getLogicalDevice(), &shaderModuleCreateInfo, nullptr, &shaderModule), "Failed to create the ray tracing shader module!");
@@ -314,7 +314,7 @@ namespace Xenon
 			shaderStageCreateInfo.flags = 0;
 			shaderStageCreateInfo.stage = shaderStage;
 			shaderStageCreateInfo.module = shaderModule;
-			shaderStageCreateInfo.pName = source.getEntryPoint().data();
+			shaderStageCreateInfo.pName = source.getSPIRV().getEntryPoint().data();
 			shaderStageCreateInfo.pSpecializationInfo = VK_NULL_HANDLE;
 
 			return shaderStageCreateInfo;

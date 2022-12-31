@@ -69,51 +69,41 @@ namespace /* anonymous */
 	 * @param shader The shader to get the data from.
 	 * @param bindingInfos The descriptor binding infos.
 	 * @param descriptorRanges The descriptor ranges.
-	 * @return The shader binary.
 	 */
-	[[nodiscard]] ComPtr<ID3DBlob> SetupShaderData(
-		const Xenon::Backend::ShaderSource& shader,
+	void SetupShaderData(
+		const Xenon::Backend::Shader& shader,
 		std::vector<Xenon::Backend::DescriptorBindingInfo>& bindingInfos,
 		std::vector<CD3DX12_DESCRIPTOR_RANGE1>& descriptorRanges)
 	{
-		// Compile the shader.
-		ComPtr<ID3DBlob> shaderBlob = Xenon::Backend::DX12Device::CompileShader(shader, Xenon::Backend::ShaderType::Compute);
+		ComPtr<ID3D12ShaderReflection> pReflector;
+		XENON_DX12_ASSERT(D3DReflect(shader.getDXIL().getBinaryData(), shader.getDXIL().getBinarySizeInBytes(), IID_PPV_ARGS(&pReflector)), "Failed to reflect on the shader!");
 
-		// Load the data if we were able to compile the shader.
-		if (shaderBlob)
+		D3D12_SHADER_DESC shaderDesc = {};
+		XENON_DX12_ASSERT(pReflector->GetDesc(&shaderDesc), "Failed to get the reflection description!");
+
+		// Setup resources.
+		for (const auto& resource : shader.getSPIRV().getResources())
 		{
-			ComPtr<ID3D12ShaderReflection> pReflector;
-			XENON_DX12_ASSERT(D3DReflect(shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), IID_PPV_ARGS(&pReflector)), "Failed to reflect on the shader!");
+			auto& binding = bindingInfos.emplace_back();
+			binding.m_Type = resource.m_Type;
+			binding.m_ApplicableShaders = Xenon::Backend::ShaderType::Compute;
 
-			D3D12_SHADER_DESC shaderDesc = {};
-			XENON_DX12_ASSERT(pReflector->GetDesc(&shaderDesc), "Failed to get the reflection description!");
+			// Setup the rest.
+			const auto rangeType = GetDescriptorRangeType(resource.m_Type);
 
-			// Setup resources.
-			for (const auto& resource : shader.getResources())
+			// If it's a sampler, we need one for the texture (SRV) and another as the sampler.
+			if (rangeType == D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER)
 			{
-				auto& binding = bindingInfos.emplace_back();
-				binding.m_Type = resource.m_Type;
-				binding.m_ApplicableShaders = Xenon::Backend::ShaderType::Compute;
+				descriptorRanges.emplace_back().Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, resource.m_Binding, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);	// Set the texture buffer (SRV).
+				descriptorRanges.emplace_back().Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, resource.m_Binding);	// Set the texture sampler.
+			}
 
-				// Setup the rest.
-				const auto rangeType = GetDescriptorRangeType(resource.m_Type);
-
-				// If it's a sampler, we need one for the texture (SRV) and another as the sampler.
-				if (rangeType == D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER)
-				{
-					descriptorRanges.emplace_back().Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, resource.m_Binding, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);	// Set the texture buffer (SRV).
-					descriptorRanges.emplace_back().Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, resource.m_Binding);	// Set the texture sampler.
-				}
-
-				// Else just one entry for the buffer.
-				else
-				{
-					descriptorRanges.emplace_back().Init(rangeType, 1, resource.m_Binding, rangeType == D3D12_DESCRIPTOR_RANGE_TYPE_UAV ? D3D12_DESCRIPTOR_RANGE_FLAG_DATA_VOLATILE : D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);
-				}
+			// Else just one entry for the buffer.
+			else
+			{
+				descriptorRanges.emplace_back().Init(rangeType, 1, resource.m_Binding, rangeType == D3D12_DESCRIPTOR_RANGE_TYPE_UAV ? D3D12_DESCRIPTOR_RANGE_FLAG_DATA_VOLATILE : D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);
 			}
 		}
-
-		return shaderBlob;
 	}
 }
 
@@ -121,16 +111,16 @@ namespace Xenon
 {
 	namespace Backend
 	{
-		DX12ComputePipeline::DX12ComputePipeline(DX12Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const ShaderSource& computeShader)
+		DX12ComputePipeline::DX12ComputePipeline(DX12Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const Shader& computeShader)
 			: ComputePipeline(pDevice, std::move(pCacheHandler), computeShader)
 			, DX12DescriptorHeapManager(pDevice)
 		{
 			// Setup the shader information.
 			std::vector<CD3DX12_DESCRIPTOR_RANGE1> descriptorRanges;
-			auto computeShaderBlob = SetupShaderData(computeShader, m_BindingInfos, descriptorRanges);
+			SetupShaderData(computeShader, m_BindingInfos, descriptorRanges);
 
 			// Generate the pipeline hash.
-			m_PipelineHash = GenerateHash(ToBytes(computeShader.getBinary().data()), computeShader.getBinary().size());
+			m_PipelineHash = GenerateHash(ToBytes(computeShader.getDXIL().getBinary().data()), computeShader.getDXIL().getBinary().size() * sizeof(uint64_t));
 
 			// Setup the descriptor heap manager.
 			setupDescriptorHeapManager({ { DescriptorType::UserDefined, m_BindingInfos } });
@@ -139,7 +129,7 @@ namespace Xenon
 			createRootSignature(std::move(descriptorRanges));
 
 			// Create the pipeline state object.
-			createPipelineStateObject(std::move(computeShaderBlob));
+			createPipelineStateObject();
 		}
 
 		std::unique_ptr<Xenon::Backend::Descriptor> DX12ComputePipeline::createDescriptor(DescriptorType type)
@@ -201,11 +191,11 @@ namespace Xenon
 			}
 		}
 
-		void DX12ComputePipeline::createPipelineStateObject(ComPtr<ID3DBlob>&& pBlob)
+		void DX12ComputePipeline::createPipelineStateObject()
 		{
 			D3D12_COMPUTE_PIPELINE_STATE_DESC computeDesc = {};
 			computeDesc.pRootSignature = m_RootSignature.Get();
-			computeDesc.CS = CD3DX12_SHADER_BYTECODE(pBlob.Get());
+			computeDesc.CS = CD3DX12_SHADER_BYTECODE(m_ComputeShader.getDXIL().getBinaryData(), m_ComputeShader.getDXIL().getBinarySizeInBytes());
 
 			// Load the pipeline cache.
 			const auto cache = loadPipelineSateCache();

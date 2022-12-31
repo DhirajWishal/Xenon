@@ -15,7 +15,9 @@
 #include "Xenon/Layers/DefaultRayTracingLayer.hpp"
 
 #include "XenonShaderBuilder/VertexShader.hpp"
-#include "XenonShaderBank/Core/Test.vert.hpp"
+
+#include "XenonShaderBank/Debugging/Shader.vert.hpp"
+#include "XenonShaderBank/Debugging/Shader.frag.hpp"
 
 #include <imgui.h>
 
@@ -67,9 +69,9 @@ namespace /* anonymous */
 	std::vector<Xenon::Backend::ShaderGroup> GetShaderGroups()
 	{
 		std::vector<Xenon::Backend::ShaderGroup> groups;
-		groups.emplace_back().m_RayGenShader = Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Testing/RayTracing/raygen.rgen.spv");
-		groups.emplace_back().m_MissShader = Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Testing/RayTracing/miss.rmiss.spv");
-		groups.emplace_back().m_ClosestHitShader = Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Testing/RayTracing/closesthit.rchit.spv");
+		groups.emplace_back().m_RayGenShader = Xenon::Backend::Shader(Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Testing/RayTracing/raygen.rgen.spv"));
+		groups.emplace_back().m_MissShader = Xenon::Backend::Shader(Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Testing/RayTracing/miss.rmiss.spv"));
+		groups.emplace_back().m_ClosestHitShader = Xenon::Backend::Shader(Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Testing/RayTracing/closesthit.rchit.spv"));
 
 		return groups;
 	}
@@ -93,12 +95,13 @@ void Studio::run()
 	// Set the layer to be shown.
 	pImGui->showLayer(pRasterizer);
 
-	auto shader = Xenon::Generated::CreateShaderTest_vert();
+	auto vShader = Xenon::Generated::CreateShaderShader_vert();
+	auto fShader = Xenon::Generated::CreateShaderShader_frag();
 
 	// Setup the pipeline.
 	Xenon::Backend::RasterizingPipelineSpecification specification;
-	specification.m_VertexShader = Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Debugging/Shader.vert.spv");
-	specification.m_FragmentShader = Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Debugging/Shader.frag.spv");
+	specification.m_VertexShader = Xenon::Backend::Shader(Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Debugging/Shader.vert.spv"));
+	specification.m_FragmentShader = Xenon::Backend::Shader(Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Debugging/Shader.frag.spv"));
 	auto pPipeline = m_Instance.getFactory()->createRasterizingPipeline(m_Instance.getBackendDevice(), std::make_unique<CacheHandler>(), pRasterizer->getRasterizer(), specification);
 	auto pPipelineRT = m_Instance.getFactory()->createRayTracingPipeline(m_Instance.getBackendDevice(), std::make_unique<CacheHandler>(), GetShaderGroups());
 

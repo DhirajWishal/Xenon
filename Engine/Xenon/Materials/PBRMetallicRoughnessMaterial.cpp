@@ -14,8 +14,8 @@ namespace Xenon
 		, m_pImageView(std::move(pImageView))
 		, m_pSampler(std::move(pImageSampler))
 	{
-		m_RasterizingPipelineSpecification.m_VertexShader = Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "PBRMetallicRoughness/Shader.vert.spv");
-		m_RasterizingPipelineSpecification.m_FragmentShader = Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "PBRMetallicRoughness/Shader.frag.spv");
+		m_RasterizingPipelineSpecification.m_VertexShader = Xenon::Backend::Shader(Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "PBRMetallicRoughness/Shader.vert.spv"));
+		m_RasterizingPipelineSpecification.m_FragmentShader = Xenon::Backend::Shader(Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "PBRMetallicRoughness/Shader.frag.spv"));
 	}
 
 	Xenon::Backend::RasterizingPipelineSpecification PBRMetallicRoughnessMaterial::getRasterizingSpecification()

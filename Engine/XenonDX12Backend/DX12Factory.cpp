@@ -73,7 +73,7 @@ namespace Xenon
 			return std::make_unique<DX12RasterizingPipeline>(pDevice->as<DX12Device>(), std::move(pCacheHandler), pRasterizer->as<DX12Rasterizer>(), specification);
 		}
 
-		std::unique_ptr<Xenon::Backend::ComputePipeline> DX12Factory::createComputePipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const ShaderSource& computeShader)
+		std::unique_ptr<Xenon::Backend::ComputePipeline> DX12Factory::createComputePipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const Shader& computeShader)
 		{
 			return std::make_unique<DX12ComputePipeline>(pDevice->as<DX12Device>(), std::move(pCacheHandler), computeShader);
 		}

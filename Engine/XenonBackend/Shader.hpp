@@ -18,8 +18,8 @@ namespace Xenon
 		 *
 		 * In Xenon, a shader file outputs 2 shader binaries (on Windows).
 		 * 1. SPIR-V.
-		 * 2. HLSL binary.
-		 *
+		 * 2. DXIL.
+		 * 
 		 * The actual backend will select which shader it may need. Because of this, the shader class holds two shader sources (to make the API simpler).
 		 * On Windows, both needs to be set. On Linux and any other platform, only the SPIR-V shader can be set (since only the Vulkan backend is supported).
 		 */
@@ -42,9 +42,9 @@ namespace Xenon
 			 * Explicit constructor.
 			 *
 			 * @param spirv The SPIR-V binary.
-			 * @param hlsl The HLSL binary.
+			 * @param dxil The DXIL binary.
 			 */
-			explicit Shader(const ShaderSource& spirv, const ShaderSource& hlsl) : m_SPIRV(spirv), m_HLSL(hlsl) {}
+			explicit Shader(const ShaderSource& spirv, const ShaderSource& dxil) : m_SPIRV(spirv), m_DXIL(dxil) {}
 
 			/**
 			 * Create a new shader.
@@ -68,22 +68,22 @@ namespace Xenon
 			 *
 			 * @tparam SPIRVType The SPIR-V binary type.
 			 * @tparam SPIRVSize The SPIR-V binary size.
-			 * @tparam HLSLType The HLSL binary type.
-			 * @tparam HLSLSize The HLSL binary size.
+			 * @tparam DXILType The DXIL binary type.
+			 * @tparam DXILSize The DXIL binary size.
 			 * @param pSPIRVSource The SPIR-V source array.
-			 * @param pHLSLSource The HLSL source array.
+			 * @param pDXILSource The HLSL source array.
 			 * @return The shader.
 			 */
-			template<class SPIRVType, uint64_t SPIRVSize, class HLSLType, uint64_t HLSLSize>
-			[[nodiscard]] static Shader Create(SPIRVType(&pSPIRVSource)[SPIRVSize], HLSLType(&pHLSLSource)[HLSLSize])
+			template<class SPIRVType, uint64_t SPIRVSize, class DXILType, uint64_t DXILSize>
+			[[nodiscard]] static Shader Create(SPIRVType(&pSPIRVSource)[SPIRVSize], DXILType(&pDXILSource)[DXILSize])
 			{
 				auto spirvSource = std::vector<uint32_t>(SPIRVSize);
 				std::copy_n(pSPIRVSource, spirvSource.size(), spirvSource.begin());
 
-				auto hlslSource = std::vector<uint32_t>(HLSLSize / sizeof(uint32_t));
-				std::copy_n(pHLSLSource, hlslSource.size(), reinterpret_cast<unsigned char*>(hlslSource.data()));
+				auto dxilSource = std::vector<uint32_t>(DXILSize / sizeof(uint32_t));
+				std::copy_n(pDXILSource, dxilSource.size(), reinterpret_cast<unsigned char*>(dxilSource.data()));
 
-				return Shader(ShaderSource(std::move(spirvSource)), ShaderSource(std::move(hlslSource), "main", false));
+				return Shader(ShaderSource(std::move(spirvSource)), ShaderSource(std::move(dxilSource), "main", false));
 			}
 
 			/**
@@ -94,15 +94,15 @@ namespace Xenon
 			[[nodiscard]] const ShaderSource& getSPIRV() const noexcept { return m_SPIRV; }
 
 			/**
-			 * Get the HLSL shader source.
+			 * Get the DXIL shader source.
 			 *
 			 * @return The shader source.
 			 */
-			[[nodiscard]] const ShaderSource& getHLSL() const noexcept { return m_HLSL; }
+			[[nodiscard]] const ShaderSource& getDXIL() const noexcept { return m_DXIL; }
 
 		private:
 			ShaderSource m_SPIRV;
-			ShaderSource m_HLSL;
+			ShaderSource m_DXIL;
 		};
 	}
 }

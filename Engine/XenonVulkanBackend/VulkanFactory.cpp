@@ -74,7 +74,7 @@ namespace Xenon
 			return std::make_unique<VulkanRasterizingPipeline>(pDevice->as<VulkanDevice>(), std::move(pCacheHandler), pRasterizer->as<VulkanRasterizer>(), specification);
 		}
 
-		std::unique_ptr<Xenon::Backend::ComputePipeline> VulkanFactory::createComputePipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const ShaderSource& computeShader)
+		std::unique_ptr<Xenon::Backend::ComputePipeline> VulkanFactory::createComputePipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const Shader& computeShader)
 		{
 			return std::make_unique<VulkanComputePipeline>(pDevice->as<VulkanDevice>(), std::move(pCacheHandler), computeShader);
 		}

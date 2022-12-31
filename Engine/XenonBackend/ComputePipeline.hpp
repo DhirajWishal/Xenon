@@ -4,7 +4,7 @@
 #pragma once
 
 #include "Pipeline.hpp"
-#include "ShaderSource.hpp"
+#include "Shader.hpp"
 
 namespace Xenon
 {
@@ -22,12 +22,12 @@ namespace Xenon
 			 *
 			 * @param pDevice The device pointer.
 			 * @param pCacheHandler The cache handler pointer. This can be null in which case the pipeline creation might get slow.
-			 * @param computeShader The compute shader source.
+			 * @param computeShader The compute shader.
 			 */
-			explicit ComputePipeline(const Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const ShaderSource& computeShader) : Pipeline(pDevice, std::move(pCacheHandler)), m_ComputeShaderSource(computeShader) {}
+			explicit ComputePipeline(const Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const Shader& computeShader) : Pipeline(pDevice, std::move(pCacheHandler)), m_ComputeShader(computeShader) {}
 
 		protected:
-			ShaderSource m_ComputeShaderSource;
+			Shader m_ComputeShader;
 		};
 	}
 }

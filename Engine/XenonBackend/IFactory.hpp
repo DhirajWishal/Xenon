@@ -143,10 +143,10 @@ namespace Xenon
 			 *
 			 * @param pDevice The device pointer.
 			 * @param pCacheHandler The cache handler pointer. This can be null in which case the pipeline creation might get slow.
-			 * @param computeShader The compute shader source.
+			 * @param computeShader The compute shader.
 			 * @return The pipeline pointer.
 			 */
-			[[nodiscard]] virtual std::unique_ptr<ComputePipeline> createComputePipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const ShaderSource& computeShader) = 0;
+			[[nodiscard]] virtual std::unique_ptr<ComputePipeline> createComputePipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const Shader& computeShader) = 0;
 
 			/**
 			 * Create a new command submitter.

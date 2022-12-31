@@ -81,11 +81,25 @@ namespace Xenon
 			[[nodiscard]] const BinaryType& getBinary() const noexcept { return m_Binary; }
 
 			/**
-			 * Get the shader binary without the last padding bytes.
+			 * Get the binary data pointer.
 			 *
-			 * @return The shader binary without padding.
+			 * @return The data pointer.
 			 */
-			[[nodiscard]] BinaryType getBinaryWithoutPadding() const { return std::vector<uint32_t>(m_Binary.begin(), m_Binary.begin() + (m_Binary.size() / 4)); }
+			[[nodiscard]] const uint32_t* getBinaryData() const noexcept { return m_Binary.data(); }
+
+			/**
+			 * Get the shader binary size.
+			 *
+			 * @return The size of the binary container.
+			 */
+			[[nodiscard]] uint64_t getBinarySize() const noexcept { return m_Binary.size(); }
+
+			/**
+			 * Get the shader binary size in bytes.
+			 *
+			 * @return The size of the binary container in bytes.
+			 */
+			[[nodiscard]] uint64_t getBinarySizeInBytes() const noexcept { return m_Binary.size() * sizeof(uint32_t); }
 
 			/**
 			 * Get the shader's entry point.

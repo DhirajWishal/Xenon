@@ -89,12 +89,13 @@ function(CompileHLSL SHADER_SOURCE_DIR)
 	foreach(SOURCE_FILE IN LISTS SHADERS)
 		get_filename_component(FILE_NAME ${SOURCE_FILE} NAME)
 		get_filename_component(FILE_NAME_WE ${SOURCE_FILE} NAME_WE)
+		get_filename_component(FILE_EXT ${SOURCE_FILE} EXT)
 		get_filename_component(FILE_DIR ${SOURCE_FILE} DIRECTORY)
-		string(REPLACE "." "_" FILE_NAME_FORMATTED ${FILE_NAME})
+		string(REPLACE ".hlsl" "" TARGET_NAME ${FILE_NAME})
+		string(REPLACE "." "_" FILE_NAME_FORMATTED ${TARGET_NAME})
 		string(TOUPPER ${FILE_NAME_FORMATTED} FILE_NAME_FORMATTED_UPPER)
 
 		string(REPLACE "_hlsl" "" FUNCTION_NAME ${FILE_NAME_FORMATTED})
-		string(REPLACE ".hlsl" "" TARGET_NAME ${FILE_NAME})
 
 		# Set the compile target file.
 		set(XENON_COMPILE_TARGET ${FILE_DIR}/${TARGET_NAME}.hpp)
@@ -114,6 +115,11 @@ function(CompileHLSL SHADER_SOURCE_DIR)
 			"#include <cstdint>\n"
 			"\n"
 		)
+
+		# Setup the variables for the output directory and output file.
+		set(COMPILED_OUTPUT_DIR ${FILE_DIR}/Generated)
+		set(OUTPUT_FILE_NAME ${FILE_NAME_WE}${FILE_EXT})
+		set(OUTPUT_FILE ${COMPILED_OUTPUT_DIR}/${OUTPUT_FILE_NAME})
 
 		if(MSVC)
 			# Resolve the target profile.
@@ -141,10 +147,11 @@ function(CompileHLSL SHADER_SOURCE_DIR)
 			endif()
 
 			# Set the HLSL compile command.
-			set(HLSL_COMPILE_COMMAND ${TOOLS_DIR}/dxc -Fh ${SOURCE_FILE}.dxb.hpp -I ${CMAKE_SOURCE_DIR}/Engine/ShaderBank -HV 2021 -Vn g_${FILE_NAME_FORMATTED_UPPER}_HLSL -T ${TARGET_PROFILE} -E main ${SOURCE_FILE})
+			set(HLSL_COMPILE_COMMAND ${TOOLS_DIR}/dxc -Fh ${OUTPUT_FILE}.dxil.hpp -I ${CMAKE_SOURCE_DIR}/Engine/ShaderBank -HV 2021 -Vn g_${FILE_NAME_FORMATTED_UPPER}_DXIL -T ${TARGET_PROFILE} -E main ${SOURCE_FILE})
 
 			# Compile and store the HLSL binary in the header file.
 			execute_process(
+				COMMAND ${CMAKE_COMMAND} -E make_directory ${COMPILED_OUTPUT_DIR}
 				COMMAND ${HLSL_COMPILE_COMMAND}
 				WORKING_DIRECTORY ${SHADER_SOURCE_DIR}
 				COMMAND_ECHO STDOUT
@@ -155,9 +162,10 @@ function(CompileHLSL SHADER_SOURCE_DIR)
 			message(STATUS ${SHADER_COMPILER_STATUS})
 
 			# Add a custom command for the file to compile HLSL to DXB.
-			set_source_files_properties(${SOURCE_FILE}.dxb.hpp PROPERTIES SYMBOLIC TRUE)
+			set_source_files_properties(${OUTPUT_FILE}.dxil.hpp PROPERTIES SYMBOLIC TRUE)
 			add_custom_command(
-			    OUTPUT ${SOURCE_FILE}.dxb.hpp
+			    OUTPUT ${OUTPUT_FILE}.dxil.hpp
+				COMMAND ${CMAKE_COMMAND} -E make_directory ${COMPILED_OUTPUT_DIR}
 			    COMMAND ${HLSL_COMPILE_COMMAND}
 				WORKING_DIRECTORY ${SHADER_SOURCE_DIR}
 			    DEPENDS ${SOURCE_FILE}
@@ -168,16 +176,17 @@ function(CompileHLSL SHADER_SOURCE_DIR)
 				APPEND 
 				${XENON_COMPILE_TARGET} 
 
-				"#include \"${FILE_NAME}.dxb.hpp\"\n"
+				"#include \"Generated/${OUTPUT_FILE_NAME}.dxil.hpp\"\n"
 			)
 
 		endif()
 
 		# Set the SPIR-V compile command.
-		set(SPIRV_COMPILE_COMMAND ${TOOLS_DIR}/glslangValidator -V ${SOURCE_FILE} -o ${SOURCE_FILE}.spv.hpp --variable-name g_${FILE_NAME_FORMATTED_UPPER}_SPIRV --target-env vulkan1.3 -I${CMAKE_SOURCE_DIR}/Engine/ShaderBank --entry-point main)
+		set(SPIRV_COMPILE_COMMAND ${TOOLS_DIR}/glslangValidator -V ${SOURCE_FILE} -o ${OUTPUT_FILE}.spirv.hpp --variable-name g_${FILE_NAME_FORMATTED_UPPER}_SPIRV --target-env vulkan1.3 -I${CMAKE_SOURCE_DIR}/Engine/ShaderBank --entry-point main)
 
 		# Compile and store the SPIR-V binary in the header file.
 		execute_process(
+			COMMAND ${CMAKE_COMMAND} -E make_directory ${COMPILED_OUTPUT_DIR}
 			COMMAND ${SPIRV_COMPILE_COMMAND}
 			WORKING_DIRECTORY ${SHADER_SOURCE_DIR}
 			COMMAND_ECHO STDOUT
@@ -188,9 +197,10 @@ function(CompileHLSL SHADER_SOURCE_DIR)
 		message(STATUS ${SHADER_COMPILER_STATUS})
 
 		# Add a custom command for the file to compile HLSL to SPIR-V.
-		set_source_files_properties(${SOURCE_FILE}.spv.hpp PROPERTIES SYMBOLIC TRUE)
+		set_source_files_properties(${OUTPUT_FILE}.spirv.hpp PROPERTIES SYMBOLIC TRUE)
 		add_custom_command(
-		    OUTPUT ${SOURCE_FILE}.spv.hpp
+		    OUTPUT ${OUTPUT_FILE}.spirv.hpp
+			COMMAND ${CMAKE_COMMAND} -E make_directory ${COMPILED_OUTPUT_DIR}
 		    COMMAND ${SPIRV_COMPILE_COMMAND}
 		    WORKING_DIRECTORY ${SHADER_SOURCE_DIR}
 			DEPENDS ${SOURCE_FILE}
@@ -201,7 +211,7 @@ function(CompileHLSL SHADER_SOURCE_DIR)
 			APPEND 
 			${XENON_COMPILE_TARGET} 
 			
-			"#include \"${FILE_NAME}.spv.hpp\"\n"
+			"#include \"Generated/${OUTPUT_FILE_NAME}.spirv.hpp\"\n"
 			"\n"
 		)
 
@@ -210,7 +220,7 @@ function(CompileHLSL SHADER_SOURCE_DIR)
 				APPEND 
 				${XENON_COMPILE_TARGET} 
 				
-				"namespace Xenon { namespace Generated { [[nodisacrd]] Xenon::Backend::Shader CreateShader${FUNCTION_NAME}() { return Xenon::Backend::Shader::Create(g_${FILE_NAME_FORMATTED_UPPER}_SPIRV, g_${FILE_NAME_FORMATTED_UPPER}_HLSL); } } }\n"
+				"namespace Xenon { namespace Generated { [[nodisacrd]] Xenon::Backend::Shader CreateShader${FUNCTION_NAME}() { return Xenon::Backend::Shader::Create(g_${FILE_NAME_FORMATTED_UPPER}_SPIRV, g_${FILE_NAME_FORMATTED_UPPER}_DXIL); } } }\n"
 			)
 
 		else()

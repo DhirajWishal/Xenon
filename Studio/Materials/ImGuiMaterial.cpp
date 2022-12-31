@@ -82,8 +82,8 @@ Xenon::Backend::RasterizingPipelineSpecification ImGuiMaterial::getRasterizingSp
 	attachment.m_AlphaBlendOperator = Xenon::Backend::ColorBlendOperator::Add;
 
 	Xenon::Backend::RasterizingPipelineSpecification specification = {};
-	specification.m_VertexShader = Xenon::Backend::ShaderSource::FromFile("Shaders/ImGuiLayer/Shader.vert.spv");
-	specification.m_FragmentShader = Xenon::Backend::ShaderSource::FromFile("Shaders/ImGuiLayer/Shader.frag.spv");
+	specification.m_VertexShader = Xenon::Backend::Shader(Xenon::Backend::ShaderSource::FromFile("Shaders/ImGuiLayer/Shader.vert.spv"));
+	specification.m_FragmentShader = Xenon::Backend::Shader(Xenon::Backend::ShaderSource::FromFile("Shaders/ImGuiLayer/Shader.frag.spv"));
 	specification.m_CullMode = Xenon::Backend::CullMode::None;
 	specification.m_ColorBlendAttachments = { attachment };
 	specification.m_DepthCompareLogic = Xenon::Backend::DepthCompareLogic::Always;

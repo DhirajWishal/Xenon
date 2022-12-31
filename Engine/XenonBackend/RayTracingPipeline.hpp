@@ -4,7 +4,7 @@
 #pragma once
 
 #include "Pipeline.hpp"
-#include "ShaderSource.hpp"
+#include "Shader.hpp"
 
 namespace Xenon
 {
@@ -19,14 +19,17 @@ namespace Xenon
 			std::vector<ShaderSource> m_Shaders;
 		};
 
+		/**
+		 * Shader group structure.
+		 */
 		struct ShaderGroup final
 		{
-			ShaderSource m_RayGenShader = {};
-			ShaderSource m_IntersectionShader = {};
-			ShaderSource m_AnyHitShader = {};
-			ShaderSource m_ClosestHitShader = {};
-			ShaderSource m_MissShader = {};
-			ShaderSource m_CallableShader = {};
+			Shader m_RayGenShader = {};
+			Shader m_IntersectionShader = {};
+			Shader m_AnyHitShader = {};
+			Shader m_ClosestHitShader = {};
+			Shader m_MissShader = {};
+			Shader m_CallableShader = {};
 		};
 
 		/**
