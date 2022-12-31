@@ -17,7 +17,7 @@ struct VSOutput
 
 VSOutput main(VSInput input)
 {
-	VSOutput output = (VSOutput)0;
+	VSOutput output;
 	output.position =float4(input.position, 0.0f, 1.0f);
 	output.textureCoordinate = input.textureCoordinate;
 

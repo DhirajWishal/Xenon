@@ -160,7 +160,7 @@ namespace Xenon
 			moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 			moduleCreateInfo.pNext = nullptr;
 			moduleCreateInfo.flags = 0;
-			moduleCreateInfo.codeSize = m_ComputeShader.getSPIRV().getBinarySize();
+			moduleCreateInfo.codeSize = m_ComputeShader.getSPIRV().getBinarySizeInBytes();
 			moduleCreateInfo.pCode = m_ComputeShader.getSPIRV().getBinaryData();
 
 			XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkCreateShaderModule(m_pDevice->getLogicalDevice(), &moduleCreateInfo, nullptr, &shaderStageCreateInfo.module), "Failed to create the compute shader module!");

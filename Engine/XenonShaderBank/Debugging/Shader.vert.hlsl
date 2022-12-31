@@ -20,7 +20,7 @@ struct VSOutput
 
 VSOutput main(VSInput input)
 {
-	VSOutput output = (VSOutput)0;
+	VSOutput output;
 	output.position = mul(camera.projection, mul(camera.view, mul(GetIdentityMatrix(), float4(input.position, 100.0f))));
 	output.textureCoordinates = input.textureCoordinates;
 

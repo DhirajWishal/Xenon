@@ -9,80 +9,14 @@ if (MSVC)
 	set(TOOLS_DIR ${CMAKE_SOURCE_DIR}/Tools/Windows)
 endif()
 
-# Utility function to generate shaders
-#
-# @param SHADER_TARGET The target project to add the compiled dependency.
-# @param SHADER_SOURCE_DIR The shader file's source directory.
-# @param SHADER_BINARY_DIR The compiled output directory.
-function(CompileShaders SHADER_TARGET SHADER_SOURCE_DIR SHADER_BINARY_DIR)
-	if (DEFINED ENV{VULKAN_SDK})
-		file(GLOB SHADERS RELATIVE ${SHADER_SOURCE_DIR}
-		  ${SHADER_SOURCE_DIR}/**/*.vert
-		  ${SHADER_SOURCE_DIR}/**/*.frag
-		  ${SHADER_SOURCE_DIR}/**/*.comp
-		  ${SHADER_SOURCE_DIR}/**/*.geom
-		  ${SHADER_SOURCE_DIR}/**/*.tesc
-		  ${SHADER_SOURCE_DIR}/**/*.tese
-		  ${SHADER_SOURCE_DIR}/**/*.mesh
-		  ${SHADER_SOURCE_DIR}/**/*.task
-		  ${SHADER_SOURCE_DIR}/**/*.rgen
-		  ${SHADER_SOURCE_DIR}/**/*.rchit
-		  ${SHADER_SOURCE_DIR}/**/*.rmiss
-		)
-
-		add_custom_command(
-			COMMAND ${CMAKE_COMMAND} -E make_directory ${SHADER_BINARY_DIR}
-			OUTPUT ${SHADER_BINARY_DIR}
-			COMMENT "Creating ${SHADER_BINARY_DIR}"
-		)
-
-		# Resolve the shader compiler
-		if (MSVC)
-			set(SHADER_COMPILER $ENV{VULKAN_SDK}\\Bin\\glslangValidator)
-
-		else()
-			set(SHADER_COMPILER $ENV{VULKAN_SDK}/bin/glslangValidator)
-
-		endif()
-
-		message("Shader compiler set to " ${SHADER_COMPILER})
-
-		foreach(SOURCE_FILE IN LISTS SHADERS)
-			get_filename_component(FILE_NAME ${SOURCE_FILE} NAME)
-
-			message("Compiling " ${SOURCE_FILE} " as " ${FILE_NAME}.spv)
-	
-			add_custom_command(
-				COMMAND ${SHADER_COMPILER} -V ${SHADER_SOURCE_DIR}/${SOURCE_FILE} -o ${SHADER_BINARY_DIR}/${SOURCE_FILE}.spv --target-env vulkan1.2
-				OUTPUT ${SHADER_BINARY_DIR}/${SOURCE_FILE}.spv
-				COMMENT "Compiling ${FILE_NAME}"
-			)
-
-			list(APPEND SPV_SHADERS ${SHADER_BINARY_DIR}/${SOURCE_FILE}.spv)
-
-		endforeach()
-
-		add_custom_target(${SHADER_TARGET}_ShaderCompiler ALL DEPENDS ${SPV_SHADERS})
-		add_dependencies(${SHADER_TARGET} ${SHADER_TARGET}_ShaderCompiler)
-	
-	else()
-		message(WARNING "The VULKAN_SDK environment variable is not set! Automatic shader compilation is disabled.")
-
-	endif()
-
-endfunction()
-
-# Utility function to compile HLSL shaders to SPIR-V and DirectX binary.
+# Utility function to compile HLSL shaders to SPIR-V and DirectX binary which are found in subdirectories.
 # This will compile them if the glslangValidator and dxc tools exist. It will place the binary in a file with the following extensions.
-# SPIR-V			: <filename>.spv.hpp
-# DirectX Binary	: <filename>.dxb.hpp
-#
-# @param SHADER_SOURCE_DIR The shader file's source directory.
-function(CompileHLSL SHADER_SOURCE_DIR)
-
+# SPIR-V			: <filename>.spirv.hpp
+# DirectX Binary	: <filename>.dxil.hpp
+function(CompileShaders)
 	# Make a list of all the HLSL files.
-	file(GLOB_RECURSE SHADERS RELATIVE ${SHADER_SOURCE_DIR}
-		  ${SHADER_SOURCE_DIR}/**/*.hlsl
+	file(GLOB_RECURSE SHADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+		  *.hlsl
 	)
 
 	# Iterate over the shader files and compile them.
@@ -99,6 +33,7 @@ function(CompileHLSL SHADER_SOURCE_DIR)
 
 		# Set the compile target file.
 		set(XENON_COMPILE_TARGET ${FILE_DIR}/${TARGET_NAME}.hpp)
+		message(STATUS "Shader compile output set to ${XENON_COMPILE_TARGET}")
 
 		# Setup the file containing the target file's content.
 		file(
@@ -150,7 +85,7 @@ function(CompileHLSL SHADER_SOURCE_DIR)
 			set(DXIL_OUTPUT_FILE ${OUTPUT_FILE}.dxil.hpp)
 
 			# Set the HLSL compile command.
-			set(DXIL_COMPILE_COMMAND ${TOOLS_DIR}/dxc -Fh ${DXIL_OUTPUT_FILE} -I ${CMAKE_SOURCE_DIR}/Engine/ShaderBank -HV 2021 -Vn g_${FILE_NAME_FORMATTED_UPPER}_DXIL -T ${TARGET_PROFILE} -E main ${SOURCE_FILE})
+			set(DXIL_COMPILE_COMMAND ${TOOLS_DIR}/dxc -Fh ${DXIL_OUTPUT_FILE} -I ${CMAKE_SOURCE_DIR}/Engine/XenonShaderBank -HV 2021 -Vn g_${FILE_NAME_FORMATTED_UPPER}_DXIL -T ${TARGET_PROFILE} -E main ${SOURCE_FILE})
 
 			# Add a custom command for the file to compile HLSL to SPIR-V.
 			set_source_files_properties(${DXIL_OUTPUT_FILE} PROPERTIES SYMBOLIC TRUE)
@@ -170,7 +105,7 @@ function(CompileHLSL SHADER_SOURCE_DIR)
 
 		# Set the SPIR-V compile command.
 		# set(SPIRV_COMPILE_COMMAND ${TOOLS_DIR}/glslangValidator -V ${SOURCE_FILE} -o ${SPIRV_OUTPUT_FILE} --variable-name g_${FILE_NAME_FORMATTED_UPPER}_SPIRV --target-env vulkan1.3 -I${CMAKE_SOURCE_DIR}/Engine/ShaderBank --entry-point main)
-		set(SPIRV_COMPILE_COMMAND ${TOOLS_DIR}/dxc -Fh ${SPIRV_OUTPUT_FILE} -I ${CMAKE_SOURCE_DIR}/Engine/ShaderBank -HV 2021 -Vn g_${FILE_NAME_FORMATTED_UPPER}_SPIRV -T ${TARGET_PROFILE} -fspv-target-env=vulkan1.3 -E main -spirv ${SOURCE_FILE})
+		set(SPIRV_COMPILE_COMMAND ${TOOLS_DIR}/dxc -Fh ${SPIRV_OUTPUT_FILE} -I ${CMAKE_SOURCE_DIR}/Engine/XenonShaderBank -HV 2021 -Vn g_${FILE_NAME_FORMATTED_UPPER}_SPIRV -T ${TARGET_PROFILE} -fspv-target-env=vulkan1.3 -E main -spirv ${SOURCE_FILE})
 
 		# Add a custom command for the file to compile HLSL to SPIR-V.
 		set_source_files_properties(${SPIRV_OUTPUT_FILE} PROPERTIES SYMBOLIC TRUE)
@@ -208,7 +143,7 @@ function(CompileHLSL SHADER_SOURCE_DIR)
 			COMMAND ${CMAKE_COMMAND} -E make_directory ${COMPILED_OUTPUT_DIR}
 		    COMMAND ${DXIL_COMPILE_COMMAND}
 		    COMMAND ${SPIRV_COMPILE_COMMAND}
-			WORKING_DIRECTORY ${SHADER_SOURCE_DIR}
+			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 			COMMAND_ECHO STDOUT
 			ERROR_VARIABLE SHADER_COMPILER_STATUS
 		)
@@ -222,7 +157,7 @@ function(CompileHLSL SHADER_SOURCE_DIR)
 			COMMAND ${CMAKE_COMMAND} -E make_directory ${COMPILED_OUTPUT_DIR}
 		    COMMAND ${DXIL_COMPILE_COMMAND}
 		    COMMAND ${SPIRV_COMPILE_COMMAND}
-		    WORKING_DIRECTORY ${SHADER_SOURCE_DIR}
+		    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 			MAIN_DEPENDENCY ${SOURCE_FILE}
 			COMMENT "Compiling ${SOURCE_FILE}"
 			VERBATIM

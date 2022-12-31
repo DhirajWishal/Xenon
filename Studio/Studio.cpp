@@ -97,21 +97,18 @@ void Studio::run()
 	// Set the layer to be shown.
 	pImGui->showLayer(pRasterizer);
 
-	auto vShader = Xenon::Generated::CreateShaderShader_vert();
-	auto fShader = Xenon::Generated::CreateShaderShader_frag();
-
 	// Setup the pipeline.
 	Xenon::Backend::RasterizingPipelineSpecification specification;
-	specification.m_VertexShader = Xenon::Backend::Shader(Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Debugging/Shader.vert.spv"));
-	specification.m_FragmentShader = Xenon::Backend::Shader(Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Debugging/Shader.frag.spv"));
+	specification.m_VertexShader = Xenon::Generated::CreateShaderShader_vert();
+	specification.m_FragmentShader = Xenon::Generated::CreateShaderShader_frag();
 	auto pPipeline = m_Instance.getFactory()->createRasterizingPipeline(m_Instance.getBackendDevice(), std::make_unique<CacheHandler>(), pRasterizer->getRasterizer(), specification);
-	auto pPipelineRT = m_Instance.getFactory()->createRayTracingPipeline(m_Instance.getBackendDevice(), std::make_unique<CacheHandler>(), GetShaderGroups());
+	// auto pPipelineRT = m_Instance.getFactory()->createRayTracingPipeline(m_Instance.getBackendDevice(), std::make_unique<CacheHandler>(), GetShaderGroups());
 
 	{
 		auto ret = Xenon::XObject::GetJobSystem().insert([this, &pPipeline, &pRasterizer, &pRayTracer]
 			{
-				// pRasterizer->addDrawData(Xenon::MeshStorage::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"), pPipeline.get());
-				pRayTracer->addDrawData(Xenon::MeshStorage::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"));
+				pRasterizer->addDrawData(Xenon::MeshStorage::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"), pPipeline.get());
+				// pRayTracer->addDrawData(Xenon::MeshStorage::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"));
 			}
 		);
 

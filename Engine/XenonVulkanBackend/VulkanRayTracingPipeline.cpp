@@ -302,7 +302,7 @@ namespace Xenon
 			shaderModuleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 			shaderModuleCreateInfo.pNext = nullptr;
 			shaderModuleCreateInfo.flags = 0;
-			shaderModuleCreateInfo.codeSize = source.getSPIRV().getBinarySize();
+			shaderModuleCreateInfo.codeSize = source.getSPIRV().getBinarySizeInBytes();
 			shaderModuleCreateInfo.pCode = source.getSPIRV().getBinaryData();
 
 			VkShaderModule shaderModule = VK_NULL_HANDLE;

@@ -6,6 +6,9 @@
 
 #include "XenonBackend/CommandRecorder.hpp"
 
+#include "../Shaders/ImGuiLayer/ImGuiLayer.vert.hpp"
+#include "../Shaders/ImGuiLayer/ImGuiLayer.frag.hpp"
+
 #include <imgui.h>
 
 ImGuiMaterial::ImGuiMaterial(Xenon::Instance& instance)
@@ -82,8 +85,8 @@ Xenon::Backend::RasterizingPipelineSpecification ImGuiMaterial::getRasterizingSp
 	attachment.m_AlphaBlendOperator = Xenon::Backend::ColorBlendOperator::Add;
 
 	Xenon::Backend::RasterizingPipelineSpecification specification = {};
-	specification.m_VertexShader = Xenon::Backend::Shader(Xenon::Backend::ShaderSource::FromFile("Shaders/ImGuiLayer/Shader.vert.spv"));
-	specification.m_FragmentShader = Xenon::Backend::Shader(Xenon::Backend::ShaderSource::FromFile("Shaders/ImGuiLayer/Shader.frag.spv"));
+	specification.m_VertexShader = Xenon::Generated::CreateShaderImGuiLayer_vert();
+	specification.m_FragmentShader = Xenon::Generated::CreateShaderImGuiLayer_frag();
 	specification.m_CullMode = Xenon::Backend::CullMode::None;
 	specification.m_ColorBlendAttachments = { attachment };
 	specification.m_DepthCompareLogic = Xenon::Backend::DepthCompareLogic::Always;

@@ -84,8 +84,6 @@ namespace /* anonymous */
 		std::vector<VkVertexInputAttributeDescription>& inputAttributeDescriptions,
 		Xenon::Backend::ShaderType type)
 	{
-		const auto shaderStage = GetShaderStageFlagBit(type);
-
 		// Get the resources.
 		for (const auto& resource : shader.getResources())
 		{
@@ -111,7 +109,7 @@ namespace /* anonymous */
 		// 	auto& range = pushConstants.emplace_back();
 		// 	range.offset = buffer.m_Offset;
 		// 	range.size = buffer.m_Size;
-		// 	range.stageFlags = shaderStage;
+		// 	range.stageFlags = GetShaderStageFlagBit(type);
 		// }
 
 		// Setup the input bindings if we're on the vertex shader.
@@ -837,46 +835,46 @@ namespace Xenon
 			std::unordered_map<uint32_t, std::unordered_map<uint32_t, size_t>> indexToBindingMap;
 			std::vector<VkPushConstantRange> pushConstants;
 
-			if (specification.m_VertexShader.getSPIRV().isValid())
+			if (m_Specification.m_VertexShader.getSPIRV().isValid())
 			{
-				GetShaderBindings(specification.m_VertexShader, m_BindingMap, indexToBindingMap, pushConstants, m_VertexInputBindings, m_VertexInputAttributes, ShaderType::Vertex);
+				GetShaderBindings(m_Specification.m_VertexShader, m_BindingMap, indexToBindingMap, pushConstants, m_VertexInputBindings, m_VertexInputAttributes, ShaderType::Vertex);
 
 				auto& createInfo = m_ShaderStageCreateInfo.emplace_back();
 				createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 				createInfo.pNext = nullptr;
 				createInfo.flags = 0;
 				createInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-				createInfo.pName = specification.m_VertexShader.getSPIRV().getEntryPoint().data();
+				createInfo.pName = m_Specification.m_VertexShader.getSPIRV().getEntryPoint().data();
 				createInfo.pSpecializationInfo = nullptr;
 
 				VkShaderModuleCreateInfo moduleCreateInfo = {};
 				moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 				moduleCreateInfo.pNext = nullptr;
 				moduleCreateInfo.flags = 0;
-				moduleCreateInfo.codeSize = specification.m_VertexShader.getSPIRV().getBinarySize();
-				moduleCreateInfo.pCode = specification.m_VertexShader.getSPIRV().getBinaryData();
+				moduleCreateInfo.codeSize = m_Specification.m_VertexShader.getSPIRV().getBinarySizeInBytes();
+				moduleCreateInfo.pCode = m_Specification.m_VertexShader.getSPIRV().getBinaryData();
 
 				XENON_VK_ASSERT(pDevice->getDeviceTable().vkCreateShaderModule(pDevice->getLogicalDevice(), &moduleCreateInfo, nullptr, &createInfo.module), "Failed to create the vertex shader module!");
 			}
 
-			if (specification.m_FragmentShader.getSPIRV().isValid())
+			if (m_Specification.m_FragmentShader.getSPIRV().isValid())
 			{
-				GetShaderBindings(specification.m_FragmentShader, m_BindingMap, indexToBindingMap, pushConstants, m_VertexInputBindings, m_VertexInputAttributes, ShaderType::Fragment);
+				GetShaderBindings(m_Specification.m_FragmentShader, m_BindingMap, indexToBindingMap, pushConstants, m_VertexInputBindings, m_VertexInputAttributes, ShaderType::Fragment);
 
 				auto& createInfo = m_ShaderStageCreateInfo.emplace_back();
 				createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 				createInfo.pNext = nullptr;
 				createInfo.flags = 0;
 				createInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-				createInfo.pName = specification.m_FragmentShader.getSPIRV().getEntryPoint().data();
+				createInfo.pName = m_Specification.m_FragmentShader.getSPIRV().getEntryPoint().data();
 				createInfo.pSpecializationInfo = nullptr;
 
 				VkShaderModuleCreateInfo moduleCreateInfo = {};
 				moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 				moduleCreateInfo.pNext = nullptr;
 				moduleCreateInfo.flags = 0;
-				moduleCreateInfo.codeSize = specification.m_FragmentShader.getSPIRV().getBinarySize();
-				moduleCreateInfo.pCode = specification.m_FragmentShader.getSPIRV().getBinaryData();
+				moduleCreateInfo.codeSize = m_Specification.m_FragmentShader.getSPIRV().getBinarySizeInBytes();
+				moduleCreateInfo.pCode = m_Specification.m_FragmentShader.getSPIRV().getBinaryData();
 
 				XENON_VK_ASSERT(pDevice->getDeviceTable().vkCreateShaderModule(pDevice->getLogicalDevice(), &moduleCreateInfo, nullptr, &createInfo.module), "Failed to create the fragment shader module!");
 			}

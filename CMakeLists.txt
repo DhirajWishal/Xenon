@@ -110,9 +110,6 @@ target_include_directories(
 	PRIVATE ${IMGUI_INCLUDE_DIR}
 )
 
-# Include the shader bank and it's information.
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonShaderBank)
-
 # Set global compile definitions.
 add_compile_definitions(
 	$<$<CONFIG:Debug>:XENON_DEBUG>
@@ -128,7 +125,6 @@ add_compile_definitions(
 	$<$<PLATFORM_ID:Darwin>:XENON_PLATFORM_MAC>
 
 	XENON_GLTF_ASSET_DIR="${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/glTF-Sample-Models/"
-	XENON_SHADER_DIR="${XENON_SHADER_BANK_OUTPUT_DIR}"
 	XENON_LOG_LEVEL=${XENON_LOG_LEVEL}
 
 	FMT_HEADER_ONLY
@@ -143,6 +139,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonDX12Backend)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonPlatform)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonPlatformWindows)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonEvents)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonShaderBank)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Studio)
 
 # Set the output directories.

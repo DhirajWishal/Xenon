@@ -4,10 +4,15 @@
 #ifndef TEXTURE_HLSLI
 #define TEXTURE_HLSLI
 
-#define XENON_NAME_CONCAT(first, second)	first##second
+#include "Common.hlsli"
 
-#define XENON_SETUP_TEXTURE(type, name, binding)															\
-	type XENON_NAME_CONCAT(name, Texture) : register(XENON_NAME_CONCAT(t, binding), space1);				\
-	SamplerState XENON_NAME_CONCAT(name, Sampler) : register(XENON_NAME_CONCAT(s, binding), space1);						
+#define XENON_SETUP_TEXTURE(type, name, bindingIndex)															\
+	[[vk::combinedImageSampler]]																				\
+	XENON_SETUP_DESCRIPTOR(XENON_DESCRIPTOR_TYPE_MATERIAL, bindingIndex)										\
+	type XENON_NAME_CONCAT(name, Texture) : register(XENON_NAME_CONCAT(t, bindingIndex), space1);				\
+																												\
+	[[vk::combinedImageSampler]]																				\
+	XENON_SETUP_DESCRIPTOR(XENON_DESCRIPTOR_TYPE_MATERIAL, bindingIndex)										\
+	SamplerState XENON_NAME_CONCAT(name, Sampler) : register(XENON_NAME_CONCAT(s, bindingIndex), space1);						
 
 #endif // TEXTURE_HLSLI

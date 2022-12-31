@@ -7,6 +7,7 @@ XENON_SETUP_TEXTURE(Texture2D, baseColor, 0)
 
 struct FSInput 
 {
+	float4 position : SV_POSITION;
 	[[vk::location(0)]] float2 textureCoordinate : TEXCOORD0;
 };
 

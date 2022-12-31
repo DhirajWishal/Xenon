@@ -5,7 +5,6 @@
 #include "DX12Macros.hpp"
 #include "DX12Descriptor.hpp"
 
-#include <spirv_hlsl.hpp>
 #include <optick.h>
 
 // This magic number is used by the rasterizing pipeline to uniquely identify it's pipeline caches.
