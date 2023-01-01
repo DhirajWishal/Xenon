@@ -96,23 +96,23 @@ namespace /* anonymous */
 				auto& binding = bindings.emplace_back();
 				binding.m_Type = resource.m_Type;
 				binding.m_ApplicableShaders = type;
-			}
 
-			// Setup the rest.
-			const auto rangeType = GetDescriptorRangeType(resource.m_Type);
-
-			// If it's a sampler, we need one for the texture (SRV) and another as the sampler.
-			if (rangeType == D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER)
-			{
+				// Setup the ranges.
+				const auto rangeType = GetDescriptorRangeType(resource.m_Type);
 				const auto setIndex = static_cast<uint8_t>(Xenon::EnumToInt(resource.m_Set) * 2);
-				rangeMap[setIndex + 0].emplace_back().Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, resource.m_Binding, Xenon::EnumToInt(resource.m_Set));	// Set the texture buffer (SRV).
-				rangeMap[setIndex + 1].emplace_back().Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, resource.m_Binding, Xenon::EnumToInt(resource.m_Set));	// Set the texture sampler.
-			}
 
-			// Else just one entry for the buffer.
-			else
-			{
-				rangeMap[static_cast<uint8_t>(Xenon::EnumToInt(resource.m_Set) * 2)].emplace_back().Init(rangeType, 1, resource.m_Binding, Xenon::EnumToInt(resource.m_Set));
+				// If it's a sampler, we need one for the texture (SRV) and another as the sampler.
+				if (rangeType == D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER)
+				{
+					rangeMap[setIndex + 0].emplace_back().Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, resource.m_Binding, Xenon::EnumToInt(resource.m_Set));	// Set the texture buffer (SRV).
+					rangeMap[setIndex + 1].emplace_back().Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, resource.m_Binding, Xenon::EnumToInt(resource.m_Set));	// Set the texture sampler.
+				}
+
+				// Else just one entry for the buffer.
+				else
+				{
+					rangeMap[setIndex].emplace_back().Init(rangeType, 1, resource.m_Binding, Xenon::EnumToInt(resource.m_Set));
+				}
 			}
 		}
 

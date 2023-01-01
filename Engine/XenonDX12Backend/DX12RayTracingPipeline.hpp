@@ -51,14 +51,23 @@ namespace Xenon
 			void createDXILLibrary(CD3DX12_STATE_OBJECT_DESC& stateObject, D3D12_SHADER_BYTECODE shader, const std::wstring_view& newExport) const;
 
 			/**
-			 * Create the root signature.
+			 * Create a local root signature.
+			 *
+			 * @param rangePairs The descriptor range maps.
+			 * @return The created root signature raw pointer.
+			 */
+			[[nodiscard]] ID3D12RootSignature* createLocalRootSignature(std::vector<std::pair<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>>&& rangePairs);
+
+			/**
+			 * Create the global root signature.
 			 *
 			 * @param rangePairs The descriptor range maps.
 			 */
-			void createRootSignature(std::vector<std::pair<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>>&& rangePairs);
+			void createGlobalRootSignature(std::vector<std::pair<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>>&& rangePairs);
 
 		private:
-			ComPtr<ID3D12RootSignature> m_RootSignature;
+			std::vector<ComPtr<ID3D12RootSignature>> m_LocalRootSignatures;
+			ComPtr<ID3D12RootSignature> m_GlobalRootSignature;
 			ComPtr<ID3D12StateObject> m_PipelineState;
 
 			uint64_t m_PipelineHash = 0;

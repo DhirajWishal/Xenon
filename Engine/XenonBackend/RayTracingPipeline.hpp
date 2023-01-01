@@ -48,6 +48,19 @@ namespace Xenon
 		};
 
 		/**
+		 * Ray tracing pipeline specification structure.
+		 */
+		struct RayTracingPipelineSpecification final
+		{
+			std::vector<ShaderGroup> m_ShaderGroups;
+
+			uint32_t m_MaxPayloadSize = 0;
+			uint32_t m_MaxAttributeSize = 0;
+
+			uint32_t m_MaxRayRecursionDepth = 4;
+		};
+
+		/**
 		 * Ray tracing pipeline class.
 		 * This pipeline is used to perform ray tracing on objects.
 		 */
@@ -74,9 +87,17 @@ namespace Xenon
 			 */
 			[[nodiscard]] uint32_t getMaximumRayRecursionDepth() const noexcept { return m_MaximumRayRecursionDepth; }
 
+			/**
+			 * Get the pipeline specification.
+			 *
+			 * @return The specification.
+			 */
+			[[nodiscard]] const RayTracingPipelineSpecification& getSpecification() const noexcept { return m_Specification; }
+
 		protected:
 			std::vector<ShaderGroup> m_ShaderGroups = {};
 			uint32_t m_MaximumRayRecursionDepth = 0;
+			RayTracingPipelineSpecification m_Specification = {};
 		};
 	}
 }

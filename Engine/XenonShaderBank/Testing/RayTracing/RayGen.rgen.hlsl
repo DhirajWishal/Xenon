@@ -1,5 +1,7 @@
 // Copyright 2020 Google LLC
 
+#include "Payload.hlsli"
+
 RaytracingAccelerationStructure rs : register(t0);
 RWTexture2D<float4> image : register(u1);
 
@@ -10,14 +12,6 @@ struct CameraProperties
 	float4 lightPos;
 };
 cbuffer cam : register(b2) { CameraProperties cam; };
-
-
-struct RayPayload {
-	float3 color;
-	float distance;
-	float3 normal;
-	float reflector;
-};
 
 // Max. number of recursion is passed via a specialization constant
 // [[vk::constant_id(0)]] const int MAX_RECURSION = 0;

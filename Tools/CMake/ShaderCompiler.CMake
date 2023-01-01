@@ -138,7 +138,7 @@ function(CompileShaders)
 				APPEND 
 				${XENON_COMPILE_TARGET} 
 				
-				"namespace Xenon { namespace Generated { [[nodisacrd]] Xenon::Backend::Shader CreateShader${FUNCTION_NAME}() { return Xenon::Backend::Shader::Create(g_${FILE_NAME_FORMATTED_UPPER}_SPIRV, g_${FILE_NAME_FORMATTED_UPPER}_DXIL); } } }\n"
+				"namespace Xenon { namespace Generated { [[nodisacrd]] inline Xenon::Backend::Shader CreateShader${FUNCTION_NAME}() { return Xenon::Backend::Shader::Create(g_${FILE_NAME_FORMATTED_UPPER}_SPIRV, g_${FILE_NAME_FORMATTED_UPPER}_DXIL); } } }\n"
 			)
 
 		else()
@@ -146,7 +146,7 @@ function(CompileShaders)
 				APPEND 
 				${XENON_COMPILE_TARGET} 
 				
-				"namespace Xenon { namespace Generated { [[nodisacrd]] Xenon::Backend::Shader CreateShader${FUNCTION_NAME}() { return Xenon::Backend::Shader::Create(g_${FILE_NAME_FORMATTED_UPPER}_SPIRV); } } }\n"
+				"namespace Xenon { namespace Generated { [[nodisacrd]] inline Xenon::Backend::Shader CreateShader${FUNCTION_NAME}() { return Xenon::Backend::Shader::Create(g_${FILE_NAME_FORMATTED_UPPER}_SPIRV); } } }\n"
 			)
 
 		endif()

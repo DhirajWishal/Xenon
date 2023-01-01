@@ -1,12 +1,6 @@
 // Copyright 2020 Google LLC
 
-struct RayPayload
-{
-	float3 color;
-	float distance;
-	float3 normal;
-	float reflector;
-};
+#include "Payload.hlsli"
 
 RaytracingAccelerationStructure topLevelAS : register(t0);
 struct UBO

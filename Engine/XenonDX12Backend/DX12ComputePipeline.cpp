@@ -144,8 +144,8 @@ namespace Xenon
 				featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
 
 			// Create the root signature.
-			CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc;
-			rootSignatureDesc.Init_1_1(1, &rootParameter, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+			CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc = {};
+			rootSignatureDesc.Init_1_1(1, &rootParameter);
 
 			ComPtr<ID3DBlob> signature;
 			ComPtr<ID3DBlob> error;

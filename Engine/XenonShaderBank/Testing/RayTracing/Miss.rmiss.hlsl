@@ -1,11 +1,6 @@
 // Copyright 2020 Google LLC
 
-struct RayPayload {
-	float3 color;
-	float distance;
-	float3 normal;
-	float reflector;
-};
+#include "Payload.hlsli"
 
 [shader("miss")]
 void main(inout RayPayload rayPayload)

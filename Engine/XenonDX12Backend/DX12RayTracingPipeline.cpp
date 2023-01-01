@@ -8,6 +8,10 @@
 #include <spdlog/fmt/xchar.h>
 #include <optick.h>
 
+#include <DirectXMath.h>
+
+#include <algorithm>
+
 namespace /* anonymous */
 {
 	/**
@@ -91,27 +95,40 @@ namespace /* anonymous */
 				auto& binding = bindings.emplace_back();
 				binding.m_Type = resource.m_Type;
 				binding.m_ApplicableShaders = type;
-			}
 
-			// Setup the rest.
-			const auto rangeType = GetDescriptorRangeType(resource.m_Type);
-
-			// If it's a sampler, we need one for the texture (SRV) and another as the sampler.
-			if (rangeType == D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER)
-			{
+				// Setup the ranges.
+				const auto rangeType = GetDescriptorRangeType(resource.m_Type);
 				const auto setIndex = static_cast<uint8_t>(Xenon::EnumToInt(resource.m_Set) * 2);
-				rangeMap[setIndex + 0].emplace_back().Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, resource.m_Binding, Xenon::EnumToInt(resource.m_Set));	// Set the texture buffer (SRV).
-				rangeMap[setIndex + 1].emplace_back().Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, resource.m_Binding, Xenon::EnumToInt(resource.m_Set));	// Set the texture sampler.
-			}
 
-			// Else just one entry for the buffer.
-			else
-			{
-				rangeMap[static_cast<uint8_t>(Xenon::EnumToInt(resource.m_Set) * 2)].emplace_back().Init(rangeType, 1, resource.m_Binding, Xenon::EnumToInt(resource.m_Set));
+				// If it's a sampler, we need one for the texture (SRV) and another as the sampler.
+				if (rangeType == D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER)
+				{
+					rangeMap[setIndex + 0].emplace_back().Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, resource.m_Binding, Xenon::EnumToInt(resource.m_Set));	// Set the texture buffer (SRV).
+					rangeMap[setIndex + 1].emplace_back().Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, resource.m_Binding, Xenon::EnumToInt(resource.m_Set));	// Set the texture sampler.
+				}
+
+				// Else just one entry for the buffer.
+				else
+				{
+					rangeMap[setIndex].emplace_back().Init(rangeType, 1, resource.m_Binding, Xenon::EnumToInt(resource.m_Set));
+				}
 			}
 		}
 	}
 }
+
+struct RayPayload
+{
+	DirectX::XMFLOAT3 color;
+	float distance;
+	DirectX::XMFLOAT3 normal;
+	float reflector;
+};
+
+struct ProceduralPrimitiveAttributes
+{
+	DirectX::XMFLOAT3 normal;
+};
 
 namespace Xenon
 {
@@ -125,6 +142,12 @@ namespace Xenon
 
 			auto rayTracingPipeline = CD3DX12_STATE_OBJECT_DESC(D3D12_STATE_OBJECT_TYPE_RAYTRACING_PIPELINE);
 
+			// Defines the maximum sizes in bytes for the ray rayPayload and attribute structure.
+			auto shaderConfig = rayTracingPipeline.CreateSubobject<CD3DX12_RAYTRACING_SHADER_CONFIG_SUBOBJECT>();
+			UINT payloadSize = sizeof(RayPayload);
+			UINT attributeSize = sizeof(ProceduralPrimitiveAttributes);
+			shaderConfig->Config(payloadSize, attributeSize);
+
 			// Setup shader groups.
 			uint32_t index = 0;
 			std::vector<std::wstring> names;
@@ -133,10 +156,12 @@ namespace Xenon
 
 			std::unordered_map<DescriptorType, std::vector<DescriptorBindingInfo>> bindingMap;
 			std::unordered_map<uint32_t, std::unordered_map<uint32_t, size_t>> indexToBindingMap;
-			std::unordered_map<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>> rangeMap;
+			std::unordered_map<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>> globalRangeMap;
 
 			for (const auto& group : shaderGroups)
 			{
+				std::unordered_map<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>> rangeMap;
+
 				auto pHitGroup = rayTracingPipeline.CreateSubobject<CD3DX12_HIT_GROUP_SUBOBJECT>();
 				pHitGroup->SetHitGroupType(D3D12_HIT_GROUP_TYPE_TRIANGLES);
 
@@ -156,8 +181,7 @@ namespace Xenon
 					SetupShaderData(group.m_IntersectionShader, bindingMap, indexToBindingMap, rangeMap, ShaderType::Intersection);
 					createDXILLibrary(rayTracingPipeline, CD3DX12_SHADER_BYTECODE(group.m_IntersectionShader.getDXIL().getBinaryData(), group.m_IntersectionShader.getDXIL().getBinarySizeInBytes()), newName);
 
-					const auto& wNewName = importNames.emplace_back(fmt::format(L"rayGenMain_group{}", index));
-					pHitGroup->SetIntersectionShaderImport(wNewName.c_str());
+					pHitGroup->SetIntersectionShaderImport(newName.c_str());
 				}
 
 				if (group.m_AnyHitShader.getDXIL().isValid())
@@ -166,8 +190,7 @@ namespace Xenon
 					SetupShaderData(group.m_AnyHitShader, bindingMap, indexToBindingMap, rangeMap, ShaderType::AnyHit);
 					createDXILLibrary(rayTracingPipeline, CD3DX12_SHADER_BYTECODE(group.m_AnyHitShader.getDXIL().getBinaryData(), group.m_AnyHitShader.getDXIL().getBinarySizeInBytes()), newName);
 
-					const auto& wNewName = importNames.emplace_back(fmt::format(L"rayGenMain_group{}", index));
-					pHitGroup->SetAnyHitShaderImport(wNewName.c_str());
+					pHitGroup->SetAnyHitShaderImport(newName.c_str());
 				}
 
 				if (group.m_ClosestHitShader.getDXIL().isValid())
@@ -176,8 +199,7 @@ namespace Xenon
 					SetupShaderData(group.m_ClosestHitShader, bindingMap, indexToBindingMap, rangeMap, ShaderType::ClosestHit);
 					createDXILLibrary(rayTracingPipeline, CD3DX12_SHADER_BYTECODE(group.m_ClosestHitShader.getDXIL().getBinaryData(), group.m_ClosestHitShader.getDXIL().getBinarySizeInBytes()), newName);
 
-					const auto& wNewName = importNames.emplace_back(fmt::format(L"rayGenMain_group{}", index));
-					pHitGroup->SetClosestHitShaderImport(wNewName.c_str());
+					pHitGroup->SetClosestHitShaderImport(newName.c_str());
 				}
 
 				if (group.m_MissShader.getDXIL().isValid())
@@ -194,22 +216,70 @@ namespace Xenon
 					createDXILLibrary(rayTracingPipeline, CD3DX12_SHADER_BYTECODE(group.m_CallableShader.getDXIL().getBinaryData(), group.m_CallableShader.getDXIL().getBinarySizeInBytes()), newName);
 				}
 
+				// Sort the ranges to the correct binding order.
+				auto sortedRanges = std::vector<std::pair<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>>(rangeMap.begin(), rangeMap.end());
+				std::ranges::sort(sortedRanges, [](const auto& lhs, const auto& rhs) { return lhs.first < rhs.first; });
+
+				// Create the global root signature.
+				auto pRootSignature = createLocalRootSignature(std::move(sortedRanges));
+
+				auto localRootSignature = rayTracingPipeline.CreateSubobject<CD3DX12_LOCAL_ROOT_SIGNATURE_SUBOBJECT>();
+				localRootSignature->SetRootSignature(pRootSignature);
+
+				// Setup the association.
+				auto rootSignatureAssociation = rayTracingPipeline.CreateSubobject<CD3DX12_SUBOBJECT_TO_EXPORTS_ASSOCIATION_SUBOBJECT>();
+				rootSignatureAssociation->SetSubobjectToAssociate(*localRootSignature);
+				rootSignatureAssociation->AddExport(groupName.c_str());
+
+				// Setup the maximum ray recursion.
+				auto pipelineConfig = rayTracingPipeline.CreateSubobject<CD3DX12_RAYTRACING_PIPELINE_CONFIG_SUBOBJECT>();
+				pipelineConfig->Config(maxRayRecursion);
+
+				// Insert the local group.
+				if (globalRangeMap.empty())
+				{
+					globalRangeMap = rangeMap;
+				}
+				else
+				{
+					for (const auto& [set, bindings] : rangeMap)
+					{
+						auto& globalRangeSlot = globalRangeMap[set];
+
+						for (const auto& range : bindings)
+						{
+							bool isContained = false;
+							for (const auto& candidate : globalRangeSlot)
+							{
+								if (candidate.BaseShaderRegister == range.BaseShaderRegister && candidate.RegisterSpace == range.RegisterSpace)
+								{
+									isContained = true;
+									break;
+								}
+							}
+
+							if (!isContained)
+								globalRangeSlot.emplace_back(range);
+						}
+					}
+				}
+
 				index++;
 			}
 
 			// Sort the ranges to the correct binding order.
-			auto sortedRanges = std::vector<std::pair<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>>(rangeMap.begin(), rangeMap.end());
+			auto sortedRanges = std::vector<std::pair<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>>(globalRangeMap.begin(), globalRangeMap.end());
 			std::ranges::sort(sortedRanges, [](const auto& lhs, const auto& rhs) { return lhs.first < rhs.first; });
 
 			// Setup the descriptor heap manager.
 			setupDescriptorHeapManager(std::move(bindingMap));
 
-			// Create the root signature.
-			createRootSignature(std::move(sortedRanges));
+			// Create the global root signature.
+			createGlobalRootSignature(std::move(sortedRanges));
 
 			// Set the global root signature.
 			auto globalRootSignature = rayTracingPipeline.CreateSubobject<CD3DX12_GLOBAL_ROOT_SIGNATURE_SUBOBJECT>();
-			globalRootSignature->SetRootSignature(m_RootSignature.Get());
+			globalRootSignature->SetRootSignature(m_GlobalRootSignature.Get());
 
 			// Setup the maximum ray recursion.
 			auto pipelineConfig = rayTracingPipeline.CreateSubobject<CD3DX12_RAYTRACING_PIPELINE_CONFIG_SUBOBJECT>();
@@ -232,10 +302,10 @@ namespace Xenon
 
 			auto pLibrary = stateObject.CreateSubobject<CD3DX12_DXIL_LIBRARY_SUBOBJECT>();
 			pLibrary->SetDXILLibrary(&shader);
-			pLibrary->DefineExport(L"main", newExport.data());
+			pLibrary->DefineExport(newExport.data(), L"main");
 		}
 
-		void DX12RayTracingPipeline::createRootSignature(std::vector<std::pair<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>>&& rangePairs)
+		ID3D12RootSignature* DX12RayTracingPipeline::createLocalRootSignature(std::vector<std::pair<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>>&& rangePairs)
 		{
 			OPTICK_EVENT();
 
@@ -251,16 +321,45 @@ namespace Xenon
 
 			// Create the root signature.
 			CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc = {};
-			rootSignatureDesc.Init_1_1(static_cast<UINT>(rootParameters.size()), rootParameters.data(), 0, nullptr);
+			rootSignatureDesc.Init_1_1(static_cast<UINT>(rootParameters.size()), rootParameters.data(), 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE);
 
 			ComPtr<ID3DBlob> signature;
 			ComPtr<ID3DBlob> error;
-			D3DX12SerializeVersionedRootSignature(&rootSignatureDesc, featureData.HighestVersion, &signature, &error);
-			// XENON_DX12_ASSERT(D3DX12SerializeVersionedRootSignature(&rootSignatureDesc, featureData.HighestVersion, &signature, &error), "Failed to serialize the version-ed root signature!");
+			XENON_DX12_ASSERT(D3DX12SerializeVersionedRootSignature(&rootSignatureDesc, featureData.HighestVersion, &signature, &error), "Failed to serialize the version-ed root signature!");
 			XENON_DX12_ASSERT_BLOB(error);
 
-			XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature)), "Failed to create the root signature!");
-			XENON_DX12_NAME_OBJECT(m_RootSignature, "Ray Tracing Root Signature");
+			auto& rootSignature = m_LocalRootSignatures.emplace_back();
+			XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&rootSignature)), "Failed to create the local root signature!");
+			XENON_DX12_NAME_OBJECT(rootSignature, "Local Ray Tracing Root Signature");
+
+			return rootSignature.Get();
+		}
+
+		void DX12RayTracingPipeline::createGlobalRootSignature(std::vector<std::pair<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>>&& rangePairs)
+		{
+			OPTICK_EVENT();
+
+			std::vector<CD3DX12_ROOT_PARAMETER1> rootParameters;
+			for (const auto& [set, ranges] : rangePairs)
+				rootParameters.emplace_back().InitAsDescriptorTable(static_cast<UINT>(ranges.size()), ranges.data(), D3D12_SHADER_VISIBILITY_ALL);
+
+			D3D12_FEATURE_DATA_ROOT_SIGNATURE featureData = {};
+			featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_1;
+
+			if (FAILED(m_pDevice->getDevice()->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &featureData, sizeof(featureData))))
+				featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
+
+			// Create the root signature.
+			CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc = {};
+			rootSignatureDesc.Init_1_1(static_cast<UINT>(rootParameters.size()), rootParameters.data());
+
+			ComPtr<ID3DBlob> signature;
+			ComPtr<ID3DBlob> error;
+			XENON_DX12_ASSERT(D3DX12SerializeVersionedRootSignature(&rootSignatureDesc, featureData.HighestVersion, &signature, &error), "Failed to serialize the version-ed root signature!");
+			XENON_DX12_ASSERT_BLOB(error);
+
+			XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&m_GlobalRootSignature)), "Failed to create the global root signature!");
+			XENON_DX12_NAME_OBJECT(m_GlobalRootSignature, "Global Ray Tracing Root Signature");
 		}
 	}
 }

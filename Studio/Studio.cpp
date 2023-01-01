@@ -102,7 +102,7 @@ void Studio::run()
 	specification.m_VertexShader = Xenon::Generated::CreateShaderShader_vert();
 	specification.m_FragmentShader = Xenon::Generated::CreateShaderShader_frag();
 	auto pPipeline = m_Instance.getFactory()->createRasterizingPipeline(m_Instance.getBackendDevice(), std::make_unique<CacheHandler>(), pRasterizer->getRasterizer(), specification);
-	// auto pPipelineRT = m_Instance.getFactory()->createRayTracingPipeline(m_Instance.getBackendDevice(), std::make_unique<CacheHandler>(), GetShaderGroups());
+	auto pPipelineRT = m_Instance.getFactory()->createRayTracingPipeline(m_Instance.getBackendDevice(), std::make_unique<CacheHandler>(), GetShaderGroups());
 
 	{
 		auto ret = Xenon::XObject::GetJobSystem().insert([this, &pPipeline, &pRasterizer, &pRayTracer]
