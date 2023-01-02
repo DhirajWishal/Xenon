@@ -1,19 +1,16 @@
 // Copyright 2020 Google LLC
 
-#include "Payload.hlsli"
+#include "Common.hlsli"
 
-RaytracingAccelerationStructure topLevelAS : register(t0);
-struct UBO
-{
-	float4x4 viewInverse;
-	float4x4 projInverse;
-	float4 lightPos;
-	int vertexSize;
-};
-cbuffer ubo : register(b2) { UBO ubo; };
+XENON_SETUP_ACCELERATION_STRUCTURE(topLevelAS);
 
-StructuredBuffer<float4> vertices : register(t3);
-StructuredBuffer<uint> indices : register(t4);
+XENON_SETUP_CAMERA(UBO, ubo);
+
+XENON_SETUP_DESCRIPTOR(XENON_DESCRIPTOR_TYPE_USER_DEFINED, 2)
+StructuredBuffer<float4> vertices : register(t2, XENON_DESCRIPTOR_SPACE(XENON_DESCRIPTOR_TYPE_USER_DEFINED));
+
+XENON_SETUP_DESCRIPTOR(XENON_DESCRIPTOR_TYPE_USER_DEFINED, 3)
+StructuredBuffer<uint> indices : register(t3, XENON_DESCRIPTOR_SPACE(XENON_DESCRIPTOR_TYPE_USER_DEFINED));
 
 struct Vertex
 {

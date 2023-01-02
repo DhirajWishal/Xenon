@@ -104,9 +104,9 @@ namespace Xenon
 			return std::make_unique<VulkanRayTracer>(pDevice->as<VulkanDevice>(), pCamera);
 		}
 
-		std::unique_ptr<Xenon::Backend::RayTracingPipeline> VulkanFactory::createRayTracingPipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const std::vector<ShaderGroup>& shaderGroups, uint32_t maxRayRecursion /*= 4*/)
+		std::unique_ptr<Xenon::Backend::RayTracingPipeline> VulkanFactory::createRayTracingPipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const RayTracingPipelineSpecification& specification)
 		{
-			return std::make_unique<VulkanRayTracingPipeline>(pDevice->as<VulkanDevice>(), std::move(pCacheHandler), shaderGroups, maxRayRecursion);
+			return std::make_unique<VulkanRayTracingPipeline>(pDevice->as<VulkanDevice>(), std::move(pCacheHandler), specification);
 		}
 	}
 }

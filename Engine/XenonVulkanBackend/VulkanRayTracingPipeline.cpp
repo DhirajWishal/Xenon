@@ -95,8 +95,8 @@ namespace Xenon
 {
 	namespace Backend
 	{
-		VulkanRayTracingPipeline::VulkanRayTracingPipeline(VulkanDevice* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const std::vector<ShaderGroup>& shaderGroups, uint32_t maxRayRecursion /*= 4*/)
-			: RayTracingPipeline(pDevice, std::move(pCacheHandler), shaderGroups, maxRayRecursion)
+		VulkanRayTracingPipeline::VulkanRayTracingPipeline(VulkanDevice* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const RayTracingPipelineSpecification& specification)
+			: RayTracingPipeline(pDevice, std::move(pCacheHandler), specification)
 			, VulkanDeviceBoundObject(pDevice)
 		{
 			OPTICK_EVENT();
@@ -114,8 +114,8 @@ namespace Xenon
 
 			std::unordered_map<uint32_t, std::unordered_map<uint32_t, size_t>> indexToBindingMap;
 
-			std::vector<uint64_t> shaderHashes = { maxRayRecursion };
-			for (const auto& group : shaderGroups)
+			std::vector<uint64_t> shaderHashes = { specification.m_MaxRayRecursionDepth, specification.m_MaxPayloadSize, specification.m_MaxAttributeSize };
+			for (const auto& group : specification.m_ShaderGroups)
 			{
 				auto& vkShaderGroup = vkShaderGroups.emplace_back();
 				vkShaderGroup.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;

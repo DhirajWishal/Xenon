@@ -1,6 +1,6 @@
 // Copyright 2020 Google LLC
 
-#include "Payload.hlsli"
+#include "Common.hlsli"
 
 [shader("miss")]
 void main(inout RayPayload rayPayload)

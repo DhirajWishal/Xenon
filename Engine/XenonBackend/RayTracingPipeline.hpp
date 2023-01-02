@@ -72,13 +72,11 @@ namespace Xenon
 			 *
 			 * @param pDevice The device pointer.
 			 * @param pCacheHandler The cache handler pointer. This can be null in which case the pipeline creation might get slow.
-			 * @param shaderGroups The shader groups.
-			 * @param maxRayRecursion The maximum ray recursion depth. Default is 4.
+			 * @param specification The pipeline specification.
 			 */
-			explicit RayTracingPipeline(const Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const std::vector<ShaderGroup>& shaderGroups, uint32_t maxRayRecursion = 4)
+			explicit RayTracingPipeline(const Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const RayTracingPipelineSpecification& specification)
 				: Pipeline(pDevice, std::move(pCacheHandler))
-				, m_ShaderGroups(shaderGroups)
-				, m_MaximumRayRecursionDepth(maxRayRecursion) {}
+				, m_Specification(specification) {}
 
 			/**
 			 * Get the maximum possible ray recursion depth of the pipeline.

@@ -62,43 +62,80 @@ function(CompileShaders)
 		# Comment or uncomment if we want to enable/ disable warnings.
 		set(HIDE_WARNINGS -Wno-ignored-attributes)
 
+		# Resolve the target profile.
+		if (${SOURCE_FILE} MATCHES "vert")
+			set_source_files_properties(${SOURCE_FILE} PROPERTIES ShaderType "vs")
+			set(TARGET_PROFILE vs_6_6)
+			set(SHADER_TYPE_MACRO "XENON_SHADER_VERTEX")
+
+		elseif (${SOURCE_FILE} MATCHES "frag")
+			set_source_files_properties(${SOURCE_FILE} PROPERTIES ShaderType "ps")
+			set(TARGET_PROFILE ps_6_6)
+			set(SHADER_TYPE_MACRO "XENON_SHADER_FRAGMENT")
+
+		elseif (${SOURCE_FILE} MATCHES "comp")
+			set_source_files_properties(${SOURCE_FILE} PROPERTIES ShaderType "cs")
+			set(TARGET_PROFILE cs_6_6)
+			set(SHADER_TYPE_MACRO "XENON_SHADER_COMPUTE")
+
+		elseif (${SOURCE_FILE} MATCHES "geom")
+			set_source_files_properties(${SOURCE_FILE} PROPERTIES ShaderType "gs")
+			set(TARGET_PROFILE gs_6_6)
+			set(SHADER_TYPE_MACRO "XENON_SHADER_GEOMETRY")
+
+		elseif (${SOURCE_FILE} MATCHES "tesc")
+			set_source_files_properties(${SOURCE_FILE} PROPERTIES ShaderType "hs")
+			set(TARGET_PROFILE hs_6_6)
+			set(SHADER_TYPE_MACRO "XENON_SHADER_TESSELLATION_CONTROL")
+
+		elseif (${SOURCE_FILE} MATCHES "tese")
+			set_source_files_properties(${SOURCE_FILE} PROPERTIES ShaderType "ds")
+			set(TARGET_PROFILE ds_6_6)
+			set(SHADER_TYPE_MACRO "XENON_SHADER_TESSELLATION_EVALUATION")
+			
+		elseif (${SOURCE_FILE} MATCHES "rgen")
+			set_source_files_properties(${SOURCE_FILE} PROPERTIES ShaderType "lib")
+			set(TARGET_PROFILE lib_6_6)
+			set(SHADER_TYPE_MACRO "XENON_SHADER_RAY_GENERATION")
+
+		elseif (${SOURCE_FILE} MATCHES "rint")
+			set_source_files_properties(${SOURCE_FILE} PROPERTIES ShaderType "lib")
+			set(TARGET_PROFILE lib_6_6)
+			set(SHADER_TYPE_MACRO "XENON_SHADER_RAY_INTERSECTION")
+
+		elseif (${SOURCE_FILE} MATCHES "rahit")
+			set_source_files_properties(${SOURCE_FILE} PROPERTIES ShaderType "lib")
+			set(TARGET_PROFILE lib_6_6)
+			set(SHADER_TYPE_MACRO "XENON_SHADER_RAY_ANY_HIT")
+
+		elseif (${SOURCE_FILE} MATCHES "rchit")
+			set_source_files_properties(${SOURCE_FILE} PROPERTIES ShaderType "lib")
+			set(TARGET_PROFILE lib_6_6)
+			set(SHADER_TYPE_MACRO "XENON_SHADER_RAY_CLOSEST_HIT")
+
+		elseif (${SOURCE_FILE} MATCHES "rmiss")
+			set_source_files_properties(${SOURCE_FILE} PROPERTIES ShaderType "lib")
+			set(TARGET_PROFILE lib_6_6)
+			set(SHADER_TYPE_MACRO "XENON_SHADER_RAY_MISS")
+
+		elseif (${SOURCE_FILE} MATCHES "rcall")
+			set_source_files_properties(${SOURCE_FILE} PROPERTIES ShaderType "lib")
+			set(TARGET_PROFILE lib_6_6)
+			set(SHADER_TYPE_MACRO "XENON_SHADER_CALLABLE")
+
+		else()
+			set_source_files_properties(${SOURCE_FILE} PROPERTIES ShaderType "lib")
+			set(TARGET_PROFILE lib_6_6)
+			set(SHADER_TYPE_MACRO "XENON_SHADER_LIBRARY")
+
+		endif()
+
 		if(MSVC)
-			# Resolve the target profile.
-			if (${SOURCE_FILE} MATCHES "vert")
-				set_source_files_properties(${SOURCE_FILE} PROPERTIES ShaderType "vs")
-				set(TARGET_PROFILE vs_6_6)
-
-			elseif (${SOURCE_FILE} MATCHES "frag")
-				set_source_files_properties(${SOURCE_FILE} PROPERTIES ShaderType "ps")
-				set(TARGET_PROFILE ps_6_6)
-
-			elseif (${SOURCE_FILE} MATCHES "comp")
-				set_source_files_properties(${SOURCE_FILE} PROPERTIES ShaderType "cs")
-				set(TARGET_PROFILE cs_6_6)
-
-			elseif (${SOURCE_FILE} MATCHES "geom")
-				set_source_files_properties(${SOURCE_FILE} PROPERTIES ShaderType "gs")
-				set(TARGET_PROFILE gs_6_6)
-
-			elseif (${SOURCE_FILE} MATCHES "tesc")
-				set_source_files_properties(${SOURCE_FILE} PROPERTIES ShaderType "hs")
-				set(TARGET_PROFILE hs_6_6)
-
-			elseif (${SOURCE_FILE} MATCHES "tese")
-				set_source_files_properties(${SOURCE_FILE} PROPERTIES ShaderType "ds")
-				set(TARGET_PROFILE ds_6_6)
-
-			else()
-				set_source_files_properties(${SOURCE_FILE} PROPERTIES ShaderType "lib")
-				set(TARGET_PROFILE lib_6_6)
-
-			endif()
-
 			# Specify DXIL the output file.
 			set(DXIL_OUTPUT_FILE ${OUTPUT_FILE}.dxil.hpp)
 
 			# Set the HLSL compile command.
-			set(DXIL_COMPILE_COMMAND ${TOOLS_DIR}/dxc ${HIDE_WARNINGS} -Fh ${DXIL_OUTPUT_FILE} -I ${CMAKE_SOURCE_DIR}/Engine/XenonShaderBank -HV 2021 -Vn g_${FILE_NAME_FORMATTED_UPPER}_DXIL -T ${TARGET_PROFILE} -E main ${SOURCE_FILE})
+			set(DXIL_COMPILE_COMMAND ${TOOLS_DIR}/dxc ${HIDE_WARNINGS} -Fh ${DXIL_OUTPUT_FILE} -I ${CMAKE_SOURCE_DIR}/Engine/XenonShaderBank -HV 2021 -Vn g_${FILE_NAME_FORMATTED_UPPER}_DXIL -T ${TARGET_PROFILE} -E main -D ${SHADER_TYPE_MACRO} ${SOURCE_FILE})
 
 			# Add a custom command for the file to compile HLSL to SPIR-V.
 			set_source_files_properties(${DXIL_OUTPUT_FILE} PROPERTIES SYMBOLIC TRUE)
@@ -118,7 +155,7 @@ function(CompileShaders)
 
 		# Set the SPIR-V compile command.
 		# set(SPIRV_COMPILE_COMMAND ${TOOLS_DIR}/glslangValidator -V ${SOURCE_FILE} -o ${SPIRV_OUTPUT_FILE} --variable-name g_${FILE_NAME_FORMATTED_UPPER}_SPIRV --target-env vulkan1.3 -I${CMAKE_SOURCE_DIR}/Engine/ShaderBank --entry-point main)
-		set(SPIRV_COMPILE_COMMAND ${TOOLS_DIR}/dxc ${HIDE_WARNINGS} -Fh ${SPIRV_OUTPUT_FILE} -I ${CMAKE_SOURCE_DIR}/Engine/XenonShaderBank -HV 2021 -Vn g_${FILE_NAME_FORMATTED_UPPER}_SPIRV -T ${TARGET_PROFILE} -fspv-target-env=vulkan1.3 -E main -spirv ${SOURCE_FILE})
+		set(SPIRV_COMPILE_COMMAND ${TOOLS_DIR}/dxc ${HIDE_WARNINGS} -Fh ${SPIRV_OUTPUT_FILE} -I ${CMAKE_SOURCE_DIR}/Engine/XenonShaderBank -HV 2021 -Vn g_${FILE_NAME_FORMATTED_UPPER}_SPIRV -T ${TARGET_PROFILE} -fspv-target-env=vulkan1.3 -E main -D ${SHADER_TYPE_MACRO} -spirv ${SOURCE_FILE})
 
 		# Add a custom command for the file to compile HLSL to SPIR-V.
 		set_source_files_properties(${SPIRV_OUTPUT_FILE} PROPERTIES SYMBOLIC TRUE)

@@ -63,19 +63,35 @@ namespace /* anonymous */
 		return f.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
 	}
 
-	/**
-	 * Create the shader groups for the ray tracer.
-	 *
-	 * @return The shader groups.
-	 */
-	std::vector<Xenon::Backend::ShaderGroup> GetShaderGroups()
+	struct RayPayload final
 	{
-		std::vector<Xenon::Backend::ShaderGroup> groups;
-		groups.emplace_back().m_RayGenShader = Xenon::Generated::CreateShaderRayGen_rgen();
-		groups.emplace_back().m_MissShader = Xenon::Generated::CreateShaderMiss_rmiss();
-		groups.emplace_back().m_ClosestHitShader = Xenon::Generated::CreateShaderClosestHit_rchit();
+		glm::vec3 m_Color;
+		float m_Distance;
+		glm::vec3 m_Normal;
+		float m_Reflector;
+	};
 
-		return groups;
+	struct ProceduralPrimitiveAttributes final
+	{
+		glm::vec3 m_Normal;
+	};
+
+	/**
+	 * Create the ray tracing pipeline specification.
+	 *
+	 * @return The pipeline specification.
+	 */
+	Xenon::Backend::RayTracingPipelineSpecification getRayTracingPipelineSpecification()
+	{
+		Xenon::Backend::RayTracingPipelineSpecification specification = {};
+		specification.m_ShaderGroups.emplace_back().m_RayGenShader = Xenon::Generated::CreateShaderRayGen_rgen();
+		specification.m_ShaderGroups.emplace_back().m_MissShader = Xenon::Generated::CreateShaderMiss_rmiss();
+		specification.m_ShaderGroups.emplace_back().m_ClosestHitShader = Xenon::Generated::CreateShaderClosestHit_rchit();
+
+		specification.m_MaxPayloadSize = sizeof(RayPayload);
+		specification.m_MaxAttributeSize = sizeof(ProceduralPrimitiveAttributes);
+
+		return specification;
 	}
 }
 
@@ -102,13 +118,13 @@ void Studio::run()
 	specification.m_VertexShader = Xenon::Generated::CreateShaderShader_vert();
 	specification.m_FragmentShader = Xenon::Generated::CreateShaderShader_frag();
 	auto pPipeline = m_Instance.getFactory()->createRasterizingPipeline(m_Instance.getBackendDevice(), std::make_unique<CacheHandler>(), pRasterizer->getRasterizer(), specification);
-	auto pPipelineRT = m_Instance.getFactory()->createRayTracingPipeline(m_Instance.getBackendDevice(), std::make_unique<CacheHandler>(), GetShaderGroups());
+	auto pPipelineRT = m_Instance.getFactory()->createRayTracingPipeline(m_Instance.getBackendDevice(), std::make_unique<CacheHandler>(), getRayTracingPipelineSpecification());
 
 	{
 		auto ret = Xenon::XObject::GetJobSystem().insert([this, &pPipeline, &pRasterizer, &pRayTracer]
 			{
 				pRasterizer->addDrawData(Xenon::MeshStorage::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"), pPipeline.get());
-				// pRayTracer->addDrawData(Xenon::MeshStorage::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"));
+		// pRayTracer->addDrawData(Xenon::MeshStorage::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"));
 			}
 		);
 

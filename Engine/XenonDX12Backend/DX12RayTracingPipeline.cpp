@@ -8,8 +8,6 @@
 #include <spdlog/fmt/xchar.h>
 #include <optick.h>
 
-#include <DirectXMath.h>
-
 #include <algorithm>
 
 namespace /* anonymous */
@@ -117,25 +115,12 @@ namespace /* anonymous */
 	}
 }
 
-struct RayPayload
-{
-	DirectX::XMFLOAT3 color;
-	float distance;
-	DirectX::XMFLOAT3 normal;
-	float reflector;
-};
-
-struct ProceduralPrimitiveAttributes
-{
-	DirectX::XMFLOAT3 normal;
-};
-
 namespace Xenon
 {
 	namespace Backend
 	{
-		DX12RayTracingPipeline::DX12RayTracingPipeline(DX12Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const std::vector<ShaderGroup>& shaderGroups, uint32_t maxRayRecursion /*= 4*/)
-			: RayTracingPipeline(pDevice, std::move(pCacheHandler), shaderGroups, maxRayRecursion)
+		DX12RayTracingPipeline::DX12RayTracingPipeline(DX12Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const RayTracingPipelineSpecification& specification)
+			: RayTracingPipeline(pDevice, std::move(pCacheHandler), specification)
 			, DX12DescriptorHeapManager(pDevice)
 		{
 			OPTICK_EVENT();
@@ -144,9 +129,7 @@ namespace Xenon
 
 			// Defines the maximum sizes in bytes for the ray rayPayload and attribute structure.
 			auto shaderConfig = rayTracingPipeline.CreateSubobject<CD3DX12_RAYTRACING_SHADER_CONFIG_SUBOBJECT>();
-			UINT payloadSize = sizeof(RayPayload);
-			UINT attributeSize = sizeof(ProceduralPrimitiveAttributes);
-			shaderConfig->Config(payloadSize, attributeSize);
+			shaderConfig->Config(specification.m_MaxPayloadSize, specification.m_MaxAttributeSize);
 
 			// Setup shader groups.
 			uint32_t index = 0;
@@ -158,7 +141,7 @@ namespace Xenon
 			std::unordered_map<uint32_t, std::unordered_map<uint32_t, size_t>> indexToBindingMap;
 			std::unordered_map<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>> globalRangeMap;
 
-			for (const auto& group : shaderGroups)
+			for (const auto& group : specification.m_ShaderGroups)
 			{
 				std::unordered_map<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>> rangeMap;
 
@@ -231,10 +214,6 @@ namespace Xenon
 				rootSignatureAssociation->SetSubobjectToAssociate(*localRootSignature);
 				rootSignatureAssociation->AddExport(groupName.c_str());
 
-				// Setup the maximum ray recursion.
-				auto pipelineConfig = rayTracingPipeline.CreateSubobject<CD3DX12_RAYTRACING_PIPELINE_CONFIG_SUBOBJECT>();
-				pipelineConfig->Config(maxRayRecursion);
-
 				// Insert the local group.
 				if (globalRangeMap.empty())
 				{
@@ -283,7 +262,7 @@ namespace Xenon
 
 			// Setup the maximum ray recursion.
 			auto pipelineConfig = rayTracingPipeline.CreateSubobject<CD3DX12_RAYTRACING_PIPELINE_CONFIG_SUBOBJECT>();
-			pipelineConfig->Config(maxRayRecursion);
+			pipelineConfig->Config(specification.m_MaxRayRecursionDepth);
 
 			// Create the state object.
 			XENON_DX12_ASSERT(pDevice->getDevice()->CreateStateObject(rayTracingPipeline, IID_PPV_ARGS(&m_PipelineState)), "Failed to crate the ray tracing state object!");

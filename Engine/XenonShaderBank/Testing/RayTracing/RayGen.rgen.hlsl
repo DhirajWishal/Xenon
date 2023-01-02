@@ -1,17 +1,12 @@
 // Copyright 2020 Google LLC
 
-#include "Payload.hlsli"
+#include "Common.hlsli"
 
-RaytracingAccelerationStructure rs : register(t0);
-RWTexture2D<float4> image : register(u1);
+XENON_SETUP_ACCELERATION_STRUCTURE(rs);
 
-struct CameraProperties
-{
-	float4x4 viewInverse;
-	float4x4 projInverse;
-	float4 lightPos;
-};
-cbuffer cam : register(b2) { CameraProperties cam; };
+XENON_SETUP_RENDER_TARGET_IMAGE(float4, image);
+
+XENON_SETUP_CAMERA(UBO, cam);
 
 // Max. number of recursion is passed via a specialization constant
 // [[vk::constant_id(0)]] const int MAX_RECURSION = 0;
