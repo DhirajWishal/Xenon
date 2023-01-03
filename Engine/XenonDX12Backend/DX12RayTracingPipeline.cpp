@@ -93,23 +93,23 @@ namespace /* anonymous */
 				auto& binding = bindings.emplace_back();
 				binding.m_Type = resource.m_Type;
 				binding.m_ApplicableShaders = type;
+			}
 
-				// Setup the ranges.
-				const auto rangeType = GetDescriptorRangeType(resource.m_Type);
-				const auto setIndex = static_cast<uint8_t>(Xenon::EnumToInt(resource.m_Set) * 2);
+			// Setup the ranges.
+			const auto rangeType = GetDescriptorRangeType(resource.m_Type);
+			const auto setIndex = static_cast<uint8_t>(Xenon::EnumToInt(resource.m_Set) * 2);
 
-				// If it's a sampler, we need one for the texture (SRV) and another as the sampler.
-				if (rangeType == D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER)
-				{
-					rangeMap[setIndex + 0].emplace_back().Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, resource.m_Binding, Xenon::EnumToInt(resource.m_Set));	// Set the texture buffer (SRV).
-					rangeMap[setIndex + 1].emplace_back().Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, resource.m_Binding, Xenon::EnumToInt(resource.m_Set));	// Set the texture sampler.
-				}
+			// If it's a sampler, we need one for the texture (SRV) and another as the sampler.
+			if (rangeType == D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER)
+			{
+				rangeMap[setIndex + 0].emplace_back().Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, resource.m_Binding, Xenon::EnumToInt(resource.m_Set));	// Set the texture buffer (SRV).
+				rangeMap[setIndex + 1].emplace_back().Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, resource.m_Binding, Xenon::EnumToInt(resource.m_Set));	// Set the texture sampler.
+			}
 
-				// Else just one entry for the buffer.
-				else
-				{
-					rangeMap[setIndex].emplace_back().Init(rangeType, 1, resource.m_Binding, Xenon::EnumToInt(resource.m_Set));
-				}
+			// Else just one entry for the buffer.
+			else
+			{
+				rangeMap[setIndex].emplace_back().Init(rangeType, 1, resource.m_Binding, Xenon::EnumToInt(resource.m_Set));
 			}
 		}
 	}
@@ -133,7 +133,6 @@ namespace Xenon
 
 			// Setup shader groups.
 			uint32_t index = 0;
-			std::vector<std::wstring> names;
 			std::vector<std::wstring> groupNames;
 			std::vector<std::wstring> importNames;
 
@@ -141,8 +140,12 @@ namespace Xenon
 			std::unordered_map<uint32_t, std::unordered_map<uint32_t, size_t>> indexToBindingMap;
 			std::unordered_map<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>> globalRangeMap;
 
+			std::vector<std::vector<std::wstring>> exportNames;
+			exportNames.reserve(specification.m_ShaderGroups.size());
+
 			for (const auto& group : specification.m_ShaderGroups)
 			{
+				auto& names = exportNames.emplace_back();
 				std::unordered_map<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>> rangeMap;
 
 				auto pHitGroup = rayTracingPipeline.CreateSubobject<CD3DX12_HIT_GROUP_SUBOBJECT>();
@@ -209,49 +212,55 @@ namespace Xenon
 				auto localRootSignature = rayTracingPipeline.CreateSubobject<CD3DX12_LOCAL_ROOT_SIGNATURE_SUBOBJECT>();
 				localRootSignature->SetRootSignature(pRootSignature);
 
+				std::vector<LPCTSTR> rawNames;
+				rawNames.reserve(names.size());
+
+				for (const auto& name : names)
+					rawNames.emplace_back(name.c_str());
+
 				// Setup the association.
 				auto rootSignatureAssociation = rayTracingPipeline.CreateSubobject<CD3DX12_SUBOBJECT_TO_EXPORTS_ASSOCIATION_SUBOBJECT>();
 				rootSignatureAssociation->SetSubobjectToAssociate(*localRootSignature);
-				rootSignatureAssociation->AddExport(groupName.c_str());
+				rootSignatureAssociation->AddExports(rawNames.data(), static_cast<UINT>(rawNames.size()));
 
 				// Insert the local group.
-				if (globalRangeMap.empty())
-				{
-					globalRangeMap = rangeMap;
-				}
-				else
-				{
-					for (const auto& [set, bindings] : rangeMap)
-					{
-						auto& globalRangeSlot = globalRangeMap[set];
-
-						for (const auto& range : bindings)
-						{
-							bool isContained = false;
-							for (const auto& candidate : globalRangeSlot)
-							{
-								if (candidate.BaseShaderRegister == range.BaseShaderRegister && candidate.RegisterSpace == range.RegisterSpace)
-								{
-									isContained = true;
-									break;
-								}
-							}
-
-							if (!isContained)
-								globalRangeSlot.emplace_back(range);
-						}
-					}
-				}
+				// if (globalRangeMap.empty())
+				// {
+				// 	globalRangeMap = rangeMap;
+				// }
+				// else
+				// {
+				// 	for (const auto& [set, bindings] : rangeMap)
+				// 	{
+				// 		auto& globalRangeSlot = globalRangeMap[set];
+				// 
+				// 		for (const auto& range : bindings)
+				// 		{
+				// 			bool isContained = false;
+				// 			for (const auto& candidate : globalRangeSlot)
+				// 			{
+				// 				if (candidate.BaseShaderRegister == range.BaseShaderRegister && candidate.RegisterSpace == range.RegisterSpace)
+				// 				{
+				// 					isContained = true;
+				// 					break;
+				// 				}
+				// 			}
+				// 
+				// 			if (!isContained)
+				// 				globalRangeSlot.emplace_back(range);
+				// 		}
+				// 	}
+				// }
 
 				index++;
 			}
 
+			// Setup the descriptor heap manager.
+			setupDescriptorHeapManager(std::move(bindingMap));
+
 			// Sort the ranges to the correct binding order.
 			auto sortedRanges = std::vector<std::pair<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>>(globalRangeMap.begin(), globalRangeMap.end());
 			std::ranges::sort(sortedRanges, [](const auto& lhs, const auto& rhs) { return lhs.first < rhs.first; });
-
-			// Setup the descriptor heap manager.
-			setupDescriptorHeapManager(std::move(bindingMap));
 
 			// Create the global root signature.
 			createGlobalRootSignature(std::move(sortedRanges));
@@ -290,7 +299,7 @@ namespace Xenon
 
 			std::vector<CD3DX12_ROOT_PARAMETER1> rootParameters;
 			for (const auto& [set, ranges] : rangePairs)
-				rootParameters.emplace_back().InitAsDescriptorTable(static_cast<UINT>(ranges.size()), ranges.data(), D3D12_SHADER_VISIBILITY_ALL);
+				rootParameters.emplace_back().InitAsDescriptorTable(static_cast<UINT>(ranges.size()), ranges.data());
 
 			D3D12_FEATURE_DATA_ROOT_SIGNATURE featureData = {};
 			featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_1;
@@ -320,7 +329,7 @@ namespace Xenon
 
 			std::vector<CD3DX12_ROOT_PARAMETER1> rootParameters;
 			for (const auto& [set, ranges] : rangePairs)
-				rootParameters.emplace_back().InitAsDescriptorTable(static_cast<UINT>(ranges.size()), ranges.data(), D3D12_SHADER_VISIBILITY_ALL);
+				rootParameters.emplace_back().InitAsDescriptorTable(static_cast<UINT>(ranges.size()), ranges.data());
 
 			D3D12_FEATURE_DATA_ROOT_SIGNATURE featureData = {};
 			featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_1;
