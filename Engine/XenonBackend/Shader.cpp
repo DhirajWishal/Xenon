@@ -170,6 +170,9 @@ namespace Xenon
 					resource.m_Binding = pResource->binding;
 					resource.m_Set = static_cast<DescriptorType>(pResource->set);
 					resource.m_Type = GetResourceType(pResource->descriptor_type);
+
+					if (pResource->resource_type == SPV_REFLECT_RESOURCE_FLAG_UAV)
+						resource.m_Operations |= ResouceOperation::Write;
 				}
 			}
 		}

@@ -22,49 +22,6 @@ constexpr uint64_t g_MagicNumber = 0b0111110011100110101100111010010010001011111
 namespace /* anonymous */
 {
 	/**
-	 * Get the shader stage flag bit from the Xenon shader type.
-	 *
-	 * @param shaderType The shader type.
-	 * @return The Vulkan shader stage flag bit.
-	 */
-	[[nodiscard]] constexpr VkShaderStageFlagBits GetShaderStageFlagBit(Xenon::Backend::ShaderType shaderType) noexcept
-	{
-		switch (shaderType)
-		{
-		case Xenon::Backend::ShaderType::Vertex:
-			return VK_SHADER_STAGE_VERTEX_BIT;
-
-		case Xenon::Backend::ShaderType::Fragment:
-			return VK_SHADER_STAGE_FRAGMENT_BIT;
-
-		case Xenon::Backend::ShaderType::RayGen:
-			return VK_SHADER_STAGE_RAYGEN_BIT_KHR;
-
-		case Xenon::Backend::ShaderType::Intersection:
-			return VK_SHADER_STAGE_INTERSECTION_BIT_KHR;
-
-		case Xenon::Backend::ShaderType::AnyHit:
-			return VK_SHADER_STAGE_ANY_HIT_BIT_KHR;
-
-		case Xenon::Backend::ShaderType::ClosestHit:
-			return VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
-
-		case Xenon::Backend::ShaderType::Miss:
-			return VK_SHADER_STAGE_MISS_BIT_KHR;
-
-		case Xenon::Backend::ShaderType::Callable:
-			return VK_SHADER_STAGE_CALLABLE_BIT_KHR;
-
-		case Xenon::Backend::ShaderType::Compute:
-			return VK_SHADER_STAGE_COMPUTE_BIT;
-
-		default:
-			XENON_LOG_ERROR("Invalid shader type provided! Defaulting to All.");
-			return VK_SHADER_STAGE_ALL;
-		}
-	}
-
-	/**
 	 * Get the shader bindings.
 	 *
 	 * @param shader The shader to get the bindings from.
@@ -109,7 +66,7 @@ namespace /* anonymous */
 		// 	auto& range = pushConstants.emplace_back();
 		// 	range.offset = buffer.m_Offset;
 		// 	range.size = buffer.m_Size;
-		// 	range.stageFlags = GetShaderStageFlagBit(type);
+		// 	range.stageFlags = Xenon::Backend::VulkanDevice::GetShaderStageFlagBit(type);
 		// }
 
 		// Setup the input bindings if we're on the vertex shader.
@@ -1124,7 +1081,7 @@ namespace Xenon
 			m_MultisampleStateCreateInfo.alphaToOneEnable = XENON_VK_BOOL(m_Specification.m_EnableAlphaToOne);
 			m_MultisampleStateCreateInfo.minSampleShading = m_Specification.m_MinSampleShading;
 			m_MultisampleStateCreateInfo.pSampleMask = nullptr;	// TODO
-			m_MultisampleStateCreateInfo.rasterizationSamples = m_pDevice->convertSamplingCount(m_pRasterizer->getImageAttachment(AttachmentType::Color)->getSpecification().m_MultiSamplingCount);
+			m_MultisampleStateCreateInfo.rasterizationSamples = VulkanDevice::ConvertSamplingCount(m_pRasterizer->getImageAttachment(AttachmentType::Color)->getSpecification().m_MultiSamplingCount);
 			m_MultisampleStateCreateInfo.sampleShadingEnable = XENON_VK_BOOL(m_Specification.m_EnableSampleShading);
 
 			// Depth stencil state.

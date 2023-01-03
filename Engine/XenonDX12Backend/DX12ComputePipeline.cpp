@@ -13,56 +13,6 @@ constexpr auto g_MagicNumber = 0b01111001011100001011000100001100101000100011100
 namespace /* anonymous */
 {
 	/**
-	 * Get the descriptor range type.
-	 *
-	 * @param resource The Xenon resource type.
-	 * @return The D3D12 descriptor range type.
-	 */
-	[[nodiscard]] constexpr D3D12_DESCRIPTOR_RANGE_TYPE GetDescriptorRangeType(Xenon::Backend::ResourceType resource) noexcept
-	{
-		switch (resource)
-		{
-		case Xenon::Backend::ResourceType::Sampler:
-		case Xenon::Backend::ResourceType::CombinedImageSampler:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
-
-		case Xenon::Backend::ResourceType::SampledImage:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-
-		case Xenon::Backend::ResourceType::StorageImage:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
-
-		case Xenon::Backend::ResourceType::UniformTexelBuffer:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-
-		case Xenon::Backend::ResourceType::StorageTexelBuffer:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
-
-		case Xenon::Backend::ResourceType::UniformBuffer:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
-
-		case Xenon::Backend::ResourceType::StorageBuffer:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
-
-		case Xenon::Backend::ResourceType::DynamicUniformBuffer:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
-
-		case Xenon::Backend::ResourceType::DynamicStorageBuffer:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
-
-		case Xenon::Backend::ResourceType::InputAttachment:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-
-		case Xenon::Backend::ResourceType::AccelerationStructure:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-
-		default:
-			XENON_LOG_ERROR("Invalid resource type! Defaulting to SRV.");
-			return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-		}
-	}
-
-	/**
 	 * Setup all the shader-specific data.
 	 *
 	 * @param shader The shader to get the data from.
@@ -82,7 +32,7 @@ namespace /* anonymous */
 			binding.m_ApplicableShaders = Xenon::Backend::ShaderType::Compute;
 
 			// Setup the rest.
-			const auto rangeType = GetDescriptorRangeType(resource.m_Type);
+			const auto rangeType = Xenon::Backend::DX12Device::GetDescriptorRangeType(resource.m_Type, resource.m_Operations);
 
 			// If it's a sampler, we need one for the texture (SRV) and another as the sampler.
 			if (rangeType == D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER)

@@ -81,7 +81,7 @@ namespace Xenon
 			}
 		}
 
-		DXGI_FORMAT DX12Device::convertFormat(DataFormat format) const
+		DXGI_FORMAT DX12Device::ConvertFormat(DataFormat format) noexcept
 		{
 			switch (format)
 			{
@@ -119,6 +119,50 @@ namespace Xenon
 				(formatSupport.Support1 & support1) == support1,
 				(formatSupport.Support2 & support2) == support2
 			);
+		}
+
+		D3D12_DESCRIPTOR_RANGE_TYPE DX12Device::GetDescriptorRangeType(Xenon::Backend::ResourceType resource, Xenon::Backend::ResouceOperation operations) noexcept
+		{
+			switch (resource)
+			{
+			case Xenon::Backend::ResourceType::Sampler:
+			case Xenon::Backend::ResourceType::CombinedImageSampler:
+				return D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
+
+			case Xenon::Backend::ResourceType::SampledImage:
+				return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+
+			case Xenon::Backend::ResourceType::StorageImage:
+				return operations & Xenon::Backend::ResouceOperation::Write ? D3D12_DESCRIPTOR_RANGE_TYPE_UAV : D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+
+			case Xenon::Backend::ResourceType::UniformTexelBuffer:
+				return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+
+			case Xenon::Backend::ResourceType::StorageTexelBuffer:
+				return operations & Xenon::Backend::ResouceOperation::Write ? D3D12_DESCRIPTOR_RANGE_TYPE_UAV : D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+
+			case Xenon::Backend::ResourceType::UniformBuffer:
+				return D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+
+			case Xenon::Backend::ResourceType::StorageBuffer:
+				return operations & Xenon::Backend::ResouceOperation::Write ? D3D12_DESCRIPTOR_RANGE_TYPE_UAV : D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+
+			case Xenon::Backend::ResourceType::DynamicUniformBuffer:
+				return D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+
+			case Xenon::Backend::ResourceType::DynamicStorageBuffer:
+				return operations & Xenon::Backend::ResouceOperation::Write ? D3D12_DESCRIPTOR_RANGE_TYPE_UAV : D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+
+			case Xenon::Backend::ResourceType::InputAttachment:
+				return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+
+			case Xenon::Backend::ResourceType::AccelerationStructure:
+				return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+
+			default:
+				XENON_LOG_ERROR("Invalid resource type! Defaulting to SRV.");
+				return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+			}
 		}
 
 		void DX12Device::createFactory()

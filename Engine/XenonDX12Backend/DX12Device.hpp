@@ -44,7 +44,7 @@ namespace Xenon
 			 * @param format The Xenon format.
 			 * @return The DX12 format.
 			 */
-			[[nodiscard]] DXGI_FORMAT convertFormat(DataFormat format) const;
+			[[nodiscard]] static DXGI_FORMAT ConvertFormat(DataFormat format) noexcept;
 
 			/**
 			 * Get the format support.
@@ -55,6 +55,15 @@ namespace Xenon
 			 * @return The format support pair. The first one is for the support 1 and second is for support 2.
 			 */
 			[[nodiscard]] std::pair<bool, bool> getFormatSupport(DXGI_FORMAT format, D3D12_FORMAT_SUPPORT1 support1 = D3D12_FORMAT_SUPPORT1_NONE, D3D12_FORMAT_SUPPORT2 support2 = D3D12_FORMAT_SUPPORT2_NONE) const;
+
+			/**
+			 * Get the descriptor range type.
+			 *
+			 * @param resource The Xenon resource type.
+			 * @param operations The Xenon resource operations.
+			 * @return The D3D12 descriptor range type.
+			 */
+			[[nodiscard]] static D3D12_DESCRIPTOR_RANGE_TYPE GetDescriptorRangeType(Xenon::Backend::ResourceType resource, Xenon::Backend::ResouceOperation operations) noexcept;
 
 		public:
 			/**

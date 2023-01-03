@@ -16,8 +16,4 @@ struct MonoCamera
 	float4x4 projection;
 };
 
-#define XENON_SETUP_CAMERA(camera, name)																			\
-XENON_SETUP_DESCRIPTOR(XENON_DESCRIPTOR_TYPE_SCENE, XENON_SCENE_DESCRIPTOR_BINDING_CAMERA)							\
-	cbuffer name : register(b0, XENON_DESCRIPTOR_SPACE(XENON_SCENE_DESCRIPTOR_BINDING_CAMERA)) { camera name; }
-
 #endif // CAMERA_HLSLI

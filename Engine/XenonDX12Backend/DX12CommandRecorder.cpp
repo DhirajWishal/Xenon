@@ -434,7 +434,7 @@ namespace Xenon
 			sourceLocation.pResource = pDxBuffer->getResource();
 			sourceLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
 			sourceLocation.PlacedFootprint.Offset = 0;
-			sourceLocation.PlacedFootprint.Footprint.Format = m_pDevice->convertFormat(pDxImage->getDataFormat());
+			sourceLocation.PlacedFootprint.Footprint.Format = m_pDevice->ConvertFormat(pDxImage->getDataFormat());
 			sourceLocation.PlacedFootprint.Footprint.Depth = 1;
 			sourceLocation.PlacedFootprint.Footprint.Width = pDxImage->getWidth();
 			sourceLocation.PlacedFootprint.Footprint.Height = pDxImage->getHeight();
@@ -494,7 +494,7 @@ namespace Xenon
 			destinationLocation.pResource = pDxDestinationImage->getResource();
 			destinationLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
 			destinationLocation.PlacedFootprint.Offset = 0;
-			destinationLocation.PlacedFootprint.Footprint.Format = m_pDevice->convertFormat(pDxDestinationImage->getDataFormat());
+			destinationLocation.PlacedFootprint.Footprint.Format = m_pDevice->ConvertFormat(pDxDestinationImage->getDataFormat());
 			destinationLocation.PlacedFootprint.Footprint.Depth = 1;
 			destinationLocation.PlacedFootprint.Footprint.Width = pDxDestinationImage->getWidth();
 			destinationLocation.PlacedFootprint.Footprint.Height = pDxDestinationImage->getHeight();
@@ -504,7 +504,7 @@ namespace Xenon
 			sourceLocation.pResource = pDxSourceImage->getResource();
 			sourceLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
 			sourceLocation.PlacedFootprint.Offset = 0;
-			sourceLocation.PlacedFootprint.Footprint.Format = m_pDevice->convertFormat(pDxSourceImage->getDataFormat());
+			sourceLocation.PlacedFootprint.Footprint.Format = m_pDevice->ConvertFormat(pDxSourceImage->getDataFormat());
 			sourceLocation.PlacedFootprint.Footprint.Depth = 1;
 			sourceLocation.PlacedFootprint.Footprint.Width = pDxSourceImage->getWidth();
 			sourceLocation.PlacedFootprint.Footprint.Height = pDxSourceImage->getHeight();

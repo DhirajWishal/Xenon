@@ -216,7 +216,7 @@ namespace Xenon
 			}
 		}
 
-		VkSampleCountFlagBits VulkanDevice::convertSamplingCount(MultiSamplingCount count) const
+		VkSampleCountFlagBits VulkanDevice::ConvertSamplingCount(MultiSamplingCount count) noexcept
 		{
 			switch (count)
 			{
@@ -249,7 +249,7 @@ namespace Xenon
 			return VK_SAMPLE_COUNT_1_BIT;
 		}
 
-		VkFormat VulkanDevice::convertFormat(DataFormat format) const
+		VkFormat VulkanDevice::ConvertFormat(DataFormat format) noexcept
 		{
 			switch (format)
 			{
@@ -340,7 +340,7 @@ namespace Xenon
 			}
 		}
 
-		VkDescriptorType VulkanDevice::convertResourceType(ResourceType type) const
+		VkDescriptorType VulkanDevice::ConvertResourceType(ResourceType type) noexcept
 		{
 			switch (type)
 			{
@@ -383,6 +383,43 @@ namespace Xenon
 			default:
 				XENON_LOG_ERROR("Invalid resource type!");
 				return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			}
+		}
+
+		VkShaderStageFlagBits VulkanDevice::GetShaderStageFlagBit(Xenon::Backend::ShaderType shaderType) noexcept
+		{
+			switch (shaderType)
+			{
+			case Xenon::Backend::ShaderType::Vertex:
+				return VK_SHADER_STAGE_VERTEX_BIT;
+
+			case Xenon::Backend::ShaderType::Fragment:
+				return VK_SHADER_STAGE_FRAGMENT_BIT;
+
+			case Xenon::Backend::ShaderType::RayGen:
+				return VK_SHADER_STAGE_RAYGEN_BIT_KHR;
+
+			case Xenon::Backend::ShaderType::Intersection:
+				return VK_SHADER_STAGE_INTERSECTION_BIT_KHR;
+
+			case Xenon::Backend::ShaderType::AnyHit:
+				return VK_SHADER_STAGE_ANY_HIT_BIT_KHR;
+
+			case Xenon::Backend::ShaderType::ClosestHit:
+				return VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
+
+			case Xenon::Backend::ShaderType::Miss:
+				return VK_SHADER_STAGE_MISS_BIT_KHR;
+
+			case Xenon::Backend::ShaderType::Callable:
+				return VK_SHADER_STAGE_CALLABLE_BIT_KHR;
+
+			case Xenon::Backend::ShaderType::Compute:
+				return VK_SHADER_STAGE_COMPUTE_BIT;
+
+			default:
+				XENON_LOG_ERROR("Invalid shader type provided! Defaulting to All.");
+				return VK_SHADER_STAGE_ALL;
 			}
 		}
 

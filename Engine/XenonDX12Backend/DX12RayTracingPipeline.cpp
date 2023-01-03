@@ -13,56 +13,6 @@
 namespace /* anonymous */
 {
 	/**
-	 * Get the descriptor range type.
-	 *
-	 * @param resource The Xenon resource type.
-	 * @return The D3D12 descriptor range type.
-	 */
-	[[nodiscard]] constexpr D3D12_DESCRIPTOR_RANGE_TYPE GetDescriptorRangeType(Xenon::Backend::ResourceType resource) noexcept
-	{
-		switch (resource)
-		{
-		case Xenon::Backend::ResourceType::Sampler:
-		case Xenon::Backend::ResourceType::CombinedImageSampler:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
-
-		case Xenon::Backend::ResourceType::SampledImage:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-
-		case Xenon::Backend::ResourceType::StorageImage:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
-
-		case Xenon::Backend::ResourceType::UniformTexelBuffer:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-
-		case Xenon::Backend::ResourceType::StorageTexelBuffer:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
-
-		case Xenon::Backend::ResourceType::UniformBuffer:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
-
-		case Xenon::Backend::ResourceType::StorageBuffer:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
-
-		case Xenon::Backend::ResourceType::DynamicUniformBuffer:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
-
-		case Xenon::Backend::ResourceType::DynamicStorageBuffer:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
-
-		case Xenon::Backend::ResourceType::InputAttachment:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-
-		case Xenon::Backend::ResourceType::AccelerationStructure:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-
-		default:
-			XENON_LOG_ERROR("Invalid resource type! Defaulting to SRV.");
-			return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-		}
-	}
-
-	/**
 	 * Setup all the shader-specific data.
 	 *
 	 * @param shader The shader to get the data from.
@@ -96,7 +46,7 @@ namespace /* anonymous */
 			}
 
 			// Setup the ranges.
-			const auto rangeType = GetDescriptorRangeType(resource.m_Type);
+			const auto rangeType = Xenon::Backend::DX12Device::GetDescriptorRangeType(resource.m_Type, resource.m_Operations);
 			const auto setIndex = static_cast<uint8_t>(Xenon::EnumToInt(resource.m_Set) * 2);
 
 			// If it's a sampler, we need one for the texture (SRV) and another as the sampler.
@@ -134,18 +84,14 @@ namespace Xenon
 			// Setup shader groups.
 			uint32_t index = 0;
 			std::vector<std::wstring> groupNames;
-			std::vector<std::wstring> importNames;
 
 			std::unordered_map<DescriptorType, std::vector<DescriptorBindingInfo>> bindingMap;
 			std::unordered_map<uint32_t, std::unordered_map<uint32_t, size_t>> indexToBindingMap;
 			std::unordered_map<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>> globalRangeMap;
 
-			std::vector<std::vector<std::wstring>> exportNames;
-			exportNames.reserve(specification.m_ShaderGroups.size());
-
 			for (const auto& group : specification.m_ShaderGroups)
 			{
-				auto& names = exportNames.emplace_back();
+				std::vector<std::wstring> names;
 				std::unordered_map<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>> rangeMap;
 
 				auto pHitGroup = rayTracingPipeline.CreateSubobject<CD3DX12_HIT_GROUP_SUBOBJECT>();
@@ -209,8 +155,8 @@ namespace Xenon
 				// Create the global root signature.
 				auto pRootSignature = createLocalRootSignature(std::move(sortedRanges));
 
-				auto localRootSignature = rayTracingPipeline.CreateSubobject<CD3DX12_LOCAL_ROOT_SIGNATURE_SUBOBJECT>();
-				localRootSignature->SetRootSignature(pRootSignature);
+				auto pLocalRootSignature = rayTracingPipeline.CreateSubobject<CD3DX12_LOCAL_ROOT_SIGNATURE_SUBOBJECT>();
+				pLocalRootSignature->SetRootSignature(pRootSignature);
 
 				std::vector<LPCTSTR> rawNames;
 				rawNames.reserve(names.size());
@@ -219,9 +165,9 @@ namespace Xenon
 					rawNames.emplace_back(name.c_str());
 
 				// Setup the association.
-				auto rootSignatureAssociation = rayTracingPipeline.CreateSubobject<CD3DX12_SUBOBJECT_TO_EXPORTS_ASSOCIATION_SUBOBJECT>();
-				rootSignatureAssociation->SetSubobjectToAssociate(*localRootSignature);
-				rootSignatureAssociation->AddExports(rawNames.data(), static_cast<UINT>(rawNames.size()));
+				auto pRootSignatureAssociation = rayTracingPipeline.CreateSubobject<CD3DX12_SUBOBJECT_TO_EXPORTS_ASSOCIATION_SUBOBJECT>();
+				pRootSignatureAssociation->SetSubobjectToAssociate(*pLocalRootSignature);
+				pRootSignatureAssociation->AddExports(rawNames.data(), static_cast<UINT>(rawNames.size()));
 
 				// Insert the local group.
 				// if (globalRangeMap.empty())
@@ -266,12 +212,12 @@ namespace Xenon
 			createGlobalRootSignature(std::move(sortedRanges));
 
 			// Set the global root signature.
-			auto globalRootSignature = rayTracingPipeline.CreateSubobject<CD3DX12_GLOBAL_ROOT_SIGNATURE_SUBOBJECT>();
-			globalRootSignature->SetRootSignature(m_GlobalRootSignature.Get());
+			auto pGlobalRootSignature = rayTracingPipeline.CreateSubobject<CD3DX12_GLOBAL_ROOT_SIGNATURE_SUBOBJECT>();
+			pGlobalRootSignature->SetRootSignature(m_GlobalRootSignature.Get());
 
 			// Setup the maximum ray recursion.
-			auto pipelineConfig = rayTracingPipeline.CreateSubobject<CD3DX12_RAYTRACING_PIPELINE_CONFIG_SUBOBJECT>();
-			pipelineConfig->Config(specification.m_MaxRayRecursionDepth);
+			auto pPipelineConfig = rayTracingPipeline.CreateSubobject<CD3DX12_RAYTRACING_PIPELINE_CONFIG_SUBOBJECT>();
+			pPipelineConfig->Config(specification.m_MaxRayRecursionDepth);
 
 			// Create the state object.
 			XENON_DX12_ASSERT(pDevice->getDevice()->CreateStateObject(rayTracingPipeline, IID_PPV_ARGS(&m_PipelineState)), "Failed to crate the ray tracing state object!");

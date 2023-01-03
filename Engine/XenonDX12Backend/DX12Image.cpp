@@ -96,7 +96,7 @@ namespace Xenon
 			D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE;
 			if (specification.m_Usage & ImageUsage::Graphics)
 			{
-				const auto formatSize = GetFormatSize(pDevice->convertFormat(specification.m_Format));
+				const auto formatSize = GetFormatSize(pDevice->ConvertFormat(specification.m_Format));
 				const auto dataPitch = static_cast<uint32_t>(std::ceil(static_cast<float>(getWidth() * formatSize) / D3D12_TEXTURE_DATA_PITCH_ALIGNMENT) * D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
 				m_Specification.m_Width = dataPitch / formatSize;
 			}
@@ -147,7 +147,7 @@ namespace Xenon
 			// Try and create the image using the candidates.
 			for (const auto candidate : GetCandidateFormats(m_Specification.m_Format))
 			{
-				resourceDescriptor.Format = m_pDevice->convertFormat(candidate);
+				resourceDescriptor.Format = m_pDevice->ConvertFormat(candidate);
 
 				// Get the best multisample quality level.
 				D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS msLevels = {};
@@ -240,7 +240,7 @@ namespace Xenon
 			sourceLocation.pResource = pSourceBuffer->getResource();
 			sourceLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
 			sourceLocation.PlacedFootprint.Offset = 0;
-			sourceLocation.PlacedFootprint.Footprint.Format = m_pDevice->convertFormat(m_Specification.m_Format);
+			sourceLocation.PlacedFootprint.Footprint.Format = m_pDevice->ConvertFormat(m_Specification.m_Format);
 			sourceLocation.PlacedFootprint.Footprint.Depth = 1;
 			sourceLocation.PlacedFootprint.Footprint.Width = getWidth();
 			sourceLocation.PlacedFootprint.Footprint.Height = getHeight();
@@ -333,7 +333,7 @@ namespace Xenon
 			// Copy the buffer to the image.
 			D3D12_TEXTURE_COPY_LOCATION sourceLocation = CD3DX12_TEXTURE_COPY_LOCATION(pSourceImage->getResource(), D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT);
 			sourceLocation.PlacedFootprint.Offset = 0;
-			sourceLocation.PlacedFootprint.Footprint.Format = m_pDevice->convertFormat(pSrcImage->getDataFormat());
+			sourceLocation.PlacedFootprint.Footprint.Format = m_pDevice->ConvertFormat(pSrcImage->getDataFormat());
 			sourceLocation.PlacedFootprint.Footprint.Depth = pSrcImage->getDepth();
 			sourceLocation.PlacedFootprint.Footprint.Width = pSrcImage->getWidth();
 			sourceLocation.PlacedFootprint.Footprint.Height = pSrcImage->getHeight();
@@ -341,7 +341,7 @@ namespace Xenon
 
 			D3D12_TEXTURE_COPY_LOCATION destinationLocation = CD3DX12_TEXTURE_COPY_LOCATION(getResource(), D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT);
 			destinationLocation.PlacedFootprint.Offset = 0;
-			destinationLocation.PlacedFootprint.Footprint.Format = m_pDevice->convertFormat(getDataFormat());
+			destinationLocation.PlacedFootprint.Footprint.Format = m_pDevice->ConvertFormat(getDataFormat());
 			destinationLocation.PlacedFootprint.Footprint.Depth = getDepth();
 			destinationLocation.PlacedFootprint.Footprint.Width = getWidth();
 			destinationLocation.PlacedFootprint.Footprint.Height = getHeight();

@@ -595,6 +595,19 @@ namespace Xenon
 		};
 
 		/**
+		 * Resource operation enum.
+		 * This describes what types of operations the shader does to the resource.
+		 */
+		enum class ResouceOperation : uint8_t
+		{
+			Read = XENON_BIT_SHIFT(0),
+			Write = XENON_BIT_SHIFT(1)
+		};
+
+		XENON_DEFINE_ENUM_AND(ResouceOperation);
+		XENON_DEFINE_ENUM_OR(ResouceOperation);
+
+		/**
 		 * Descriptor type enum.
 		 */
 		enum class DescriptorType : uint8_t

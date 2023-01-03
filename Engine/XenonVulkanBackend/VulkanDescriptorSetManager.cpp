@@ -107,7 +107,7 @@ namespace Xenon
 					auto& vkBinding = bindings.emplace_back();
 					vkBinding.binding = index;
 					vkBinding.descriptorCount = 1;
-					vkBinding.descriptorType = m_pDevice->convertResourceType(binding.m_Type);
+					vkBinding.descriptorType = VulkanDevice::ConvertResourceType(binding.m_Type);
 					vkBinding.pImmutableSamplers = nullptr;
 					vkBinding.stageFlags = GetStageFlags(binding.m_ApplicableShaders);
 
@@ -175,7 +175,7 @@ namespace Xenon
 					auto& vkBinding = bindings.emplace_back();
 					vkBinding.binding = index;
 					vkBinding.descriptorCount = 1;
-					vkBinding.descriptorType = m_pDevice->convertResourceType(binding.m_Type);
+					vkBinding.descriptorType = VulkanDevice::ConvertResourceType(binding.m_Type);
 					vkBinding.pImmutableSamplers = nullptr;
 					vkBinding.stageFlags = GetStageFlags(binding.m_ApplicableShaders);
 
@@ -238,7 +238,7 @@ namespace Xenon
 				{
 					auto& vkPoolSize = poolSizes.emplace_back();
 					vkPoolSize.descriptorCount = 1;
-					vkPoolSize.type = m_pDevice->convertResourceType(binding.m_Type);
+					vkPoolSize.type = VulkanDevice::ConvertResourceType(binding.m_Type);
 				}
 
 				VkDescriptorPoolCreateInfo poolCreateInfo = {};

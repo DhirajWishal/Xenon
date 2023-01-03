@@ -27,6 +27,7 @@ namespace Xenon
 
 			DescriptorType m_Set = DescriptorType::Camera;
 			ResourceType m_Type = ResourceType::Sampler;
+			ResouceOperation m_Operations = ResouceOperation::Read;
 		};
 
 		/**

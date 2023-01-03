@@ -43,7 +43,7 @@ namespace Xenon
 			writeDescriptorSet.dstBinding = binding;
 			writeDescriptorSet.dstArrayElement = 0;
 			writeDescriptorSet.descriptorCount = 1;
-			writeDescriptorSet.descriptorType = m_pDevice->convertResourceType(m_BindingInformation[binding].m_Type);
+			writeDescriptorSet.descriptorType = VulkanDevice::ConvertResourceType(m_BindingInformation[binding].m_Type);
 			writeDescriptorSet.pImageInfo = nullptr;
 			writeDescriptorSet.pBufferInfo = &bufferInfo;
 			writeDescriptorSet.pTexelBufferView = nullptr;
@@ -67,7 +67,7 @@ namespace Xenon
 			writeDescriptorSet.dstBinding = binding;
 			writeDescriptorSet.dstArrayElement = 0;
 			writeDescriptorSet.descriptorCount = 1;
-			writeDescriptorSet.descriptorType = m_pDevice->convertResourceType(m_BindingInformation[binding].m_Type);
+			writeDescriptorSet.descriptorType = VulkanDevice::ConvertResourceType(m_BindingInformation[binding].m_Type);
 			writeDescriptorSet.pImageInfo = &imageInfo;
 			writeDescriptorSet.pBufferInfo = nullptr;
 			writeDescriptorSet.pTexelBufferView = nullptr;

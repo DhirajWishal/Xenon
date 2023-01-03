@@ -13,56 +13,6 @@ constexpr uint64_t g_MagicNumber = 0b0011111000011111001000001010110101101110111
 namespace /* anonymous */
 {
 	/**
-	 * Get the descriptor range type.
-	 *
-	 * @param resource The Xenon resource type.
-	 * @return The D3D12 descriptor range type.
-	 */
-	[[nodiscard]] constexpr D3D12_DESCRIPTOR_RANGE_TYPE GetDescriptorRangeType(Xenon::Backend::ResourceType resource) noexcept
-	{
-		switch (resource)
-		{
-		case Xenon::Backend::ResourceType::Sampler:
-		case Xenon::Backend::ResourceType::CombinedImageSampler:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
-
-		case Xenon::Backend::ResourceType::SampledImage:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-
-		case Xenon::Backend::ResourceType::StorageImage:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
-
-		case Xenon::Backend::ResourceType::UniformTexelBuffer:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-
-		case Xenon::Backend::ResourceType::StorageTexelBuffer:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
-
-		case Xenon::Backend::ResourceType::UniformBuffer:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
-
-		case Xenon::Backend::ResourceType::StorageBuffer:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
-
-		case Xenon::Backend::ResourceType::DynamicUniformBuffer:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
-
-		case Xenon::Backend::ResourceType::DynamicStorageBuffer:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
-
-		case Xenon::Backend::ResourceType::InputAttachment:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-
-		case Xenon::Backend::ResourceType::AccelerationStructure:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-
-		default:
-			XENON_LOG_ERROR("Invalid resource type! Defaulting to SRV.");
-			return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-		}
-	}
-
-	/**
 	 * Setup all the shader-specific data.
 	 *
 	 * @param shader The shader to get the data from.
@@ -98,7 +48,7 @@ namespace /* anonymous */
 				binding.m_ApplicableShaders = type;
 
 				// Setup the ranges.
-				const auto rangeType = GetDescriptorRangeType(resource.m_Type);
+				const auto rangeType = Xenon::Backend::DX12Device::GetDescriptorRangeType(resource.m_Type, resource.m_Operations);
 				const auto setIndex = static_cast<uint8_t>(Xenon::EnumToInt(resource.m_Set) * 2);
 
 				// If it's a sampler, we need one for the texture (SRV) and another as the sampler.
@@ -868,7 +818,7 @@ namespace Xenon
 			for (uint8_t i = 0; i < m_PipelineStateDescriptor.NumRenderTargets; i++)
 			{
 				const auto& image = renderTargets[i];
-				m_PipelineStateDescriptor.RTVFormats[i] = m_pDevice->convertFormat(image.getDataFormat());
+				m_PipelineStateDescriptor.RTVFormats[i] = m_pDevice->ConvertFormat(image.getDataFormat());
 
 				// Get the color image's sample count and quality.
 				if (i == 0)
@@ -879,7 +829,7 @@ namespace Xenon
 			}
 
 			if (m_pRasterizer->hasTarget(AttachmentType::Depth | AttachmentType::Stencil))
-				m_PipelineStateDescriptor.DSVFormat = m_pDevice->convertFormat(renderTargets.back().getDataFormat());
+				m_PipelineStateDescriptor.DSVFormat = m_pDevice->ConvertFormat(renderTargets.back().getDataFormat());
 		}
 
 		std::vector<std::byte> DX12RasterizingPipeline::loadPipelineStateCache(uint64_t hash) const

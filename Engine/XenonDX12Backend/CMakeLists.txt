@@ -94,6 +94,7 @@ target_link_libraries(
 	PRIVATE "d3d12.lib" 
 	PRIVATE "dxgi.lib" 
 	PRIVATE "d3dcompiler.lib"
+	PRIVATE "dxcompiler.lib"
 )
 
 # Set compile definitions.
