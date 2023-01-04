@@ -188,9 +188,11 @@ function(CompileShaders)
 
 		endif()
 
+		# Create the output directory.
+		file(MAKE_DIRECTORY ${COMPILED_OUTPUT_DIR})
+
 		# Compile the shader while configuring CMake.
 		execute_process(
-			COMMAND ${CMAKE_COMMAND} -E make_directory ${COMPILED_OUTPUT_DIR}
 		    COMMAND ${DXIL_COMPILE_COMMAND}
 		    COMMAND ${SPIRV_COMPILE_COMMAND}
 			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
