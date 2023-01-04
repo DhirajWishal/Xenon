@@ -5,6 +5,7 @@
 #include "VulkanMacros.hpp"
 #include "VulkanDescriptorSetManager.hpp"
 #include "VulkanDescriptor.hpp"
+#include "VulkanShaderBindingTable.hpp"
 
 #include <optick.h>
 
@@ -145,14 +146,6 @@ namespace Xenon
 			// Get the pipeline hash.
 			m_PipelineHash = GenerateHash(ToBytes(shaderHashes.data()), sizeof(uint64_t) * shaderHashes.size());
 
-			// Setup the binding tables.
-			m_RayGenBindingTable = createShaderBindingTable(rayGenCount);
-			m_IntersectionBindingTable = createShaderBindingTable(intersectionCount);
-			m_AnyHitBindingTable = createShaderBindingTable(anyHitCount);
-			m_ClosestHitBindingTable = createShaderBindingTable(closestHitCount);
-			m_MissBindingTable = createShaderBindingTable(missCount);
-			m_CallableBindingTable = createShaderBindingTable(callableCount);
-
 			// Setup any missing bindings.
 			if (!m_BindingMap.contains(DescriptorType::UserDefined)) m_BindingMap[DescriptorType::UserDefined];
 			if (!m_BindingMap.contains(DescriptorType::Material)) m_BindingMap[DescriptorType::Material];
@@ -178,9 +171,6 @@ namespace Xenon
 
 			// Store the pipeline cache.
 			storePipelineCache();
-
-			// Prepare the shader binding tables.
-			prepareShaderBindingTables();
 		}
 
 		VulkanRayTracingPipeline::~VulkanRayTracingPipeline()
@@ -194,6 +184,12 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 			return std::make_unique<VulkanDescriptor>(m_pDevice, m_BindingMap[type], type);
+		}
+
+		std::unique_ptr<ShaderBindingTable> VulkanRayTracingPipeline::createShaderBindingTable(const std::vector<BindingGroup>& bindingGroups)
+		{
+			OPTICK_EVENT();
+			return std::make_unique<VulkanShaderBindingTable>(m_pDevice, this, bindingGroups);
 		}
 
 		void VulkanRayTracingPipeline::createPipelineLayout(std::vector<VkDescriptorSetLayout>&& layouts, std::vector<VkPushConstantRange>&& pushConstantRanges)
@@ -277,35 +273,6 @@ namespace Xenon
 			return shaderStageCreateInfo;
 		}
 
-		Xenon::Backend::VulkanRayTracingPipeline::ShaderBindingTable VulkanRayTracingPipeline::createShaderBindingTable(uint64_t recordCount) const
-		{
-			OPTICK_EVENT();
-
-			// Return if we don't have any records.
-			if (recordCount == 0)
-				return {};
-
-			// Else prepare the table.
-			const auto handleSize = m_pDevice->getPhysicalDeviceRayTracingPipelineProperties().shaderGroupHandleSize;
-			const auto handleAlignment = m_pDevice->getPhysicalDeviceRayTracingPipelineProperties().shaderGroupHandleAlignment;
-
-			ShaderBindingTable bindingTable = {};
-			bindingTable.m_pTable = std::make_unique<VulkanBuffer>(
-				m_pDevice,
-				handleSize * recordCount,
-				VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
-				VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT,
-				VMA_MEMORY_USAGE_AUTO_PREFER_HOST);
-
-			const uint64_t stride = XENON_VK_ALIGNED_SIZE(handleSize, handleAlignment);
-
-			bindingTable.m_AddressRegion.deviceAddress = bindingTable.m_pTable->getDeviceAddress();
-			bindingTable.m_AddressRegion.stride = stride;
-			bindingTable.m_AddressRegion.size = stride * recordCount;
-
-			return bindingTable;
-		}
-
 		void VulkanRayTracingPipeline::createPipeline(std::vector<VkPipelineShaderStageCreateInfo>&& shaderStageCreateInfos, std::vector<VkRayTracingShaderGroupCreateInfoKHR>&& shaderGroups)
 		{
 			OPTICK_EVENT();
@@ -326,40 +293,6 @@ namespace Xenon
 			// Destroy the previously created shaders.
 			for (const auto& stage : shaderStageCreateInfos)
 				m_pDevice->getDeviceTable().vkDestroyShaderModule(m_pDevice->getLogicalDevice(), stage.module, nullptr);
-		}
-
-		void VulkanRayTracingPipeline::writeShaderGroupHandles(VulkanBuffer* pBuffer, std::byte*& pData, uint64_t handleSize, uint64_t handleSizeAligned) const
-		{
-			OPTICK_EVENT();
-
-			if (pBuffer == nullptr)
-				return;
-
-			pBuffer->write(pData, handleSize);
-			pData += handleSizeAligned;
-		}
-
-		void VulkanRayTracingPipeline::prepareShaderBindingTables()
-		{
-			OPTICK_EVENT();
-
-			const auto handleSize = m_pDevice->getPhysicalDeviceRayTracingPipelineProperties().shaderGroupHandleSize;
-			const auto handleAlignment = m_pDevice->getPhysicalDeviceRayTracingPipelineProperties().shaderGroupHandleAlignment;
-
-			const uint32_t handleSizeAligned = XENON_VK_ALIGNED_SIZE(handleSize, handleAlignment);;
-			const auto groupCount = static_cast<uint32_t>(m_ShaderGroups.size());
-			const uint32_t sbtSize = groupCount * handleSizeAligned;
-
-			std::vector<std::byte> shaderHandleStorage(sbtSize);
-			XENON_VK_ASSERT(vkGetRayTracingShaderGroupHandlesKHR(m_pDevice->getLogicalDevice(), m_Pipeline, 0, groupCount, sbtSize, shaderHandleStorage.data()));
-
-			auto ptr = shaderHandleStorage.data();
-			writeShaderGroupHandles(m_RayGenBindingTable.m_pTable.get(), ptr, handleSize, handleSizeAligned);
-			writeShaderGroupHandles(m_IntersectionBindingTable.m_pTable.get(), ptr, handleSize, handleSizeAligned);
-			writeShaderGroupHandles(m_AnyHitBindingTable.m_pTable.get(), ptr, handleSize, handleSizeAligned);
-			writeShaderGroupHandles(m_ClosestHitBindingTable.m_pTable.get(), ptr, handleSize, handleSizeAligned);
-			writeShaderGroupHandles(m_MissBindingTable.m_pTable.get(), ptr, handleSize, handleSizeAligned);
-			writeShaderGroupHandles(m_CallableBindingTable.m_pTable.get(), ptr, handleSize, handleSizeAligned);
 		}
 	}
 }

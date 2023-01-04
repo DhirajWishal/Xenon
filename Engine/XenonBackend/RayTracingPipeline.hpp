@@ -5,6 +5,7 @@
 
 #include "Pipeline.hpp"
 #include "Shader.hpp"
+#include "ShaderBindingTable.hpp"
 
 namespace Xenon
 {
@@ -61,6 +62,17 @@ namespace Xenon
 		};
 
 		/**
+		 * Shader group argument structure.
+		 * This contains all the required shader group arguments. Make sure that the shader group count is the same as the provided shader group for the ray tracing pipeline.
+		 */
+		struct ShaderGroupArgument final
+		{
+			Descriptor* m_pUserDefinedDescriptor = nullptr;
+			Descriptor* m_pMaterialDescriptor = nullptr;
+			Descriptor* m_pSceneDescriptor = nullptr;
+		};
+
+		/**
 		 * Ray tracing pipeline class.
 		 * This pipeline is used to perform ray tracing on objects.
 		 */
@@ -77,6 +89,14 @@ namespace Xenon
 			explicit RayTracingPipeline(const Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const RayTracingPipelineSpecification& specification)
 				: Pipeline(pDevice, std::move(pCacheHandler))
 				, m_Specification(specification) {}
+
+			/**
+			 * Create a new ray generation shader binding table.
+			 *
+			 * @param bindingGroups The binding groups.
+			 * @return The created shader binding table.
+			 */
+			[[nodiscard]] virtual std::unique_ptr<ShaderBindingTable> createShaderBindingTable(const std::vector<BindingGroup>& bindingGroups) = 0;
 
 			/**
 			 * Get the maximum possible ray recursion depth of the pipeline.

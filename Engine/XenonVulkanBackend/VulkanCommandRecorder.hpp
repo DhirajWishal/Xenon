@@ -203,6 +203,15 @@ namespace Xenon
 			void drawIndexed(uint64_t vertexOffset, uint64_t indexOffset, uint64_t indexCount, uint32_t instanceCount = 1, uint32_t firstInstance = 0) override;
 
 			/**
+			 * Draw the scene using ray tracing.
+			 *
+			 * @param pRayTracer The ray tracer where the output will be written to.
+			 * @param pPipeline The pipeline pointer to bind.
+			 * @param pShaderBindingTable The shader binding table.
+			 */
+			void drawRayTraced(RayTracer* pRayTracer, RayTracingPipeline* pPipeline, ShaderBindingTable* pShaderBindingTable) override;
+
+			/**
 			 * End the occlusion query.
 			 *
 			 * @param pOcclusionQuery The occlusion query to end recording.

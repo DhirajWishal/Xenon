@@ -8,6 +8,8 @@
 #include "DX12RasterizingPipeline.hpp"
 #include "DX12Descriptor.hpp"
 #include "DX12OcclusionQuery.hpp"
+#include "DX12RayTracer.hpp"
+#include "DX12RayTracingPipeline.hpp"
 
 #include <optick.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -709,6 +711,28 @@ namespace Xenon
 
 			m_pCurrentCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			m_pCurrentCommandList->DrawIndexedInstanced(static_cast<UINT>(indexCount), instanceCount, static_cast<UINT>(indexOffset), static_cast<UINT>(vertexOffset), firstInstance);
+		}
+
+		void DX12CommandRecorder::drawRayTraced(RayTracer* pRayTracer, RayTracingPipeline* pPipeline, ShaderBindingTable* pShaderBindingTable)
+		{
+			OPTICK_EVENT();
+			auto pDxRayTracer = pRayTracer->as<DX12RayTracer>();
+			auto pDxPipeline = pPipeline->as<DX12RayTracingPipeline>();
+
+			// Copy the arguments here.
+
+			m_pCurrentCommandList->SetPipelineState1(pDxPipeline->getStateObject());
+
+			D3D12_DISPATCH_RAYS_DESC desc = {};
+			// desc.RayGenerationShaderRecord = pDxPipeline->getRayGenSBT().getAddressRange();
+			// desc.MissShaderTable = pDxPipeline->getMissSBT().getAddressRangeAndStride();
+			// desc.HitGroupTable = pDxPipeline->getHitGroupSBT().getAddressRangeAndStride();
+			// desc.CallableShaderTable = pDxPipeline->getCallableSBT().getAddressRangeAndStride();
+			desc.Width = pRayTracer->getCamera()->getWidth();
+			desc.Height = pRayTracer->getCamera()->getHeight();
+			desc.Depth = 1;
+
+			m_pCurrentCommandList->DispatchRays(&desc);
 		}
 
 		void DX12CommandRecorder::endQuery(OcclusionQuery* pOcclusionQuery, uint32_t index)

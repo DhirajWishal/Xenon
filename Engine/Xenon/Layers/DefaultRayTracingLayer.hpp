@@ -5,6 +5,7 @@
 
 #include "../RayTracingLayer.hpp"
 #include "../MeshStorage.hpp"
+#include "../../XenonBackend/RayTracingPipeline.hpp"
 
 namespace Xenon
 {
@@ -14,6 +15,19 @@ namespace Xenon
 	 */
 	class DefaultRayTracingLayer final : public RayTracingLayer
 	{
+		/**
+		 * Draw data structure.
+		 */
+		struct DrawData final
+		{
+			MeshStorage m_MeshStorage;
+
+			std::unique_ptr<Backend::BottomLevelAccelerationStructure> m_pBottomLevelAccelerationStructure;
+			std::unique_ptr<Backend::TopLevelAccelerationStructure> m_pTopLevelAccelerationStructure;
+
+			Backend::RayTracingPipeline* m_pPipeline = nullptr;
+		};
+
 	public:
 		/**
 		 * Explicit constructor.
@@ -44,6 +58,10 @@ namespace Xenon
 		 * @param storage The storage to render.
 		 * @apram pPipeline The pipeline pointer to render with.
 		 */
-		void addDrawData(MeshStorage&& storage/*, Backend::RasterizingPipeline* pPipeline*/);
+		void addDrawData(MeshStorage&& storage, Backend::RayTracingPipeline* pPipeline);
+
+	private:
+		std::mutex m_Mutex;
+		std::vector<DrawData> m_DrawData;
 	};
 }

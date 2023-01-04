@@ -121,10 +121,10 @@ void Studio::run()
 	auto pPipelineRT = m_Instance.getFactory()->createRayTracingPipeline(m_Instance.getBackendDevice(), std::make_unique<CacheHandler>(), getRayTracingPipelineSpecification());
 
 	{
-		auto ret = Xenon::XObject::GetJobSystem().insert([this, &pPipeline, &pRasterizer, &pRayTracer]
+		auto ret = Xenon::XObject::GetJobSystem().insert([this, &pPipeline, &pPipelineRT, &pRasterizer, &pRayTracer]
 			{
-				pRasterizer->addDrawData(Xenon::MeshStorage::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"), pPipeline.get());
-		// pRayTracer->addDrawData(Xenon::MeshStorage::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"));
+				// pRasterizer->addDrawData(Xenon::MeshStorage::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"), pPipeline.get());
+				pRayTracer->addDrawData(Xenon::MeshStorage::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"), pPipelineRT.get());
 			}
 		);
 

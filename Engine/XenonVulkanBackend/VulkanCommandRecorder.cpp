@@ -864,6 +864,11 @@ namespace Xenon
 			m_pDevice->getDeviceTable().vkCmdDrawIndexed(*m_pCurrentBuffer, static_cast<uint32_t>(indexCount), instanceCount, static_cast<uint32_t>(indexOffset), static_cast<uint32_t>(vertexOffset), firstInstance);
 		}
 
+		void VulkanCommandRecorder::drawRayTraced(RayTracer* pRayTracer, RayTracingPipeline* pPipeline, ShaderBindingTable* pShaderBindingTable)
+		{
+			OPTICK_EVENT();
+		}
+
 		void VulkanCommandRecorder::endQuery(OcclusionQuery* pOcclusionQuery, uint32_t index)
 		{
 			OPTICK_EVENT();

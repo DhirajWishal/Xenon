@@ -63,6 +63,8 @@ set(
 	"VulkanTopLevelAccelerationStructure.hpp"
 	"VulkanRayTracingPipeline.cpp"
 	"VulkanRayTracingPipeline.hpp"
+	"VulkanShaderBindingTable.cpp"
+	"VulkanShaderBindingTable.hpp"
 )
 
 # Add the source group.

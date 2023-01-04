@@ -57,6 +57,8 @@ set(
 	"DX12TopLevelAccelerationStructure.hpp"
 	"DX12RayTracingPipeline.cpp"
 	"DX12RayTracingPipeline.hpp"
+	"DX12ShaderBindingTable.cpp"
+	"DX12ShaderBindingTable.hpp"
 )
 
 # Add the source group.

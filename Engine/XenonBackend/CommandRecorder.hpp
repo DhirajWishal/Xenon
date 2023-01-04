@@ -8,6 +8,8 @@
 #include "RasterizingPipeline.hpp"
 #include "Descriptor.hpp"
 #include "OcclusionQuery.hpp"
+#include "RayTracer.hpp"
+#include "RayTracingPipeline.hpp"
 
 namespace Xenon
 {
@@ -201,6 +203,15 @@ namespace Xenon
 			 * @param firstInstance The first instance position. Default is 0.
 			 */
 			virtual void drawIndexed(uint64_t vertexOffset, uint64_t indexOffset, uint64_t indexCount, uint32_t instanceCount = 1, uint32_t firstInstance = 0) = 0;
+
+			/**
+			 * Draw the scene using ray tracing.
+			 *
+			 * @param pRayTracer The ray tracer where the output will be written to.
+			 * @param pPipeline The pipeline pointer to bind.
+			 * @param pShaderBindingTable The shader binding table.
+			 */
+			virtual void drawRayTraced(RayTracer* pRayTracer, RayTracingPipeline* pPipeline, ShaderBindingTable* pShaderBindingTable) = 0;
 
 			/**
 			 * End the occlusion query.

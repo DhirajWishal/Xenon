@@ -16,15 +16,6 @@ namespace Xenon
 		 */
 		class VulkanRayTracingPipeline final : public RayTracingPipeline, public VulkanDeviceBoundObject
 		{
-			/**
-			 * Shader binding table structure.
-			 */
-			struct ShaderBindingTable final
-			{
-				VkStridedDeviceAddressRegionKHR m_AddressRegion = {};
-				std::unique_ptr<VulkanBuffer> m_pTable = nullptr;
-			};
-
 		public:
 			/**
 			 * Explicit constructor.
@@ -47,6 +38,21 @@ namespace Xenon
 			 * @return The descriptor pointer. It will return nullptr if the descriptor type is not present in the pipeline.
 			 */
 			[[nodiscard]] std::unique_ptr<Descriptor> createDescriptor(DescriptorType type) override;
+
+			/**
+			 * Create a new ray generation shader binding table.
+			 *
+			 * @param bindingGroups The binding groups.
+			 * @return The created shader binding table.
+			 */
+			[[nodiscard]] std::unique_ptr<ShaderBindingTable> createShaderBindingTable(const std::vector<BindingGroup>& bindingGroups) override;
+
+			/**
+			 * Get the pipeline.
+			 *
+			 * @return The pipeline handle.
+			 */
+			[[nodiscard]] VkPipeline getPipeline() const noexcept { return m_Pipeline; }
 
 		private:
 			/**
@@ -77,14 +83,6 @@ namespace Xenon
 			[[nodiscard]] VkPipelineShaderStageCreateInfo createShaderStage(const Shader& source, VkShaderStageFlagBits shaderStage) const;
 
 			/**
-			 * Create a shader binding table.
-			 *
-			 * @param recordCount The number of records.
-			 * @return The shader binding table.
-			 */
-			[[nodiscard]] ShaderBindingTable createShaderBindingTable(uint64_t recordCount) const;
-
-			/**
 			 * Create the pipeline.
 			 *
 			 * @param shaderStageCreateInfos The shader stage create info structures.
@@ -92,31 +90,8 @@ namespace Xenon
 			 */
 			void createPipeline(std::vector<VkPipelineShaderStageCreateInfo>&& shaderStageCreateInfos, std::vector<VkRayTracingShaderGroupCreateInfoKHR>&& shaderGroups);
 
-			/**
-			 * Write the shader group handles.
-			 * If the buffer pointer is nullptr, it'll ignore.
-			 *
-			 * @param pBuffer The buffer pointer to copy to.
-			 * @param pData The data pointer. This value will be incremented after writing the data.
-			 * @param handleSize The handle size.
-			 * @param handleSizeAligned The aligned handle size.
-			 */
-			void writeShaderGroupHandles(VulkanBuffer* pBuffer, std::byte*& pData, uint64_t handleSize, uint64_t handleSizeAligned) const;
-
-			/**
-			 * Prepare the shader binding tables.
-			 */
-			void prepareShaderBindingTables();
-
 		private:
 			std::unordered_map<DescriptorType, std::vector<DescriptorBindingInfo>> m_BindingMap;
-
-			ShaderBindingTable m_RayGenBindingTable;
-			ShaderBindingTable m_IntersectionBindingTable;
-			ShaderBindingTable m_AnyHitBindingTable;
-			ShaderBindingTable m_ClosestHitBindingTable;
-			ShaderBindingTable m_MissBindingTable;
-			ShaderBindingTable m_CallableBindingTable;
 
 			VkPipelineLayout m_PipelineLayout = VK_NULL_HANDLE;
 			VkPipelineCache m_PipelineCache = VK_NULL_HANDLE;

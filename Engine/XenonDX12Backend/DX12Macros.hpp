@@ -26,4 +26,4 @@
 
 #endif
 
-#define XENON_ALIGNED_SIZE(size, alignment)		(size + alignment - 1) - size % alignment
+#define XENON_ALIGNED_SIZE_2(size, alignment)		(((size) + (alignment)-1) & ~((alignment)-1))

@@ -45,6 +45,7 @@ set(
 	"RayTracingPipeline.hpp"
 	"Shader.cpp"
 	"Shader.hpp"
+	"ShaderBindingTable.hpp"
 )
 
 # Add the source group.
