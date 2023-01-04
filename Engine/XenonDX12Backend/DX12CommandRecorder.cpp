@@ -564,7 +564,7 @@ namespace Xenon
 			m_pCurrentCommandList->SetPipelineState(pPipeline->as<DX12RasterizingPipeline>()->getPipeline(vertexSpecification).m_PipelineState.Get());
 		}
 
-		void DX12CommandRecorder::bind(RasterizingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pCameraDescriptor)
+		void DX12CommandRecorder::bind(RasterizingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pSceneDescriptor)
 		{
 			OPTICK_EVENT();
 
@@ -598,9 +598,9 @@ namespace Xenon
 					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[1]->GetGPUDescriptorHandleForHeapStart(), samplerStart, pDx12MaterialDescriptor->getSamplerDescriptorHeapIncrementSize()));
 			}
 
-			if (pCameraDescriptor)
+			if (pSceneDescriptor)
 			{
-				auto pDx12CameraDescriptor = pCameraDescriptor->as<DX12Descriptor>();
+				auto pDx12CameraDescriptor = pSceneDescriptor->as<DX12Descriptor>();
 				const auto cbvSrvUavStart = pDx12CameraDescriptor->getCbvSrvUavDescriptorHeapStart();
 				const auto samplerStart = pDx12CameraDescriptor->getSamplerDescriptorHeapStart();
 

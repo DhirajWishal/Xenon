@@ -69,8 +69,8 @@ namespace Xenon
 		drawData.m_Storage = std::move(storage);
 
 		// Setup the camera descriptor.
-		drawData.m_pCameraDescriptor = pPipeline->createDescriptor(Backend::DescriptorType::Scene);
-		drawData.m_pCameraDescriptor->attach(0, m_Renderer.getCamera()->getViewports().front().m_pUniformBuffer);
+		drawData.m_pSceneDescriptor = pPipeline->createDescriptor(Backend::DescriptorType::Scene);
+		drawData.m_pSceneDescriptor->attach(0, m_Renderer.getCamera()->getViewports().front().m_pUniformBuffer);
 
 		// Wait if we're in the process of rendering.
 		m_Synchronization.wait();
@@ -92,7 +92,7 @@ namespace Xenon
 				entry.m_pIndexBuffer = drawData.m_Storage.getIndexBuffer();
 				entry.m_pUserDefinedDescriptor = nullptr;
 				entry.m_pMaterialDescriptor = subMesh.m_MaterialIdentifier.m_pMaterial->createDescriptor(pPipeline);
-				entry.m_pCameraDescriptor = drawData.m_pCameraDescriptor.get();
+				entry.m_pSceneDescriptor = drawData.m_pSceneDescriptor.get();
 				entry.m_QueryIndex = m_SubMeshCount++;
 
 				threadIndex++;
@@ -245,7 +245,7 @@ namespace Xenon
 			pCommandRecorder->bind(entry.m_pPipeline, entry.m_VertexSpecification);
 			pCommandRecorder->bind(entry.m_pVertexBuffer, entry.m_VertexSpecification.getSize());
 			pCommandRecorder->bind(entry.m_pIndexBuffer, static_cast<Backend::IndexBufferStride>(entry.m_SubMesh.m_IndexSize));
-			pCommandRecorder->bind(entry.m_pPipeline, entry.m_pUserDefinedDescriptor, entry.m_pMaterialDescriptor.get(), entry.m_pCameraDescriptor);
+			pCommandRecorder->bind(entry.m_pPipeline, entry.m_pUserDefinedDescriptor, entry.m_pMaterialDescriptor.get(), entry.m_pSceneDescriptor);
 
 			pCommandRecorder->drawIndexed(entry.m_SubMesh.m_VertexOffset, entry.m_SubMesh.m_IndexOffset, entry.m_SubMesh.m_IndexCount);
 

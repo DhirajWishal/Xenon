@@ -25,7 +25,7 @@ namespace Xenon
 		{
 			MeshStorage m_Storage;
 
-			std::unique_ptr<Backend::Descriptor> m_pCameraDescriptor = nullptr;
+			std::unique_ptr<Backend::Descriptor> m_pSceneDescriptor = nullptr;
 		};
 
 		/**
@@ -45,7 +45,7 @@ namespace Xenon
 
 			Backend::Descriptor* m_pUserDefinedDescriptor = nullptr;
 			std::unique_ptr<Backend::Descriptor> m_pMaterialDescriptor = nullptr;
-			Backend::Descriptor* m_pCameraDescriptor = nullptr;
+			Backend::Descriptor* m_pSceneDescriptor = nullptr;
 
 			uint64_t m_QueryIndex = 0;
 		};

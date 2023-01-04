@@ -143,9 +143,9 @@ namespace Xenon
 			 * @param pPipeline The pipeline to which the descriptors are bound to.
 			 * @param pUserDefinedDescrptor The user defined descriptor.
 			 * @param pMaterialDescriptor The material descriptor.
-			 * @param pCameraDescriptor The camera descriptor. Default is nullptr.
+			 * @param pSceneDescriptor The scene descriptor. Default is nullptr.
 			 */
-			virtual void bind(RasterizingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pCameraDescriptor) = 0;
+			virtual void bind(RasterizingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pSceneDescriptor) = 0;
 
 			/**
 			 * Set the viewport.

@@ -740,7 +740,7 @@ namespace Xenon
 			m_pDevice->getDeviceTable().vkCmdBindPipeline(*m_pCurrentBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pPipeline->as<VulkanRasterizingPipeline>()->getPipeline(vertexSpecification).m_Pipeline);
 		}
 
-		void VulkanCommandRecorder::bind(RasterizingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pCameraDescriptor)
+		void VulkanCommandRecorder::bind(RasterizingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pSceneDescriptor)
 		{
 			OPTICK_EVENT();
 
@@ -774,9 +774,9 @@ namespace Xenon
 				);
 			}
 
-			if (pCameraDescriptor)
+			if (pSceneDescriptor)
 			{
-				auto descriptorSet = pCameraDescriptor->as<VulkanDescriptor>()->getDescriptorSet();
+				auto descriptorSet = pSceneDescriptor->as<VulkanDescriptor>()->getDescriptorSet();
 				m_pDevice->getDeviceTable().vkCmdBindDescriptorSets(
 					*m_pCurrentBuffer,
 					VK_PIPELINE_BIND_POINT_GRAPHICS,
