@@ -614,7 +614,7 @@ namespace Xenon
 		{
 			UserDefined,	// This descriptor type contains any other user defined data, like the model matrix.
 			Material,		// This descriptor type contains all the material-specific information.
-			Camera			// This descriptor type only has one binding (0) which passes the camera data.
+			Scene			// This descriptor type contains all the scene related information, like the camera, lighting, acceleration structures, etc...
 		};
 
 		/**

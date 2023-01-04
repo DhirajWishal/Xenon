@@ -25,7 +25,7 @@ namespace Xenon
 		{
 			uint32_t m_Binding = 0;
 
-			DescriptorType m_Set = DescriptorType::Camera;
+			DescriptorType m_Set = DescriptorType::UserDefined;
 			ResourceType m_Type = ResourceType::Sampler;
 			ResouceOperation m_Operations = ResouceOperation::Read;
 		};

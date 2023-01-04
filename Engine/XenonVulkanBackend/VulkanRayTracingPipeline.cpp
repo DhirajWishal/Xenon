@@ -156,7 +156,7 @@ namespace Xenon
 			// Setup any missing bindings.
 			if (!m_BindingMap.contains(DescriptorType::UserDefined)) m_BindingMap[DescriptorType::UserDefined];
 			if (!m_BindingMap.contains(DescriptorType::Material)) m_BindingMap[DescriptorType::Material];
-			if (!m_BindingMap.contains(DescriptorType::Camera)) m_BindingMap[DescriptorType::Camera];
+			if (!m_BindingMap.contains(DescriptorType::Scene)) m_BindingMap[DescriptorType::Scene];
 
 			// Sort the bindings to the correct binding order.
 			auto sortedBindings = std::vector<std::pair<DescriptorType, std::vector<DescriptorBindingInfo>>>(m_BindingMap.begin(), m_BindingMap.end());

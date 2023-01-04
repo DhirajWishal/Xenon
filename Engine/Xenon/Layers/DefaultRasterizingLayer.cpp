@@ -69,7 +69,7 @@ namespace Xenon
 		drawData.m_Storage = std::move(storage);
 
 		// Setup the camera descriptor.
-		drawData.m_pCameraDescriptor = pPipeline->createDescriptor(Backend::DescriptorType::Camera);
+		drawData.m_pCameraDescriptor = pPipeline->createDescriptor(Backend::DescriptorType::Scene);
 		drawData.m_pCameraDescriptor->attach(0, m_Renderer.getCamera()->getViewports().front().m_pUniformBuffer);
 
 		// Wait if we're in the process of rendering.

@@ -91,14 +91,14 @@ namespace Xenon
 			 *
 			 * @return The shader binding table.
 			 */
-			[[nodiscard]] ShaderBindingTable& ge_MissSBT() noexcept { return m_MissSBT; }
+			[[nodiscard]] ShaderBindingTable& getMissSBT() noexcept { return m_MissSBT; }
 
 			/**
 			 * Get the miss shader binding table.
 			 *
 			 * @return The shader binding table.
 			 */
-			[[nodiscard]] const ShaderBindingTable& ge_MissSBT() const noexcept { return m_MissSBT; }
+			[[nodiscard]] const ShaderBindingTable& getMissSBT() const noexcept { return m_MissSBT; }
 
 			/**
 			 * Get the hit group shader binding table.
