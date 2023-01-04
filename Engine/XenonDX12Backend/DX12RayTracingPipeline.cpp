@@ -69,9 +69,21 @@ namespace Xenon
 {
 	namespace Backend
 	{
+		void ShaderBindingTable::create(UINT rootParameterCount)
+		{
+			const auto rootSize = XENON_ALIGNED_SIZE(D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES + sizeof(void*) * rootParameterCount, D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);
+			const auto bufferSIze = rootSize * m_ShaderIDs.size();
+
+			// Create the shader binding table.
+			m_pShaderBindingTable = std::make_unique<DX12Buffer>(m_pDevice, bufferSIze, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
+		}
+
 		DX12RayTracingPipeline::DX12RayTracingPipeline(DX12Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const RayTracingPipelineSpecification& specification)
 			: RayTracingPipeline(pDevice, std::move(pCacheHandler), specification)
 			, DX12DescriptorHeapManager(pDevice)
+			, m_RayGenSBT(pDevice)
+			, m_MissSBT(pDevice)
+			, m_HitGroupSBT(pDevice)
 		{
 			OPTICK_EVENT();
 
@@ -221,6 +233,9 @@ namespace Xenon
 
 			// Create the state object.
 			XENON_DX12_ASSERT(pDevice->getDevice()->CreateStateObject(rayTracingPipeline, IID_PPV_ARGS(&m_PipelineState)), "Failed to crate the ray tracing state object!");
+
+			// Create the shader binding table.
+			createShaderBindingTable();
 		}
 
 		std::unique_ptr<Xenon::Backend::Descriptor> DX12RayTracingPipeline::createDescriptor(DescriptorType type)
@@ -294,6 +309,59 @@ namespace Xenon
 
 			XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&m_GlobalRootSignature)), "Failed to create the global root signature!");
 			XENON_DX12_NAME_OBJECT(m_GlobalRootSignature, "Global Ray Tracing Root Signature");
+		}
+
+		void DX12RayTracingPipeline::createShaderBindingTable()
+		{
+			ComPtr<ID3D12StateObjectProperties> pStateObjectProperties;
+			XENON_DX12_ASSERT(m_PipelineState.As(&pStateObjectProperties), "Failed to get the pipeline state object as state object properties!");
+
+			uint32_t rayGenRootArgumentCount = 0;
+			uint32_t missRootArgumentCount = 0;
+			uint32_t hitGroupRootArgumentCount = 0;
+
+			uint32_t index = 0;
+			for (const auto& group : m_Specification.m_ShaderGroups)
+			{
+				const auto groupName = fmt::format(L"group{}", index);
+				m_HitGroupSBT.addShaderID(pStateObjectProperties->GetShaderIdentifier(groupName.c_str()));
+				hitGroupRootArgumentCount += getRootArgumentCount(group.m_IntersectionShader) + getRootArgumentCount(group.m_AnyHitShader) + getRootArgumentCount(group.m_ClosestHitShader);
+
+				if (group.m_RayGenShader.getDXIL().isValid())
+				{
+					const auto name = fmt::format(L"rayGenMain_group{}", index);
+					m_RayGenSBT.addShaderID(pStateObjectProperties->GetShaderIdentifier(name.c_str()));
+					rayGenRootArgumentCount += getRootArgumentCount(group.m_RayGenShader);
+				}
+
+				if (group.m_MissShader.getDXIL().isValid())
+				{
+					const auto name = fmt::format(L"missMain_group{}", index);
+					m_MissSBT.addShaderID(pStateObjectProperties->GetShaderIdentifier(name.c_str()));
+					missRootArgumentCount += getRootArgumentCount(group.m_MissShader);
+				}
+
+				index++;
+			}
+
+			// Setup the binding tables.
+			m_RayGenSBT.create(rayGenRootArgumentCount);
+			m_MissSBT.create(missRootArgumentCount);
+			m_HitGroupSBT.create(hitGroupRootArgumentCount);
+		}
+
+		uint32_t DX12RayTracingPipeline::getRootArgumentCount(const Shader& shader) const noexcept
+		{
+			uint32_t count = 0;
+			for (const auto& resource : shader.getResources())
+			{
+				if (resource.m_Type == ResourceType::AccelerationStructure)
+					continue;
+
+				count++;
+			}
+
+			return count;
 		}
 	}
 }

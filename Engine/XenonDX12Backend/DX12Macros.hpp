@@ -25,3 +25,5 @@
 #define XENON_DX12_NAME_OBJECT(object, name)	::Xenon::NoOp()
 
 #endif
+
+#define XENON_ALIGNED_SIZE(size, alignment)		(size + alignment - 1) - size % alignment

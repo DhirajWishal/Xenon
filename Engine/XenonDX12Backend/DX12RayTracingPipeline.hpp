@@ -6,11 +6,44 @@
 #include "../XenonBackend/RayTracingPipeline.hpp"
 
 #include "DX12DescriptorHeapManager.hpp"
+#include "DX12Buffer.hpp"
 
 namespace Xenon
 {
 	namespace Backend
 	{
+		/**
+		 * Shader binding table class.
+		 */
+		class ShaderBindingTable final : public DX12DeviceBoundObject
+		{
+		public:
+			/**
+			 * Explicit constructor.
+			 *
+			 * @param pDevice The device pointer.
+			 */
+			explicit ShaderBindingTable(DX12Device* pDevice) : DX12DeviceBoundObject(pDevice) {}
+
+			/**
+			 * Add a shader ID to the table.
+			 *
+			 * @param pID The shader ID.
+			 */
+			void addShaderID(void* pID) { m_ShaderIDs.emplace_back(pID); }
+
+			/**
+			 * Create the shader binding table buffer.
+			 *
+			 * @param rootParameterCount The number of root parameters.
+			 */
+			void create(UINT rootParameterCount);
+
+		private:
+			std::vector<void*> m_ShaderIDs;
+			std::unique_ptr<DX12Buffer> m_pShaderBindingTable = nullptr;
+		};
+
 		/**
 		 * DirectX 12 ray tracing pipeline class.
 		 */
@@ -39,6 +72,48 @@ namespace Xenon
 			 */
 			[[nodiscard]] std::unique_ptr<Descriptor> createDescriptor(DescriptorType type) override;
 
+			/**
+			 * Get the ray gen shader binding table.
+			 *
+			 * @return The shader binding table.
+			 */
+			[[nodiscard]] ShaderBindingTable& getRayGenSBT() noexcept { return m_RayGenSBT; }
+
+			/**
+			 * Get the ray gen shader binding table.
+			 *
+			 * @return The shader binding table.
+			 */
+			[[nodiscard]] const ShaderBindingTable& getRayGenSBT() const noexcept { return m_RayGenSBT; }
+
+			/**
+			 * Get the miss shader binding table.
+			 *
+			 * @return The shader binding table.
+			 */
+			[[nodiscard]] ShaderBindingTable& ge_MissSBT() noexcept { return m_MissSBT; }
+
+			/**
+			 * Get the miss shader binding table.
+			 *
+			 * @return The shader binding table.
+			 */
+			[[nodiscard]] const ShaderBindingTable& ge_MissSBT() const noexcept { return m_MissSBT; }
+
+			/**
+			 * Get the hit group shader binding table.
+			 *
+			 * @return The shader binding table.
+			 */
+			[[nodiscard]] ShaderBindingTable& getHitGroupSBT() noexcept { return m_HitGroupSBT; }
+
+			/**
+			 * Get the hit group shader binding table.
+			 *
+			 * @return The shader binding table.
+			 */
+			[[nodiscard]] const ShaderBindingTable& getHitGroupSBT() const noexcept { return m_HitGroupSBT; }
+
 		private:
 			/**
 			 * Create the DXIL library.
@@ -64,7 +139,26 @@ namespace Xenon
 			 */
 			void createGlobalRootSignature(std::vector<std::pair<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>>&& rangePairs);
 
+			/**
+			 * Create the shader binding table.
+			 */
+			void createShaderBindingTable();
+
+			/**
+			 * Get the root argument count of a shader.
+			 *
+			 * @param shader The shader to get the root argument count of.
+			 * @return The root argument count.
+			 */
+			[[nodiscard]] uint32_t getRootArgumentCount(const Shader& shader) const noexcept;
+
 		private:
+			ShaderBindingTable m_RayGenSBT;
+			ShaderBindingTable m_MissSBT;
+			ShaderBindingTable m_HitGroupSBT;
+
+			std::unique_ptr<DX12Buffer> m_pShaderBindingTable = nullptr;
+
 			std::vector<ComPtr<ID3D12RootSignature>> m_LocalRootSignatures;
 			ComPtr<ID3D12RootSignature> m_GlobalRootSignature;
 			ComPtr<ID3D12StateObject> m_PipelineState;
