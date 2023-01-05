@@ -9,6 +9,8 @@
 #include "VulkanRasterizingPipeline.hpp"
 #include "VulkanDescriptor.hpp"
 #include "VulkanOcclusionQuery.hpp"
+#include "VulkanRayTracingPipeline.hpp"
+#include "VulkanShaderBindingTable.hpp"
 
 #include <optick.h>
 
@@ -744,13 +746,14 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
+			auto pVkPipeline = pPipeline->as<VulkanRasterizingPipeline>();
 			if (pUserDefinedDescriptor)
 			{
 				auto descriptorSet = pUserDefinedDescriptor->as<VulkanDescriptor>()->getDescriptorSet();
 				m_pDevice->getDeviceTable().vkCmdBindDescriptorSets(
 					*m_pCurrentBuffer,
 					VK_PIPELINE_BIND_POINT_GRAPHICS,
-					pPipeline->as<VulkanRasterizingPipeline>()->getPipelineLayout(),
+					pVkPipeline->getPipelineLayout(),
 					0,
 					1,
 					&descriptorSet,
@@ -765,7 +768,7 @@ namespace Xenon
 				m_pDevice->getDeviceTable().vkCmdBindDescriptorSets(
 					*m_pCurrentBuffer,
 					VK_PIPELINE_BIND_POINT_GRAPHICS,
-					pPipeline->as<VulkanRasterizingPipeline>()->getPipelineLayout(),
+					pVkPipeline->getPipelineLayout(),
 					1,
 					1,
 					&descriptorSet,
@@ -780,7 +783,7 @@ namespace Xenon
 				m_pDevice->getDeviceTable().vkCmdBindDescriptorSets(
 					*m_pCurrentBuffer,
 					VK_PIPELINE_BIND_POINT_GRAPHICS,
-					pPipeline->as<VulkanRasterizingPipeline>()->getPipelineLayout(),
+					pVkPipeline->getPipelineLayout(),
 					2,
 					1,
 					&descriptorSet,
@@ -814,6 +817,64 @@ namespace Xenon
 				XENON_LOG_ERROR("Invalid or unsupported index stride!");
 
 			m_pDevice->getDeviceTable().vkCmdBindIndexBuffer(*m_pCurrentBuffer, pIndexBuffer->as<VulkanBuffer>()->getBuffer(), 0, indexType);
+		}
+
+		void VulkanCommandRecorder::bind(RayTracingPipeline* pPipeline)
+		{
+			OPTICK_EVENT();
+
+			m_pDevice->getDeviceTable().vkCmdBindPipeline(*m_pCurrentBuffer, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, pPipeline->as<VulkanRayTracingPipeline>()->getPipeline());
+		}
+
+		void VulkanCommandRecorder::bind(RayTracingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pSceneDescriptor)
+		{
+			OPTICK_EVENT();
+
+			auto pVkPipeline = pPipeline->as<VulkanRayTracingPipeline>();
+			if (pUserDefinedDescriptor)
+			{
+				auto descriptorSet = pUserDefinedDescriptor->as<VulkanDescriptor>()->getDescriptorSet();
+				m_pDevice->getDeviceTable().vkCmdBindDescriptorSets(
+					*m_pCurrentBuffer,
+					VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR,
+					pVkPipeline->getPipelineLayout(),
+					0,
+					1,
+					&descriptorSet,
+					0,
+					nullptr
+				);
+			}
+
+			if (pMaterialDescriptor)
+			{
+				auto descriptorSet = pMaterialDescriptor->as<VulkanDescriptor>()->getDescriptorSet();
+				m_pDevice->getDeviceTable().vkCmdBindDescriptorSets(
+					*m_pCurrentBuffer,
+					VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR,
+					pVkPipeline->getPipelineLayout(),
+					1,
+					1,
+					&descriptorSet,
+					0,
+					nullptr
+				);
+			}
+
+			if (pSceneDescriptor)
+			{
+				auto descriptorSet = pSceneDescriptor->as<VulkanDescriptor>()->getDescriptorSet();
+				m_pDevice->getDeviceTable().vkCmdBindDescriptorSets(
+					*m_pCurrentBuffer,
+					VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR,
+					pVkPipeline->getPipelineLayout(),
+					2,
+					1,
+					&descriptorSet,
+					0,
+					nullptr
+				);
+			}
 		}
 
 		void VulkanCommandRecorder::setViewport(float x, float y, float width, float height, float minDepth, float maxDepth)
@@ -864,9 +925,17 @@ namespace Xenon
 			m_pDevice->getDeviceTable().vkCmdDrawIndexed(*m_pCurrentBuffer, static_cast<uint32_t>(indexCount), instanceCount, static_cast<uint32_t>(indexOffset), static_cast<uint32_t>(vertexOffset), firstInstance);
 		}
 
-		void VulkanCommandRecorder::drawRayTraced(RayTracer* pRayTracer, RayTracingPipeline* pPipeline, ShaderBindingTable* pShaderBindingTable)
+		void VulkanCommandRecorder::drawRayTraced(RayTracer* pRayTracer, ShaderBindingTable* pShaderBindingTable)
 		{
 			OPTICK_EVENT();
+
+			auto pVkBindngTable = pShaderBindingTable->as<VulkanShaderBindingTable>();
+			const auto raygenEntry = pVkBindngTable->getRayGenerationAddressRegion();
+			const auto missEntry = pVkBindngTable->getMissAddressRegion();
+			const auto hitEntry = pVkBindngTable->getHitAddressRegion();
+			const auto callableEntry = pVkBindngTable->getCallableAddressRegion();
+
+			m_pDevice->getDeviceTable().vkCmdTraceRaysKHR(*m_pCurrentBuffer, &raygenEntry, &missEntry, &hitEntry, &callableEntry, pRayTracer->getCamera()->getWidth(), pRayTracer->getCamera()->getHeight(), 1);
 		}
 
 		void VulkanCommandRecorder::endQuery(OcclusionQuery* pOcclusionQuery, uint32_t index)

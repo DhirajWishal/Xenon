@@ -123,6 +123,13 @@ namespace Xenon
 			virtual void bind(RasterizingPipeline* pPipeline, const VertexSpecification& vertexSpecification) = 0;
 
 			/**
+			 * Bind a ray tracing pipeline.
+			 *
+			 * @param pPipeline The pipeline to bind.
+			 */
+			virtual void bind(RayTracingPipeline* pPipeline) = 0;
+
+			/**
 			 * Bind a vertex buffer to the command recorder.
 			 *
 			 * @param pVertexBuffer The vertex buffer pointer.
@@ -148,6 +155,17 @@ namespace Xenon
 			 * @param pSceneDescriptor The scene descriptor. Default is nullptr.
 			 */
 			virtual void bind(RasterizingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pSceneDescriptor) = 0;
+
+			/**
+			 * Bind descriptors to the command recorder.
+			 * Note that the descriptors can be null in which case this call will be disregarded.
+			 *
+			 * @param pPipeline The pipeline to which the descriptors are bound to.
+			 * @param pUserDefinedDescrptor The user defined descriptor.
+			 * @param pMaterialDescriptor The material descriptor.
+			 * @param pSceneDescriptor The scene descriptor. Default is nullptr.
+			 */
+			virtual void bind(RayTracingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pSceneDescriptor) = 0;
 
 			/**
 			 * Set the viewport.
@@ -208,10 +226,9 @@ namespace Xenon
 			 * Draw the scene using ray tracing.
 			 *
 			 * @param pRayTracer The ray tracer where the output will be written to.
-			 * @param pPipeline The pipeline pointer to bind.
 			 * @param pShaderBindingTable The shader binding table.
 			 */
-			virtual void drawRayTraced(RayTracer* pRayTracer, RayTracingPipeline* pPipeline, ShaderBindingTable* pShaderBindingTable) = 0;
+			virtual void drawRayTraced(RayTracer* pRayTracer, ShaderBindingTable* pShaderBindingTable) = 0;
 
 			/**
 			 * End the occlusion query.

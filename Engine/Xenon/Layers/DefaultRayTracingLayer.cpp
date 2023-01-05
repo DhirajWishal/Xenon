@@ -22,7 +22,9 @@ namespace Xenon
 		const auto lock = std::scoped_lock(m_Mutex);
 		for (const auto& drawData : m_DrawData)
 		{
-			m_pCommandRecorder->drawRayTraced(m_pRayTracer.get(), drawData.m_pPipeline, nullptr);
+			m_pCommandRecorder->bind(drawData.m_pPipeline);
+			m_pCommandRecorder->bind(drawData.m_pPipeline, nullptr, nullptr, nullptr);
+			m_pCommandRecorder->drawRayTraced(m_pRayTracer.get(), drawData.m_pShaderBindingTable.get());
 		}
 
 		m_pCommandRecorder->end();
@@ -32,11 +34,15 @@ namespace Xenon
 	{
 		OPTICK_EVENT();
 
+		// Setup the acceleration structure geometry.
 		Backend::AccelerationStructureGeometry geometry;
 		geometry.m_VertexSpecification = storage.getVertexSpecification();
 		geometry.m_pVertexBuffer = storage.getVertexBuffer();
 		geometry.m_pIndexBuffer = storage.getIndexBuffer();
 		geometry.m_IndexBufferStride = Backend::IndexBufferStride::Uint16;
+
+		// Setup the shader binding table.
+		Backend::ShaderBindingTableBuilder sbtBuilder = {};
 
 		const auto lock = std::scoped_lock(m_Mutex);
 
@@ -45,5 +51,6 @@ namespace Xenon
 		drawData.m_pBottomLevelAccelerationStructure = m_Renderer.getInstance().getFactory()->createBottomLevelAccelerationStructure(m_Renderer.getInstance().getBackendDevice(), { geometry });
 		drawData.m_pTopLevelAccelerationStructure = m_Renderer.getInstance().getFactory()->createTopLevelAccelerationStructure(m_Renderer.getInstance().getBackendDevice(), { drawData.m_pBottomLevelAccelerationStructure.get() });
 		drawData.m_pPipeline = pPipeline;
+		drawData.m_pShaderBindingTable = pPipeline->createShaderBindingTable(sbtBuilder.getBindingGroups());
 	}
 }

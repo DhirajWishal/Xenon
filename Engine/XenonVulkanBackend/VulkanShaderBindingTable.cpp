@@ -7,6 +7,11 @@
 #include "VulkanImage.hpp"
 #include "VulkanBuffer.hpp"
 
+#ifdef max
+#undef max
+
+#endif
+
 namespace /* anonymous */
 {
 	/**
@@ -64,15 +69,15 @@ namespace /* anonymous */
 	 * @param pSource The source data pointer.
 	 * @param pDestination The destination data pointer. This will be incremented by size.
 	 * @param size The number of bytes to copy.
-	 * @param entryAlignment The alignment of the whole entry.
+	 * @param stride The stride of the entry.
 	 */
-	void CopyIncrement(const std::byte* pSource, std::byte*& pDestination, uint64_t size, uint64_t entryAlignment)
+	void CopyIncrement(const std::byte* pSource, std::byte*& pDestination, uint64_t size, uint64_t stride)
 	{
 		// Copy only if we have valid data.
 		if (pSource)
 			std::copy_n(pSource, size, pDestination);
 
-		pDestination += XENON_ALIGNED_SIZE_2(size, entryAlignment);
+		pDestination += stride;
 	}
 
 	/**
@@ -81,28 +86,28 @@ namespace /* anonymous */
 	 *
 	 * @param entry The entry to copy.
 	 * @param pDestination The destination pointer.
-	 * @param entryAlignment The alignment of the whole entry.
+	 * @param stride The stride of the entry.
 	 */
-	void CopyEntry(const Xenon::Backend::BindingGroup::DataVariant& entry, std::byte*& pDestination, uint32_t entryAlignment)
+	void CopyEntry(const Xenon::Backend::BindingGroup::DataVariant& entry, std::byte*& pDestination, uint64_t stride)
 	{
 		switch (entry.index())
 		{
 		case 0:
 		{
 			auto address = std::get<0>(entry)->as<Xenon::Backend::VulkanBuffer>()->getDeviceAddress();
-			CopyIncrement(Xenon::ToBytes(&address), pDestination, sizeof(address), entryAlignment);
+			CopyIncrement(Xenon::ToBytes(&address), pDestination, sizeof(address), stride);
 			break;
 		}
 
 		case 1:
 		{
 			// auto address = std::get<1>(entry)->as<Xenon::Backend::VulkanImage>()->getde();
-			// CopyIncrement(Xenon::ToBytes(&address), pDestination, sizeof(address), entryAlignment);
+			// CopyIncrement(Xenon::ToBytes(&address), pDestination, sizeof(address), stride);
+			break;
 		}
-		break;
 
 		case 2:
-			CopyIncrement(std::get<2>(entry).first, pDestination, std::get<2>(entry).second, entryAlignment);
+			CopyIncrement(std::get<2>(entry).first, pDestination, std::get<2>(entry).second, stride);
 			break;
 
 		default:
@@ -129,34 +134,47 @@ namespace Xenon
 			const auto entryAlignment = m_pDevice->getPhysicalDeviceRayTracingPipelineProperties().shaderGroupHandleAlignment;
 			const auto maxStride = m_pDevice->getPhysicalDeviceRayTracingPipelineProperties().maxShaderGroupStride;
 
+			uint64_t rayGenCount = 0;
+			uint64_t hitGroupCount = 0;
+			uint64_t missCount = 0;
+			uint64_t callableCount = 0;
+
+			uint64_t rayGenStride = 0;
+			uint64_t missStride = 0;
+			uint64_t hitGroupStride = 0;
+			uint64_t callableStride = 0;
+
 			// Get the allocation sizes.
 			uint32_t groupCount = 0;
 			for (const auto& group : bindingGroups)
 			{
 				for (const auto& [shader, entry] : group.m_Entries)
 				{
+					const auto entrySize = GetEntrySize(entry, handleSize, entryAlignment);
+					groupCount++;
+
 					switch (shader)
 					{
 					case ShaderType::RayGen:
-						m_RayGenSize += GetEntrySize(entry, handleSize, entryAlignment);
-						groupCount++;
+						rayGenStride = std::max(entrySize, rayGenStride);
+						rayGenCount++;
 						break;
 
 					case ShaderType::Intersection:
 					case ShaderType::AnyHit:
 					case ShaderType::ClosestHit:
-						m_RayHitSize += GetEntrySize(entry, handleSize, entryAlignment);
-						groupCount++;
+						hitGroupStride = std::max(entrySize, hitGroupStride);
+						hitGroupCount++;
 						break;
 
 					case ShaderType::Miss:
-						m_RayMissSize += GetEntrySize(entry, handleSize, entryAlignment);
-						groupCount++;
+						missStride = std::max(entrySize, missStride);
+						missCount++;
 						break;
 
 					case ShaderType::Callable:
-						m_CallableSize += GetEntrySize(entry, handleSize, entryAlignment);
-						groupCount++;
+						callableStride = std::max(entrySize, callableStride);
+						callableCount++;
 						break;
 
 					default:
@@ -167,11 +185,16 @@ namespace Xenon
 			}
 
 			// Validate the sizes.
-			if (m_RayGenSize > maxStride || m_RayHitSize > maxStride || m_RayMissSize > maxStride)
+			if (rayGenStride > maxStride || missStride > maxStride || hitGroupStride > maxStride || callableStride > maxStride)
 			{
 				XENON_LOG_ERROR("Failed to create the shader binding table! The size of the binding data are too much. The maximum size allowed is {}", maxStride * 4);
 				return;
 			}
+
+			m_RayGenSize = rayGenCount * rayGenStride;
+			m_RayHitSize = hitGroupCount * hitGroupStride;
+			m_RayMissSize = missCount * missStride;
+			m_CallableSize = callableCount * callableStride;
 
 			const uint32_t handleSizeAligned = XENON_VK_ALIGNED_SIZE(handleSize, entryAlignment);
 			const uint32_t sbtSize = groupCount * handleSizeAligned;
@@ -213,24 +236,24 @@ namespace Xenon
 					{
 					case ShaderType::RayGen:
 						CopyIncrement(pBegin, pRayGenMemory, handleSize);
-						CopyEntry(entry, pRayGenMemory, entryAlignment);
+						CopyEntry(entry, pRayGenMemory, rayGenStride);
 						break;
 
 					case ShaderType::Intersection:
 					case ShaderType::AnyHit:
 					case ShaderType::ClosestHit:
 						CopyIncrement(pBegin, pHitGroupMemory, handleSize);
-						CopyEntry(entry, pHitGroupMemory, entryAlignment);
+						CopyEntry(entry, pHitGroupMemory, hitGroupStride);
 						break;
 
 					case ShaderType::Miss:
 						CopyIncrement(pBegin, pMissMemory, handleSize);
-						CopyEntry(entry, pMissMemory, entryAlignment);
+						CopyEntry(entry, pMissMemory, missStride);
 						break;
 
 					case ShaderType::Callable:
 						CopyIncrement(pBegin, pCallableMemory, handleSize);
-						CopyEntry(entry, pCallableMemory, entryAlignment);
+						CopyEntry(entry, pCallableMemory, callableStride);
 						break;
 
 					default:
@@ -246,6 +269,23 @@ namespace Xenon
 
 			// Finally unmap the memory.
 			unmap();
+
+			// Setup the address ranges.
+			m_RayGenAddressRegion.deviceAddress = getDeviceAddress();
+			m_RayGenAddressRegion.stride = rayGenStride;
+			m_RayGenAddressRegion.size = m_RayGenSize;
+
+			m_MissAddressRegion.deviceAddress = m_RayGenAddressRegion.deviceAddress + m_RayGenAddressRegion.size;
+			m_MissAddressRegion.stride = missStride;
+			m_MissAddressRegion.size = m_RayMissSize;
+
+			m_HitAddressRegion.deviceAddress = m_MissAddressRegion.deviceAddress + m_MissAddressRegion.size;
+			m_HitAddressRegion.stride = hitGroupStride;
+			m_HitAddressRegion.size = m_RayHitSize;
+
+			m_CallableAddressRegion.deviceAddress = m_HitAddressRegion.deviceAddress + m_HitAddressRegion.size;
+			m_CallableAddressRegion.stride = callableStride;
+			m_CallableAddressRegion.size = m_CallableSize;
 		}
 
 		VulkanShaderBindingTable::~VulkanShaderBindingTable()
@@ -264,6 +304,14 @@ namespace Xenon
 		void VulkanShaderBindingTable::unmap()
 		{
 			vmaUnmapMemory(m_pDevice->getAllocator(), m_Allocation);
+		}
+
+		VkDeviceAddress VulkanShaderBindingTable::getDeviceAddress() const
+		{
+			VkBufferDeviceAddressInfoKHR bufferDeviceAddressInfo = {};
+			bufferDeviceAddressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
+			bufferDeviceAddressInfo.buffer = m_Table;
+			return m_pDevice->getDeviceTable().vkGetBufferDeviceAddressKHR(m_pDevice->getLogicalDevice(), &bufferDeviceAddressInfo);
 		}
 	}
 }

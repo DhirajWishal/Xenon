@@ -10,6 +10,7 @@
 #include "DX12OcclusionQuery.hpp"
 #include "DX12RayTracer.hpp"
 #include "DX12RayTracingPipeline.hpp"
+#include "DX12ShaderBindingTable.hpp"
 
 #include <optick.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -602,15 +603,15 @@ namespace Xenon
 
 			if (pSceneDescriptor)
 			{
-				auto pDx12CameraDescriptor = pSceneDescriptor->as<DX12Descriptor>();
-				const auto cbvSrvUavStart = pDx12CameraDescriptor->getCbvSrvUavDescriptorHeapStart();
-				const auto samplerStart = pDx12CameraDescriptor->getSamplerDescriptorHeapStart();
+				auto pDx12SceneDescriptor = pSceneDescriptor->as<DX12Descriptor>();
+				const auto cbvSrvUavStart = pDx12SceneDescriptor->getCbvSrvUavDescriptorHeapStart();
+				const auto samplerStart = pDx12SceneDescriptor->getSamplerDescriptorHeapStart();
 
-				if (pDx12CameraDescriptor->hasBuffers())
-					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[0]->GetGPUDescriptorHandleForHeapStart(), cbvSrvUavStart, pDx12CameraDescriptor->getCbvSrvUavDescriptorHeapIncrementSize()));
+				if (pDx12SceneDescriptor->hasBuffers())
+					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[0]->GetGPUDescriptorHandleForHeapStart(), cbvSrvUavStart, pDx12SceneDescriptor->getCbvSrvUavDescriptorHeapIncrementSize()));
 
-				if (pDx12CameraDescriptor->hasSampler())
-					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[1]->GetGPUDescriptorHandleForHeapStart(), samplerStart, pDx12CameraDescriptor->getSamplerDescriptorHeapIncrementSize()));
+				if (pDx12SceneDescriptor->hasSampler())
+					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[1]->GetGPUDescriptorHandleForHeapStart(), samplerStart, pDx12SceneDescriptor->getSamplerDescriptorHeapIncrementSize()));
 			}
 		}
 
@@ -645,6 +646,61 @@ namespace Xenon
 				XENON_LOG_ERROR("Invalid index stride!");
 
 			m_pCurrentCommandList->IASetIndexBuffer(&indexView);
+		}
+
+		void DX12CommandRecorder::bind(RayTracingPipeline* pPipeline)
+		{
+			OPTICK_EVENT();
+
+			m_pCurrentCommandList->SetPipelineState1(pPipeline->as<DX12RayTracingPipeline>()->getStateObject());
+		}
+
+		void DX12CommandRecorder::bind(RayTracingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pSceneDescriptor)
+		{
+			OPTICK_EVENT();
+
+			const auto& heaps = pPipeline->as<DX12RayTracingPipeline>()->getDescriptorHeapStorage();
+			m_pCurrentCommandList->SetDescriptorHeaps(static_cast<UINT>(heaps.size()), heaps.data());
+
+			UINT index = 0;
+			if (pUserDefinedDescriptor)
+			{
+				auto pDx12UserDefinedDescriptor = pUserDefinedDescriptor->as<DX12Descriptor>();
+				const auto cbvSrvUavStart = pDx12UserDefinedDescriptor->getCbvSrvUavDescriptorHeapStart();
+				const auto samplerStart = pDx12UserDefinedDescriptor->getSamplerDescriptorHeapStart();
+
+				if (pDx12UserDefinedDescriptor->hasBuffers())
+					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[0]->GetGPUDescriptorHandleForHeapStart(), cbvSrvUavStart, pDx12UserDefinedDescriptor->getCbvSrvUavDescriptorHeapIncrementSize()));
+
+				if (pDx12UserDefinedDescriptor->hasSampler())
+					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[1]->GetGPUDescriptorHandleForHeapStart(), samplerStart, pDx12UserDefinedDescriptor->getSamplerDescriptorHeapIncrementSize()));
+			}
+
+			if (pMaterialDescriptor)
+			{
+				auto pDx12MaterialDescriptor = pMaterialDescriptor->as<DX12Descriptor>();
+				const auto cbvSrvUavStart = pDx12MaterialDescriptor->getCbvSrvUavDescriptorHeapStart();
+				const auto samplerStart = pDx12MaterialDescriptor->getSamplerDescriptorHeapStart();
+
+				if (pDx12MaterialDescriptor->hasBuffers())
+					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[0]->GetGPUDescriptorHandleForHeapStart(), cbvSrvUavStart, pDx12MaterialDescriptor->getCbvSrvUavDescriptorHeapIncrementSize()));
+
+				if (pDx12MaterialDescriptor->hasSampler())
+					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[1]->GetGPUDescriptorHandleForHeapStart(), samplerStart, pDx12MaterialDescriptor->getSamplerDescriptorHeapIncrementSize()));
+			}
+
+			if (pSceneDescriptor)
+			{
+				auto pDx12SceneDescriptor = pSceneDescriptor->as<DX12Descriptor>();
+				const auto cbvSrvUavStart = pDx12SceneDescriptor->getCbvSrvUavDescriptorHeapStart();
+				const auto samplerStart = pDx12SceneDescriptor->getSamplerDescriptorHeapStart();
+
+				if (pDx12SceneDescriptor->hasBuffers())
+					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[0]->GetGPUDescriptorHandleForHeapStart(), cbvSrvUavStart, pDx12SceneDescriptor->getCbvSrvUavDescriptorHeapIncrementSize()));
+
+				if (pDx12SceneDescriptor->hasSampler())
+					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[1]->GetGPUDescriptorHandleForHeapStart(), samplerStart, pDx12SceneDescriptor->getSamplerDescriptorHeapIncrementSize()));
+			}
 		}
 
 		void DX12CommandRecorder::setViewport(float x, float y, float width, float height, float minDepth, float maxDepth)
@@ -713,21 +769,16 @@ namespace Xenon
 			m_pCurrentCommandList->DrawIndexedInstanced(static_cast<UINT>(indexCount), instanceCount, static_cast<UINT>(indexOffset), static_cast<UINT>(vertexOffset), firstInstance);
 		}
 
-		void DX12CommandRecorder::drawRayTraced(RayTracer* pRayTracer, RayTracingPipeline* pPipeline, ShaderBindingTable* pShaderBindingTable)
+		void DX12CommandRecorder::drawRayTraced(RayTracer* pRayTracer, ShaderBindingTable* pShaderBindingTable)
 		{
 			OPTICK_EVENT();
-			auto pDxRayTracer = pRayTracer->as<DX12RayTracer>();
-			auto pDxPipeline = pPipeline->as<DX12RayTracingPipeline>();
-
-			// Copy the arguments here.
-
-			m_pCurrentCommandList->SetPipelineState1(pDxPipeline->getStateObject());
+			auto pDxBindingTable = pShaderBindingTable->as<DX12ShaderBindingTable>();
 
 			D3D12_DISPATCH_RAYS_DESC desc = {};
-			// desc.RayGenerationShaderRecord = pDxPipeline->getRayGenSBT().getAddressRange();
-			// desc.MissShaderTable = pDxPipeline->getMissSBT().getAddressRangeAndStride();
-			// desc.HitGroupTable = pDxPipeline->getHitGroupSBT().getAddressRangeAndStride();
-			// desc.CallableShaderTable = pDxPipeline->getCallableSBT().getAddressRangeAndStride();
+			desc.RayGenerationShaderRecord = pDxBindingTable->getRayGenerationAddresRange();
+			desc.MissShaderTable = pDxBindingTable->getMissAddressRange();
+			desc.HitGroupTable = pDxBindingTable->getHitGroupAddressRange();
+			desc.CallableShaderTable = pDxBindingTable->getCallableAddressRange();
 			desc.Width = pRayTracer->getCamera()->getWidth();
 			desc.Height = pRayTracer->getCamera()->getHeight();
 			desc.Depth = 1;

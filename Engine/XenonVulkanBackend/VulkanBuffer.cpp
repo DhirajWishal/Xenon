@@ -193,10 +193,10 @@ namespace Xenon
 
 		VkDeviceAddress VulkanBuffer::getDeviceAddress() const
 		{
-			VkBufferDeviceAddressInfoKHR bufferDeviceAI{};
-			bufferDeviceAI.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
-			bufferDeviceAI.buffer = m_Buffer;
-			return m_pDevice->getDeviceTable().vkGetBufferDeviceAddressKHR(m_pDevice->getLogicalDevice(), &bufferDeviceAI);
+			VkBufferDeviceAddressInfoKHR bufferDeviceAddressInfo = {};
+			bufferDeviceAddressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
+			bufferDeviceAddressInfo.buffer = m_Buffer;
+			return m_pDevice->getDeviceTable().vkGetBufferDeviceAddressKHR(m_pDevice->getLogicalDevice(), &bufferDeviceAddressInfo);
 		}
 
 		std::byte* VulkanBuffer::map()

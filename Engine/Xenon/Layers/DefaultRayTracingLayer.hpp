@@ -24,6 +24,7 @@ namespace Xenon
 
 			std::unique_ptr<Backend::BottomLevelAccelerationStructure> m_pBottomLevelAccelerationStructure;
 			std::unique_ptr<Backend::TopLevelAccelerationStructure> m_pTopLevelAccelerationStructure;
+			std::unique_ptr<Backend::ShaderBindingTable> m_pShaderBindingTable;
 
 			Backend::RayTracingPipeline* m_pPipeline = nullptr;
 		};

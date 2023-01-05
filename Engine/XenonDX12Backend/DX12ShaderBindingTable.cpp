@@ -74,6 +74,23 @@ namespace /* anonymous */
 	}
 
 	/**
+	 * Copy data to a destination pointer and increment the destination pointer.
+	 *
+	 * @param pSource The source data pointer.
+	 * @param pDestination The destination data pointer. This will be incremented by size.
+	 * @param size The number of bytes to copy.
+	 * @param stride The stride to increment the pointer with.
+	 */
+	void CopyIncrement(const std::byte* pSource, std::byte*& pDestination, uint64_t size, uint64_t stride)
+	{
+		// Copy only if we have valid data.
+		if (pSource)
+			std::copy_n(pSource, size, pDestination);
+
+		pDestination += stride;
+	}
+
+	/**
 	 * Copy an entry to the destination pointer.
 	 * This will also increment the pointer.
 	 *
@@ -95,11 +112,46 @@ namespace /* anonymous */
 		{
 			auto address = std::get<1>(entry)->as<Xenon::Backend::DX12Image>()->getResource()->GetGPUVirtualAddress();
 			CopyIncrement(Xenon::ToBytes(&address), pDestination, sizeof(address));
+			break;
 		}
-		break;
 
 		case 2:
 			CopyIncrement(std::get<2>(entry).first, pDestination, std::get<2>(entry).second);
+			break;
+
+		default:
+			break;
+		}
+	}
+
+	/**
+	 * Copy an entry to the destination pointer.
+	 * This will also increment the pointer.
+	 *
+	 * @param entry The entry to copy.
+	 * @param pDestination The destination pointer.
+	 * @param stride The stride to increment the pointer with.
+	 */
+	void CopyEntry(const Xenon::Backend::BindingGroup::DataVariant& entry, std::byte*& pDestination, uint64_t stride)
+	{
+		switch (entry.index())
+		{
+		case 0:
+		{
+			auto address = std::get<0>(entry)->as<Xenon::Backend::DX12Buffer>()->getResource()->GetGPUVirtualAddress();
+			CopyIncrement(Xenon::ToBytes(&address), pDestination, sizeof(address), stride);
+			break;
+		}
+
+		case 1:
+		{
+			auto address = std::get<1>(entry)->as<Xenon::Backend::DX12Image>()->getResource()->GetGPUVirtualAddress();
+			CopyIncrement(Xenon::ToBytes(&address), pDestination, sizeof(address), stride);
+			break;
+		}
+
+		case 2:
+			CopyIncrement(std::get<2>(entry).first, pDestination, std::get<2>(entry).second, stride);
 			break;
 
 		default:
@@ -124,28 +176,43 @@ namespace Xenon
 			}
 
 			// Get the allocation sizes.
+			uint64_t rayGenCount = 0;
+			uint64_t hitGroupCount = 0;
+			uint64_t missCount = 0;
+			uint64_t callableCount = 0;
+
+			uint64_t missStride = 0;
+			uint64_t hitGroupStride = 0;
+			uint64_t callableStride = 0;
+
 			for (const auto& group : bindingGroups)
 			{
 				for (const auto& [shader, entry] : group.m_Entries)
 				{
+					const auto entrySize = GetEntrySize(entry);
+
 					switch (shader)
 					{
 					case ShaderType::RayGen:
-						m_RayGenSize += GetEntrySize(entry);
+						rayGenCount++;
+						m_RayGenSize += entrySize;
 						break;
 
 					case ShaderType::Intersection:
 					case ShaderType::AnyHit:
 					case ShaderType::ClosestHit:
-						m_RayHitSize += GetEntrySize(entry);
+						hitGroupCount++;
+						hitGroupStride = std::max(hitGroupStride, entrySize);
 						break;
 
 					case ShaderType::Miss:
-						m_RayMissSize += GetEntrySize(entry);
+						missCount++;
+						missStride = std::max(missStride, entrySize);
 						break;
 
 					case ShaderType::Callable:
-						m_CallableSize += GetEntrySize(entry);
+						callableCount++;
+						callableStride = std::max(callableStride, entrySize);
 						break;
 
 					default:
@@ -154,6 +221,10 @@ namespace Xenon
 					}
 				}
 			}
+
+			m_RayHitSize = hitGroupCount * hitGroupStride;
+			m_RayMissSize = missCount * missStride;
+			m_CallableSize = callableCount * callableStride;
 
 			// Create the buffer.
 			const CD3DX12_RESOURCE_DESC resourceDescriptor = CD3DX12_RESOURCE_DESC::Buffer(m_RayGenSize + m_RayMissSize + m_RayHitSize + m_CallableSize);
@@ -197,17 +268,17 @@ namespace Xenon
 					case ShaderType::AnyHit:
 					case ShaderType::ClosestHit:
 						CopyIncrementWithoutAlignment(ToBytes(pShaderID), pHitGroupMemory, D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-						CopyEntry(entry, pHitGroupMemory);
+						CopyEntry(entry, pHitGroupMemory, hitGroupStride);
 						break;
 
 					case ShaderType::Miss:
 						CopyIncrementWithoutAlignment(ToBytes(pShaderID), pMissMemory, D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-						CopyEntry(entry, pMissMemory);
+						CopyEntry(entry, pMissMemory, missStride);
 						break;
 
 					case ShaderType::Callable:
 						CopyIncrementWithoutAlignment(ToBytes(pShaderID), pCallableMemory, D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-						CopyEntry(entry, pCallableMemory);
+						CopyEntry(entry, pCallableMemory, callableStride);
 						break;
 
 					default:
@@ -220,6 +291,22 @@ namespace Xenon
 
 			// Finally unmap the memory.
 			unmap();
+
+			// Setup the address ranges.
+			m_RayGenerationAddressRange.StartAddress = m_pAllocation->GetResource()->GetGPUVirtualAddress();
+			m_RayGenerationAddressRange.SizeInBytes = m_RayGenSize;
+
+			m_MissAddressRange.StartAddress = m_RayGenerationAddressRange.StartAddress + m_RayGenerationAddressRange.SizeInBytes;
+			m_MissAddressRange.SizeInBytes = m_RayMissSize;
+			m_MissAddressRange.StrideInBytes = missStride;
+
+			m_HitGroupAddressRange.StartAddress = m_MissAddressRange.StartAddress + m_MissAddressRange.SizeInBytes;
+			m_HitGroupAddressRange.SizeInBytes = m_RayHitSize;
+			m_HitGroupAddressRange.StrideInBytes = hitGroupStride;
+
+			m_CallableAddressRange.StartAddress = m_HitGroupAddressRange.StartAddress + m_HitGroupAddressRange.SizeInBytes;
+			m_CallableAddressRange.SizeInBytes = m_CallableSize;
+			m_CallableAddressRange.StrideInBytes = callableStride;
 		}
 
 		DX12ShaderBindingTable::~DX12ShaderBindingTable()
