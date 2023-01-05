@@ -61,8 +61,27 @@ namespace Xenon
 		 */
 		void addDrawData(MeshStorage&& storage, Backend::RayTracingPipeline* pPipeline);
 
+		/**
+		 * Get the total draw count.
+		 * This is the number of sub-meshes the layer will render.
+		 *
+		 * @return The count.
+		 */
+		[[nodiscard]] uint64_t getTotalDrawCount() const noexcept { return m_SubMeshCount; }
+
+		/**
+		 * Get the draw count.
+		 * This is the number of sub-meshes the layer rendered in the previous frame.
+		 *
+		 * @return The count.
+		 */
+		[[nodiscard]] uint64_t getDrawCount() const noexcept { return m_DrawCount; }
+
 	private:
 		std::mutex m_Mutex;
 		std::vector<DrawData> m_DrawData;
+
+		std::atomic_uint64_t m_DrawCount = 0;
+		uint64_t m_SubMeshCount = 0;
 	};
 }
