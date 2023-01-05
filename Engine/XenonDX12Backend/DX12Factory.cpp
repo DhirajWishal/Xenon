@@ -14,6 +14,10 @@
 #include "DX12ComputePipeline.hpp"
 #include "DX12CommandSubmitter.hpp"
 #include "DX12OcclusionQuery.hpp"
+#include "DX12RayTracer.hpp"
+#include "DX12BottomLevelAccelerationStructure.hpp"
+#include "DX12TopLevelAccelerationStructure.hpp"
+#include "DX12RayTracingPipeline.hpp"
 
 namespace Xenon
 {
@@ -69,7 +73,7 @@ namespace Xenon
 			return std::make_unique<DX12RasterizingPipeline>(pDevice->as<DX12Device>(), std::move(pCacheHandler), pRasterizer->as<DX12Rasterizer>(), specification);
 		}
 
-		std::unique_ptr<Xenon::Backend::ComputePipeline> DX12Factory::createComputePipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const ShaderSource& computeShader)
+		std::unique_ptr<Xenon::Backend::ComputePipeline> DX12Factory::createComputePipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const Shader& computeShader)
 		{
 			return std::make_unique<DX12ComputePipeline>(pDevice->as<DX12Device>(), std::move(pCacheHandler), computeShader);
 		}
@@ -82,6 +86,26 @@ namespace Xenon
 		std::unique_ptr<Xenon::Backend::OcclusionQuery> DX12Factory::createOcclusionQuery(Device* pDevice, uint64_t sampleCount)
 		{
 			return std::make_unique<DX12OcclusionQuery>(pDevice->as<DX12Device>(), sampleCount);
+		}
+
+		std::unique_ptr<Xenon::Backend::TopLevelAccelerationStructure> DX12Factory::createTopLevelAccelerationStructure(Device* pDevice, const std::vector<BottomLevelAccelerationStructure*>& pBottomLevelAccelerationStructures)
+		{
+			return std::make_unique<DX12TopLevelAccelerationStructure>(pDevice->as<DX12Device>(), pBottomLevelAccelerationStructures);
+		}
+
+		std::unique_ptr<Xenon::Backend::BottomLevelAccelerationStructure> DX12Factory::createBottomLevelAccelerationStructure(Device* pDevice, const std::vector<AccelerationStructureGeometry>& geometries)
+		{
+			return std::make_unique<DX12BottomLevelAccelerationStructure>(pDevice->as<DX12Device>(), geometries);
+		}
+
+		std::unique_ptr<Xenon::Backend::RayTracer> DX12Factory::createRayTracer(Device* pDevice, Camera* pCamera)
+		{
+			return std::make_unique<DX12RayTracer>(pDevice->as<DX12Device>(), pCamera);
+		}
+
+		std::unique_ptr<Xenon::Backend::RayTracingPipeline> DX12Factory::createRayTracingPipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const RayTracingPipelineSpecification& specification)
+		{
+			return std::make_unique<DX12RayTracingPipeline>(pDevice->as<DX12Device>(), std::move(pCacheHandler), specification);
 		}
 	}
 }

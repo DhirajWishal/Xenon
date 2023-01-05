@@ -48,7 +48,7 @@ namespace Xenon
 			 * @param count The Xenon multi sampling count.
 			 * @return The Vulkan multi sampling count.
 			 */
-			[[nodiscard]] VkSampleCountFlagBits convertSamplingCount(MultiSamplingCount count) const;
+			[[nodiscard]] static VkSampleCountFlagBits ConvertSamplingCount(MultiSamplingCount count) noexcept;
 
 			/**
 			 * Convert the Xenon data format to the Vulkan format.
@@ -56,7 +56,7 @@ namespace Xenon
 			 * @param format The data format.
 			 * @return The Vulkan format.
 			 */
-			[[nodiscard]] VkFormat convertFormat(DataFormat format) const;
+			[[nodiscard]] static VkFormat ConvertFormat(DataFormat format) noexcept;
 
 			/**
 			 * Convert the Xenon resource type to the Vulkan descriptor type.
@@ -64,7 +64,15 @@ namespace Xenon
 			 * @param type The resource type.
 			 * @return The descriptor type.
 			 */
-			[[nodiscard]] VkDescriptorType convertResourceType(ResourceType type) const;
+			[[nodiscard]] static VkDescriptorType ConvertResourceType(ResourceType type) noexcept;
+
+			/**
+			 * Get the shader stage flag bit from the Xenon shader type.
+			 *
+			 * @param shaderType The shader type.
+			 * @return The Vulkan shader stage flag bit.
+			 */
+			[[nodiscard]] static VkShaderStageFlagBits GetShaderStageFlagBit(Xenon::Backend::ShaderType shaderType) noexcept;
 
 		public:
 			/**
@@ -115,6 +123,20 @@ namespace Xenon
 			 * @return The physical device properties.
 			 */
 			[[nodiscard]] const VkPhysicalDeviceProperties& getPhysicalDeviceProperties() const { return m_PhysicalDeviceProperties; }
+
+			/**
+			 * Get the physical device ray tracing pipeline properties.
+			 *
+			 * @return The properties.
+			 */
+			[[nodiscard]] const VkPhysicalDeviceRayTracingPipelinePropertiesKHR& getPhysicalDeviceRayTracingPipelineProperties() const { return m_RayTracingPipelineProperties; }
+
+			/**
+			 * Get the physical device acceleration structure features.
+			 *
+			 * @return The features.
+			 */
+			[[nodiscard]] const VkPhysicalDeviceAccelerationStructureFeaturesKHR& getPhysicalDeviceAccelerationStructureProperties() const { return m_AccelerationStructureFeatures; }
 
 			/**
 			 * Get the compute queue from the device.
@@ -190,6 +212,9 @@ namespace Xenon
 
 		private:
 			VkPhysicalDeviceProperties m_PhysicalDeviceProperties = {};
+			VkPhysicalDeviceRayTracingPipelinePropertiesKHR m_RayTracingPipelineProperties = {};
+			VkPhysicalDeviceAccelerationStructureFeaturesKHR m_AccelerationStructureFeatures = {};
+
 			VolkDeviceTable m_DeviceTable;
 
 			std::vector<Mutex<VulkanQueue>> m_Queues;

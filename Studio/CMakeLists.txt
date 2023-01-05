@@ -10,17 +10,10 @@ project(
 
 # Set the sources.
 file(GLOB_RECURSE SHADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_SOURCE_DIR}/**/*.vert
-	${CMAKE_CURRENT_SOURCE_DIR}/**/*.frag
-	${CMAKE_CURRENT_SOURCE_DIR}/**/*.comp
-	${CMAKE_CURRENT_SOURCE_DIR}/**/*.geom
-	${CMAKE_CURRENT_SOURCE_DIR}/**/*.tesc
-	${CMAKE_CURRENT_SOURCE_DIR}/**/*.tese
-	${CMAKE_CURRENT_SOURCE_DIR}/**/*.mesh
-	${CMAKE_CURRENT_SOURCE_DIR}/**/*.task
-	${CMAKE_CURRENT_SOURCE_DIR}/**/*.rgen
-	${CMAKE_CURRENT_SOURCE_DIR}/**/*.rchit
-	${CMAKE_CURRENT_SOURCE_DIR}/**/*.rmiss
+	*.hlsl
+	*.hlsli
+
+	*.hpp
 )
 
 set(
@@ -85,13 +78,10 @@ if (MSVC)
 endif ()
 
 # Include the shader compile tool.
-include(../Tools/CMake/ShaderCompiler.CMake)
+include(${CMAKE_SOURCE_DIR}/Tools/CMake/ShaderCompiler.CMake)
 
-# Setup shader compiler
-set(SHADER_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Shaders)
-set(SHADER_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/Shaders)
-
-CompileShaders(XenonStudio ${SHADER_SOURCE_DIR} ${SHADER_BINARY_DIR})
+# Compile the shaders.
+CompileShaders()
 
 # Copy the font files to the output directory.
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Fonts DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

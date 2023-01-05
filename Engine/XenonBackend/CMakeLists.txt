@@ -38,6 +38,14 @@ set(
 	"CommandSubmitter.hpp"
 	"Query.hpp"
 	"OcclusionQuery.hpp"
+	"AccelerationStructure.hpp"
+	"RayTracer.hpp"
+	"BottomLevelAccelerationStructure.hpp"
+	"TopLevelAccelerationStructure.hpp"
+	"RayTracingPipeline.hpp"
+	"Shader.cpp"
+	"Shader.hpp"
+	"ShaderBindingTable.hpp"
 )
 
 # Add the source group.

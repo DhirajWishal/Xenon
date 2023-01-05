@@ -5,7 +5,7 @@
 
 #include "Pipeline.hpp"
 #include "Rasterizer.hpp"
-#include "ShaderSource.hpp"
+#include "Shader.hpp"
 
 namespace Xenon
 {
@@ -239,8 +239,8 @@ namespace Xenon
 		 */
 		struct RasterizingPipelineSpecification final
 		{
-			ShaderSource m_VertexShader;
-			ShaderSource m_FragmentShader;	// AKA the pixel shader.
+			Shader m_VertexShader;
+			Shader m_FragmentShader;	// AKA the pixel shader.
 
 			std::vector<ColorBlendAttachment> m_ColorBlendAttachments = { ColorBlendAttachment() };
 

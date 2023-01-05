@@ -47,6 +47,18 @@ set(
 	"DX12CommandSubmitter.hpp"
 	"DX12OcclusionQuery.cpp"
 	"DX12OcclusionQuery.hpp"
+	"DX12RayTracer.cpp"
+	"DX12RayTracer.hpp"
+	"DX12AccelerationStructure.cpp"
+	"DX12AccelerationStructure.hpp"
+	"DX12BottomLevelAccelerationStructure.cpp"
+	"DX12BottomLevelAccelerationStructure.hpp"
+	"DX12TopLevelAccelerationStructure.cpp"
+	"DX12TopLevelAccelerationStructure.hpp"
+	"DX12RayTracingPipeline.cpp"
+	"DX12RayTracingPipeline.hpp"
+	"DX12ShaderBindingTable.cpp"
+	"DX12ShaderBindingTable.hpp"
 )
 
 # Add the source group.
@@ -68,7 +80,6 @@ target_include_directories(
 
 	PRIVATE ${DIRECT_X_HEADERS_INCLUDE_DIR}
 	PRIVATE ${D3DMA_INCLUDE_DIR}
-	PRIVATE ${SPIRV_CROSS_INCLUDE_DIR}
 )
 
 # Make sure to specify the C++ standard to C++20.
@@ -85,7 +96,7 @@ target_link_libraries(
 	PRIVATE "d3d12.lib" 
 	PRIVATE "dxgi.lib" 
 	PRIVATE "d3dcompiler.lib"
-	PRIVATE spirv-cross-hlsl
+	PRIVATE "dxcompiler.lib"
 )
 
 # Set compile definitions.

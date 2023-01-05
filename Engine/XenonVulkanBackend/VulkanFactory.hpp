@@ -131,10 +131,10 @@ namespace Xenon
 			 *
 			 * @param pDevice The device pointer.
 			 * @param pCacheHandler The cache handler pointer. This can be null in which case the pipeline creation might get slow.
-			 * @param computeShader The compute shader source.
+			 * @param computeShader The compute shader.
 			 * @return The pipeline pointer.
 			 */
-			[[nodiscard]] std::unique_ptr<ComputePipeline> createComputePipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const ShaderSource& computeShader) override;
+			[[nodiscard]] std::unique_ptr<ComputePipeline> createComputePipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const Shader& computeShader) override;
 
 			/**
 			 * Create a new command submitter.
@@ -149,8 +149,46 @@ namespace Xenon
 			 *
 			 * @param pDevice The device pointer.
 			 * @param sampleCount The maximum sample count the query can hold.
+			 * @return The occlusion query pointer.
 			 */
 			[[nodiscard]] std::unique_ptr<OcclusionQuery> createOcclusionQuery(Device* pDevice, uint64_t sampleCount) override;
+
+			/**
+			 * Create a new top level acceleration structure.
+			 *
+			 * @param pDevice The device pointer.
+			 * @param pBottomLevelAccelerationStructures The bottom level acceleration structures.
+			 * @return The acceleration structure pointer.
+			 */
+			[[nodiscard]] std::unique_ptr<TopLevelAccelerationStructure> createTopLevelAccelerationStructure(Device* pDevice, const std::vector<BottomLevelAccelerationStructure*>& pBottomLevelAccelerationStructures) override;
+
+			/**
+			 * Create a new bottom level acceleration structure.
+			 *
+			 * @param pDevice The device pointer.
+			 * @param geometries The geometries to store.
+			 * @return The acceleration structure pointer.
+			 */
+			[[nodiscard]] std::unique_ptr<BottomLevelAccelerationStructure> createBottomLevelAccelerationStructure(Device* pDevice, const std::vector<AccelerationStructureGeometry>& geometries) override;
+
+			/**
+			 * Create a new ray tracer.
+			 *
+			 * @param pDevice The device pointer.
+			 * @param pCamera The camera pointer.
+			 * @return The ray tracer pointer.
+			 */
+			[[nodiscard]] std::unique_ptr<RayTracer> createRayTracer(Device* pDevice, Camera* pCamera) override;
+
+			/**
+			 * Create anew ray tracing pipeline.
+			 *
+			 * @param pDevice The device pointer.
+			 * @param pCacheHandler The cache handler pointer. This can be null in which case the pipeline creation might get slow.
+			 * @param specification The pipeline specification.
+			 * @return The pipeline pointer.
+			 */
+			[[nodiscard]] std::unique_ptr<RayTracingPipeline> createRayTracingPipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const RayTracingPipelineSpecification& specification) override;
 		};
 	}
 }

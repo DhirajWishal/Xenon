@@ -4,7 +4,12 @@
 #include "DX12Swapchain.hpp"
 #include "DX12Macros.hpp"
 
+#include "../XenonBackend/Shader.hpp"
+
 #include "../XenonPlatformWindows/WindowsWindow.hpp"
+
+#include "../XenonShaderBank/Internal/DX12SwapchainCopy/DX12SwapchainCopy.vert.hpp"
+#include "../XenonShaderBank/Internal/DX12SwapchainCopy/DX12SwapchainCopy.frag.hpp"
 
 #include <optick.h>
 #include <glm/vec2.hpp>
@@ -141,7 +146,7 @@ namespace Xenon
 			// Else setup the resource view.
 			D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 			srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-			srvDesc.Format = m_pDevice->convertFormat(pImage->getDataFormat());
+			srvDesc.Format = m_pDevice->ConvertFormat(pImage->getDataFormat());
 			srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 			srvDesc.Texture2D.MipLevels = 1;
 			m_pDevice->getDevice()->CreateShaderResourceView(pImage->getResource(), &srvDesc, m_ImageCopyContainer.m_CbvSrvUavDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
@@ -257,8 +262,8 @@ namespace Xenon
 
 			// Setup the pipeline state.
 			{
-				ComPtr<ID3DBlob> vertexShader = DX12Device::CompileShader(ShaderSource::FromFile(XENON_SHADER_DIR "Internal/DX12SwapchainCopy/Shader.vert.spv"), ShaderType::Vertex);
-				ComPtr<ID3DBlob> pixelShader = DX12Device::CompileShader(ShaderSource::FromFile(XENON_SHADER_DIR "Internal/DX12SwapchainCopy/Shader.frag.spv"), ShaderType::Fragment);
+				const auto vertexShader = Generated::CreateShaderDX12SwapchainCopy_vert();
+				const auto pixelShader = Generated::CreateShaderDX12SwapchainCopy_frag();
 
 				// Define the vertex input layout.
 				constexpr std::array<D3D12_INPUT_ELEMENT_DESC, 2> inputElementDescs = {
@@ -270,8 +275,8 @@ namespace Xenon
 				D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
 				psoDesc.InputLayout = { inputElementDescs.data(), inputElementDescs.size() };
 				psoDesc.pRootSignature = m_ImageCopyContainer.m_RootSignature.Get();
-				psoDesc.VS = CD3DX12_SHADER_BYTECODE(vertexShader.Get());
-				psoDesc.PS = CD3DX12_SHADER_BYTECODE(pixelShader.Get());
+				psoDesc.VS = CD3DX12_SHADER_BYTECODE(vertexShader.getDXIL().getBinaryData(), vertexShader.getDXIL().getBinarySizeInBytes());
+				psoDesc.PS = CD3DX12_SHADER_BYTECODE(pixelShader.getDXIL().getBinaryData(), pixelShader.getDXIL().getBinarySizeInBytes());
 				psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 				psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 				psoDesc.DepthStencilState.DepthEnable = FALSE;

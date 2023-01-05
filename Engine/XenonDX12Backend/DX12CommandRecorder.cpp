@@ -8,6 +8,9 @@
 #include "DX12RasterizingPipeline.hpp"
 #include "DX12Descriptor.hpp"
 #include "DX12OcclusionQuery.hpp"
+#include "DX12RayTracer.hpp"
+#include "DX12RayTracingPipeline.hpp"
+#include "DX12ShaderBindingTable.hpp"
 
 #include <optick.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -237,7 +240,7 @@ namespace Xenon
 			for (uint32_t i = 0; i < bufferCount; i++)
 			{
 				// Create the command list.
-				ComPtr<ID3D12GraphicsCommandList> commandList;
+				ComPtr<ID3D12GraphicsCommandList5> commandList;
 				XENON_DX12_ASSERT(m_pDevice->getDevice()->CreateCommandList(0, type, m_CommandAllocator.Get(), nullptr, IID_PPV_ARGS(&commandList)), "Failed to create the command list!");
 
 #ifdef XENON_DEBUG
@@ -434,7 +437,7 @@ namespace Xenon
 			sourceLocation.pResource = pDxBuffer->getResource();
 			sourceLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
 			sourceLocation.PlacedFootprint.Offset = 0;
-			sourceLocation.PlacedFootprint.Footprint.Format = m_pDevice->convertFormat(pDxImage->getDataFormat());
+			sourceLocation.PlacedFootprint.Footprint.Format = m_pDevice->ConvertFormat(pDxImage->getDataFormat());
 			sourceLocation.PlacedFootprint.Footprint.Depth = 1;
 			sourceLocation.PlacedFootprint.Footprint.Width = pDxImage->getWidth();
 			sourceLocation.PlacedFootprint.Footprint.Height = pDxImage->getHeight();
@@ -494,7 +497,7 @@ namespace Xenon
 			destinationLocation.pResource = pDxDestinationImage->getResource();
 			destinationLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
 			destinationLocation.PlacedFootprint.Offset = 0;
-			destinationLocation.PlacedFootprint.Footprint.Format = m_pDevice->convertFormat(pDxDestinationImage->getDataFormat());
+			destinationLocation.PlacedFootprint.Footprint.Format = m_pDevice->ConvertFormat(pDxDestinationImage->getDataFormat());
 			destinationLocation.PlacedFootprint.Footprint.Depth = 1;
 			destinationLocation.PlacedFootprint.Footprint.Width = pDxDestinationImage->getWidth();
 			destinationLocation.PlacedFootprint.Footprint.Height = pDxDestinationImage->getHeight();
@@ -504,7 +507,7 @@ namespace Xenon
 			sourceLocation.pResource = pDxSourceImage->getResource();
 			sourceLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
 			sourceLocation.PlacedFootprint.Offset = 0;
-			sourceLocation.PlacedFootprint.Footprint.Format = m_pDevice->convertFormat(pDxSourceImage->getDataFormat());
+			sourceLocation.PlacedFootprint.Footprint.Format = m_pDevice->ConvertFormat(pDxSourceImage->getDataFormat());
 			sourceLocation.PlacedFootprint.Footprint.Depth = 1;
 			sourceLocation.PlacedFootprint.Footprint.Width = pDxSourceImage->getWidth();
 			sourceLocation.PlacedFootprint.Footprint.Height = pDxSourceImage->getHeight();
@@ -564,7 +567,7 @@ namespace Xenon
 			m_pCurrentCommandList->SetPipelineState(pPipeline->as<DX12RasterizingPipeline>()->getPipeline(vertexSpecification).m_PipelineState.Get());
 		}
 
-		void DX12CommandRecorder::bind(RasterizingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pCameraDescriptor)
+		void DX12CommandRecorder::bind(RasterizingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pSceneDescriptor)
 		{
 			OPTICK_EVENT();
 
@@ -598,17 +601,17 @@ namespace Xenon
 					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[1]->GetGPUDescriptorHandleForHeapStart(), samplerStart, pDx12MaterialDescriptor->getSamplerDescriptorHeapIncrementSize()));
 			}
 
-			if (pCameraDescriptor)
+			if (pSceneDescriptor)
 			{
-				auto pDx12CameraDescriptor = pCameraDescriptor->as<DX12Descriptor>();
-				const auto cbvSrvUavStart = pDx12CameraDescriptor->getCbvSrvUavDescriptorHeapStart();
-				const auto samplerStart = pDx12CameraDescriptor->getSamplerDescriptorHeapStart();
+				auto pDx12SceneDescriptor = pSceneDescriptor->as<DX12Descriptor>();
+				const auto cbvSrvUavStart = pDx12SceneDescriptor->getCbvSrvUavDescriptorHeapStart();
+				const auto samplerStart = pDx12SceneDescriptor->getSamplerDescriptorHeapStart();
 
-				if (pDx12CameraDescriptor->hasBuffers())
-					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[0]->GetGPUDescriptorHandleForHeapStart(), cbvSrvUavStart, pDx12CameraDescriptor->getCbvSrvUavDescriptorHeapIncrementSize()));
+				if (pDx12SceneDescriptor->hasBuffers())
+					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[0]->GetGPUDescriptorHandleForHeapStart(), cbvSrvUavStart, pDx12SceneDescriptor->getCbvSrvUavDescriptorHeapIncrementSize()));
 
-				if (pDx12CameraDescriptor->hasSampler())
-					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[1]->GetGPUDescriptorHandleForHeapStart(), samplerStart, pDx12CameraDescriptor->getSamplerDescriptorHeapIncrementSize()));
+				if (pDx12SceneDescriptor->hasSampler())
+					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[1]->GetGPUDescriptorHandleForHeapStart(), samplerStart, pDx12SceneDescriptor->getSamplerDescriptorHeapIncrementSize()));
 			}
 		}
 
@@ -643,6 +646,61 @@ namespace Xenon
 				XENON_LOG_ERROR("Invalid index stride!");
 
 			m_pCurrentCommandList->IASetIndexBuffer(&indexView);
+		}
+
+		void DX12CommandRecorder::bind(RayTracingPipeline* pPipeline)
+		{
+			OPTICK_EVENT();
+
+			m_pCurrentCommandList->SetPipelineState1(pPipeline->as<DX12RayTracingPipeline>()->getStateObject());
+		}
+
+		void DX12CommandRecorder::bind(RayTracingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pSceneDescriptor)
+		{
+			OPTICK_EVENT();
+
+			const auto& heaps = pPipeline->as<DX12RayTracingPipeline>()->getDescriptorHeapStorage();
+			m_pCurrentCommandList->SetDescriptorHeaps(static_cast<UINT>(heaps.size()), heaps.data());
+
+			UINT index = 0;
+			if (pUserDefinedDescriptor)
+			{
+				auto pDx12UserDefinedDescriptor = pUserDefinedDescriptor->as<DX12Descriptor>();
+				const auto cbvSrvUavStart = pDx12UserDefinedDescriptor->getCbvSrvUavDescriptorHeapStart();
+				const auto samplerStart = pDx12UserDefinedDescriptor->getSamplerDescriptorHeapStart();
+
+				if (pDx12UserDefinedDescriptor->hasBuffers())
+					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[0]->GetGPUDescriptorHandleForHeapStart(), cbvSrvUavStart, pDx12UserDefinedDescriptor->getCbvSrvUavDescriptorHeapIncrementSize()));
+
+				if (pDx12UserDefinedDescriptor->hasSampler())
+					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[1]->GetGPUDescriptorHandleForHeapStart(), samplerStart, pDx12UserDefinedDescriptor->getSamplerDescriptorHeapIncrementSize()));
+			}
+
+			if (pMaterialDescriptor)
+			{
+				auto pDx12MaterialDescriptor = pMaterialDescriptor->as<DX12Descriptor>();
+				const auto cbvSrvUavStart = pDx12MaterialDescriptor->getCbvSrvUavDescriptorHeapStart();
+				const auto samplerStart = pDx12MaterialDescriptor->getSamplerDescriptorHeapStart();
+
+				if (pDx12MaterialDescriptor->hasBuffers())
+					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[0]->GetGPUDescriptorHandleForHeapStart(), cbvSrvUavStart, pDx12MaterialDescriptor->getCbvSrvUavDescriptorHeapIncrementSize()));
+
+				if (pDx12MaterialDescriptor->hasSampler())
+					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[1]->GetGPUDescriptorHandleForHeapStart(), samplerStart, pDx12MaterialDescriptor->getSamplerDescriptorHeapIncrementSize()));
+			}
+
+			if (pSceneDescriptor)
+			{
+				auto pDx12SceneDescriptor = pSceneDescriptor->as<DX12Descriptor>();
+				const auto cbvSrvUavStart = pDx12SceneDescriptor->getCbvSrvUavDescriptorHeapStart();
+				const auto samplerStart = pDx12SceneDescriptor->getSamplerDescriptorHeapStart();
+
+				if (pDx12SceneDescriptor->hasBuffers())
+					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[0]->GetGPUDescriptorHandleForHeapStart(), cbvSrvUavStart, pDx12SceneDescriptor->getCbvSrvUavDescriptorHeapIncrementSize()));
+
+				if (pDx12SceneDescriptor->hasSampler())
+					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[1]->GetGPUDescriptorHandleForHeapStart(), samplerStart, pDx12SceneDescriptor->getSamplerDescriptorHeapIncrementSize()));
+			}
 		}
 
 		void DX12CommandRecorder::setViewport(float x, float y, float width, float height, float minDepth, float maxDepth)
@@ -711,6 +769,23 @@ namespace Xenon
 			m_pCurrentCommandList->DrawIndexedInstanced(static_cast<UINT>(indexCount), instanceCount, static_cast<UINT>(indexOffset), static_cast<UINT>(vertexOffset), firstInstance);
 		}
 
+		void DX12CommandRecorder::drawRayTraced(RayTracer* pRayTracer, ShaderBindingTable* pShaderBindingTable)
+		{
+			OPTICK_EVENT();
+			auto pDxBindingTable = pShaderBindingTable->as<DX12ShaderBindingTable>();
+
+			D3D12_DISPATCH_RAYS_DESC desc = {};
+			desc.RayGenerationShaderRecord = pDxBindingTable->getRayGenerationAddresRange();
+			desc.MissShaderTable = pDxBindingTable->getMissAddressRange();
+			desc.HitGroupTable = pDxBindingTable->getHitGroupAddressRange();
+			desc.CallableShaderTable = pDxBindingTable->getCallableAddressRange();
+			desc.Width = pRayTracer->getCamera()->getWidth();
+			desc.Height = pRayTracer->getCamera()->getHeight();
+			desc.Depth = 1;
+
+			m_pCurrentCommandList->DispatchRays(&desc);
+		}
+
 		void DX12CommandRecorder::endQuery(OcclusionQuery* pOcclusionQuery, uint32_t index)
 		{
 			OPTICK_EVENT();
@@ -760,6 +835,13 @@ namespace Xenon
 
 #endif // XENON_PLATFORM_WINDOWS
 			}
+		}
+
+		void DX12CommandRecorder::buildAccelerationStructure(const D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC& desc)
+		{
+			OPTICK_EVENT();
+
+			m_pCurrentCommandList->BuildRaytracingAccelerationStructure(&desc, 0, nullptr);
 		}
 
 		void DX12CommandRecorder::end()

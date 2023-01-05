@@ -5,7 +5,6 @@
 #include "DX12Macros.hpp"
 
 #include <optick.h>
-#include <spirv_hlsl.hpp>
 
 namespace Xenon
 {
@@ -82,7 +81,7 @@ namespace Xenon
 			}
 		}
 
-		DXGI_FORMAT DX12Device::convertFormat(DataFormat format) const
+		DXGI_FORMAT DX12Device::ConvertFormat(DataFormat format) noexcept
 		{
 			switch (format)
 			{
@@ -122,64 +121,48 @@ namespace Xenon
 			);
 		}
 
-		ComPtr<ID3DBlob> DX12Device::CompileShader(const ShaderSource& shader, ShaderType type, const std::string_view& entryPoint /*= "main"*/)
+		D3D12_DESCRIPTOR_RANGE_TYPE DX12Device::GetDescriptorRangeType(Xenon::Backend::ResourceType resource, Xenon::Backend::ResouceOperation operations) noexcept
 		{
-			OPTICK_EVENT();
-
-			// Remove the end padding and create the compiler.
-			auto compiler = spirv_cross::CompilerHLSL(shader.getBinaryWithoutPadding());
-
-			// Set the options.
-			spirv_cross::CompilerHLSL::Options options;
-			options.shader_model = 50;
-			compiler.set_hlsl_options(options);
-
-			// If we're in the vertex shader set the correct semantics.
-			if (type & ShaderType::Vertex)
+			switch (resource)
 			{
-				compiler.add_vertex_attribute_remap({ .location = Xenon::EnumToInt(Xenon::Backend::InputElement::VertexPosition), .semantic = "POSITION0" });
-				compiler.add_vertex_attribute_remap({ .location = Xenon::EnumToInt(Xenon::Backend::InputElement::VertexNormal), .semantic = "NORMAL0" });
-				compiler.add_vertex_attribute_remap({ .location = Xenon::EnumToInt(Xenon::Backend::InputElement::VertexTangent), .semantic = "TANGENT0" });
+			case Xenon::Backend::ResourceType::Sampler:
+			case Xenon::Backend::ResourceType::CombinedImageSampler:
+				return D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
 
-				for (uint32_t i = Xenon::EnumToInt(Xenon::Backend::InputElement::VertexColor_0); i <= Xenon::EnumToInt(Xenon::Backend::InputElement::VertexColor_7); i++)
-					compiler.add_vertex_attribute_remap({ .location = i, .semantic = fmt::format("COLOR{}", i - Xenon::EnumToInt(Xenon::Backend::InputElement::VertexColor_0)) });
+			case Xenon::Backend::ResourceType::SampledImage:
+				return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 
-				for (uint32_t i = Xenon::EnumToInt(Xenon::Backend::InputElement::VertexTextureCoordinate_0); i <= Xenon::EnumToInt(Xenon::Backend::InputElement::VertexTextureCoordinate_7); i++)
-					compiler.add_vertex_attribute_remap({ .location = i, .semantic = fmt::format("TEXCOORD{}", i - Xenon::EnumToInt(Xenon::Backend::InputElement::VertexTextureCoordinate_0)) });
+			case Xenon::Backend::ResourceType::StorageImage:
+				return operations & Xenon::Backend::ResouceOperation::Write ? D3D12_DESCRIPTOR_RANGE_TYPE_UAV : D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 
-				compiler.add_vertex_attribute_remap({ .location = Xenon::EnumToInt(Xenon::Backend::InputElement::InstancePosition), .semantic = "POSITION1" });
-				compiler.add_vertex_attribute_remap({ .location = Xenon::EnumToInt(Xenon::Backend::InputElement::InstanceRotation), .semantic = "POSITION2" });
-				compiler.add_vertex_attribute_remap({ .location = Xenon::EnumToInt(Xenon::Backend::InputElement::InstanceScale), .semantic = "POSITION3" });
-				compiler.add_vertex_attribute_remap({ .location = Xenon::EnumToInt(Xenon::Backend::InputElement::InstanceID), .semantic = "PSIZE1" });
-			}
+			case Xenon::Backend::ResourceType::UniformTexelBuffer:
+				return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 
-			// Cross-compile the binary.
-			const auto hlsl = compiler.compile();
+			case Xenon::Backend::ResourceType::StorageTexelBuffer:
+				return operations & Xenon::Backend::ResouceOperation::Write ? D3D12_DESCRIPTOR_RANGE_TYPE_UAV : D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 
-			// Resolve the target.
-			std::string_view target;
-			switch (type)
-			{
-			case Xenon::Backend::ShaderType::Vertex:
-				target = "vs_5_0";
-				break;
-			case Xenon::Backend::ShaderType::Fragment:
-				target = "ps_5_0";
-				break;
-			case Xenon::Backend::ShaderType::Compute:
-				target = "cs_5_0";
-				break;
+			case Xenon::Backend::ResourceType::UniformBuffer:
+				return D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+
+			case Xenon::Backend::ResourceType::StorageBuffer:
+				return operations & Xenon::Backend::ResouceOperation::Write ? D3D12_DESCRIPTOR_RANGE_TYPE_UAV : D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+
+			case Xenon::Backend::ResourceType::DynamicUniformBuffer:
+				return D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+
+			case Xenon::Backend::ResourceType::DynamicStorageBuffer:
+				return operations & Xenon::Backend::ResouceOperation::Write ? D3D12_DESCRIPTOR_RANGE_TYPE_UAV : D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+
+			case Xenon::Backend::ResourceType::InputAttachment:
+				return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+
+			case Xenon::Backend::ResourceType::AccelerationStructure:
+				return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 
 			default:
-				break;
+				XENON_LOG_ERROR("Invalid resource type! Defaulting to SRV.");
+				return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 			}
-
-			// Compile the shader.
-			ComPtr<ID3DBlob> shaderBlob;
-			constexpr std::array<D3D_SHADER_MACRO, 2> macros = { D3D_SHADER_MACRO("SPIRV_CROSS_CONSTANT_ID_0", "1u"), D3D_SHADER_MACRO() };
-			XENON_DX12_ASSERT(D3DCompile(hlsl.data(), hlsl.size(), nullptr, macros.data(), D3D_COMPILE_STANDARD_FILE_INCLUDE, entryPoint.data(), target.data(), 0, 0, &shaderBlob, nullptr), "Failed to compile the shader!");
-
-			return shaderBlob;
 		}
 
 		void DX12Device::createFactory()
@@ -284,7 +267,7 @@ namespace Xenon
 						continue;
 
 					// Check to see whether the adapter supports the feature level.
-					if (SUCCEEDED(D3D12CreateDevice(adapter.Get(), featureLevel, _uuidof(ID3D12Device), nullptr)))
+					if (SUCCEEDED(D3D12CreateDevice(adapter.Get(), featureLevel, _uuidof(ID3D12Device5), nullptr)))
 						break;
 				}
 			}
@@ -302,7 +285,7 @@ namespace Xenon
 						continue;
 
 					// Check to see whether the adapter supports the feature level.
-					if (SUCCEEDED(D3D12CreateDevice(adapter.Get(), featureLevel, _uuidof(ID3D12Device), nullptr)))
+					if (SUCCEEDED(D3D12CreateDevice(adapter.Get(), featureLevel, _uuidof(ID3D12Device5), nullptr)))
 						break;
 				}
 			}

@@ -53,6 +53,18 @@ set(
 	"VulkanCommandSubmitter.hpp"
 	"VulkanOcclusionQuery.cpp"
 	"VulkanOcclusionQuery.hpp"
+	"VulkanRayTracer.cpp"
+	"VulkanRayTracer.hpp"
+	"VulkanAccelerationStructure.cpp"
+	"VulkanAccelerationStructure.hpp"
+	"VulkanBottomLevelAccelerationStructure.cpp"
+	"VulkanBottomLevelAccelerationStructure.hpp"
+	"VulkanTopLevelAccelerationStructure.cpp"
+	"VulkanTopLevelAccelerationStructure.hpp"
+	"VulkanRayTracingPipeline.cpp"
+	"VulkanRayTracingPipeline.hpp"
+	"VulkanShaderBindingTable.cpp"
+	"VulkanShaderBindingTable.hpp"
 )
 
 # Add the source group.

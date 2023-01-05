@@ -22,49 +22,6 @@ constexpr uint64_t g_MagicNumber = 0b0111110011100110101100111010010010001011111
 namespace /* anonymous */
 {
 	/**
-	 * Get the shader stage flag bit from the Xenon shader type.
-	 *
-	 * @param shaderType The shader type.
-	 * @return The Vulkan shader stage flag bit.
-	 */
-	[[nodiscard]] constexpr VkShaderStageFlagBits GetShaderStageFlagBit(Xenon::Backend::ShaderType shaderType) noexcept
-	{
-		switch (shaderType)
-		{
-		case Xenon::Backend::ShaderType::Vertex:
-			return VK_SHADER_STAGE_VERTEX_BIT;
-
-		case Xenon::Backend::ShaderType::Fragment:
-			return VK_SHADER_STAGE_FRAGMENT_BIT;
-
-		case Xenon::Backend::ShaderType::RayGen:
-			return VK_SHADER_STAGE_RAYGEN_BIT_KHR;
-
-		case Xenon::Backend::ShaderType::Intersection:
-			return VK_SHADER_STAGE_INTERSECTION_BIT_KHR;
-
-		case Xenon::Backend::ShaderType::AnyHit:
-			return VK_SHADER_STAGE_ANY_HIT_BIT_KHR;
-
-		case Xenon::Backend::ShaderType::ClosestHit:
-			return VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
-
-		case Xenon::Backend::ShaderType::Miss:
-			return VK_SHADER_STAGE_MISS_BIT_KHR;
-
-		case Xenon::Backend::ShaderType::Callable:
-			return VK_SHADER_STAGE_CALLABLE_BIT_KHR;
-
-		case Xenon::Backend::ShaderType::Compute:
-			return VK_SHADER_STAGE_COMPUTE_BIT;
-
-		default:
-			XENON_LOG_ERROR("Invalid shader type provided! Defaulting to All.");
-			return VK_SHADER_STAGE_ALL;
-		}
-	}
-
-	/**
 	 * Get the shader bindings.
 	 *
 	 * @param shader The shader to get the bindings from.
@@ -76,7 +33,7 @@ namespace /* anonymous */
 	 * @param type The shader type.
 	 */
 	void GetShaderBindings(
-		const Xenon::Backend::ShaderSource& shader,
+		const Xenon::Backend::Shader& shader,
 		std::unordered_map<Xenon::Backend::DescriptorType, std::vector<Xenon::Backend::DescriptorBindingInfo>>& bindingMap,
 		std::unordered_map<uint32_t, std::unordered_map<uint32_t, size_t>>& indexToBindingMap,
 		std::vector<VkPushConstantRange>& pushConstants,
@@ -84,8 +41,6 @@ namespace /* anonymous */
 		std::vector<VkVertexInputAttributeDescription>& inputAttributeDescriptions,
 		Xenon::Backend::ShaderType type)
 	{
-		const auto shaderStage = GetShaderStageFlagBit(type);
-
 		// Get the resources.
 		for (const auto& resource : shader.getResources())
 		{
@@ -111,7 +66,7 @@ namespace /* anonymous */
 		// 	auto& range = pushConstants.emplace_back();
 		// 	range.offset = buffer.m_Offset;
 		// 	range.size = buffer.m_Size;
-		// 	range.stageFlags = shaderStage;
+		// 	range.stageFlags = Xenon::Backend::VulkanDevice::GetShaderStageFlagBit(type);
 		// }
 
 		// Setup the input bindings if we're on the vertex shader.
@@ -837,46 +792,46 @@ namespace Xenon
 			std::unordered_map<uint32_t, std::unordered_map<uint32_t, size_t>> indexToBindingMap;
 			std::vector<VkPushConstantRange> pushConstants;
 
-			if (specification.m_VertexShader.isValid())
+			if (m_Specification.m_VertexShader.getSPIRV().isValid())
 			{
-				GetShaderBindings(specification.m_VertexShader, m_BindingMap, indexToBindingMap, pushConstants, m_VertexInputBindings, m_VertexInputAttributes, ShaderType::Vertex);
+				GetShaderBindings(m_Specification.m_VertexShader, m_BindingMap, indexToBindingMap, pushConstants, m_VertexInputBindings, m_VertexInputAttributes, ShaderType::Vertex);
 
 				auto& createInfo = m_ShaderStageCreateInfo.emplace_back();
 				createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 				createInfo.pNext = nullptr;
 				createInfo.flags = 0;
 				createInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-				createInfo.pName = "main";
+				createInfo.pName = m_Specification.m_VertexShader.getSPIRV().getEntryPoint().data();
 				createInfo.pSpecializationInfo = nullptr;
 
 				VkShaderModuleCreateInfo moduleCreateInfo = {};
 				moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 				moduleCreateInfo.pNext = nullptr;
 				moduleCreateInfo.flags = 0;
-				moduleCreateInfo.codeSize = specification.m_VertexShader.getBinary().size();
-				moduleCreateInfo.pCode = specification.m_VertexShader.getBinary().data();
+				moduleCreateInfo.codeSize = m_Specification.m_VertexShader.getSPIRV().getBinarySizeInBytes();
+				moduleCreateInfo.pCode = m_Specification.m_VertexShader.getSPIRV().getBinaryData();
 
 				XENON_VK_ASSERT(pDevice->getDeviceTable().vkCreateShaderModule(pDevice->getLogicalDevice(), &moduleCreateInfo, nullptr, &createInfo.module), "Failed to create the vertex shader module!");
 			}
 
-			if (specification.m_FragmentShader.isValid())
+			if (m_Specification.m_FragmentShader.getSPIRV().isValid())
 			{
-				GetShaderBindings(specification.m_FragmentShader, m_BindingMap, indexToBindingMap, pushConstants, m_VertexInputBindings, m_VertexInputAttributes, ShaderType::Fragment);
+				GetShaderBindings(m_Specification.m_FragmentShader, m_BindingMap, indexToBindingMap, pushConstants, m_VertexInputBindings, m_VertexInputAttributes, ShaderType::Fragment);
 
 				auto& createInfo = m_ShaderStageCreateInfo.emplace_back();
 				createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 				createInfo.pNext = nullptr;
 				createInfo.flags = 0;
 				createInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-				createInfo.pName = "main";
+				createInfo.pName = m_Specification.m_FragmentShader.getSPIRV().getEntryPoint().data();
 				createInfo.pSpecializationInfo = nullptr;
 
 				VkShaderModuleCreateInfo moduleCreateInfo = {};
 				moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 				moduleCreateInfo.pNext = nullptr;
 				moduleCreateInfo.flags = 0;
-				moduleCreateInfo.codeSize = specification.m_FragmentShader.getBinary().size();
-				moduleCreateInfo.pCode = specification.m_FragmentShader.getBinary().data();
+				moduleCreateInfo.codeSize = m_Specification.m_FragmentShader.getSPIRV().getBinarySizeInBytes();
+				moduleCreateInfo.pCode = m_Specification.m_FragmentShader.getSPIRV().getBinaryData();
 
 				XENON_VK_ASSERT(pDevice->getDeviceTable().vkCreateShaderModule(pDevice->getLogicalDevice(), &moduleCreateInfo, nullptr, &createInfo.module), "Failed to create the fragment shader module!");
 			}
@@ -884,7 +839,7 @@ namespace Xenon
 			// Setup any missing bindings.
 			if (!m_BindingMap.contains(DescriptorType::UserDefined)) m_BindingMap[DescriptorType::UserDefined];
 			if (!m_BindingMap.contains(DescriptorType::Material)) m_BindingMap[DescriptorType::Material];
-			if (!m_BindingMap.contains(DescriptorType::Camera)) m_BindingMap[DescriptorType::Camera];
+			if (!m_BindingMap.contains(DescriptorType::Scene)) m_BindingMap[DescriptorType::Scene];
 
 			// Sort the bindings to the correct binding order.
 			auto sortedBindings = std::vector<std::pair<DescriptorType, std::vector<DescriptorBindingInfo>>>(m_BindingMap.begin(), m_BindingMap.end());
@@ -1126,7 +1081,7 @@ namespace Xenon
 			m_MultisampleStateCreateInfo.alphaToOneEnable = XENON_VK_BOOL(m_Specification.m_EnableAlphaToOne);
 			m_MultisampleStateCreateInfo.minSampleShading = m_Specification.m_MinSampleShading;
 			m_MultisampleStateCreateInfo.pSampleMask = nullptr;	// TODO
-			m_MultisampleStateCreateInfo.rasterizationSamples = m_pDevice->convertSamplingCount(m_pRasterizer->getImageAttachment(AttachmentType::Color)->getSpecification().m_MultiSamplingCount);
+			m_MultisampleStateCreateInfo.rasterizationSamples = VulkanDevice::ConvertSamplingCount(m_pRasterizer->getImageAttachment(AttachmentType::Color)->getSpecification().m_MultiSamplingCount);
 			m_MultisampleStateCreateInfo.sampleShadingEnable = XENON_VK_BOOL(m_Specification.m_EnableSampleShading);
 
 			// Depth stencil state.

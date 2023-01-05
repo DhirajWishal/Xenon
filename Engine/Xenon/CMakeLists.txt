@@ -33,11 +33,15 @@ set(
 	"AssetManager.hpp"
 	"Package.cpp"
 	"Package.hpp"
+	"RayTracingLayer.cpp"
+	"RayTracingLayer.hpp"
 
 	"Layers/ClearScreenLayer.cpp"
 	"Layers/ClearScreenLayer.hpp"
 	"Layers/DefaultRasterizingLayer.cpp"
 	"Layers/DefaultRasterizingLayer.hpp"
+	"Layers/DefaultRayTracingLayer.cpp"
+	"Layers/DefaultRayTracingLayer.hpp"
 
 	"Materials/DefaultMaterial.cpp"
 	"Materials/DefaultMaterial.hpp"
@@ -57,7 +61,7 @@ add_library(
 )
 
 # Set the target links.
-target_link_libraries(XenonEngine XenonVulkanBackend XenonShaderBuilder)
+target_link_libraries(XenonEngine XenonVulkanBackend)
 
 # Make sure to specify the C++ standard to C++20.
 set_property(TARGET XenonEngine PROPERTY CXX_STANDARD 20)

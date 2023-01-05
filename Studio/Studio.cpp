@@ -12,8 +12,14 @@
 #include "XenonBackend/ShaderSource.hpp"
 
 #include "Xenon/Layers/DefaultRasterizingLayer.hpp"
+#include "Xenon/Layers/DefaultRayTracingLayer.hpp"
 
-#include "XenonShaderBuilder/VertexShader.hpp"
+#include "XenonShaderBank/Debugging/Shader.vert.hpp"
+#include "XenonShaderBank/Debugging/Shader.frag.hpp"
+
+#include "XenonShaderBank/Testing/RayTracing/ClosestHit.rchit.hpp"
+#include "XenonShaderBank/Testing/RayTracing/Miss.rmiss.hpp"
+#include "XenonShaderBank/Testing/RayTracing/RayGen.rgen.hpp"
 
 #include <imgui.h>
 
@@ -56,6 +62,37 @@ namespace /* anonymous */
 	{
 		return f.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
 	}
+
+	struct RayPayload final
+	{
+		glm::vec3 m_Color;
+		float m_Distance;
+		glm::vec3 m_Normal;
+		float m_Reflector;
+	};
+
+	struct ProceduralPrimitiveAttributes final
+	{
+		glm::vec3 m_Normal;
+	};
+
+	/**
+	 * Create the ray tracing pipeline specification.
+	 *
+	 * @return The pipeline specification.
+	 */
+	Xenon::Backend::RayTracingPipelineSpecification getRayTracingPipelineSpecification()
+	{
+		Xenon::Backend::RayTracingPipelineSpecification specification = {};
+		specification.m_ShaderGroups.emplace_back().m_RayGenShader = Xenon::Generated::CreateShaderRayGen_rgen();
+		specification.m_ShaderGroups.emplace_back().m_MissShader = Xenon::Generated::CreateShaderMiss_rmiss();
+		specification.m_ShaderGroups.emplace_back().m_ClosestHitShader = Xenon::Generated::CreateShaderClosestHit_rchit();
+
+		specification.m_MaxPayloadSize = sizeof(RayPayload);
+		specification.m_MaxAttributeSize = sizeof(ProceduralPrimitiveAttributes);
+
+		return specification;
+	}
 }
 
 Studio::Studio(Xenon::BackendType type /*= Xenon::BackendType::Any*/)
@@ -68,25 +105,39 @@ Studio::Studio(Xenon::BackendType type /*= Xenon::BackendType::Any*/)
 
 void Studio::run()
 {
+	// Setup the pipeline.
+#ifdef XENON_DEV_ENABLE_RAY_TRACING
+	auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRayTracingLayer>(&m_Camera);
+	auto pPipeline = m_Instance.getFactory()->createRayTracingPipeline(m_Instance.getBackendDevice(), std::make_unique<CacheHandler>(), getRayTracingPipelineSpecification());
+
+	const auto loaderFunction = [this, &pPipeline, &pRenderTarget]
+	{
+		pRenderTarget->addDrawData(Xenon::MeshStorage::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"), pPipeline.get());
+	};
+
+#else 
+	auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRasterizingLayer>(&m_Camera);
+
+	Xenon::Backend::RasterizingPipelineSpecification specification;
+	specification.m_VertexShader = Xenon::Generated::CreateShaderShader_vert();
+	specification.m_FragmentShader = Xenon::Generated::CreateShaderShader_frag();
+	auto pPipeline = m_Instance.getFactory()->createRasterizingPipeline(m_Instance.getBackendDevice(), std::make_unique<CacheHandler>(), pRenderTarget->getRasterizer(), specification);
+
+	const auto loaderFunction = [this, &pPipeline, &pRenderTarget]
+	{
+		pRenderTarget->addDrawData(Xenon::MeshStorage::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"), pPipeline.get());
+	};
+
+#endif // XENON_DEV_ENABLE_RAY_TRACING
+
 	// Create the layers.
-	auto pLayer = m_Renderer.createLayer<Xenon::DefaultRasterizingLayer>(&m_Camera);
 	auto pImGui = m_Renderer.createLayer<ImGuiLayer>(&m_Camera);
 
 	// Set the layer to be shown.
-	pImGui->showLayer(pLayer);
-
-	// Setup the pipeline.
-	Xenon::Backend::RasterizingPipelineSpecification specification;
-	specification.m_VertexShader = Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Debugging/Shader.vert.spv");
-	specification.m_FragmentShader = Xenon::Backend::ShaderSource::FromFile(XENON_SHADER_DIR "Debugging/Shader.frag.spv");
-	auto pPipeline = m_Instance.getFactory()->createRasterizingPipeline(m_Instance.getBackendDevice(), std::make_unique<CacheHandler>(), pLayer->getRasterizer(), specification);
+	pImGui->showLayer(pRenderTarget);
 
 	{
-		auto ret = Xenon::XObject::GetJobSystem().insert([this, &pPipeline, &pLayer]
-			{
-				pLayer->addDrawData(Xenon::MeshStorage::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"), pPipeline.get());
-			}
-		);
+		auto ret = Xenon::XObject::GetJobSystem().insert(loaderFunction);
 
 		Xenon::FrameTimer timer;
 		do
@@ -94,7 +145,7 @@ void Studio::run()
 			const auto delta = timer.tick();
 
 			// Set the draw call count.
-			pImGui->setDrawCallCount(pLayer->getTotalDrawCount(), pLayer->getDrawCount());
+			pImGui->setDrawCallCount(pRenderTarget->getTotalDrawCount(), pRenderTarget->getDrawCount());
 
 			// Begin the ImGui scene.
 			// Handle the inputs and update the camera only if we need to.

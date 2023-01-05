@@ -81,7 +81,7 @@ namespace Xenon
 			createInfo.flags = 0;
 			createInfo.image = pImage->getImage();
 			createInfo.viewType = viewType;
-			createInfo.format = pDevice->convertFormat(pImage->getDataFormat());
+			createInfo.format = VulkanDevice::ConvertFormat(pImage->getDataFormat());
 			createInfo.components.r = GetComponentSwizzle(specification.m_ComponentR);
 			createInfo.components.g = GetComponentSwizzle(specification.m_ComponentG);
 			createInfo.components.b = GetComponentSwizzle(specification.m_ComponentB);

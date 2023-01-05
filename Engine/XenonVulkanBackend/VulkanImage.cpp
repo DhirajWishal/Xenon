@@ -94,7 +94,7 @@ namespace Xenon
 			imageCreateInfo.extent.depth = specification.m_Depth;
 			imageCreateInfo.mipLevels = /*specification.m_EnableMipMaps*/ 1;
 			imageCreateInfo.arrayLayers = specification.m_Layers;
-			imageCreateInfo.samples = m_pDevice->convertSamplingCount(specification.m_MultiSamplingCount);
+			imageCreateInfo.samples = VulkanDevice::ConvertSamplingCount(specification.m_MultiSamplingCount);
 			imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
 			imageCreateInfo.usage = usageFlags;
 			imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -106,7 +106,7 @@ namespace Xenon
 			bool formatFound = false;
 			for (const auto candidates = GetCandidateFormats(specification.m_Format); const auto candidate : candidates)
 			{
-				imageCreateInfo.format = m_pDevice->convertFormat(candidate);
+				imageCreateInfo.format = VulkanDevice::ConvertFormat(candidate);
 
 				// Get the format properties.
 				VkImageFormatProperties formatProperties = {};

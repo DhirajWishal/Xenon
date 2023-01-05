@@ -561,6 +561,15 @@ namespace Xenon
 		};
 
 		/**
+		 * Index buffer stride enum.
+		 */
+		enum class IndexBufferStride : uint8_t
+		{
+			Uint16 = sizeof(uint16_t),
+			Uint32 = sizeof(uint32_t)
+		};
+
+		/**
 		 * Resource type enum.
 		 */
 		enum class ResourceType : uint8_t
@@ -586,13 +595,26 @@ namespace Xenon
 		};
 
 		/**
+		 * Resource operation enum.
+		 * This describes what types of operations the shader does to the resource.
+		 */
+		enum class ResouceOperation : uint8_t
+		{
+			Read = XENON_BIT_SHIFT(0),
+			Write = XENON_BIT_SHIFT(1)
+		};
+
+		XENON_DEFINE_ENUM_AND(ResouceOperation);
+		XENON_DEFINE_ENUM_OR(ResouceOperation);
+
+		/**
 		 * Descriptor type enum.
 		 */
 		enum class DescriptorType : uint8_t
 		{
 			UserDefined,	// This descriptor type contains any other user defined data, like the model matrix.
 			Material,		// This descriptor type contains all the material-specific information.
-			Camera			// This descriptor type only has one binding (0) which passes the camera data.
+			Scene			// This descriptor type contains all the scene related information, like the camera, lighting, acceleration structures, etc...
 		};
 
 		/**

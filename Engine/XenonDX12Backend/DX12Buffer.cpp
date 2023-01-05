@@ -149,26 +149,44 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
-			// Create the temporary buffer if it's null.
-			if (m_pTemporaryWriteBuffer == nullptr)
-				m_pTemporaryWriteBuffer = std::make_unique<DX12Buffer>(m_pDevice, m_Size, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
+			// If we are made to copy, just copy.
+			if (m_HeapType == D3D12_HEAP_TYPE_UPLOAD && m_CurrentState == D3D12_RESOURCE_STATE_GENERIC_READ)
+			{
+				// Map the memory.
+				std::byte* copyBufferMemory = nullptr;
+				getResource()->Map(0, nullptr, std::bit_cast<void**>(&copyBufferMemory));
 
-			// Map the memory.
-			std::byte* copyBufferMemory = nullptr;
-			m_pTemporaryWriteBuffer->getResource()->Map(0, nullptr, std::bit_cast<void**>(&copyBufferMemory));
+				// Copy the data to the copy buffer.
+				std::copy_n(pData, size, copyBufferMemory + offset);
 
-			// Copy the data to the copy buffer.
-			std::copy_n(pData, size, copyBufferMemory + offset);
+				// Unmap the copy buffer.
+				getResource()->Unmap(0, nullptr);
+			}
 
-			// Unmap the copy buffer.
-			m_pTemporaryWriteBuffer->getResource()->Unmap(0, nullptr);
-
-			// Finally copy everything to this.
-			if (pCommandRecorder)
-				performCopy(pCommandRecorder->as<DX12CommandRecorder>()->getCurrentCommandList(), m_pTemporaryWriteBuffer.get(), size, offset, offset);
-
+			// Else copy with the temp buffer.
 			else
-				copy(m_pTemporaryWriteBuffer.get(), size, offset, offset);
+			{
+				// Create the temporary buffer if it's null.
+				if (m_pTemporaryWriteBuffer == nullptr)
+					m_pTemporaryWriteBuffer = std::make_unique<DX12Buffer>(m_pDevice, m_Size, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
+
+				// Map the memory.
+				std::byte* copyBufferMemory = nullptr;
+				m_pTemporaryWriteBuffer->getResource()->Map(0, nullptr, std::bit_cast<void**>(&copyBufferMemory));
+
+				// Copy the data to the copy buffer.
+				std::copy_n(pData, size, copyBufferMemory + offset);
+
+				// Unmap the copy buffer.
+				m_pTemporaryWriteBuffer->getResource()->Unmap(0, nullptr);
+
+				// Finally copy everything to this.
+				if (pCommandRecorder)
+					performCopy(pCommandRecorder->as<DX12CommandRecorder>()->getCurrentCommandList(), m_pTemporaryWriteBuffer.get(), size, offset, offset);
+
+				else
+					copy(m_pTemporaryWriteBuffer.get(), size, offset, offset);
+			}
 		}
 
 		const std::byte* DX12Buffer::beginRead()
@@ -217,13 +235,16 @@ namespace Xenon
 
 			// Set the proper resource states.
 			// Destination (this)
-			auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(m_pAllocation->GetResource(), m_CurrentState, D3D12_RESOURCE_STATE_COPY_DEST);
-			pCommandlist->ResourceBarrier(1, &barrier);
+			if (m_CurrentState != D3D12_RESOURCE_STATE_GENERIC_READ && m_HeapType != D3D12_HEAP_TYPE_READBACK)
+			{
+				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(m_pAllocation->GetResource(), m_CurrentState, D3D12_RESOURCE_STATE_COPY_DEST);
+				pCommandlist->ResourceBarrier(1, &barrier);
+			}
 
 			// Source
 			if (pSourceBuffer->m_CurrentState != D3D12_RESOURCE_STATE_GENERIC_READ && pSourceBuffer->m_HeapType != D3D12_HEAP_TYPE_READBACK)
 			{
-				barrier = CD3DX12_RESOURCE_BARRIER::Transition(pSourceBuffer->getResource(), pSourceBuffer->m_CurrentState, D3D12_RESOURCE_STATE_COPY_SOURCE);
+				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pSourceBuffer->getResource(), pSourceBuffer->m_CurrentState, D3D12_RESOURCE_STATE_COPY_SOURCE);
 				pCommandlist->ResourceBarrier(1, &barrier);
 			}
 
@@ -232,13 +253,16 @@ namespace Xenon
 
 			// Change the state back to previous.
 			// Destination (this)
-			barrier = CD3DX12_RESOURCE_BARRIER::Transition(m_pAllocation->GetResource(), D3D12_RESOURCE_STATE_COPY_DEST, m_CurrentState);
-			pCommandlist->ResourceBarrier(1, &barrier);
+			if (m_CurrentState != D3D12_RESOURCE_STATE_GENERIC_READ && m_HeapType != D3D12_HEAP_TYPE_READBACK)
+			{
+				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(m_pAllocation->GetResource(), D3D12_RESOURCE_STATE_COPY_DEST, m_CurrentState);
+				pCommandlist->ResourceBarrier(1, &barrier);
+			}
 
 			// Source
 			if (pSourceBuffer->m_CurrentState != D3D12_RESOURCE_STATE_GENERIC_READ && pSourceBuffer->m_HeapType != D3D12_HEAP_TYPE_READBACK)
 			{
-				barrier = CD3DX12_RESOURCE_BARRIER::Transition(pSourceBuffer->getResource(), D3D12_RESOURCE_STATE_COPY_SOURCE, pSourceBuffer->m_CurrentState);
+				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pSourceBuffer->getResource(), D3D12_RESOURCE_STATE_COPY_SOURCE, pSourceBuffer->m_CurrentState);
 				pCommandlist->ResourceBarrier(1, &barrier);
 			}
 		}

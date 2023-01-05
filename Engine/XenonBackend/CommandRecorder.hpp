@@ -8,6 +8,8 @@
 #include "RasterizingPipeline.hpp"
 #include "Descriptor.hpp"
 #include "OcclusionQuery.hpp"
+#include "RayTracer.hpp"
+#include "RayTracingPipeline.hpp"
 
 namespace Xenon
 {
@@ -26,15 +28,6 @@ namespace Xenon
 
 		XENON_DEFINE_ENUM_OR(CommandRecorderUsage);
 		XENON_DEFINE_ENUM_AND(CommandRecorderUsage);
-
-		/**
-		 * Index buffer stride enum.
-		 */
-		enum class IndexBufferStride : uint8_t
-		{
-			Uint16 = sizeof(uint16_t),
-			Uint32 = sizeof(uint32_t)
-		};
 
 		/**
 		 * Command recorder class.
@@ -130,6 +123,13 @@ namespace Xenon
 			virtual void bind(RasterizingPipeline* pPipeline, const VertexSpecification& vertexSpecification) = 0;
 
 			/**
+			 * Bind a ray tracing pipeline.
+			 *
+			 * @param pPipeline The pipeline to bind.
+			 */
+			virtual void bind(RayTracingPipeline* pPipeline) = 0;
+
+			/**
 			 * Bind a vertex buffer to the command recorder.
 			 *
 			 * @param pVertexBuffer The vertex buffer pointer.
@@ -152,9 +152,20 @@ namespace Xenon
 			 * @param pPipeline The pipeline to which the descriptors are bound to.
 			 * @param pUserDefinedDescrptor The user defined descriptor.
 			 * @param pMaterialDescriptor The material descriptor.
-			 * @param pCameraDescriptor The camera descriptor. Default is nullptr.
+			 * @param pSceneDescriptor The scene descriptor. Default is nullptr.
 			 */
-			virtual void bind(RasterizingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pCameraDescriptor) = 0;
+			virtual void bind(RasterizingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pSceneDescriptor) = 0;
+
+			/**
+			 * Bind descriptors to the command recorder.
+			 * Note that the descriptors can be null in which case this call will be disregarded.
+			 *
+			 * @param pPipeline The pipeline to which the descriptors are bound to.
+			 * @param pUserDefinedDescrptor The user defined descriptor.
+			 * @param pMaterialDescriptor The material descriptor.
+			 * @param pSceneDescriptor The scene descriptor. Default is nullptr.
+			 */
+			virtual void bind(RayTracingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pSceneDescriptor) = 0;
 
 			/**
 			 * Set the viewport.
@@ -210,6 +221,14 @@ namespace Xenon
 			 * @param firstInstance The first instance position. Default is 0.
 			 */
 			virtual void drawIndexed(uint64_t vertexOffset, uint64_t indexOffset, uint64_t indexCount, uint32_t instanceCount = 1, uint32_t firstInstance = 0) = 0;
+
+			/**
+			 * Draw the scene using ray tracing.
+			 *
+			 * @param pRayTracer The ray tracer where the output will be written to.
+			 * @param pShaderBindingTable The shader binding table.
+			 */
+			virtual void drawRayTraced(RayTracer* pRayTracer, ShaderBindingTable* pShaderBindingTable) = 0;
 
 			/**
 			 * End the occlusion query.

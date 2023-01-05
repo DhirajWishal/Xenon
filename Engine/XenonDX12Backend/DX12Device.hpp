@@ -4,7 +4,6 @@
 #pragma once
 
 #include "../XenonBackend/Device.hpp"
-#include "../XenonBackend/ShaderSource.hpp"
 
 #include "DX12Instance.hpp"
 
@@ -45,7 +44,7 @@ namespace Xenon
 			 * @param format The Xenon format.
 			 * @return The DX12 format.
 			 */
-			[[nodiscard]] DXGI_FORMAT convertFormat(DataFormat format) const;
+			[[nodiscard]] static DXGI_FORMAT ConvertFormat(DataFormat format) noexcept;
 
 			/**
 			 * Get the format support.
@@ -58,14 +57,13 @@ namespace Xenon
 			[[nodiscard]] std::pair<bool, bool> getFormatSupport(DXGI_FORMAT format, D3D12_FORMAT_SUPPORT1 support1 = D3D12_FORMAT_SUPPORT1_NONE, D3D12_FORMAT_SUPPORT2 support2 = D3D12_FORMAT_SUPPORT2_NONE) const;
 
 			/**
-			 * Compile a shader to DirectX format.
+			 * Get the descriptor range type.
 			 *
-			 * @param shader The shader to compile.
-			 * @param type The shader type.
-			 * @param entryPoint The entry point name. Default is "main".
-			 * @return The compiled shader blob.
+			 * @param resource The Xenon resource type.
+			 * @param operations The Xenon resource operations.
+			 * @return The D3D12 descriptor range type.
 			 */
-			[[nodiscard]] static ComPtr<ID3DBlob> CompileShader(const ShaderSource& shader, ShaderType type, const std::string_view& entryPoint = "main");
+			[[nodiscard]] static D3D12_DESCRIPTOR_RANGE_TYPE GetDescriptorRangeType(Xenon::Backend::ResourceType resource, Xenon::Backend::ResouceOperation operations) noexcept;
 
 		public:
 			/**
@@ -101,14 +99,14 @@ namespace Xenon
 			 *
 			 * @return The device pointer.
 			 */
-			[[nodiscard]] ID3D12Device* getDevice() { return m_Device.Get(); }
+			[[nodiscard]] ID3D12Device5* getDevice() { return m_Device.Get(); }
 
 			/**
 			 * Get the backend device object.
 			 *
 			 * @return The const device pointer.
 			 */
-			[[nodiscard]] const ID3D12Device* getDevice() const { return m_Device.Get(); }
+			[[nodiscard]] const ID3D12Device5* getDevice() const { return m_Device.Get(); }
 
 			/**
 			 * Get the device adapter.
@@ -215,7 +213,7 @@ namespace Xenon
 			DX12Instance* m_pInstance = nullptr;
 
 			ComPtr<IDXGIFactory4> m_Factory;
-			ComPtr<ID3D12Device> m_Device;
+			ComPtr<ID3D12Device5> m_Device;
 			ComPtr<IDXGIAdapter> m_Adapter;
 
 			ComPtr<ID3D12CommandQueue> m_DirectQueue;

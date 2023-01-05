@@ -160,14 +160,14 @@ namespace Xenon
 			 *
 			 * @return The width.
 			 */
-			[[nodiscard]] uint32_t getWidth() const { return m_Width; }
+			[[nodiscard]] uint32_t getWidth() const noexcept { return m_Width; }
 
 			/**
 			 * Get the height of the camera frame.
 			 *
 			 * @return The height.
 			 */
-			[[nodiscard]] uint32_t getHeight() const { return m_Height; }
+			[[nodiscard]] uint32_t getHeight() const noexcept { return m_Height; }
 
 		public:
 			glm::vec3 m_Position = glm::vec3(0.0f, 1.0f, 0.0f);

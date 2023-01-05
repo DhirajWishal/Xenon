@@ -2,9 +2,9 @@ name: CMake
 
 on:
   push:
-    branches: [release, cleanup]
+    branches: [release, cleanup, ray-tracing]
   pull_request:
-    branches: [release, cleanup]
+    branches: [release, cleanup, ray-tracing]
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)

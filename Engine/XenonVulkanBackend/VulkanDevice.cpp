@@ -18,7 +18,7 @@ namespace /* anonymous */
 	 * @param flag The queue flag to check.
 	 * @return Whether or not the queues are supported.
 	 */
-	bool CheckQueueSupport(VkPhysicalDevice physicalDevice, VkQueueFlagBits flag)
+	[[nodiscard]] bool CheckQueueSupport(VkPhysicalDevice physicalDevice, VkQueueFlagBits flag)
 	{
 		// Get the queue family count.
 		uint32_t queueFamilyCount = 0;
@@ -58,7 +58,7 @@ namespace /* anonymous */
 	 * @return True if the device supports at least one of the device extensions.
 	 * @return False if the device does not support any of the required extensions.
 	 */
-	bool CheckDeviceExtensionSupport(VkPhysicalDevice physicalDevice, const std::vector<const char*>& deviceExtensions, Xenon::RenderTargetType* supportedTypes = nullptr)
+	[[nodiscard]] bool CheckDeviceExtensionSupport(VkPhysicalDevice physicalDevice, const std::vector<const char*>& deviceExtensions, Xenon::RenderTargetType* supportedTypes = nullptr)
 	{
 		// If there are no extension to check, we can just return true.
 		if (deviceExtensions.empty())
@@ -110,7 +110,7 @@ namespace /* anonymous */
 	 * @return True if the device supports at least one of the device extensions.
 	 * @return False if the device does not support any of the required extensions.
 	 */
-	std::set<std::string_view> GetUnsupportedDeviceExtensions(VkPhysicalDevice physicalDevice, const std::vector<const char*>& deviceExtensions, Xenon::RenderTargetType* supportedTypes = nullptr)
+	[[nodiscard]] std::set<std::string_view> GetUnsupportedDeviceExtensions(VkPhysicalDevice physicalDevice, const std::vector<const char*>& deviceExtensions, Xenon::RenderTargetType* supportedTypes = nullptr)
 	{
 		// If there are no extension to check, we can just return true.
 		if (deviceExtensions.empty())
@@ -133,14 +133,7 @@ namespace /* anonymous */
 
 		// If the required extension count did not change, we don't support any of those required extensions.
 		if (requiredExtensions.size() == deviceExtensions.size())
-		{
-			XENON_LOG_INFORMATION("The physical device {} does not support any of the required extensions.", fmt::ptr(physicalDevice));
 			return requiredExtensions;
-		}
-
-		// If the extension count is more than 0, that means it supports a few of those required extensions.
-		if (!requiredExtensions.empty())
-			XENON_LOG_INFORMATION("The physical device {} supports only some of the required extensions.", fmt::ptr(physicalDevice));
 
 		// Set the supported types if required.
 		if (supportedTypes && !requiredExtensions.contains(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME)
@@ -173,6 +166,10 @@ namespace Xenon
 				m_DeviceExtensions.emplace_back(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME);
 				m_DeviceExtensions.emplace_back(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME);
 				m_DeviceExtensions.emplace_back(VK_KHR_RAY_QUERY_EXTENSION_NAME);
+				m_DeviceExtensions.emplace_back(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME);
+				m_DeviceExtensions.emplace_back(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
+				m_DeviceExtensions.emplace_back(VK_KHR_SPIRV_1_4_EXTENSION_NAME);
+				m_DeviceExtensions.emplace_back(VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME);
 			}
 
 			// Select the physical device.
@@ -219,7 +216,7 @@ namespace Xenon
 			}
 		}
 
-		VkSampleCountFlagBits VulkanDevice::convertSamplingCount(MultiSamplingCount count) const
+		VkSampleCountFlagBits VulkanDevice::ConvertSamplingCount(MultiSamplingCount count) noexcept
 		{
 			switch (count)
 			{
@@ -252,7 +249,7 @@ namespace Xenon
 			return VK_SAMPLE_COUNT_1_BIT;
 		}
 
-		VkFormat VulkanDevice::convertFormat(DataFormat format) const
+		VkFormat VulkanDevice::ConvertFormat(DataFormat format) noexcept
 		{
 			switch (format)
 			{
@@ -343,7 +340,7 @@ namespace Xenon
 			}
 		}
 
-		VkDescriptorType VulkanDevice::convertResourceType(ResourceType type) const
+		VkDescriptorType VulkanDevice::ConvertResourceType(ResourceType type) noexcept
 		{
 			switch (type)
 			{
@@ -386,6 +383,43 @@ namespace Xenon
 			default:
 				XENON_LOG_ERROR("Invalid resource type!");
 				return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			}
+		}
+
+		VkShaderStageFlagBits VulkanDevice::GetShaderStageFlagBit(Xenon::Backend::ShaderType shaderType) noexcept
+		{
+			switch (shaderType)
+			{
+			case Xenon::Backend::ShaderType::Vertex:
+				return VK_SHADER_STAGE_VERTEX_BIT;
+
+			case Xenon::Backend::ShaderType::Fragment:
+				return VK_SHADER_STAGE_FRAGMENT_BIT;
+
+			case Xenon::Backend::ShaderType::RayGen:
+				return VK_SHADER_STAGE_RAYGEN_BIT_KHR;
+
+			case Xenon::Backend::ShaderType::Intersection:
+				return VK_SHADER_STAGE_INTERSECTION_BIT_KHR;
+
+			case Xenon::Backend::ShaderType::AnyHit:
+				return VK_SHADER_STAGE_ANY_HIT_BIT_KHR;
+
+			case Xenon::Backend::ShaderType::ClosestHit:
+				return VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
+
+			case Xenon::Backend::ShaderType::Miss:
+				return VK_SHADER_STAGE_MISS_BIT_KHR;
+
+			case Xenon::Backend::ShaderType::Callable:
+				return VK_SHADER_STAGE_CALLABLE_BIT_KHR;
+
+			case Xenon::Backend::ShaderType::Compute:
+				return VK_SHADER_STAGE_COMPUTE_BIT;
+
+			default:
+				XENON_LOG_ERROR("Invalid shader type provided! Defaulting to All.");
+				return VK_SHADER_STAGE_ALL;
 			}
 		}
 
@@ -502,6 +536,20 @@ namespace Xenon
 				return;
 			}
 
+			m_RayTracingPipelineProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR;
+
+			VkPhysicalDeviceProperties2 deviceProperties2 = {};
+			deviceProperties2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+			deviceProperties2.pNext = &m_RayTracingPipelineProperties;
+			vkGetPhysicalDeviceProperties2(m_PhysicalDevice, &deviceProperties2);
+
+			m_AccelerationStructureFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
+
+			VkPhysicalDeviceFeatures2 deviceFeatures2 = {};
+			deviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+			deviceFeatures2.pNext = &m_AccelerationStructureFeatures;
+			vkGetPhysicalDeviceFeatures2(m_PhysicalDevice, &deviceFeatures2);
+
 			// Get the unsupported render target types.
 			const auto unsupportedExtensions = GetUnsupportedDeviceExtensions(m_PhysicalDevice, m_DeviceExtensions, &m_SupportedRenderTargetTypes);
 			for (const auto& extension : unsupportedExtensions)
@@ -563,10 +611,24 @@ namespace Xenon
 			features.tessellationShader = VK_TRUE;
 			features.geometryShader = VK_TRUE;
 
+			VkPhysicalDeviceBufferDeviceAddressFeatures bufferDeviceAddressFeatures = {};
+			bufferDeviceAddressFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES;
+			bufferDeviceAddressFeatures.bufferDeviceAddress = VK_TRUE;
+
+			VkPhysicalDeviceRayTracingPipelineFeaturesKHR rayTracingPipelineFeatures = {};
+			rayTracingPipelineFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
+			rayTracingPipelineFeatures.rayTracingPipeline = VK_TRUE;
+			rayTracingPipelineFeatures.pNext = &bufferDeviceAddressFeatures;
+
+			VkPhysicalDeviceAccelerationStructureFeaturesKHR accelerationStructureFeatures = {};
+			accelerationStructureFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
+			accelerationStructureFeatures.accelerationStructure = VK_TRUE;
+			accelerationStructureFeatures.pNext = &rayTracingPipelineFeatures;
+
 			// Setup the device create info.
 			VkDeviceCreateInfo deviceCreateInfo = {};
 			deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-			deviceCreateInfo.pNext = nullptr;
+			deviceCreateInfo.pNext = &accelerationStructureFeatures;
 			deviceCreateInfo.flags = 0;
 			deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
 			deviceCreateInfo.pQueueCreateInfos = queueCreateInfos.data();
@@ -631,7 +693,7 @@ namespace Xenon
 
 			// Setup create info.
 			VmaAllocatorCreateInfo createInfo = {};
-			createInfo.flags = VMA_ALLOCATOR_CREATE_EXTERNALLY_SYNCHRONIZED_BIT;
+			createInfo.flags = VMA_ALLOCATOR_CREATE_EXTERNALLY_SYNCHRONIZED_BIT | VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
 			createInfo.physicalDevice = m_PhysicalDevice;
 			createInfo.device = m_LogicalDevice;
 			createInfo.pVulkanFunctions = &functions;

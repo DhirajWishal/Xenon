@@ -118,7 +118,7 @@ namespace Xenon
 				specification.m_MultiSamplingCount = m_MultiSamplingCount;
 
 				const auto& image = m_ImageAttachments.emplace_back(m_pDevice, specification);
-				createImageView(image.getImage(), VK_IMAGE_ASPECT_COLOR_BIT, m_pDevice->convertFormat(image.getDataFormat()));
+				createImageView(image.getImage(), VK_IMAGE_ASPECT_COLOR_BIT, VulkanDevice::ConvertFormat(image.getDataFormat()));
 			}
 
 			// The rest of the attachments don't need multi-sampling.
@@ -130,7 +130,7 @@ namespace Xenon
 				specification.m_Format = DataFormat::R32_SFLOAT;
 
 				const auto& image = m_ImageAttachments.emplace_back(m_pDevice, specification);
-				createImageView(image.getImage(), image.getAspectFlags(), m_pDevice->convertFormat(image.getDataFormat()));
+				createImageView(image.getImage(), image.getAspectFlags(), VulkanDevice::ConvertFormat(image.getDataFormat()));
 			}
 
 			// Create and add the normal attachment if required.
@@ -139,7 +139,7 @@ namespace Xenon
 				specification.m_Format = DataFormat::R32G32B32_SFLOAT;
 
 				const auto& image = m_ImageAttachments.emplace_back(m_pDevice, specification);
-				createImageView(image.getImage(), image.getAspectFlags(), m_pDevice->convertFormat(image.getDataFormat()));
+				createImageView(image.getImage(), image.getAspectFlags(), VulkanDevice::ConvertFormat(image.getDataFormat()));
 			}
 
 			// Create and add the depth attachment with stencil attachment if required.
@@ -149,7 +149,7 @@ namespace Xenon
 				specification.m_Format = DataFormat::D32_SFLOAT_S8_UINT | DataFormat::D24_UNORMAL_S8_UINT | DataFormat::D16_UNORMAL_S8_UINT;
 
 				const auto& image = m_ImageAttachments.emplace_back(m_pDevice, specification);
-				createImageView(image.getImage(), image.getAspectFlags(), m_pDevice->convertFormat(image.getDataFormat()));
+				createImageView(image.getImage(), image.getAspectFlags(), VulkanDevice::ConvertFormat(image.getDataFormat()));
 			}
 
 			// Create and add the depth attachment if required.
@@ -159,7 +159,7 @@ namespace Xenon
 				specification.m_Format = DataFormat::D32_SFLOAT | DataFormat::D16_SINT;
 
 				const auto& image = m_ImageAttachments.emplace_back(m_pDevice, specification);
-				createImageView(image.getImage(), image.getAspectFlags(), m_pDevice->convertFormat(image.getDataFormat()));
+				createImageView(image.getImage(), image.getAspectFlags(), VulkanDevice::ConvertFormat(image.getDataFormat()));
 			}
 
 			// Create and add the stencil attachment if required.
@@ -169,7 +169,7 @@ namespace Xenon
 				specification.m_Format = DataFormat::S8_UINT;
 
 				const auto& image = m_ImageAttachments.emplace_back(m_pDevice, specification);
-				createImageView(image.getImage(), image.getAspectFlags(), m_pDevice->convertFormat(image.getDataFormat()));
+				createImageView(image.getImage(), image.getAspectFlags(), VulkanDevice::ConvertFormat(image.getDataFormat()));
 			}
 		}
 

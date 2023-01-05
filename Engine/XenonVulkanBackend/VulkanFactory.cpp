@@ -15,6 +15,10 @@
 #include "VulkanComputePipeline.hpp"
 #include "VulkanCommandSubmitter.hpp"
 #include "VulkanOcclusionQuery.hpp"
+#include "VulkanRayTracer.hpp"
+#include "VulkanBottomLevelAccelerationStructure.hpp"
+#include "VulkanTopLevelAccelerationStructure.hpp"
+#include "VulkanRayTracingPipeline.hpp"
 
 namespace Xenon
 {
@@ -70,7 +74,7 @@ namespace Xenon
 			return std::make_unique<VulkanRasterizingPipeline>(pDevice->as<VulkanDevice>(), std::move(pCacheHandler), pRasterizer->as<VulkanRasterizer>(), specification);
 		}
 
-		std::unique_ptr<Xenon::Backend::ComputePipeline> VulkanFactory::createComputePipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const ShaderSource& computeShader)
+		std::unique_ptr<Xenon::Backend::ComputePipeline> VulkanFactory::createComputePipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const Shader& computeShader)
 		{
 			return std::make_unique<VulkanComputePipeline>(pDevice->as<VulkanDevice>(), std::move(pCacheHandler), computeShader);
 		}
@@ -83,6 +87,26 @@ namespace Xenon
 		std::unique_ptr<Xenon::Backend::OcclusionQuery> VulkanFactory::createOcclusionQuery(Device* pDevice, uint64_t sampleCount)
 		{
 			return std::make_unique<VulkanOcclusionQuery>(pDevice->as<VulkanDevice>(), sampleCount);
+		}
+
+		std::unique_ptr<Xenon::Backend::TopLevelAccelerationStructure> VulkanFactory::createTopLevelAccelerationStructure(Device* pDevice, const std::vector<BottomLevelAccelerationStructure*>& pBottomLevelAccelerationStructures)
+		{
+			return std::make_unique<VulkanTopLevelAccelerationStructure>(pDevice->as<VulkanDevice>(), pBottomLevelAccelerationStructures);
+		}
+
+		std::unique_ptr<Xenon::Backend::BottomLevelAccelerationStructure> VulkanFactory::createBottomLevelAccelerationStructure(Device* pDevice, const std::vector<AccelerationStructureGeometry>& geometries)
+		{
+			return std::make_unique<VulkanBottomLevelAccelerationStructure>(pDevice->as<VulkanDevice>(), geometries);
+		}
+
+		std::unique_ptr<Xenon::Backend::RayTracer> VulkanFactory::createRayTracer(Device* pDevice, Camera* pCamera)
+		{
+			return std::make_unique<VulkanRayTracer>(pDevice->as<VulkanDevice>(), pCamera);
+		}
+
+		std::unique_ptr<Xenon::Backend::RayTracingPipeline> VulkanFactory::createRayTracingPipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const RayTracingPipelineSpecification& specification)
+		{
+			return std::make_unique<VulkanRayTracingPipeline>(pDevice->as<VulkanDevice>(), std::move(pCacheHandler), specification);
 		}
 	}
 }
