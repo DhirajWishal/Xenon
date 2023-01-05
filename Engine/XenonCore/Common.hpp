@@ -7,6 +7,7 @@
 #include <string_view>
 
 #define XENON_BIT_SHIFT(x)							(1 << x)
+#define XENON_ALIGNED_SIZE_2(size, alignment)		(((size) + (alignment)-1) & ~((alignment)-1))
 
 #define XENON_DISABLE_COPY(object)															\
 	object(const object&) = delete;															\

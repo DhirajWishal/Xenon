@@ -4,6 +4,113 @@
 #include "VulkanShaderBindingTable.hpp"
 #include "VulkanMacros.hpp"
 
+#include "VulkanImage.hpp"
+#include "VulkanBuffer.hpp"
+
+namespace /* anonymous */
+{
+	/**
+	 * Get the entry size from a data variant.
+	 *
+	 * @param entry The entry to get the size of.
+	 * @param handleSize The size of the handle.
+	 * @param entryAlignment The alignment of the whole entry.
+	 * @return The size.
+	 */
+	[[nodiscard]] uint64_t GetEntrySize(const Xenon::Backend::BindingGroup::DataVariant& entry, uint32_t handleSize, uint64_t entryAlignment) noexcept
+	{
+		uint64_t entrySize = handleSize;
+
+		switch (entry.index())
+		{
+		case 0:
+			entrySize += sizeof(std::get<0>(entry));
+			break;
+
+		case 1:
+			entrySize += sizeof(std::get<1>(entry));
+			break;
+
+		case 2:
+			entrySize += std::get<2>(entry).second;
+			break;
+
+		default:
+			break;
+		}
+
+		return  XENON_ALIGNED_SIZE_2(entrySize, entryAlignment);
+	}
+
+	/**
+	 * Copy data to a destination pointer and increment the destination pointer.
+	 *
+	 * @param pSource The source data pointer.
+	 * @param pDestination The destination data pointer. This will be incremented by size.
+	 * @param size The number of bytes to copy.
+	 */
+	void CopyIncrement(const std::byte* pSource, std::byte*& pDestination, uint64_t size)
+	{
+		// Copy only if we have valid data.
+		if (pSource)
+			std::copy_n(pSource, size, pDestination);
+
+		pDestination += size;
+	}
+
+	/**
+	 * Copy data to a destination pointer and increment the destination pointer.
+	 *
+	 * @param pSource The source data pointer.
+	 * @param pDestination The destination data pointer. This will be incremented by size.
+	 * @param size The number of bytes to copy.
+	 * @param entryAlignment The alignment of the whole entry.
+	 */
+	void CopyIncrement(const std::byte* pSource, std::byte*& pDestination, uint64_t size, uint64_t entryAlignment)
+	{
+		// Copy only if we have valid data.
+		if (pSource)
+			std::copy_n(pSource, size, pDestination);
+
+		pDestination += XENON_ALIGNED_SIZE_2(size, entryAlignment);
+	}
+
+	/**
+	 * Copy an entry to the destination pointer.
+	 * This will also increment the pointer.
+	 *
+	 * @param entry The entry to copy.
+	 * @param pDestination The destination pointer.
+	 * @param entryAlignment The alignment of the whole entry.
+	 */
+	void CopyEntry(const Xenon::Backend::BindingGroup::DataVariant& entry, std::byte*& pDestination, uint32_t entryAlignment)
+	{
+		switch (entry.index())
+		{
+		case 0:
+		{
+			auto address = std::get<0>(entry)->as<Xenon::Backend::VulkanBuffer>()->getDeviceAddress();
+			CopyIncrement(Xenon::ToBytes(&address), pDestination, sizeof(address), entryAlignment);
+			break;
+		}
+
+		case 1:
+		{
+			// auto address = std::get<1>(entry)->as<Xenon::Backend::VulkanImage>()->getde();
+			// CopyIncrement(Xenon::ToBytes(&address), pDestination, sizeof(address), entryAlignment);
+		}
+		break;
+
+		case 2:
+			CopyIncrement(std::get<2>(entry).first, pDestination, std::get<2>(entry).second, entryAlignment);
+			break;
+
+		default:
+			break;
+		}
+	}
+}
+
 namespace Xenon
 {
 	namespace Backend
@@ -12,28 +119,151 @@ namespace Xenon
 			: ShaderBindingTable(pDevice, pPipeline, bindingGroups)
 			, VulkanDeviceBoundObject(pDevice)
 		{
-			const auto handleSize = m_pDevice->getPhysicalDeviceRayTracingPipelineProperties().shaderGroupHandleSize;
-			const auto handleAlignment = m_pDevice->getPhysicalDeviceRayTracingPipelineProperties().shaderGroupHandleAlignment;
+			if (pPipeline->getSpecification().m_ShaderGroups.size() < bindingGroups.size())
+			{
+				XENON_LOG_ERROR("Failed to create the shader binding table! The binding group count should not be grater than the pipeline's shader group count.");
+				return;
+			}
 
-			const uint32_t handleSizeAligned = XENON_VK_ALIGNED_SIZE(handleSize, handleAlignment);
-			const auto groupCount = static_cast<uint32_t>(bindingGroups.size());
+			const auto handleSize = m_pDevice->getPhysicalDeviceRayTracingPipelineProperties().shaderGroupHandleSize;
+			const auto entryAlignment = m_pDevice->getPhysicalDeviceRayTracingPipelineProperties().shaderGroupHandleAlignment;
+			const auto maxStride = m_pDevice->getPhysicalDeviceRayTracingPipelineProperties().maxShaderGroupStride;
+
+			// Get the allocation sizes.
+			uint32_t groupCount = 0;
+			for (const auto& group : bindingGroups)
+			{
+				for (const auto& [shader, entry] : group.m_Entries)
+				{
+					switch (shader)
+					{
+					case ShaderType::RayGen:
+						m_RayGenSize += GetEntrySize(entry, handleSize, entryAlignment);
+						groupCount++;
+						break;
+
+					case ShaderType::Intersection:
+					case ShaderType::AnyHit:
+					case ShaderType::ClosestHit:
+						m_RayHitSize += GetEntrySize(entry, handleSize, entryAlignment);
+						groupCount++;
+						break;
+
+					case ShaderType::Miss:
+						m_RayMissSize += GetEntrySize(entry, handleSize, entryAlignment);
+						groupCount++;
+						break;
+
+					case ShaderType::Callable:
+						m_CallableSize += GetEntrySize(entry, handleSize, entryAlignment);
+						groupCount++;
+						break;
+
+					default:
+						XENON_LOG_ERROR("Invalid shader type provided to the shader builder! The only supported shader types are RayGen, Intersection, AnyHit, ClosestHit, Miss and Callable.");
+						break;
+					}
+				}
+			}
+
+			// Validate the sizes.
+			if (m_RayGenSize > maxStride || m_RayHitSize > maxStride || m_RayMissSize > maxStride)
+			{
+				XENON_LOG_ERROR("Failed to create the shader binding table! The size of the binding data are too much. The maximum size allowed is {}", maxStride * 4);
+				return;
+			}
+
+			const uint32_t handleSizeAligned = XENON_VK_ALIGNED_SIZE(handleSize, entryAlignment);
 			const uint32_t sbtSize = groupCount * handleSizeAligned;
 
 			std::vector<std::byte> shaderHandleStorage(sbtSize);
 			XENON_VK_ASSERT(vkGetRayTracingShaderGroupHandlesKHR(m_pDevice->getLogicalDevice(), pPipeline->getPipeline(), 0, groupCount, sbtSize, shaderHandleStorage.data()));
 
-			// auto ptr = shaderHandleStorage.data();
-			// writeShaderGroupHandles(m_RayGenBindingTable.m_pTable.get(), ptr, handleSize, handleSizeAligned);
-			// writeShaderGroupHandles(m_IntersectionBindingTable.m_pTable.get(), ptr, handleSize, handleSizeAligned);
-			// writeShaderGroupHandles(m_AnyHitBindingTable.m_pTable.get(), ptr, handleSize, handleSizeAligned);
-			// writeShaderGroupHandles(m_ClosestHitBindingTable.m_pTable.get(), ptr, handleSize, handleSizeAligned);
-			// writeShaderGroupHandles(m_MissBindingTable.m_pTable.get(), ptr, handleSize, handleSizeAligned);
-			// writeShaderGroupHandles(m_CallableBindingTable.m_pTable.get(), ptr, handleSize, handleSizeAligned);
+			// Create the buffer.
+			VkBufferCreateInfo createInfo = {};
+			createInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+			createInfo.pNext = nullptr;
+			createInfo.flags = 0;
+			createInfo.size = m_RayGenSize + m_RayMissSize + m_RayHitSize + m_CallableSize;
+			createInfo.usage = VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
+			createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+			createInfo.queueFamilyIndexCount = 0;
+			createInfo.pQueueFamilyIndices = nullptr;
+
+			VmaAllocationCreateInfo allocationCreateInfo = {};
+			allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
+			allocationCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
+
+			XENON_VK_ASSERT(vmaCreateBuffer(m_pDevice->getAllocator(), &createInfo, &allocationCreateInfo, &m_Table, &m_Allocation, nullptr), "Failed to shader binding table!");
+
+			// Get the buffer memory.
+			auto pRayGenMemory = map();
+			auto pMissMemory = pRayGenMemory + m_RayGenSize;
+			auto pHitGroupMemory = pMissMemory + m_RayMissSize;
+			auto pCallableMemory = pHitGroupMemory + m_RayHitSize;
+
+			// Copy the data.
+			uint32_t index = 0;
+			for (const auto& group : bindingGroups)
+			{
+				auto pBegin = shaderHandleStorage.data();
+				for (const auto& [shaderType, entry] : group.m_Entries)
+				{
+					switch (shaderType)
+					{
+					case ShaderType::RayGen:
+						CopyIncrement(pBegin, pRayGenMemory, handleSize);
+						CopyEntry(entry, pRayGenMemory, entryAlignment);
+						break;
+
+					case ShaderType::Intersection:
+					case ShaderType::AnyHit:
+					case ShaderType::ClosestHit:
+						CopyIncrement(pBegin, pHitGroupMemory, handleSize);
+						CopyEntry(entry, pHitGroupMemory, entryAlignment);
+						break;
+
+					case ShaderType::Miss:
+						CopyIncrement(pBegin, pMissMemory, handleSize);
+						CopyEntry(entry, pMissMemory, entryAlignment);
+						break;
+
+					case ShaderType::Callable:
+						CopyIncrement(pBegin, pCallableMemory, handleSize);
+						CopyEntry(entry, pCallableMemory, entryAlignment);
+						break;
+
+					default:
+						break;
+
+					}
+
+					pBegin += handleSize;
+				}
+
+				index++;
+			}
+
+			// Finally unmap the memory.
+			unmap();
 		}
 
 		VulkanShaderBindingTable::~VulkanShaderBindingTable()
 		{
 			vmaDestroyBuffer(m_pDevice->getAllocator(), m_Table, m_Allocation);
+		}
+
+		std::byte* VulkanShaderBindingTable::map()
+		{
+			std::byte* pMemory = nullptr;
+			XENON_VK_ASSERT(vmaMapMemory(m_pDevice->getAllocator(), m_Allocation, std::bit_cast<void**>(&pMemory)), "Failed to map the shader bindng table memory!");
+
+			return pMemory;
+		}
+
+		void VulkanShaderBindingTable::unmap()
+		{
+			vmaUnmapMemory(m_pDevice->getAllocator(), m_Allocation);
 		}
 	}
 }

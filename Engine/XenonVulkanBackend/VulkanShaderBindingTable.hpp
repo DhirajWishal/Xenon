@@ -32,6 +32,19 @@ namespace Xenon
 			~VulkanShaderBindingTable() override;
 
 		private:
+			/**
+			 * Map the table memory.
+			 *
+			 * @return The mapped memory pointer.
+			 */
+			[[nodiscard]] std::byte* map();
+
+			/**
+			 * Unmap the table memory.
+			 */
+			void unmap();
+
+		private:
 			VkBuffer m_Table = VK_NULL_HANDLE;
 			VmaAllocation m_Allocation = nullptr;
 

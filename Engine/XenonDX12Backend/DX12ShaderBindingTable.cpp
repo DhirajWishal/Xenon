@@ -22,22 +22,39 @@ namespace /* anonymous */
 		switch (entry.index())
 		{
 		case 0:
-			entrySize += XENON_ALIGNED_SIZE_2(sizeof(std::get<0>(entry)), D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);
+			entrySize += sizeof(std::get<0>(entry));
 			break;
 
 		case 1:
-			entrySize += XENON_ALIGNED_SIZE_2(sizeof(std::get<1>(entry)), D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);
+			entrySize += sizeof(std::get<1>(entry));
 			break;
 
 		case 2:
-			entrySize += XENON_ALIGNED_SIZE_2(std::get<2>(entry).second, D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);
+			entrySize += std::get<2>(entry).second;
 			break;
 
 		default:
 			break;
 		}
 
-		return entrySize;
+		return XENON_ALIGNED_SIZE_2(entrySize, D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);
+	}
+
+	/**
+	 * Copy data to a destination pointer and increment the destination pointer.
+	 * This will not take the alignment into consideration when incrementing the pointer.
+	 *
+	 * @param pSource The source data pointer.
+	 * @param pDestination The destination data pointer. This will be incremented by size.
+	 * @param size The number of bytes to copy.
+	 */
+	void CopyIncrementWithoutAlignment(const std::byte* pSource, std::byte*& pDestination, uint64_t size)
+	{
+		// Copy only if we have valid data.
+		if (pSource)
+			std::copy_n(pSource, size, pDestination);
+
+		pDestination += size;
 	}
 
 	/**
@@ -172,24 +189,24 @@ namespace Xenon
 					switch (shaderType)
 					{
 					case ShaderType::RayGen:
-						CopyIncrement(ToBytes(pShaderID), pRayGenMemory, D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+						CopyIncrementWithoutAlignment(ToBytes(pShaderID), pRayGenMemory, D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
 						CopyEntry(entry, pRayGenMemory);
 						break;
 
 					case ShaderType::Intersection:
 					case ShaderType::AnyHit:
 					case ShaderType::ClosestHit:
-						CopyIncrement(ToBytes(pShaderID), pHitGroupMemory, D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+						CopyIncrementWithoutAlignment(ToBytes(pShaderID), pHitGroupMemory, D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
 						CopyEntry(entry, pHitGroupMemory);
 						break;
 
 					case ShaderType::Miss:
-						CopyIncrement(ToBytes(pShaderID), pMissMemory, D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+						CopyIncrementWithoutAlignment(ToBytes(pShaderID), pMissMemory, D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
 						CopyEntry(entry, pMissMemory);
 						break;
 
 					case ShaderType::Callable:
-						CopyIncrement(ToBytes(pShaderID), pCallableMemory, D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+						CopyIncrementWithoutAlignment(ToBytes(pShaderID), pCallableMemory, D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
 						CopyEntry(entry, pCallableMemory);
 						break;
 
