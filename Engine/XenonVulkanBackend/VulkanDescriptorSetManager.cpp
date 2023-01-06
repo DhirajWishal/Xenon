@@ -36,7 +36,8 @@ namespace Xenon
 	namespace Backend
 	{
 		VulkanDescriptorSetManager::VulkanDescriptorSetManager(VulkanDevice* pDevice)
-			: VulkanDeviceBoundObject(pDevice)
+			: DescriptorManager(pDevice)
+			, VulkanDeviceBoundObject(pDevice)
 		{
 			VkDescriptorSetLayoutCreateInfo dummyLayoutCreateInfo = {};
 			dummyLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;

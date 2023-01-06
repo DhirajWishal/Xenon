@@ -46,6 +46,7 @@ set(
 	"Shader.cpp"
 	"Shader.hpp"
 	"ShaderBindingTable.hpp"
+	"DescriptorManager.hpp"
 )
 
 # Add the source group.

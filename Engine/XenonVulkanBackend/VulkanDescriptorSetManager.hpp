@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "../XenonBackend/DescriptorManager.hpp"
 #include "VulkanDeviceBoundObject.hpp"
 
 #include <unordered_map>
@@ -14,7 +15,7 @@ namespace Xenon
 		/**
 		 * Vulkan descriptor set manager.
 		 */
-		class VulkanDescriptorSetManager : public VulkanDeviceBoundObject
+		class VulkanDescriptorSetManager : public DescriptorManager, public VulkanDeviceBoundObject
 		{
 			/**
 			 * Vulkan descriptor storage structure.

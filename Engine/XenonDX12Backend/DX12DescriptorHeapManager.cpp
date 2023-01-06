@@ -64,7 +64,8 @@ namespace Xenon
 	namespace Backend
 	{
 		DX12DescriptorHeapManager::DX12DescriptorHeapManager(DX12Device* pDevice)
-			: DX12DeviceBoundObject(pDevice)
+			: DescriptorManager(pDevice)
+			, DX12DeviceBoundObject(pDevice)
 		{
 			m_CbvSrvUavHeapIncrementSize = m_pDevice->getDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 			m_SamplerHeapIncrementSize = m_pDevice->getDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);

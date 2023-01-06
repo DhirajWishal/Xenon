@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "../XenonBackend/DescriptorManager.hpp"
 #include "DX12DeviceBoundObject.hpp"
 
 namespace Xenon
@@ -24,7 +25,7 @@ namespace Xenon
 		 * DirectX 12 descriptor heap manager class.
 		 * This object is used to manage descriptor heaps and create new heaps if needed.
 		 */
-		class DX12DescriptorHeapManager : public DX12DeviceBoundObject
+		class DX12DescriptorHeapManager : public DescriptorManager, public DX12DeviceBoundObject
 		{
 		public:
 			/**
