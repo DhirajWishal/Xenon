@@ -43,4 +43,27 @@ float4x4 GetIdentityMatrix()
 	return identity;
 }
 
+/**
+ * Light source structure.
+ * This structure contains information about a single light source (point or directional).
+ */
+struct LightSource
+{
+	float4 m_Color;
+	float3 m_Position;
+	float3 m_Direction;
+
+	float m_Intensity;
+	float m_FieldAngle;
+};
+
+/**
+ * Scene information structure.
+ * This structure contains information about the current scene.
+ */
+struct SceneInformation
+{
+	uint m_LightSourceCount;
+};
+
 #endif // COMMON_HLSLI

@@ -41,3 +41,6 @@
 [submodule "ThirdParty/imnodes"]
 	path = ThirdParty/imnodes
 	url = https://github.com/Nelarius/imnodes
+[submodule "ThirdParty/entt"]
+	path = ThirdParty/entt
+	url = https://github.com/skypjack/entt

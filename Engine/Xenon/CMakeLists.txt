@@ -35,6 +35,9 @@ set(
 	"Package.hpp"
 	"RayTracingLayer.cpp"
 	"RayTracingLayer.hpp"
+	"Components.hpp"
+	"Scene.cpp"
+	"Scene.hpp"
 
 	"Layers/ClearScreenLayer.cpp"
 	"Layers/ClearScreenLayer.hpp"
@@ -75,6 +78,7 @@ target_include_directories(
 
 	PRIVATE ${TINYGLTF_INCLUDE_DIR}
 	PRIVATE ${STB_INCLUDE_DIR}
+	PUBLIC ${ENTT_INCLUDE_DIR}
 )
 
 # If we are on MSVC, we can use the Multi Processor Compilation option.
