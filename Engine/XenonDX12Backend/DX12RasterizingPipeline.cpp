@@ -620,7 +620,8 @@ namespace Xenon
 	{
 		DX12RasterizingPipeline::DX12RasterizingPipeline(DX12Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, DX12Rasterizer* pRasterizer, const RasterizingPipelineSpecification& specification)
 			: RasterizingPipeline(pDevice, std::move(pCacheHandler), pRasterizer, specification)
-			, DX12DescriptorHeapManager(pDevice)
+			, DX12DeviceBoundObject(pDevice)
+			, m_DescriptorHeapManager(pDevice)
 			, m_pRasterizer(pRasterizer)
 		{
 			std::unordered_map<DescriptorType, std::vector<DescriptorBindingInfo>> bindingMap;
@@ -639,7 +640,7 @@ namespace Xenon
 			std::ranges::sort(sortedranges, [](const auto& lhs, const auto& rhs) { return lhs.first < rhs.first; });
 
 			// Setup the descriptor heap manager.
-			setupDescriptorHeapManager(std::move(bindingMap));
+			m_DescriptorHeapManager.setupDescriptorHeapManager(std::move(bindingMap));
 
 			// Create the root signature.
 			createRootSignature(std::move(sortedranges));
@@ -657,7 +658,7 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
-			return std::make_unique<DX12Descriptor>(m_pDevice, getBindingInfo(type), type, this);
+			return std::make_unique<DX12Descriptor>(m_pDevice, m_DescriptorHeapManager.getBindingInfo(type), type, &m_DescriptorHeapManager);
 		}
 
 		const Xenon::Backend::DX12RasterizingPipeline::PipelineStorage& DX12RasterizingPipeline::getPipeline(const VertexSpecification& vertexSpecification)

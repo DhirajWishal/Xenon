@@ -16,7 +16,7 @@ namespace Xenon
 		/**
 		 * DirectX 12 ray tracing pipeline class.
 		 */
-		class DX12RayTracingPipeline final : public RayTracingPipeline, public DX12DescriptorHeapManager
+		class DX12RayTracingPipeline final : public RayTracingPipeline, public DX12DeviceBoundObject
 		{
 		public:
 			/**
@@ -71,6 +71,20 @@ namespace Xenon
 			 */
 			[[nodiscard]] void* getShaderID(ShaderType type, uint32_t group) const;
 
+			/**
+			 * Get the descriptor heap manager.
+			 *
+			 * @return The manager reference.
+			 */
+			[[nodiscard]] DX12DescriptorHeapManager& getDescriptorHeapManager() noexcept { return m_DescriptorHeapManager; }
+
+			/**
+			 * Get the descriptor heap manager.
+			 *
+			 * @return The manager reference.
+			 */
+			[[nodiscard]] const DX12DescriptorHeapManager& getDescriptorHeapManager() const noexcept { return m_DescriptorHeapManager; }
+
 		private:
 			/**
 			 * Create the DXIL library.
@@ -97,6 +111,8 @@ namespace Xenon
 			void createGlobalRootSignature(std::vector<std::pair<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>>&& rangePairs);
 
 		private:
+			DX12DescriptorHeapManager m_DescriptorHeapManager;
+
 			std::vector<ComPtr<ID3D12RootSignature>> m_LocalRootSignatures;
 			ComPtr<ID3D12RootSignature> m_GlobalRootSignature;
 			ComPtr<ID3D12StateObject> m_PipelineState;

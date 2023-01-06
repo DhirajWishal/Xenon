@@ -15,7 +15,7 @@ namespace Xenon
 		/**
 		 * Direct X 12 rasterizing pipeline class.
 		 */
-		class DX12RasterizingPipeline final : public RasterizingPipeline, public DX12DescriptorHeapManager
+		class DX12RasterizingPipeline final : public RasterizingPipeline, public DX12DeviceBoundObject
 		{
 			/**
 			 * Pipeline storage structure.
@@ -73,6 +73,20 @@ namespace Xenon
 			 */
 			[[nodiscard]] const ID3D12RootSignature* getRootSignature() const { return m_RootSignature.Get(); }
 
+			/**
+			 * Get the descriptor heap manager.
+			 *
+			 * @return The manager reference.
+			 */
+			[[nodiscard]] DX12DescriptorHeapManager& getDescriptorHeapManager() noexcept { return m_DescriptorHeapManager; }
+
+			/**
+			 * Get the descriptor heap manager.
+			 *
+			 * @return The manager reference.
+			 */
+			[[nodiscard]] const DX12DescriptorHeapManager& getDescriptorHeapManager() const noexcept { return m_DescriptorHeapManager; }
+
 		private:
 			/**
 			 * Create the root signature.
@@ -104,6 +118,8 @@ namespace Xenon
 
 		private:
 			D3D12_GRAPHICS_PIPELINE_STATE_DESC m_PipelineStateDescriptor = {};
+
+			DX12DescriptorHeapManager m_DescriptorHeapManager;
 
 			std::mutex m_Mutex;
 

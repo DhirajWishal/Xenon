@@ -132,7 +132,7 @@ add_compile_definitions(
 	# Conditionally enable ray tracing. 
 	# This is required since not all devices support ray tracing for all backends (for me Vulkan ray tracing does not work).
 	# Comment this out to disable ray tracing from the studio.
-	XENON_DEV_ENABLE_RAY_TRACING
+	# XENON_DEV_ENABLE_RAY_TRACING
 )
 
 # Include the main subdirectories.

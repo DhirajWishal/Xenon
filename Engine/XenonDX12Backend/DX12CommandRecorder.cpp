@@ -571,7 +571,7 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
-			const auto& heaps = pPipeline->as<DX12RasterizingPipeline>()->getDescriptorHeapStorage();
+			const auto& heaps = pPipeline->as<DX12RasterizingPipeline>()->getDescriptorHeapManager().getDescriptorHeapStorage();
 			m_pCurrentCommandList->SetDescriptorHeaps(static_cast<UINT>(heaps.size()), heaps.data());
 
 			UINT index = 0;
@@ -659,7 +659,7 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
-			const auto& heaps = pPipeline->as<DX12RayTracingPipeline>()->getDescriptorHeapStorage();
+			const auto& heaps = pPipeline->as<DX12RayTracingPipeline>()->getDescriptorHeapManager().getDescriptorHeapStorage();
 			m_pCurrentCommandList->SetDescriptorHeaps(static_cast<UINT>(heaps.size()), heaps.data());
 
 			UINT index = 0;

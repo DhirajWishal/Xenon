@@ -84,7 +84,8 @@ namespace Xenon
 	{
 		DX12RayTracingPipeline::DX12RayTracingPipeline(DX12Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const RayTracingPipelineSpecification& specification)
 			: RayTracingPipeline(pDevice, std::move(pCacheHandler), specification)
-			, DX12DescriptorHeapManager(pDevice)
+			, DX12DeviceBoundObject(pDevice)
+			, m_DescriptorHeapManager(pDevice)
 		{
 			OPTICK_EVENT();
 
@@ -215,7 +216,7 @@ namespace Xenon
 			}
 
 			// Setup the descriptor heap manager.
-			setupDescriptorHeapManager(std::move(bindingMap));
+			m_DescriptorHeapManager.setupDescriptorHeapManager(std::move(bindingMap));
 
 			// Sort the ranges to the correct binding order.
 			auto sortedRanges = std::vector<std::pair<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>>(globalRangeMap.begin(), globalRangeMap.end());
@@ -241,7 +242,7 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
-			return std::make_unique<DX12Descriptor>(m_pDevice, getBindingInfo(type), type, this);
+			return std::make_unique<DX12Descriptor>(m_pDevice, m_DescriptorHeapManager.getBindingInfo(type), type, &m_DescriptorHeapManager);
 		}
 
 		std::unique_ptr<ShaderBindingTable> DX12RayTracingPipeline::createShaderBindingTable(const std::vector<BindingGroup>& bindingGroups)
