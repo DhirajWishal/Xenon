@@ -2,9 +2,22 @@ name: CMake
 
 on:
   push:
-    branches: [release, dev, cleanup, ray-tracing]
+    branches: 
+      - release
+      - dev
+      - cleanup
+      - ray-tracing
+      - bugfix/**/*
+      - hotfix/**/*
+      - feature/**/*
+      - backup/**/*
+      - platform/**/*
+      - quickfix/**/*
   pull_request:
-    branches: [release, dev, cleanup, ray-tracing]
+    branches:
+      - release
+      - dev
+      - cleanup
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
