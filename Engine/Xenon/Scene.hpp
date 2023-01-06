@@ -5,6 +5,7 @@
 
 #include "Instance.hpp"
 #include "Components.hpp"
+#include "MeshStorage.hpp"
 
 #include "../XenonBackend/Camera.hpp"
 
@@ -12,6 +13,10 @@
 
 namespace Xenon
 {
+	/**
+	 * Group type.
+	 * This is just an entt::entity type reference and is used to group objects together.
+	 */
 	using Group = entt::entity;
 
 	/**
@@ -39,22 +44,69 @@ namespace Xenon
 		explicit Scene(Instance& instance, std::unique_ptr<Backend::Camera>&& pCamera);
 
 		/**
-		 * Create a new component.
+		 * Create a new group.
 		 *
-		 * @tparam Component The component type.
-		 * @tparam Arguments The argument types.
-		 * @param group The component's grouping.
-		 * @param arguments The constructor arguments.
-		 * @return The created component reference.
+		 * @return The created group.
 		 */
-		template<class Component, class... Arguments>
-		[[nodiscard]] Component& createComponent(Group group, Arguments&&... arguments)
+		[[nodiscard]] Group createGroup() { return m_Registry.create(); }
+
+		/**
+		 * Create a new mesh by loading it from a file.
+		 * Note that this will load the asset asynchronously and returns a future. Use that to wait if you want.
+		 *
+		 * To get the loaded asset, use the get() function once the returned future is complete.
+		 *
+		 * @param group The group to which the mesh storage is bound to.
+		 * @param file The file to load the meshes from.
+		 * @return The future stating if the asset loading is complete or not.
+		 */
+		[[nodiscard]] std::future<void> createMeshStorage(Group group, const std::filesystem::path& file);
+
+		/**
+		 * Create a new object.
+		 *
+		 * @tparam Object The object type.
+		 * @tparam Arguments The argument types.
+		 * @param group The object's grouping.
+		 * @param arguments The constructor arguments.
+		 * @return The created object reference.
+		 */
+		template<class Object, class... Arguments>
+		[[nodiscard]] Object& create(Group group, Arguments&&... arguments)
 		{
-			return m_Registry.emplace<Component>(group, std::forward<Arguments>(arguments)...);
+			const auto lock = std::scoped_lock(m_Mutex);
+			return m_Registry.emplace<Object>(group, std::forward<Arguments>(arguments)...);
+		}
+
+		/**
+		 * Get a stored object from the registry.
+		 *
+		 * @tparam Object The object type.
+		 * @param group The group of the object.
+		 * @return The stored object reference.
+		 */
+		template<class Object>
+		[[nodiscard]] Object& get(Group group)
+		{
+			return m_Registry.get<Object>(group);
+		}
+
+		/**
+		 * Get a stored object from the registry.
+		 *
+		 * @tparam Object The object type.
+		 * @param group The group of the object.
+		 * @return The stored object reference.
+		 */
+		template<class Object>
+		[[nodiscard]] const Object& get(Group group) const
+		{
+			return m_Registry.get<Object>(group);
 		}
 
 		/**
 		 * Update the internal buffers.
+		 * Make sure this method is called before rendering!
 		 */
 		void update();
 
@@ -86,8 +138,23 @@ namespace Xenon
 		 */
 		[[nodiscard]] const Backend::Camera* getCamera() const noexcept { return m_pCamera.get(); }
 
+		/**
+		 * Get the scene descriptor pointer.
+		 *
+		 * @return The descriptor pointer.
+		 */
+		[[nodiscard]] Backend::Descriptor* getDescriptor() noexcept { return m_pSceneDescriptor.get(); }
+
+		/**
+		 * Get the scene descriptor pointer.
+		 *
+		 * @return The descriptor pointer.
+		 */
+		[[nodiscard]] const Backend::Descriptor* getDescriptor() const noexcept { return m_pSceneDescriptor.get(); }
+
 	private:
 		entt::registry m_Registry;
+		std::mutex m_Mutex;
 
 		Instance& m_Instance;
 

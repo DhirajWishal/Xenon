@@ -11,6 +11,11 @@ namespace Xenon
 	{
 	}
 
+	std::future<void> Scene::createMeshStorage(Group group, const std::filesystem::path& file)
+	{
+		return GetJobSystem().insert([this, group, file] { [[maybe_unused]] const auto& result = create<MeshStorage>(group, MeshStorage::FromFile(m_Instance, file)); });
+	}
+
 	void Scene::update()
 	{
 

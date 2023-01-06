@@ -109,15 +109,20 @@ void Studio::run()
 	// Setup the pipeline.
 #ifdef XENON_DEV_ENABLE_RAY_TRACING
 	auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRayTracingLayer>(m_Scene.getCamera());
+	pRenderTarget->setScene(m_Scene);
+
 	auto pPipeline = m_Instance.getFactory()->createRayTracingPipeline(m_Instance.getBackendDevice(), std::make_unique<CacheHandler>(), getRayTracingPipelineSpecification());
 
 	const auto loaderFunction = [this, &pPipeline, &pRenderTarget]
 	{
+		const auto grouping = m_Scene.createGroup();
+		m_Scene.createMeshStorage(grouping, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf").wait();
 		pRenderTarget->addDrawData(Xenon::MeshStorage::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"), pPipeline.get());
 	};
 
 #else 
 	auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRasterizingLayer>(m_Scene.getCamera());
+	pRenderTarget->setScene(m_Scene);
 
 	Xenon::Backend::RasterizingPipelineSpecification specification;
 	specification.m_VertexShader = Xenon::Generated::CreateShaderShader_vert();
@@ -126,6 +131,8 @@ void Studio::run()
 
 	const auto loaderFunction = [this, &pPipeline, &pRenderTarget]
 	{
+		const auto grouping = m_Scene.createGroup();
+		m_Scene.createMeshStorage(grouping, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf").wait();
 		pRenderTarget->addDrawData(Xenon::MeshStorage::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"), pPipeline.get());
 	};
 
@@ -153,8 +160,11 @@ void Studio::run()
 			if (pImGui->beginFrame(delta))
 				updateCamera(delta);
 
-			// End the ImGui scene and render everything.
+			// End the ImGui scene.
 			pImGui->endFrame();
+
+			// Update the scene object and render everything.
+			m_Scene.update();
 		} while (m_Renderer.update());
 
 		// Wait till the data has been added before quitting.

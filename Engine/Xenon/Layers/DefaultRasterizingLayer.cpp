@@ -246,6 +246,7 @@ namespace Xenon
 			pCommandRecorder->bind(entry.m_pVertexBuffer, entry.m_VertexSpecification.getSize());
 			pCommandRecorder->bind(entry.m_pIndexBuffer, static_cast<Backend::IndexBufferStride>(entry.m_SubMesh.m_IndexSize));
 			pCommandRecorder->bind(entry.m_pPipeline, entry.m_pUserDefinedDescriptor, entry.m_pMaterialDescriptor.get(), entry.m_pSceneDescriptor);
+			// pCommandRecorder->bind(entry.m_pPipeline, entry.m_pUserDefinedDescriptor, entry.m_pMaterialDescriptor.get(), m_pScene->getDescriptor());
 
 			pCommandRecorder->drawIndexed(entry.m_SubMesh.m_VertexOffset, entry.m_SubMesh.m_IndexOffset, entry.m_SubMesh.m_IndexCount);
 

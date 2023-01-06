@@ -4,6 +4,7 @@
 #pragma once
 
 #include "Instance.hpp"
+#include "Scene.hpp"
 
 #include "../XenonBackend/Image.hpp"
 #include "../XenonBackend/CommandRecorder.hpp"
@@ -42,6 +43,13 @@ namespace Xenon
 		 * @return The image pointer.
 		 */
 		[[nodiscard]] virtual Backend::Image* getColorAttachment() = 0;
+
+		/**
+		 * Set the scene to perform operations on.
+		 *
+		 * @param scene The scene to attach.
+		 */
+		void setScene(Scene& scene) { m_pScene = &scene; }
 
 		/**
 		 * Notify the renderer to render this layer.
@@ -97,6 +105,7 @@ namespace Xenon
 
 	protected:
 		Renderer& m_Renderer;
+		Scene* m_pScene = nullptr;
 
 		std::unique_ptr<Backend::CommandRecorder> m_pCommandRecorder = nullptr;
 
