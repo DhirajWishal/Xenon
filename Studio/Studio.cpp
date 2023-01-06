@@ -5,6 +5,7 @@
 #include "CacheHandler.hpp"
 #include "Layers/ImGuiLayer.hpp"
 
+#include "Xenon/MonoCamera.hpp"
 #include "Xenon/MeshStorage.hpp"
 #include "Xenon/FrameTimer.hpp"
 
@@ -97,8 +98,8 @@ namespace /* anonymous */
 
 Studio::Studio(Xenon::BackendType type /*= Xenon::BackendType::Any*/)
 	: m_Instance("Xenon Studio", 0, Xenon::RenderTargetType::All, type)
-	, m_Camera(m_Instance, 1920, 1080)
-	, m_Renderer(m_Instance, &m_Camera, GetRendererTitle(type))
+	, m_Scene(m_Instance, std::make_unique<Xenon::MonoCamera>(m_Instance, 1920, 1080))
+	, m_Renderer(m_Instance, m_Scene.getCamera(), GetRendererTitle(type))
 {
 	XENON_LOG_INFORMATION("Starting the {}", GetRendererTitle(m_Instance.getBackendType()));
 }
@@ -107,7 +108,7 @@ void Studio::run()
 {
 	// Setup the pipeline.
 #ifdef XENON_DEV_ENABLE_RAY_TRACING
-	auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRayTracingLayer>(&m_Camera);
+	auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRayTracingLayer>(m_Scene.getCamera());
 	auto pPipeline = m_Instance.getFactory()->createRayTracingPipeline(m_Instance.getBackendDevice(), std::make_unique<CacheHandler>(), getRayTracingPipelineSpecification());
 
 	const auto loaderFunction = [this, &pPipeline, &pRenderTarget]
@@ -116,7 +117,7 @@ void Studio::run()
 	};
 
 #else 
-	auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRasterizingLayer>(&m_Camera);
+	auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRasterizingLayer>(m_Scene.getCamera());
 
 	Xenon::Backend::RasterizingPipelineSpecification specification;
 	specification.m_VertexShader = Xenon::Generated::CreateShaderShader_vert();
@@ -131,7 +132,7 @@ void Studio::run()
 #endif // XENON_DEV_ENABLE_RAY_TRACING
 
 	// Create the layers.
-	auto pImGui = m_Renderer.createLayer<ImGuiLayer>(&m_Camera);
+	auto pImGui = m_Renderer.createLayer<ImGuiLayer>(m_Scene.getCamera());
 
 	// Set the layer to be shown.
 	pImGui->showLayer(pRenderTarget);
@@ -171,22 +172,22 @@ void Studio::updateCamera(std::chrono::nanoseconds delta)
 {
 	// Move the camera.
 	if (m_Renderer.getKeyboard().m_KeyW)
-		m_Camera.moveForward(delta);
+		m_Scene.getCamera()->moveForward(delta);
 
 	if (m_Renderer.getKeyboard().m_KeyA)
-		m_Camera.moveLeft(delta);
+		m_Scene.getCamera()->moveLeft(delta);
 
 	if (m_Renderer.getKeyboard().m_KeyS)
-		m_Camera.moveBackward(delta);
+		m_Scene.getCamera()->moveBackward(delta);
 
 	if (m_Renderer.getKeyboard().m_KeyD)
-		m_Camera.moveRight(delta);
+		m_Scene.getCamera()->moveRight(delta);
 
 	if (m_Renderer.getKeyboard().m_Up)
-		m_Camera.moveUp(delta);
+		m_Scene.getCamera()->moveUp(delta);
 
 	if (m_Renderer.getKeyboard().m_Down)
-		m_Camera.moveDown(delta);
+		m_Scene.getCamera()->moveDown(delta);
 
 	// Rotate the camera.
 	if (m_Renderer.getMouse().m_ButtonLeft == Xenon::MouseButtonEvent::Press)
@@ -201,19 +202,19 @@ void Studio::updateCamera(std::chrono::nanoseconds delta)
 			m_bFirstMouse = false;
 		}
 
-		const float xoffset = (positionX - m_LastX) * m_Camera.m_RotationBias * 0.75f;
-		const float yoffset = (m_LastY - positionY) * m_Camera.m_RotationBias; // Reversed since y-coordinates go from bottom to top
+		const float xoffset = (positionX - m_LastX) * m_Scene.getCamera()->m_RotationBias * 0.75f;
+		const float yoffset = (m_LastY - positionY) * m_Scene.getCamera()->m_RotationBias; // Reversed since y-coordinates go from bottom to top
 
 		m_LastX = positionX;
 		m_LastY = positionY;
 
-		m_Camera.updateYaw(xoffset, delta);
-		m_Camera.updatePitch(yoffset, delta);
+		m_Scene.getCamera()->updateYaw(xoffset, delta);
+		m_Scene.getCamera()->updatePitch(yoffset, delta);
 	}
 	else
 	{
 		m_bFirstMouse = true;
 	}
 
-	m_Camera.update();
+	m_Scene.getCamera()->update();
 }

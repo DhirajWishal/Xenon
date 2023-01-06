@@ -4,8 +4,8 @@
 #pragma once
 
 #include "Xenon/Instance.hpp"
-#include "Xenon/MonoCamera.hpp"
 #include "Xenon/Renderer.hpp"
+#include "Xenon/Scene.hpp"
 
 /**
  * Studio class.
@@ -35,7 +35,7 @@ private:
 
 private:
 	Xenon::Instance m_Instance;
-	Xenon::MonoCamera m_Camera;
+	Xenon::Scene m_Scene;
 	Xenon::Renderer m_Renderer;
 
 	float m_LastX = 0.0f;
