@@ -54,19 +54,19 @@ namespace Xenon
 	};
 
 	/**
-	 * Mesh storage class.
+	 * Geometry class.
 	 * This class contains all the meshes of a single model, with or without animation.
 	 *
 	 * All meshes are stored in a tree like hierarchy. But for performance, all the mesh data (vertex data and index data) are stored in individual vertex and index buffers, and
 	 * mesh specific information (offsets, names, materials, etc...) are stored in a vector where each mesh contains information about child nodes and so on.
 	 */
-	class MeshStorage final
+	class Geometry final
 	{
 	public:
 		/**
 		 * Default constructor.
 		 */
-		MeshStorage() = default;
+		Geometry() = default;
 
 		/**
 		 * Load the meshes from a file and create the mesh storage class.
@@ -75,7 +75,7 @@ namespace Xenon
 		 * @param file The file path to load the data from.
 		 * @return The created mesh storage.
 		 */
-		[[nodiscard]] static MeshStorage FromFile(Instance& instance, const std::filesystem::path& file);
+		[[nodiscard]] static Geometry FromFile(Instance& instance, const std::filesystem::path& file);
 
 		/**
 		 * Get the vertex specification.
@@ -129,6 +129,9 @@ namespace Xenon
 	private:
 		std::unique_ptr<Backend::Buffer> m_pIndexBuffer = nullptr;
 		std::unique_ptr<Backend::Buffer> m_pVertexBuffer = nullptr;
+
+		std::vector<std::pair<std::unique_ptr<Backend::Image>, std::unique_ptr<Backend::ImageView>>> m_pImageAndImageViews;
+		std::vector<std::unique_ptr<Backend::ImageSampler>> m_pImageSamplers;
 
 		std::vector<Mesh> m_Meshes;
 

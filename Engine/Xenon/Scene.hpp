@@ -5,7 +5,7 @@
 
 #include "Instance.hpp"
 #include "Components.hpp"
-#include "MeshStorage.hpp"
+#include "Geometry.hpp"
 
 #include "../XenonBackend/Camera.hpp"
 

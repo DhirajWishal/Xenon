@@ -60,13 +60,13 @@ namespace Xenon
 		m_pCommandRecorder->end();
 	}
 
-	void DefaultRasterizingLayer::addDrawData(MeshStorage&& storage, Backend::RasterizingPipeline* pPipeline)
+	void DefaultRasterizingLayer::addDrawData(Geometry&& geometry, Backend::RasterizingPipeline* pPipeline)
 	{
 		OPTICK_EVENT();
 
 		// Create a new draw entry.
 		DrawData drawData;
-		drawData.m_Storage = std::move(storage);
+		drawData.m_Geometry = std::move(geometry);
 
 		// Setup the camera descriptor.
 		drawData.m_pSceneDescriptor = pPipeline->createDescriptor(Backend::DescriptorType::Scene);
@@ -80,16 +80,16 @@ namespace Xenon
 
 		// Setup the material descriptors.
 		uint32_t threadIndex = 0;
-		for (const auto& mesh : drawData.m_Storage.getMeshes())
+		for (const auto& mesh : drawData.m_Geometry.getMeshes())
 		{
 			for (const auto& subMesh : mesh.m_SubMeshes)
 			{
 				auto& entry = m_DrawEntries[threadIndex % m_DrawEntries.size()].emplace_back();
 				entry.m_SubMesh = subMesh;
-				entry.m_VertexSpecification = drawData.m_Storage.getVertexSpecification();
+				entry.m_VertexSpecification = drawData.m_Geometry.getVertexSpecification();
 				entry.m_pPipeline = pPipeline;
-				entry.m_pVertexBuffer = drawData.m_Storage.getVertexBuffer();
-				entry.m_pIndexBuffer = drawData.m_Storage.getIndexBuffer();
+				entry.m_pVertexBuffer = drawData.m_Geometry.getVertexBuffer();
+				entry.m_pIndexBuffer = drawData.m_Geometry.getIndexBuffer();
 				entry.m_pUserDefinedDescriptor = nullptr;
 				entry.m_pMaterialDescriptor = subMesh.m_MaterialIdentifier.m_pMaterial->createDescriptor(pPipeline);
 				entry.m_pSceneDescriptor = drawData.m_pSceneDescriptor.get();

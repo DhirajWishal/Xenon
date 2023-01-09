@@ -6,7 +6,7 @@
 #include "Layers/ImGuiLayer.hpp"
 
 #include "Xenon/MonoCamera.hpp"
-#include "Xenon/MeshStorage.hpp"
+#include "Xenon/Geometry.hpp"
 #include "Xenon/FrameTimer.hpp"
 
 #include "XenonCore/Logging.hpp"
@@ -117,7 +117,7 @@ void Studio::run()
 	{
 		const auto grouping = m_Scene.createGroup();
 		m_Scene.createMeshStorage(grouping, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf").wait();
-		pRenderTarget->addDrawData(Xenon::MeshStorage::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"), pPipeline.get());
+		pRenderTarget->addDrawData(Xenon::Geometry::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"), pPipeline.get());
 	};
 
 #else 
@@ -133,7 +133,7 @@ void Studio::run()
 	{
 		const auto grouping = m_Scene.createGroup();
 		m_Scene.createMeshStorage(grouping, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf").wait();
-		pRenderTarget->addDrawData(Xenon::MeshStorage::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"), pPipeline.get());
+		pRenderTarget->addDrawData(Xenon::Geometry::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"), pPipeline.get());
 	};
 
 #endif // XENON_DEV_ENABLE_RAY_TRACING

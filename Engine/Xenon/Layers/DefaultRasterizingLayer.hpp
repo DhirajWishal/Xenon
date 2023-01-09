@@ -4,7 +4,7 @@
 #pragma once
 
 #include "../RasterizingLayer.hpp"
-#include "../MeshStorage.hpp"
+#include "../Geometry.hpp"
 
 #include "../../XenonCore/TaskNode.hpp"
 #include "../../XenonCore/CountingFence.hpp"
@@ -23,7 +23,7 @@ namespace Xenon
 		 */
 		struct DrawData final
 		{
-			MeshStorage m_Storage;
+			Geometry m_Geometry;
 
 			std::unique_ptr<Backend::Descriptor> m_pSceneDescriptor = nullptr;
 		};
@@ -84,10 +84,10 @@ namespace Xenon
 		/**
 		 * Add draw data to the layer to be rendered.
 		 *
-		 * @param storage The storage to render.
+		 * @param geometry The geometry to render.
 		 * @apram pPipeline The pipeline pointer to render with.
 		 */
-		void addDrawData(MeshStorage&& storage, Backend::RasterizingPipeline* pPipeline);
+		void addDrawData(Geometry&& geometry, Backend::RasterizingPipeline* pPipeline);
 
 		/**
 		 * Get the total draw count.

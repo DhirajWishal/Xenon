@@ -4,7 +4,7 @@
 #pragma once
 
 #include "../RayTracingLayer.hpp"
-#include "../MeshStorage.hpp"
+#include "../Geometry.hpp"
 #include "../../XenonBackend/RayTracingPipeline.hpp"
 
 namespace Xenon
@@ -20,7 +20,7 @@ namespace Xenon
 		 */
 		struct DrawData final
 		{
-			MeshStorage m_MeshStorage;
+			Geometry m_Geometry;
 
 			std::unique_ptr<Backend::BottomLevelAccelerationStructure> m_pBottomLevelAccelerationStructure;
 			std::unique_ptr<Backend::TopLevelAccelerationStructure> m_pTopLevelAccelerationStructure;
@@ -56,10 +56,10 @@ namespace Xenon
 		/**
 		 * Add draw data to the layer to be rendered.
 		 *
-		 * @param storage The storage to render.
+		 * @param geometry The geometry to render.
 		 * @apram pPipeline The pipeline pointer to render with.
 		 */
-		void addDrawData(MeshStorage&& storage, Backend::RayTracingPipeline* pPipeline);
+		void addDrawData(Geometry&& geometry, Backend::RayTracingPipeline* pPipeline);
 
 		/**
 		 * Get the total draw count.

@@ -1,7 +1,7 @@
 // Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
-#include "MeshStorage.hpp"
+#include "Geometry.hpp"
 #include "../XenonCore/Logging.hpp"
 
 #include "Materials/DefaultMaterial.hpp"
@@ -423,7 +423,7 @@ namespace /* anonymous */
 	 * @param instance The instance reference.
 	 * @param model The model to load from.
 	 * @param node The node to load.
-	 * @param storage The mesh storage.
+	 * @param geometry The mesh geometry.
 	 * @param vertices The vertex storage.
 	 * @param vertexItr The vertex storage iterator.
 	 * @param indices The index storage.
@@ -434,7 +434,7 @@ namespace /* anonymous */
 		Xenon::Instance& instance,
 		const tinygltf::Model& model,
 		const tinygltf::Node& node,
-		Xenon::MeshStorage& storage,
+		Xenon::Geometry& geometry,
 		std::vector<unsigned char>& vertices,
 		std::vector<unsigned char>::iterator& vertexItr,
 		std::vector<unsigned char>& indices,
@@ -445,7 +445,7 @@ namespace /* anonymous */
 
 		// Get the mesh and initialize everything.
 		const auto& gltfMesh = model.meshes[node.mesh];
-		auto& mesh = storage.getMeshes().emplace_back();
+		auto& mesh = geometry.getMeshes().emplace_back();
 		mesh.m_Name = gltfMesh.name;
 		mesh.m_SubMeshes.reserve(gltfMesh.primitives.size());
 
@@ -458,12 +458,12 @@ namespace /* anonymous */
 			subMesh.m_IndexOffset = std::distance(indices.begin(), indexItr);
 
 			if (subMesh.m_VertexOffset > 0)
-				subMesh.m_VertexOffset /= storage.getVertexSpecification().getSize();
+				subMesh.m_VertexOffset /= geometry.getVertexSpecification().getSize();
 
 			// Insert the job.
-			Xenon::XObject::GetJobSystem().insert([&subMesh, &model, &storage, &gltfPrimitive, vertexItr, indexItr, &synchronization]
+			Xenon::XObject::GetJobSystem().insert([&subMesh, &model, &geometry, &gltfPrimitive, vertexItr, indexItr, &synchronization]
 				{
-					LoadSubMesh(subMesh, storage.getVertexSpecification(), model, gltfPrimitive, vertexItr, indexItr);
+					LoadSubMesh(subMesh, geometry.getVertexSpecification(), model, gltfPrimitive, vertexItr, indexItr);
 			synchronization.count_down();
 				}
 			);
@@ -471,7 +471,7 @@ namespace /* anonymous */
 			// Get the next available vertex begin position.
 			for (auto i = Xenon::EnumToInt(Xenon::Backend::InputElement::VertexPosition); i < Xenon::EnumToInt(Xenon::Backend::InputElement::VertexElementCount); i++)
 			{
-				if (storage.getVertexSpecification().isAvailable(static_cast<Xenon::Backend::InputElement>(i)) && gltfPrimitive.attributes.contains(g_Attributes[i]))
+				if (geometry.getVertexSpecification().isAvailable(static_cast<Xenon::Backend::InputElement>(i)) && gltfPrimitive.attributes.contains(g_Attributes[i]))
 				{
 					const auto& accessor = model.accessors[gltfPrimitive.attributes.at(g_Attributes[i])];
 					const auto& bufferView = model.bufferViews[accessor.bufferView];
@@ -538,17 +538,17 @@ namespace /* anonymous */
 
 		// Load the children.
 		for (const auto child : node.children)
-			LoadNode(instance, model, model.nodes[child], storage, vertices, vertexItr, indices, indexItr, synchronization);
+			LoadNode(instance, model, model.nodes[child], geometry, vertices, vertexItr, indices, indexItr, synchronization);
 	}
 }
 
 namespace Xenon
 {
-	Xenon::MeshStorage MeshStorage::FromFile(Instance& instance, const std::filesystem::path& file)
+	Xenon::Geometry Geometry::FromFile(Instance& instance, const std::filesystem::path& file)
 	{
 		OPTICK_EVENT();
 
-		MeshStorage storage;
+		Geometry geometry;
 
 		// Load the model data.
 		tinygltf::Model model;
@@ -566,7 +566,7 @@ namespace Xenon
 			if (!warningString.empty())
 				XENON_LOG_WARNING("glTF loading warning: {}", warningString);
 
-			return storage;
+			return geometry;
 		}
 
 		// Show the warning if there are any.
@@ -585,7 +585,7 @@ namespace Xenon
 			{
 				// Get the vertex information.
 				for (auto i = EnumToInt(Backend::InputElement::VertexPosition); i < EnumToInt(Backend::InputElement::VertexElementCount); i++)
-					vertexBufferSize += ResolvePrimitive(model, primitive, g_Attributes[i], static_cast<Backend::InputElement>(i), storage.m_VertexSpecification);
+					vertexBufferSize += ResolvePrimitive(model, primitive, g_Attributes[i], static_cast<Backend::InputElement>(i), geometry.m_VertexSpecification);
 
 				// Get the index buffer size.
 				if (primitive.indices >= 0)
@@ -598,10 +598,41 @@ namespace Xenon
 			}
 		}
 
+		// Setup the images.
+		for (const auto& texture : model.textures)
+		{
+			const auto& image = model.images[texture.source];
+			auto& [pImage, pImageView] = geometry.m_pImageAndImageViews.emplace_back();
+
+			// Setup the image.
+			Xenon::Backend::ImageSpecification imageSpecification = {};
+			imageSpecification.m_Width = image.width;
+			imageSpecification.m_Height = image.height;
+			imageSpecification.m_Format = Xenon::Backend::DataFormat::R8G8B8A8_SRGB;
+			pImage = instance.getFactory()->createImage(instance.getBackendDevice(), imageSpecification);
+
+			// Copy the image data to the image.
+			{
+				const auto copySize = pImage->getWidth() * pImage->getHeight() * image.component;
+				auto pStagingBuffer = instance.getFactory()->createBuffer(instance.getBackendDevice(), copySize, Xenon::Backend::BufferType::Staging);
+
+				pStagingBuffer->write(Xenon::ToBytes(image.image.data()), image.image.size());
+				pImage->copyFrom(pStagingBuffer.get());
+			}
+
+			// Setup image view.
+			pImageView = instance.getFactory()->createImageView(instance.getBackendDevice(), pImage.get(), {});
+		}
+
+		// Setup the samplers.
+		for (const auto& sampler : model.samplers)
+		{
+			geometry.m_pImageSamplers.emplace_back(instance.getFactory()->createImageSampler(instance.getBackendDevice(), GetImageSamplerSpecification(sampler)));
+		}
+
 		// Setup animations.
 		for (const auto& animation : model.animations)
 		{
-
 		}
 
 		// Load the mesh information.
@@ -612,25 +643,25 @@ namespace Xenon
 		auto indexItr = indices.begin();
 
 		// Load the default scene.
-		storage.m_Meshes.reserve(model.meshes.size());
+		geometry.m_Meshes.reserve(model.meshes.size());
 		auto synchronization = std::latch(workerSubmissions);
 
 		const auto& scene = model.scenes[model.defaultScene];
-		LoadNode(instance, model, model.nodes[scene.nodes.front()], storage, vertices, vertexItr, indices, indexItr, synchronization);
+		LoadNode(instance, model, model.nodes[scene.nodes.front()], geometry, vertices, vertexItr, indices, indexItr, synchronization);
 
 		// Wait till all the sub-meshes are loaded.
 		synchronization.wait();
 
 		// Load the vertex data and clear the buffer.
-		storage.m_pVertexBuffer = instance.getFactory()->createBuffer(instance.getBackendDevice(), vertexBufferSize, Backend::BufferType::Vertex);
-		storage.m_pVertexBuffer->write(ToBytes(vertices.data()), vertexBufferSize);
+		geometry.m_pVertexBuffer = instance.getFactory()->createBuffer(instance.getBackendDevice(), vertexBufferSize, Backend::BufferType::Vertex);
+		geometry.m_pVertexBuffer->write(ToBytes(vertices.data()), vertexBufferSize);
 		vertices.clear();
 
 		// Load the index data and clear the buffer.
-		storage.m_pIndexBuffer = instance.getFactory()->createBuffer(instance.getBackendDevice(), indexBufferSize, Backend::BufferType::Index);
-		storage.m_pIndexBuffer->write(ToBytes(indices.data()), indexBufferSize);
+		geometry.m_pIndexBuffer = instance.getFactory()->createBuffer(instance.getBackendDevice(), indexBufferSize, Backend::BufferType::Index);
+		geometry.m_pIndexBuffer->write(ToBytes(indices.data()), indexBufferSize);
 		indices.clear();
 
-		return storage;
+		return geometry;
 	}
 }
