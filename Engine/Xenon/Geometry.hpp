@@ -26,11 +26,28 @@ namespace Xenon
 	};
 
 	/**
+	 * Texture structure.
+	 * This structure contains information about a single texture and how to sample it.
+	 */
+	struct Texture final
+	{
+		Backend::Image* m_pImage = nullptr;
+		Backend::ImageView* m_pImageView = nullptr;
+		Backend::ImageSampler* m_pImageSampler = nullptr;
+	};
+
+	/**
 	 * Sub-mesh structure.
 	 * Sub-meshes are the building blocks of a mesh.
 	 */
 	struct SubMesh final
 	{
+		Texture m_BaseColorTexture = {};
+		Texture m_RoughnessTexture = {};
+		Texture m_NormalTexture = {};
+		Texture m_OcclusionTexture = {};
+		Texture m_EmissiveTexture = {};
+
 		MaterialIdentifier m_MaterialIdentifier;
 
 		uint64_t m_VertexOffset = 0;
@@ -62,6 +79,9 @@ namespace Xenon
 	 */
 	class Geometry final
 	{
+		using ImageAndImageViewContainer = std::vector<std::pair<std::unique_ptr<Backend::Image>, std::unique_ptr<Backend::ImageView>>>;
+		using ImageSamplerContainer = std::vector<std::unique_ptr<Backend::ImageSampler>>;
+
 	public:
 		/**
 		 * Default constructor.
@@ -126,12 +146,26 @@ namespace Xenon
 		 */
 		[[nodiscard]] const std::vector<Mesh>& getMeshes() const { return m_Meshes; }
 
+		/**
+		 * Get the image and it's image view objects.
+		 *
+		 * @return The image and image view container reference.
+		 */
+		[[nodiscard]] const ImageAndImageViewContainer& getImageAndImageViews() const noexcept { return m_pImageAndImageViews; }
+
+		/**
+		 * Get the stored image samplers.
+		 * 
+		 * @return The image samplers.
+		 */
+		[[nodiscard]] const ImageSamplerContainer& getImageSamplers() const noexcept { return m_pImageSamplers; }
+
 	private:
 		std::unique_ptr<Backend::Buffer> m_pIndexBuffer = nullptr;
 		std::unique_ptr<Backend::Buffer> m_pVertexBuffer = nullptr;
 
-		std::vector<std::pair<std::unique_ptr<Backend::Image>, std::unique_ptr<Backend::ImageView>>> m_pImageAndImageViews;
-		std::vector<std::unique_ptr<Backend::ImageSampler>> m_pImageSamplers;
+		ImageAndImageViewContainer m_pImageAndImageViews;
+		ImageSamplerContainer m_pImageSamplers;
 
 		std::vector<Mesh> m_Meshes;
 

@@ -116,7 +116,8 @@ void Studio::run()
 	const auto loaderFunction = [this, &pPipeline, &pRenderTarget]
 	{
 		const auto grouping = m_Scene.createGroup();
-		m_Scene.createMeshStorage(grouping, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf").wait();
+		const auto& geometry = m_Scene.create<Xenon::Geometry>(grouping, Xenon::Geometry::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"));
+
 		pRenderTarget->addDrawData(Xenon::Geometry::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"), pPipeline.get());
 	};
 
@@ -132,7 +133,8 @@ void Studio::run()
 	const auto loaderFunction = [this, &pPipeline, &pRenderTarget]
 	{
 		const auto grouping = m_Scene.createGroup();
-		m_Scene.createMeshStorage(grouping, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf").wait();
+		const auto& geometry = m_Scene.create<Xenon::Geometry>(grouping, Xenon::Geometry::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"));
+
 		pRenderTarget->addDrawData(Xenon::Geometry::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"), pPipeline.get());
 	};
 

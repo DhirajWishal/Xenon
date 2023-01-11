@@ -86,7 +86,7 @@ namespace Xenon
 		 * @return The stored object reference.
 		 */
 		template<class Object>
-		[[nodiscard]] Object& get(Group group)
+		[[nodiscard]] decltype(auto) get(Group group)
 		{
 			return m_Registry.get<Object>(group);
 		}
@@ -99,7 +99,7 @@ namespace Xenon
 		 * @return The stored object reference.
 		 */
 		template<class Object>
-		[[nodiscard]] const Object& get(Group group) const
+		[[nodiscard]] Object& get(Group group) const
 		{
 			return m_Registry.get<Object>(group);
 		}
@@ -109,6 +109,20 @@ namespace Xenon
 		 * Make sure this method is called before rendering!
 		 */
 		void update();
+
+		/**
+		 * Get the object registry.
+		 *
+		 * @return The registry reference.
+		 */
+		[[nodiscard]] entt::registry& getRegistry() noexcept { return m_Registry; }
+
+		/**
+		 * Get the object registry.
+		 *
+		 * @return The registry reference.
+		 */
+		[[nodiscard]] const entt::registry& getRegistry() const noexcept { return m_Registry; }
 
 		/**
 		 * Get the instance.

@@ -41,6 +41,12 @@ constexpr const char* g_Attributes[] = {
 	"WEIGHTS_0",
 };
 
+/**
+ * Texture info type concept.
+ */
+template<class Type>
+concept TextureInfo = (std::same_as<Type, tinygltf::TextureInfo> || std::same_as<Type, tinygltf::NormalTextureInfo> || std::same_as<Type, tinygltf::OcclusionTextureInfo>);
+
 namespace /* anonymous */
 {
 	/**
@@ -418,6 +424,34 @@ namespace /* anonymous */
 	}
 
 	/**
+	 * Create a new texture.
+	 *
+	 * @tparam Type The texture info type.
+	 * @param geometry The geometry to get the images from.
+	 * @param model The model to get the images from.
+	 * @param info The texture info structure.
+	 * @return The created texture structure.
+	 */
+	template<TextureInfo Type>
+	[[nodiscard]] Xenon::Texture CreateTexture(const Xenon::Geometry& geometry, const tinygltf::Model& model, const Type& info)
+	{
+		if (info.index < 0)
+			return {};
+
+		const auto& texture = model.textures[info.index];
+
+		const auto& [pImage, pView] = geometry.getImageAndImageViews()[texture.source];
+		const auto& pSampler = geometry.getImageSamplers()[texture.sampler];
+
+		Xenon::Texture xTexture = {};
+		xTexture.m_pImage = pImage.get();
+		xTexture.m_pImageView = pView.get();
+		xTexture.m_pImageSampler = pSampler.get();
+
+		return xTexture;
+	}
+
+	/**
 	 * Load a node from the model.
 	 *
 	 * @param instance The instance reference.
@@ -534,6 +568,13 @@ namespace /* anonymous */
 			{
 				subMesh.m_MaterialIdentifier = instance.getDefaultMaterial();
 			}
+
+			// Setup the textures.
+			subMesh.m_BaseColorTexture = CreateTexture(geometry, model, material.pbrMetallicRoughness.baseColorTexture);
+			subMesh.m_RoughnessTexture = CreateTexture(geometry, model, material.pbrMetallicRoughness.metallicRoughnessTexture);
+			subMesh.m_NormalTexture = CreateTexture(geometry, model, material.normalTexture);
+			subMesh.m_OcclusionTexture = CreateTexture(geometry, model, material.occlusionTexture);
+			subMesh.m_EmissiveTexture = CreateTexture(geometry, model, material.emissiveTexture);
 		}
 
 		// Load the children.

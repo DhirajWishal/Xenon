@@ -124,6 +124,10 @@ namespace Xenon
 	{
 		OPTICK_EVENT();
 
+		// Return without doing anything is a scene is not attached.
+		if (m_pScene == nullptr)
+			return;
+
 		// Reset the counters.
 		m_DrawCount = 0;
 		m_Synchronization.reset(m_SubMeshCount);
@@ -139,6 +143,37 @@ namespace Xenon
 			// Set the scissor and view port.
 			pCommandRecorder->setViewport(0.0f, 0.0f, static_cast<float>(m_Renderer.getCamera()->getWidth()), static_cast<float>(m_Renderer.getCamera()->getHeight()), 0.0f, 1.0f);
 			pCommandRecorder->setScissor(0, 0, m_Renderer.getCamera()->getWidth(), m_Renderer.getCamera()->getHeight());
+		}
+
+		// Issue the binding calls.
+		uint64_t index = 0;
+		for (const auto& group : m_pScene->getRegistry().view<Geometry>())
+		{
+			OPTICK_EVENT_DYNAMIC("Binding Geometry");
+			auto& geometry = m_pScene->getRegistry().get<Geometry>(group);
+
+			for (const auto& mesh : geometry.getMeshes())
+			{
+				OPTICK_EVENT_DYNAMIC("Binding Mesh");
+
+				for (const auto& subMesh : mesh.m_SubMeshes)
+				{
+					OPTICK_EVENT_DYNAMIC("Binding Draw Entry (sub-mesh)");
+
+					DrawEntry entry = {};
+					entry.m_SubMesh = subMesh;
+					entry.m_VertexSpecification = geometry.getVertexSpecification();
+					// entry.m_pPipeline = pPipeline;
+					entry.m_pVertexBuffer = geometry.getVertexBuffer();
+					entry.m_pIndexBuffer = geometry.getIndexBuffer();
+					entry.m_pUserDefinedDescriptor = nullptr;
+					// entry.m_pMaterialDescriptor = subMesh.m_MaterialIdentifier.m_pMaterial->createDescriptor(pPipeline);
+					// entry.m_pSceneDescriptor = drawData.m_pSceneDescriptor.get();
+					entry.m_QueryIndex = index++;
+
+					GetJobSystem().insert([this, &entry] { bindingCall(entry); });
+				}
+			}
 		}
 
 		// Issue the binding calls.
@@ -209,7 +244,7 @@ namespace Xenon
 
 		// Notify the parent that we're done.
 		m_Synchronization.arrive();
-	}
+		}
 
 	void DefaultRasterizingLayer::occlusionPass(const DrawEntry& entry) const
 	{
@@ -253,4 +288,4 @@ namespace Xenon
 			m_DrawCount++;
 		}
 	}
-}
+	}
