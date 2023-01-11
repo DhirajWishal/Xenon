@@ -494,13 +494,15 @@ namespace /* anonymous */
 			if (subMesh.m_VertexOffset > 0)
 				subMesh.m_VertexOffset /= geometry.getVertexSpecification().getSize();
 
+			// Setup the sub-mesh loader. This is done so VS won't fuck up the formatting smh...
+			const auto subMeshLoader = [&subMesh, &model, &geometry, &gltfPrimitive, vertexItr, indexItr, &synchronization]
+			{
+				LoadSubMesh(subMesh, geometry.getVertexSpecification(), model, gltfPrimitive, vertexItr, indexItr);
+				synchronization.count_down();
+			};
+
 			// Insert the job.
-			Xenon::XObject::GetJobSystem().insert([&subMesh, &model, &geometry, &gltfPrimitive, vertexItr, indexItr, &synchronization]
-				{
-					LoadSubMesh(subMesh, geometry.getVertexSpecification(), model, gltfPrimitive, vertexItr, indexItr);
-			synchronization.count_down();
-				}
-			);
+			Xenon::XObject::GetJobSystem().insert(subMeshLoader);
 
 			// Get the next available vertex begin position.
 			for (auto i = Xenon::EnumToInt(Xenon::Backend::InputElement::VertexPosition); i < Xenon::EnumToInt(Xenon::Backend::InputElement::VertexElementCount); i++)

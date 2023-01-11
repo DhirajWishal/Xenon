@@ -38,8 +38,6 @@ set(
 	"Components.hpp"
 	"Scene.cpp"
 	"Scene.hpp"
-	"GeometryStore.cpp"
-	"GeometryStore.hpp"
 
 	"Layers/ClearScreenLayer.cpp"
 	"Layers/ClearScreenLayer.hpp"
