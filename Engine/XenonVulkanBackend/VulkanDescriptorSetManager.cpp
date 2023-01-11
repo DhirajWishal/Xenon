@@ -3,6 +3,7 @@
 
 #include "VulkanDescriptorSetManager.hpp"
 #include "VulkanMacros.hpp"
+#include "VulkanDescriptor.hpp"
 
 #include <optick.h>
 
@@ -39,56 +40,64 @@ namespace Xenon
 			: DescriptorManager(pDevice)
 			, VulkanDeviceBoundObject(pDevice)
 		{
-			VkDescriptorSetLayoutCreateInfo dummyLayoutCreateInfo = {};
-			dummyLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-			dummyLayoutCreateInfo.pNext = nullptr;
-			dummyLayoutCreateInfo.flags = 0;
-			dummyLayoutCreateInfo.bindingCount = 0;
-			dummyLayoutCreateInfo.pBindings = nullptr;
+		}
 
-			XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkCreateDescriptorSetLayout(m_pDevice->getLogicalDevice(), &dummyLayoutCreateInfo, nullptr, &m_DummyDescriptorSetLayout), "Failed to create the dummy descriptor set layout!");
+		VulkanDescriptorSetManager::VulkanDescriptorSetManager(VulkanDevice* pDevice, DescriptorType type, const std::vector<DescriptorBindingInfo>& bindingInfo)
+			: DescriptorManager(pDevice, type, bindingInfo)
+			, VulkanDeviceBoundObject(pDevice)
+		{
+			OPTICK_EVENT();
 
-			VkDescriptorPoolCreateInfo dummyPoolCreateInfo = {};
-			dummyPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-			dummyPoolCreateInfo.pNext = nullptr;
-			dummyPoolCreateInfo.flags = 0;
-			dummyPoolCreateInfo.maxSets = 1;
-			dummyPoolCreateInfo.poolSizeCount = 0;
-			dummyPoolCreateInfo.pPoolSizes = nullptr;
+			// Get the basic information from the binding info.
+			std::vector<VkDescriptorSetLayoutBinding> bindings;
+			std::vector<VkDescriptorPoolSize> poolSizes;
+			bindings.reserve(bindingInfo.size());
+			poolSizes.reserve(bindingInfo.size());
 
-			XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkCreateDescriptorPool(m_pDevice->getLogicalDevice(), &dummyPoolCreateInfo, nullptr, &m_DummyDescriptorPool), "Failed to create the dummy descriptor pool!");
+			for (uint32_t index = 0; index < bindingInfo.size(); index++)
+			{
+				const auto& binding = bindingInfo[index];
 
-			VkDescriptorSetAllocateInfo allocateInfo = {};
-			allocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-			allocateInfo.pNext = nullptr;
-			allocateInfo.descriptorPool = m_DummyDescriptorPool;
-			allocateInfo.descriptorSetCount = 1;
-			allocateInfo.pSetLayouts = &m_DummyDescriptorSetLayout;
+				auto& vkBinding = bindings.emplace_back();
+				vkBinding.binding = index;
+				vkBinding.descriptorCount = 1;
+				vkBinding.descriptorType = VulkanDevice::ConvertResourceType(binding.m_Type);
+				vkBinding.pImmutableSamplers = nullptr;
+				vkBinding.stageFlags = GetStageFlags(binding.m_ApplicableShaders);
 
-			XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkAllocateDescriptorSets(m_pDevice->getLogicalDevice(), &allocateInfo, &m_DummyDescriptorSet), "Failed to allocate the dummy descriptor set!");
+				auto& vkPoolSize = poolSizes.emplace_back();
+				vkPoolSize.descriptorCount = 1;
+				vkPoolSize.type = vkBinding.descriptorType;
+			}
+
+			// Create the descriptor set layout.
+			VkDescriptorSetLayoutCreateInfo layoutCreateInfo = {};
+			layoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+			layoutCreateInfo.pNext = nullptr;
+			layoutCreateInfo.flags = 0;
+			layoutCreateInfo.bindingCount = static_cast<uint32_t>(bindings.size());
+			layoutCreateInfo.pBindings = bindings.data();
+
+			XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkCreateDescriptorSetLayout(m_pDevice->getLogicalDevice(), &layoutCreateInfo, nullptr, &m_DescriptorSetLayout), "Failed to create the descriptor set layout!");
 		}
 
 		VulkanDescriptorSetManager::~VulkanDescriptorSetManager()
 		{
-			for (const auto& [hash, storage] : m_DescriptorSetStorages)
-			{
-				for (const auto& [pool, count] : storage.m_Pools)
-					m_pDevice->getDeviceTable().vkDestroyDescriptorPool(m_pDevice->getLogicalDevice(), pool, nullptr);
+			for (const auto& [pool, descriptorCount] : m_Pools)
+				m_pDevice->getDeviceTable().vkDestroyDescriptorPool(m_pDevice->getLogicalDevice(), pool, nullptr);
 
-				m_pDevice->getDeviceTable().vkDestroyDescriptorSetLayout(m_pDevice->getLogicalDevice(), storage.m_Layout, nullptr);
-			}
+			m_pDevice->getDeviceTable().vkDestroyDescriptorSetLayout(m_pDevice->getLogicalDevice(), m_DescriptorSetLayout, nullptr);
+		}
 
-			m_pDevice->getDeviceTable().vkDestroyDescriptorPool(m_pDevice->getLogicalDevice(), m_DummyDescriptorPool, nullptr);
-			m_pDevice->getDeviceTable().vkDestroyDescriptorSetLayout(m_pDevice->getLogicalDevice(), m_DummyDescriptorSetLayout, nullptr);
+		std::unique_ptr<Xenon::Backend::Descriptor> VulkanDescriptorSetManager::create()
+		{
+			OPTICK_EVENT();
+			return std::make_unique<VulkanDescriptor>(m_pDevice, m_BindingInfo, m_Type, this);
 		}
 
 		VkDescriptorSetLayout VulkanDescriptorSetManager::getDescriptorSetLayout(const std::vector<DescriptorBindingInfo>& bindingInfo)
 		{
 			OPTICK_EVENT();
-
-			// If the binding info is empty, return the dummy descriptor set layout.
-			if (bindingInfo.empty())
-				return m_DummyDescriptorSetLayout;
 
 			const auto bindingHash = GenerateHash(ToBytes(bindingInfo.data()), bindingInfo.size() * sizeof(DescriptorBindingInfo));
 
@@ -153,10 +162,6 @@ namespace Xenon
 		std::pair<VkDescriptorPool, VkDescriptorSet> VulkanDescriptorSetManager::createDescriptorSet(const std::vector<DescriptorBindingInfo>& bindingInfo)
 		{
 			OPTICK_EVENT();
-
-			// If the binding info is empty, return the dummy descriptor set layout.
-			if (bindingInfo.empty())
-				return std::make_pair(m_DummyDescriptorPool, m_DummyDescriptorSet);
 
 			const auto bindingHash = GenerateHash(ToBytes(bindingInfo.data()), bindingInfo.size() * sizeof(DescriptorBindingInfo));
 
@@ -271,10 +276,6 @@ namespace Xenon
 		void VulkanDescriptorSetManager::freeDescriptorSet(VkDescriptorPool pool, VkDescriptorSet descriptorSet, const std::vector<DescriptorBindingInfo>& bindingInfo)
 		{
 			OPTICK_EVENT();
-
-			// Skip if we're talking about the dummy descriptor set.
-			if (descriptorSet == m_DummyDescriptorSet)
-				return;
 
 			const auto bindingHash = GenerateHash(ToBytes(bindingInfo.data()), bindingInfo.size() * sizeof(DescriptorBindingInfo));
 			auto& storage = m_DescriptorSetStorages[bindingHash];

@@ -183,7 +183,7 @@ namespace Xenon
 		std::unique_ptr<Xenon::Backend::Descriptor> VulkanRayTracingPipeline::createDescriptor(DescriptorType type)
 		{
 			OPTICK_EVENT();
-			return std::make_unique<VulkanDescriptor>(m_pDevice, m_BindingMap[type], type);
+			return nullptr;
 		}
 
 		std::unique_ptr<ShaderBindingTable> VulkanRayTracingPipeline::createShaderBindingTable(const std::vector<BindingGroup>& bindingGroups)

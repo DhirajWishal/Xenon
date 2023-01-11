@@ -14,12 +14,12 @@ namespace Xenon
 {
 	namespace Backend
 	{
-		VulkanDescriptor::VulkanDescriptor(VulkanDevice* pDevice, const std::vector<DescriptorBindingInfo>& bindingInfo, DescriptorType type)
+		VulkanDescriptor::VulkanDescriptor(VulkanDevice* pDevice, const std::vector<DescriptorBindingInfo>& bindingInfo, DescriptorType type, VulkanDescriptorSetManager* pDescriptorSetManager)
 			: Descriptor(pDevice, bindingInfo, type)
 			, VulkanDeviceBoundObject(pDevice)
 		{
 			// Create a new descriptor set.
-			const auto [pool, set] = pDevice->getDescriptorSetManager()->createDescriptorSet(bindingInfo);
+			const auto [pool, set] = pDescriptorSetManager->createDescriptorSet(bindingInfo);
 
 			m_Pool = pool;
 			m_DescriptorSet = set;
@@ -72,6 +72,7 @@ namespace Xenon
 			writeDescriptorSet.pBufferInfo = nullptr;
 			writeDescriptorSet.pTexelBufferView = nullptr;
 
+#ifdef XENON_DEBUG
 			if (writeDescriptorSet.descriptorType == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
 			{
 				constexpr std::array<VkImageLayout, 9> allowedLayouts = {
@@ -162,6 +163,8 @@ namespace Xenon
 					// Inform the command recorder to change the image layout to the previous one.
 				}
 			}
+
+#endif // XENON_DEBUG
 
 			m_pDevice->getDeviceTable().vkUpdateDescriptorSets(m_pDevice->getLogicalDevice(), 1, &writeDescriptorSet, 0, nullptr);
 		}

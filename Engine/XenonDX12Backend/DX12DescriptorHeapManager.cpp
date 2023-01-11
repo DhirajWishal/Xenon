@@ -3,6 +3,7 @@
 
 #include "DX12DescriptorHeapManager.hpp"
 #include "DX12Macros.hpp"
+#include "DX12Descriptor.hpp"
 
 #include <optick.h>
 
@@ -69,6 +70,35 @@ namespace Xenon
 		{
 			m_CbvSrvUavHeapIncrementSize = m_pDevice->getDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 			m_SamplerHeapIncrementSize = m_pDevice->getDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
+		}
+
+		DX12DescriptorHeapManager::DX12DescriptorHeapManager(DX12Device* pDevice, DescriptorType type, const std::vector<DescriptorBindingInfo>& bindingInfo)
+			: DescriptorManager(pDevice, type, bindingInfo)
+			, DX12DeviceBoundObject(pDevice)
+		{
+			m_CbvSrvUavHeapIncrementSize = m_pDevice->getDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+			m_SamplerHeapIncrementSize = m_pDevice->getDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
+
+			for (const auto& info : bindingInfo)
+			{
+				m_CbvSrvUavCount++;
+				m_GroupSizes[type].first++;
+				m_SamplerIndex.emplace_back(m_SamplerCount);
+
+				if (info.m_Type == ResourceType::Sampler || info.m_Type == ResourceType::CombinedImageSampler)
+				{
+					m_SamplerCount++;
+					m_GroupSizes[type].second++;
+				}
+
+				m_Ranges.emplace_back().Init(GetDescriptorRangeType(info.m_Type), 1, 0);
+			}
+		}
+
+		std::unique_ptr<Xenon::Backend::Descriptor> DX12DescriptorHeapManager::create()
+		{
+			OPTICK_EVENT();
+			return std::make_unique<DX12Descriptor>(m_pDevice, m_BindingInfo, m_Type, this);
 		}
 
 		void DX12DescriptorHeapManager::setupDescriptorHeapManager(std::unordered_map<DescriptorType, std::vector<DescriptorBindingInfo>>&& bindingMap)

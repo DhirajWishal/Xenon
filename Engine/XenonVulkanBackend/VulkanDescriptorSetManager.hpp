@@ -37,9 +37,25 @@ namespace Xenon
 			explicit VulkanDescriptorSetManager(VulkanDevice* pDevice);
 
 			/**
+			 * Explicit constructor.
+			 *
+			 * @param pDevice The device pointer.
+			 * @param type The descriptor type.
+			 * @param bindingInfo The descriptor's binding info.
+			 */
+			explicit VulkanDescriptorSetManager(VulkanDevice* pDevice, DescriptorType type, const std::vector<DescriptorBindingInfo>& bindingInfo);
+
+			/**
 			 * Destructor.
 			 */
-			virtual ~VulkanDescriptorSetManager() override;
+			~VulkanDescriptorSetManager() override;
+
+			/**
+			 * Create a new descriptor.
+			 *
+			 * @return The created descriptor.
+			 */
+			[[nodiscard]] std::unique_ptr<Descriptor> create() override;
 
 			/**
 			 * Get the descriptor set layout.
@@ -71,10 +87,9 @@ namespace Xenon
 
 		private:
 			std::unordered_map<uint64_t, VulkanDescriptorStorage> m_DescriptorSetStorages;
+			std::vector<std::pair<VkDescriptorPool, uint32_t>> m_Pools;
 
-			VkDescriptorSetLayout m_DummyDescriptorSetLayout = VK_NULL_HANDLE;
-			VkDescriptorPool m_DummyDescriptorPool = VK_NULL_HANDLE;
-			VkDescriptorSet m_DummyDescriptorSet = VK_NULL_HANDLE;
+			VkDescriptorSetLayout m_DescriptorSetLayout = VK_NULL_HANDLE;
 		};
 	}
 }

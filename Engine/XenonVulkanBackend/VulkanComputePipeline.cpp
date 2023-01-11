@@ -82,8 +82,7 @@ namespace Xenon
 		std::unique_ptr<Xenon::Backend::Descriptor> VulkanComputePipeline::createDescriptor(DescriptorType type)
 		{
 			OPTICK_EVENT();
-
-			return std::make_unique<VulkanDescriptor>(m_pDevice, m_BindingInfos, DescriptorType::UserDefined);
+			return nullptr;
 		}
 
 		void VulkanComputePipeline::createPipelineLayout(std::vector<VkPushConstantRange>&& pushConstants)

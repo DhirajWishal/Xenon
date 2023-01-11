@@ -5,6 +5,7 @@
 
 #include "../XenonBackend/ComputePipeline.hpp"
 
+#include "DX12DeviceBoundObject.hpp"
 #include "DX12DescriptorHeapManager.hpp"
 
 namespace Xenon
@@ -14,7 +15,7 @@ namespace Xenon
 		/**
 		 * DirectX 12 compute pipeline class.
 		 */
-		class DX12ComputePipeline final : public ComputePipeline, public DX12DescriptorHeapManager
+		class DX12ComputePipeline final : public ComputePipeline, public DX12DeviceBoundObject
 		{
 		public:
 			/**

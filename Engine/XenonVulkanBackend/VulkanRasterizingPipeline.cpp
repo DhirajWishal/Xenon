@@ -874,7 +874,7 @@ namespace Xenon
 		std::unique_ptr<Xenon::Backend::Descriptor> VulkanRasterizingPipeline::createDescriptor(DescriptorType type)
 		{
 			OPTICK_EVENT();
-			return std::make_unique<VulkanDescriptor>(m_pDevice, m_BindingMap[type], type);
+			return nullptr;
 		}
 
 		const VulkanRasterizingPipeline::PipelineStorage& VulkanRasterizingPipeline::getPipeline(const VertexSpecification& vertexSpecification)

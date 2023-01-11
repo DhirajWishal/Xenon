@@ -56,7 +56,7 @@ namespace Xenon
 	{
 		DX12ComputePipeline::DX12ComputePipeline(DX12Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const Shader& computeShader)
 			: ComputePipeline(pDevice, std::move(pCacheHandler), computeShader)
-			, DX12DescriptorHeapManager(pDevice)
+			, DX12DeviceBoundObject(pDevice)
 		{
 			// Setup the shader information.
 			std::vector<CD3DX12_DESCRIPTOR_RANGE1> descriptorRanges;
@@ -66,7 +66,7 @@ namespace Xenon
 			m_PipelineHash = GenerateHash(ToBytes(computeShader.getDXIL().getBinary().data()), computeShader.getDXIL().getBinary().size() * sizeof(uint64_t));
 
 			// Setup the descriptor heap manager.
-			setupDescriptorHeapManager({ { DescriptorType::UserDefined, m_BindingInfos } });
+			// setupDescriptorHeapManager({ { DescriptorType::UserDefined, m_BindingInfos } });
 
 			// Create the root signature.
 			createRootSignature(std::move(descriptorRanges));
@@ -79,7 +79,7 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
-			return std::make_unique<DX12Descriptor>(m_pDevice, m_BindingInfos, DescriptorType::UserDefined, this);
+			return nullptr;
 		}
 
 		void DX12ComputePipeline::createRootSignature(std::vector<CD3DX12_DESCRIPTOR_RANGE1>&& descriptorRanges)

@@ -25,7 +25,7 @@ namespace Xenon
 		 * DirectX 12 descriptor heap manager class.
 		 * This object is used to manage descriptor heaps and create new heaps if needed.
 		 */
-		class DX12DescriptorHeapManager : public DescriptorManager, public DX12DeviceBoundObject
+		class DX12DescriptorHeapManager final : public DescriptorManager, public DX12DeviceBoundObject
 		{
 		public:
 			/**
@@ -34,6 +34,22 @@ namespace Xenon
 			 * @param pDevice The device pointer.
 			 */
 			explicit DX12DescriptorHeapManager(DX12Device* pDevice);
+
+			/**
+			 * Explicit constructor.
+			 *
+			 * @param pDevice The device pointer.
+			 * @param type The descriptor type.
+			 * @param bindingInfo The descriptor's binding info.
+			 */
+			explicit DX12DescriptorHeapManager(DX12Device* pDevice, DescriptorType type, const std::vector<DescriptorBindingInfo>& bindingInfo);
+
+			/**
+			 * Create a new descriptor.
+			 *
+			 * @return The created descriptor.
+			 */
+			[[nodiscard]] std::unique_ptr<Descriptor> create() override;
 
 			/**
 			 * Setup the descriptor heap(s).

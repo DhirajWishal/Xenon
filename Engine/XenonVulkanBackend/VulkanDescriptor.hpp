@@ -11,6 +11,8 @@ namespace Xenon
 {
 	namespace Backend
 	{
+		class VulkanDescriptorSetManager;
+
 		/**
 		 * Vulkan descriptor class.
 		 */
@@ -23,8 +25,9 @@ namespace Xenon
 			 * @param pDevice The device pointer.
 			 * @param bindingInfo The descriptor's binding information. Make sure that the binding information are in the binding order (the first one is binging 0, second is 1 and so on).
 			 * @param type The descriptor type.
+			 * @param pDescriptorSetManager The descriptor set manager pointer.
 			 */
-			explicit VulkanDescriptor(VulkanDevice* pDevice, const std::vector<DescriptorBindingInfo>& bindingInfo, DescriptorType type);
+			explicit VulkanDescriptor(VulkanDevice* pDevice, const std::vector<DescriptorBindingInfo>& bindingInfo, DescriptorType type, VulkanDescriptorSetManager* pDescriptorSetManager);
 
 			/**
 			 * Destructor.
