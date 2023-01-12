@@ -10,7 +10,6 @@ namespace Xenon
 {
 	namespace Backend
 	{
-
 		ShaderSource::ShaderSource(const BinaryType& binary, const std::string& entryPoint /*= "main"*/)
 			: m_Binary(binary)
 			, m_EntryPoint(entryPoint)

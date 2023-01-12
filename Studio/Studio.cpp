@@ -115,16 +115,17 @@ void Studio::run()
 	auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRayTracingLayer>(m_Scene.getCamera());
 	pRenderTarget->setScene(m_Scene);
 
-	auto pPipeline = m_Instance.getFactory()->createRayTracingPipeline(m_Instance.getBackendDevice(), std::make_unique<CacheHandler>(), getRayTracingPipelineSpecification());
+	materialBuidler.setRayTracingPipelineSpecification(getRayTracingPipelineSpecification());
+	auto pPipeline = m_Instance.getFactory()->createRayTracingPipeline(m_Instance.getBackendDevice(), std::make_unique<CacheHandler>(), materialBuidler.getRayTracingPipelineSpecification());
 
 	const auto loaderFunction = [this, &pPipeline, &pRenderTarget, &materialBuidler]
 	{
 		const auto grouping = m_Scene.createGroup();
 		const auto& geometry = m_Scene.create<Xenon::Geometry>(grouping, Xenon::Geometry::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"));
-		const auto& material = m_Scene.create<Xenon::Material>(grouping, materialBuidler.getMaterial());
+		const auto& material = m_Scene.create<Xenon::Material>(grouping, materialBuidler);
 
 		pRenderTarget->addDrawData(Xenon::Geometry::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"), pPipeline.get());
-};
+	};
 
 #else 
 	auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRasterizingLayer>(m_Scene.getCamera());
@@ -133,13 +134,14 @@ void Studio::run()
 	Xenon::Backend::RasterizingPipelineSpecification specification;
 	specification.m_VertexShader = Xenon::Generated::CreateShaderShader_vert();
 	specification.m_FragmentShader = Xenon::Generated::CreateShaderShader_frag();
-	auto pPipeline = m_Instance.getFactory()->createRasterizingPipeline(m_Instance.getBackendDevice(), std::make_unique<CacheHandler>(), pRenderTarget->getRasterizer(), specification);
+	materialBuidler.setRasterizingPipelineSpecification(specification);
+	auto pPipeline = m_Instance.getFactory()->createRasterizingPipeline(m_Instance.getBackendDevice(), std::make_unique<CacheHandler>(), pRenderTarget->getRasterizer(), materialBuidler.getRasterizingPipelineSpecification());
 
 	const auto loaderFunction = [this, &pPipeline, &pRenderTarget, &materialBuidler]
 	{
 		const auto grouping = m_Scene.createGroup();
 		const auto& geometry = m_Scene.create<Xenon::Geometry>(grouping, Xenon::Geometry::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"));
-		const auto& material = m_Scene.create<Xenon::Material>(grouping, materialBuidler.getMaterial());
+		const auto& material = m_Scene.create<Xenon::Material>(grouping, materialBuidler);
 
 		pRenderTarget->addDrawData(Xenon::Geometry::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"), pPipeline.get());
 	};

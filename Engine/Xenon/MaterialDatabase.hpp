@@ -4,6 +4,7 @@
 #pragma once
 
 #include "MaterialBlob.hpp"
+#include "Material.hpp"
 
 #include <list>
 
@@ -39,6 +40,44 @@ namespace Xenon
 		 * Default constructor.
 		 */
 		MaterialDatabase() = default;
+
+		/**
+		 * Store a material specification in the instance class.
+		 * This enables us to store materials for a given database and reduce memory consumption.
+		 *
+		 * @param specification The material specification to store.
+		 * @return The material.
+		 */
+		[[nodiscard]] Material storeSpecification(const MaterialSpecification& specification)
+		{
+			const auto material = static_cast<Material>(GenerateHashFor(specification));
+			if (!m_MaterialSpecifications.contains(material))
+				m_MaterialSpecifications[material] = specification;
+
+			return material;
+		}
+
+		/**
+		 * Get the material specification using it's ID.
+		 *
+		 * @param material The material.
+		 * @return The material specification reference.
+		 */
+		[[nodiscard]] MaterialSpecification& getSpecification(Material material)
+		{
+			return m_MaterialSpecifications.at(material);
+		}
+
+		/**
+		 * Get the material specification using it's ID.
+		 *
+		 * @param material The material.
+		 * @return The material specification reference.
+		 */
+		[[nodiscard]] const MaterialSpecification& getSpecification(Material material) const
+		{
+			return m_MaterialSpecifications.at(material);
+		}
 
 		/**
 		 * Get a material entry from the database.
@@ -152,5 +191,6 @@ namespace Xenon
 
 	private:
 		std::unordered_map<std::type_index, std::unique_ptr<IDatabaseEntry>> m_pDatabaseEntries;
+		std::unordered_map<Material, MaterialSpecification> m_MaterialSpecifications;
 	};
 }

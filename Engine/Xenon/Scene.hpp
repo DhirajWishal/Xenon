@@ -79,6 +79,21 @@ namespace Xenon
 		}
 
 		/**
+		 * Create a new material object.
+		 * This is a specialization function since materials are handles a little differently.
+		 *
+		 * @param group The object's grouping.
+		 * @param builder The material builder class.
+		 * @return The created material reference.
+		 */
+		template<>
+		[[nodiscard]] Material& create<Material>(Group group, MaterialBuilder& builder)
+		{
+			const auto lock = std::scoped_lock(m_Mutex);
+			return m_Registry.emplace<Material>(group, m_Instance.getMaterialDatabase().storeSpecification(static_cast<const MaterialSpecification&>(builder)));
+		}
+
+		/**
 		 * Get a stored object from the registry.
 		 *
 		 * @tparam Object The object type.
@@ -86,7 +101,7 @@ namespace Xenon
 		 * @return The stored object reference.
 		 */
 		template<class Object>
-		[[nodiscard]] decltype(auto) get(Group group)
+		[[nodiscard]] Object& get(Group group)
 		{
 			return m_Registry.get<Object>(group);
 		}
@@ -99,7 +114,7 @@ namespace Xenon
 		 * @return The stored object reference.
 		 */
 		template<class Object>
-		[[nodiscard]] Object& get(Group group) const
+		[[nodiscard]] const Object& get(Group group) const
 		{
 			return m_Registry.get<Object>(group);
 		}

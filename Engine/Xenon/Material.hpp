@@ -52,15 +52,22 @@ namespace Xenon
 	};
 
 	/**
-	 * Material structure.
+	 * Material specification structure.
+	 * This contains all the necessary information about a material.
 	 */
-	struct Material final
+	struct MaterialSpecification final
 	{
 		Backend::RasterizingPipelineSpecification m_RasterizingPipelineSpecification;
 		Backend::RayTracingPipelineSpecification m_RayTracingPipelineSpecification;
 
 		std::vector<MaterialProperty> m_Properties;
 	};
+
+	/**
+	 * Material enum.
+	 * This is what the user gets to play around with.
+	 */
+	enum class Material : uint64_t {};
 
 	/**
 	 * Material builder class.
@@ -81,7 +88,7 @@ namespace Xenon
 		 * @param specification The specification.
 		 * @return The material builder used to chain.
 		 */
-		MaterialBuilder& setRasterizingPipelineSpecification(const Backend::RasterizingPipelineSpecification& specification) { m_Material.m_RasterizingPipelineSpecification = specification; return *this; }
+		MaterialBuilder& setRasterizingPipelineSpecification(const Backend::RasterizingPipelineSpecification& specification);
 
 		/**
 		 * Set the ray tracing pipeline specification for the material.
@@ -89,7 +96,7 @@ namespace Xenon
 		 * @param specification The specification.
 		 * @return The material builder used to chain.
 		 */
-		MaterialBuilder& setRayTracingPipelineSpecification(const Backend::RayTracingPipelineSpecification& specification) { m_Material.m_RayTracingPipelineSpecification = specification; return *this; }
+		MaterialBuilder& setRayTracingPipelineSpecification(const Backend::RayTracingPipelineSpecification& specification);
 
 		/**
 		 * Add a base color texture property to the builder.
@@ -97,7 +104,7 @@ namespace Xenon
 		 * @param payload The texture payload. Default is null. Leave this empty to use the sub-mesh's texture.
 		 * @return The builder reference used to chain.
 		 */
-		MaterialBuilder& addBaseColorTexture(Texture payload = {}) { m_Material.m_Properties.emplace_back(payload, MaterialPropertyType::BaseColorTexture); return *this; }
+		MaterialBuilder& addBaseColorTexture(Texture payload = {});
 
 		/**
 		 * Add a roughness texture property to the builder.
@@ -105,7 +112,7 @@ namespace Xenon
 		 * @param payload The texture payload. Default is null. Leave this empty to use the sub-mesh's texture.
 		 * @return The builder reference used to chain.
 		 */
-		MaterialBuilder& addRoughnessTexture(Texture payload = {}) { m_Material.m_Properties.emplace_back(payload, MaterialPropertyType::RoughnessTexture); return *this; }
+		MaterialBuilder& addRoughnessTexture(Texture payload = {});
 
 		/**
 		 * Add a normal texture property to the builder.
@@ -113,7 +120,7 @@ namespace Xenon
 		 * @param payload The texture payload. Default is null. Leave this empty to use the sub-mesh's texture.
 		 * @return The builder reference used to chain.
 		 */
-		MaterialBuilder& addNormalTexture(Texture payload = {}) { m_Material.m_Properties.emplace_back(payload, MaterialPropertyType::NormalTexture); return *this; }
+		MaterialBuilder& addNormalTexture(Texture payload = {});
 
 		/**
 		 * Add a occlusion texture property to the builder.
@@ -121,7 +128,7 @@ namespace Xenon
 		 * @param payload The texture payload. Default is null. Leave this empty to use the sub-mesh's texture.
 		 * @return The builder reference used to chain.
 		 */
-		MaterialBuilder& addOcclusionTexture(Texture payload = {}) { m_Material.m_Properties.emplace_back(payload, MaterialPropertyType::OcclusionTexture); return *this; }
+		MaterialBuilder& addOcclusionTexture(Texture payload = {});
 
 		/**
 		 * Add a emissive texture property to the builder.
@@ -129,30 +136,52 @@ namespace Xenon
 		 * @param payload The texture payload. Default is null. Leave this empty to use the sub-mesh's texture.
 		 * @return The builder reference used to chain.
 		 */
-		MaterialBuilder& addEmissiveTexture(Texture payload = {}) { m_Material.m_Properties.emplace_back(payload, MaterialPropertyType::EmissiveTexture); return *this; }
+		MaterialBuilder& addEmissiveTexture(Texture payload = {});
 
 		/**
 		 * Get the rasterizing pipeline specification.
 		 *
 		 * @return The specification reference.
 		 */
-		[[nodiscard]] const Backend::RasterizingPipelineSpecification& getRasterizingPipelineSpecification() const noexcept { return m_Material.m_RasterizingPipelineSpecification; }
+		[[nodiscard]] const Backend::RasterizingPipelineSpecification& getRasterizingPipelineSpecification() const noexcept;
 
 		/**
 		 * Get the ray tracing pipeline specification.
 		 *
 		 * @return The specification reference.
 		 */
-		[[nodiscard]] const Backend::RayTracingPipelineSpecification& getRayTracingPipelineSpecification() const noexcept { return m_Material.m_RayTracingPipelineSpecification; }
+		[[nodiscard]] const Backend::RayTracingPipelineSpecification& getRayTracingPipelineSpecification() const noexcept;
 
 		/**
-		 * Get the created material.
+		 * Get the material specification.
 		 *
-		 * @return The material.
+		 * @return The material specification.
 		 */
-		[[nodiscard]] const Material& getMaterial() const noexcept { return m_Material; }
+		[[nodiscard]] explicit operator MaterialSpecification& () noexcept;
+
+		/**
+		 * Get the material specification.
+		 *
+		 * @return The material specification.
+		 */
+		[[nodiscard]] explicit operator const MaterialSpecification& () const noexcept;
 
 	private:
-		Material m_Material;
+		MaterialSpecification m_MaterialSpecification;
 	};
+
+	/**
+	 * Utility function to easily generate the hash for the material specification object.
+	 *
+	 * @param specification The material specification to generate the hash for.
+	 * @param seed The hash seed. Default is 0.
+	 * @return The 64-bit hash value.
+	 */
+	template<>
+	[[nodiscard]] inline uint64_t GenerateHashFor<MaterialSpecification>(const MaterialSpecification& specification, uint64_t seed) noexcept
+	{
+		const auto rpsHash = GenerateHashFor(specification.m_RasterizingPipelineSpecification, seed);
+		const auto rtpsHash = GenerateHashFor(specification.m_RayTracingPipelineSpecification, rpsHash);
+		return GenerateHash(ToBytes(specification.m_Properties.data()), specification.m_Properties.size() * sizeof(MaterialProperty), rtpsHash);
+	}
 }

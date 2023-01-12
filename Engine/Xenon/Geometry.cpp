@@ -17,7 +17,7 @@
 #include <latch>
 #include <fstream>
 
-constexpr const char* g_Attributes[] = {
+constexpr std::array<const char*, 21> g_Attributes = {
 	"POSITION",
 	"NORMAL",
 	"TANGENT",
@@ -364,8 +364,10 @@ namespace /* anonymous */
 	 * @param sampler The sampler.
 	 * @return The image sampler specification.
 	 */
-	[[nodiscard]] constexpr Xenon::Backend::ImageSamplerSpecification GetImageSamplerSpecification(const tinygltf::Sampler& sampler) noexcept
+	[[nodiscard]] Xenon::Backend::ImageSamplerSpecification GetImageSamplerSpecification(const tinygltf::Sampler& sampler) noexcept
 	{
+		OPTICK_EVENT();
+
 		Xenon::Backend::ImageSamplerSpecification specification;
 
 		switch (sampler.minFilter)
@@ -435,6 +437,8 @@ namespace /* anonymous */
 	template<TextureInfo Type>
 	[[nodiscard]] Xenon::Texture CreateTexture(Xenon::Instance& instance, const Xenon::Geometry& geometry, const tinygltf::Model& model, const Type& info)
 	{
+		OPTICK_EVENT();
+
 		Xenon::Texture xTexture = {};
 
 		if (info.index < 0)
@@ -504,6 +508,7 @@ namespace /* anonymous */
 			// Setup the sub-mesh loader. This is done so VS won't fuck up the formatting smh...
 			const auto subMeshLoader = [&subMesh, &model, &geometry, &gltfPrimitive, vertexItr, indexItr, &synchronization]
 			{
+				OPTICK_EVENT_DYNAMIC("Loading sub-mesh data");
 				LoadSubMesh(subMesh, geometry.getVertexSpecification(), model, gltfPrimitive, vertexItr, indexItr);
 				synchronization.count_down();
 			};

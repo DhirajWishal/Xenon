@@ -147,10 +147,12 @@ namespace Xenon
 
 		// Issue the binding calls.
 		uint64_t index = 0;
-		for (const auto& group : m_pScene->getRegistry().view<Geometry>())
+		for (const auto& group : m_pScene->getRegistry().view<Geometry, Material>())
 		{
 			OPTICK_EVENT_DYNAMIC("Binding Geometry");
 			auto& geometry = m_pScene->getRegistry().get<Geometry>(group);
+			const auto& material = m_pScene->getRegistry().get<Material>(group);
+			const auto& materialSpecification = m_Renderer.getInstance().getMaterialDatabase().getSpecification(material);
 
 			for (const auto& mesh : geometry.getMeshes())
 			{
@@ -244,7 +246,7 @@ namespace Xenon
 
 		// Notify the parent that we're done.
 		m_Synchronization.arrive();
-		}
+	}
 
 	void DefaultRasterizingLayer::occlusionPass(const DrawEntry& entry) const
 	{
@@ -288,4 +290,4 @@ namespace Xenon
 			m_DrawCount++;
 		}
 	}
-	}
+}
