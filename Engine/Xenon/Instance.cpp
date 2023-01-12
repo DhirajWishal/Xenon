@@ -62,6 +62,11 @@ namespace Xenon
 	Instance::~Instance()
 	{
 		m_MaterialDatabase.clear();
+
+		m_pDefaultImage.reset();
+		m_pDefaultImageView.reset();
+		m_pDefaultImageSampler.reset();
+
 		m_pDevice.reset();
 		m_pInstance.reset();
 	}

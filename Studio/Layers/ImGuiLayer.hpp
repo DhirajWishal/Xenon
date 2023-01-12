@@ -172,9 +172,9 @@ private:
 private:
 	UIStorage m_UIStorage;
 
-	std::unordered_map<uint64_t, std::unique_ptr<Xenon::Backend::Descriptor>> m_pDescriptorSetMap;
-
 	std::unique_ptr<Xenon::Backend::RasterizingPipeline> m_pPipeline = nullptr;
+
+	std::unordered_map<uint64_t, std::unique_ptr<Xenon::Backend::Descriptor>> m_pDescriptorSetMap;
 
 	std::unique_ptr<Xenon::Backend::Descriptor> m_pUserDescriptor = nullptr;
 	std::unique_ptr<Xenon::Backend::Buffer> m_pUniformBuffer = nullptr;

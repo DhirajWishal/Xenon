@@ -60,49 +60,6 @@ namespace Xenon
 		m_pCommandRecorder->end();
 	}
 
-	void DefaultRasterizingLayer::addDrawData(Geometry&& geometry, Backend::RasterizingPipeline* pPipeline)
-	{
-		OPTICK_EVENT();
-
-		// Create a new draw entry.
-		DrawData drawData;
-		drawData.m_Geometry = std::move(geometry);
-
-		// Setup the camera descriptor.
-		drawData.m_pSceneDescriptor = pPipeline->createDescriptor(Backend::DescriptorType::Scene);
-		drawData.m_pSceneDescriptor->attach(0, m_Renderer.getCamera()->getViewports().front().m_pUniformBuffer);
-
-		// Wait if we're in the process of rendering.
-		m_Synchronization.wait();
-
-		// Lock the resources for loading.
-		auto lock = std::scoped_lock(m_Mutex);
-
-		// Setup the material descriptors.
-		uint32_t threadIndex = 0;
-		for (const auto& mesh : drawData.m_Geometry.getMeshes())
-		{
-			for (const auto& subMesh : mesh.m_SubMeshes)
-			{
-				auto& entry = m_DrawEntries[threadIndex % m_DrawEntries.size()].emplace_back();
-				entry.m_SubMesh = subMesh;
-				entry.m_VertexSpecification = drawData.m_Geometry.getVertexSpecification();
-				entry.m_pPipeline = pPipeline;
-				entry.m_pVertexBuffer = drawData.m_Geometry.getVertexBuffer();
-				entry.m_pIndexBuffer = drawData.m_Geometry.getIndexBuffer();
-				entry.m_pUserDefinedDescriptor = nullptr;
-				entry.m_pMaterialDescriptor = subMesh.m_MaterialIdentifier.m_pMaterial->createDescriptor(pPipeline);
-				entry.m_pSceneDescriptor = drawData.m_pSceneDescriptor.get();
-				entry.m_QueryIndex = m_SubMeshCount++;
-
-				threadIndex++;
-			}
-		}
-
-		// Insert the newly created draw data.
-		m_DrawData.emplace_back(std::move(drawData));
-	}
-
 	void DefaultRasterizingLayer::setupOcclusionPipeline()
 	{
 #ifdef ENABLE_OCCLUSION_CULL
@@ -120,6 +77,89 @@ namespace Xenon
 #endif // ENABLE_OCCLUSION_CULL
 	}
 
+	Xenon::Backend::Descriptor* DefaultRasterizingLayer::getMaterialDescriptor(Pipeline& pipeline, SubMesh& subMesh, const MaterialSpecification& specification)
+	{
+		// Get if we've already crated a material descriptor for the sub-mesh.
+		if (pipeline.m_pMaterialDescriptors.contains(subMesh))
+			return pipeline.m_pMaterialDescriptors[subMesh].get();
+
+		// Else let's quickly create one.
+		uint32_t binding = 0;
+		const auto& pDescriptor = pipeline.m_pMaterialDescriptors[subMesh] = pipeline.m_pPipeline->createDescriptor(Backend::DescriptorType::Material);
+		for (const auto& [payload, type] : specification.m_Properties)
+		{
+			switch (type)
+			{
+			case MaterialPropertyType::BaseColorTexture:
+			{
+				const auto& texture = std::get<0>(payload);
+				if (texture.m_pImage == nullptr || texture.m_pImageView == nullptr || texture.m_pImageSampler == nullptr)
+					pDescriptor->attach(binding, subMesh.m_BaseColorTexture.m_pImage, subMesh.m_BaseColorTexture.m_pImageView, subMesh.m_BaseColorTexture.m_pImageSampler, Backend::ImageUsage::Graphics);
+
+				else
+					pDescriptor->attach(binding, texture.m_pImage, texture.m_pImageView, texture.m_pImageSampler, Backend::ImageUsage::Graphics);
+
+				break;
+			}
+
+			case MaterialPropertyType::RoughnessTexture:
+			{
+				const auto& texture = std::get<0>(payload);
+				if (texture.m_pImage == nullptr || texture.m_pImageView == nullptr || texture.m_pImageSampler == nullptr)
+					pDescriptor->attach(binding, subMesh.m_RoughnessTexture.m_pImage, subMesh.m_RoughnessTexture.m_pImageView, subMesh.m_RoughnessTexture.m_pImageSampler, Backend::ImageUsage::Graphics);
+
+				else
+					pDescriptor->attach(binding, texture.m_pImage, texture.m_pImageView, texture.m_pImageSampler, Backend::ImageUsage::Graphics);
+
+				break;
+			}
+
+			case MaterialPropertyType::NormalTexture:
+			{
+				const auto& texture = std::get<0>(payload);
+				if (texture.m_pImage == nullptr || texture.m_pImageView == nullptr || texture.m_pImageSampler == nullptr)
+					pDescriptor->attach(binding, subMesh.m_NormalTexture.m_pImage, subMesh.m_NormalTexture.m_pImageView, subMesh.m_NormalTexture.m_pImageSampler, Backend::ImageUsage::Graphics);
+
+				else
+					pDescriptor->attach(binding, texture.m_pImage, texture.m_pImageView, texture.m_pImageSampler, Backend::ImageUsage::Graphics);
+
+				break;
+			}
+
+			case MaterialPropertyType::OcclusionTexture:
+			{
+				const auto& texture = std::get<0>(payload);
+				if (texture.m_pImage == nullptr || texture.m_pImageView == nullptr || texture.m_pImageSampler == nullptr)
+					pDescriptor->attach(binding, subMesh.m_OcclusionTexture.m_pImage, subMesh.m_OcclusionTexture.m_pImageView, subMesh.m_OcclusionTexture.m_pImageSampler, Backend::ImageUsage::Graphics);
+
+				else
+					pDescriptor->attach(binding, texture.m_pImage, texture.m_pImageView, texture.m_pImageSampler, Backend::ImageUsage::Graphics);
+
+				break;
+			}
+
+			case MaterialPropertyType::EmissiveTexture:
+			{
+				const auto& texture = std::get<0>(payload);
+				if (texture.m_pImage == nullptr || texture.m_pImageView == nullptr || texture.m_pImageSampler == nullptr)
+					pDescriptor->attach(binding, subMesh.m_EmissiveTexture.m_pImage, subMesh.m_EmissiveTexture.m_pImageView, subMesh.m_EmissiveTexture.m_pImageSampler, Backend::ImageUsage::Graphics);
+
+				else
+					pDescriptor->attach(binding, texture.m_pImage, texture.m_pImageView, texture.m_pImageSampler, Backend::ImageUsage::Graphics);
+
+				break;
+			}
+
+			default:
+				break;
+			}
+
+			binding++;
+		}
+
+		return pDescriptor.get();
+	}
+
 	void DefaultRasterizingLayer::issueDrawCalls()
 	{
 		OPTICK_EVENT();
@@ -130,6 +170,22 @@ namespace Xenon
 
 		// Reset the counters.
 		m_DrawCount = 0;
+		m_SubMeshCount = 0;
+
+		// Set the draw and sub-mesh count. We need to iterate since there is no other way.
+		for (const auto& group : m_pScene->getRegistry().view<Geometry, Material>())
+		{
+			const auto& geometry = m_pScene->getRegistry().get<Geometry>(group);
+
+			for (const auto& mesh : geometry.getMeshes())
+				m_SubMeshCount += mesh.m_SubMeshes.size();
+		}
+
+		// Return if we have nothing to draw.
+		if (m_SubMeshCount == 0)
+			return;
+
+		// Reset the synchronization primitive.
 		m_Synchronization.reset(m_SubMeshCount);
 
 		// Begin the command recorders and set the viewport and scissor.
@@ -154,40 +210,49 @@ namespace Xenon
 			const auto& material = m_pScene->getRegistry().get<Material>(group);
 			const auto& materialSpecification = m_Renderer.getInstance().getMaterialDatabase().getSpecification(material);
 
-			for (const auto& mesh : geometry.getMeshes())
+			// Create the pipeline if the required material does not exist.
+			if (!m_pPipelines.contains(material))
+			{
+				OPTICK_EVENT_DYNAMIC("Creating Pipeline For Material");
+
+				auto& pipeline = m_pPipelines[material];
+				pipeline.m_pPipeline = m_Renderer.getInstance().getFactory()->createRasterizingPipeline(
+					m_Renderer.getInstance().getBackendDevice(),
+					nullptr,
+					m_pRasterizer.get(),
+					materialSpecification.m_RasterizingPipelineSpecification
+				);
+
+				// Create the camera descriptor.
+				pipeline.m_pSceneDescriptor = pipeline.m_pPipeline->createDescriptor(Backend::DescriptorType::Scene);
+				pipeline.m_pSceneDescriptor->attach(0, m_Renderer.getCamera()->getViewports().front().m_pUniformBuffer);
+			}
+
+			// Get the pipeline from the storage.
+			auto& pipeline = m_pPipelines[material];
+
+			// Bind the sub-meshes.
+			for (auto& mesh : geometry.getMeshes())
 			{
 				OPTICK_EVENT_DYNAMIC("Binding Mesh");
 
-				for (const auto& subMesh : mesh.m_SubMeshes)
+				for (auto& subMesh : mesh.m_SubMeshes)
 				{
 					OPTICK_EVENT_DYNAMIC("Binding Draw Entry (sub-mesh)");
 
 					DrawEntry entry = {};
 					entry.m_SubMesh = subMesh;
 					entry.m_VertexSpecification = geometry.getVertexSpecification();
-					// entry.m_pPipeline = pPipeline;
+					entry.m_pPipeline = pipeline.m_pPipeline.get();
 					entry.m_pVertexBuffer = geometry.getVertexBuffer();
 					entry.m_pIndexBuffer = geometry.getIndexBuffer();
 					entry.m_pUserDefinedDescriptor = nullptr;
-					// entry.m_pMaterialDescriptor = subMesh.m_MaterialIdentifier.m_pMaterial->createDescriptor(pPipeline);
-					// entry.m_pSceneDescriptor = drawData.m_pSceneDescriptor.get();
+					entry.m_pMaterialDescriptor = getMaterialDescriptor(pipeline, subMesh, materialSpecification);
+					entry.m_pSceneDescriptor = pipeline.m_pSceneDescriptor.get();
 					entry.m_QueryIndex = index++;
 
-					GetJobSystem().insert([this, &entry] { bindingCall(entry); });
+					GetJobSystem().insert([this, entry] { bindingCall(entry); });
 				}
-			}
-		}
-
-		// Issue the binding calls.
-		for (const auto& drawEntry : m_DrawEntries)
-		{
-			OPTICK_EVENT_DYNAMIC("Binding Draw Entries");
-
-			for (const auto& entry : drawEntry)
-			{
-				OPTICK_EVENT_DYNAMIC("Binding Entry");
-
-				GetJobSystem().insert([this, &entry] { bindingCall(entry); });
 			}
 		}
 
@@ -282,12 +347,11 @@ namespace Xenon
 			pCommandRecorder->bind(entry.m_pPipeline, entry.m_VertexSpecification);
 			pCommandRecorder->bind(entry.m_pVertexBuffer, entry.m_VertexSpecification.getSize());
 			pCommandRecorder->bind(entry.m_pIndexBuffer, static_cast<Backend::IndexBufferStride>(entry.m_SubMesh.m_IndexSize));
-			pCommandRecorder->bind(entry.m_pPipeline, entry.m_pUserDefinedDescriptor, entry.m_pMaterialDescriptor.get(), entry.m_pSceneDescriptor);
-			// pCommandRecorder->bind(entry.m_pPipeline, entry.m_pUserDefinedDescriptor, entry.m_pMaterialDescriptor.get(), m_pScene->getDescriptor());
+			pCommandRecorder->bind(entry.m_pPipeline, entry.m_pUserDefinedDescriptor, entry.m_pMaterialDescriptor, entry.m_pSceneDescriptor);
 
 			pCommandRecorder->drawIndexed(entry.m_SubMesh.m_VertexOffset, entry.m_SubMesh.m_IndexOffset, entry.m_SubMesh.m_IndexCount);
 
 			m_DrawCount++;
-		}
 	}
+}
 }

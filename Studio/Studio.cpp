@@ -135,15 +135,12 @@ void Studio::run()
 	specification.m_VertexShader = Xenon::Generated::CreateShaderShader_vert();
 	specification.m_FragmentShader = Xenon::Generated::CreateShaderShader_frag();
 	materialBuidler.setRasterizingPipelineSpecification(specification);
-	auto pPipeline = m_Instance.getFactory()->createRasterizingPipeline(m_Instance.getBackendDevice(), std::make_unique<CacheHandler>(), pRenderTarget->getRasterizer(), materialBuidler.getRasterizingPipelineSpecification());
 
-	const auto loaderFunction = [this, &pPipeline, &pRenderTarget, &materialBuidler]
+	const auto loaderFunction = [this, &materialBuidler]
 	{
 		const auto grouping = m_Scene.createGroup();
 		const auto& geometry = m_Scene.create<Xenon::Geometry>(grouping, Xenon::Geometry::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"));
 		const auto& material = m_Scene.create<Xenon::Material>(grouping, materialBuidler);
-
-		pRenderTarget->addDrawData(Xenon::Geometry::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"), pPipeline.get());
 	};
 
 #endif // XENON_DEV_ENABLE_RAY_TRACING

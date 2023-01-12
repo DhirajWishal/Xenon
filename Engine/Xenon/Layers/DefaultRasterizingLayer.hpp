@@ -19,16 +19,6 @@ namespace Xenon
 	class DefaultRasterizingLayer final : public RasterizingLayer
 	{
 		/**
-		 * Draw data structure.
-		 */
-		struct DrawData final
-		{
-			Geometry m_Geometry;
-
-			std::unique_ptr<Backend::Descriptor> m_pSceneDescriptor = nullptr;
-		};
-
-		/**
 		 * Draw entry structure.
 		 * This is used by the worker thread to draw.
 		 */
@@ -44,10 +34,21 @@ namespace Xenon
 			Backend::RasterizingPipeline* m_pPipeline = nullptr;
 
 			Backend::Descriptor* m_pUserDefinedDescriptor = nullptr;
-			std::unique_ptr<Backend::Descriptor> m_pMaterialDescriptor = nullptr;
+			Backend::Descriptor* m_pMaterialDescriptor = nullptr;
 			Backend::Descriptor* m_pSceneDescriptor = nullptr;
 
 			uint64_t m_QueryIndex = 0;
+		};
+
+		/**
+		 * Pipeline structure.
+		 * This contains information regarding a single pipeline and it's descriptors.
+		 */
+		struct Pipeline final
+		{
+			std::unique_ptr<Backend::RasterizingPipeline> m_pPipeline = nullptr;
+			std::unique_ptr<Backend::Descriptor> m_pSceneDescriptor = nullptr;
+			std::unordered_map<SubMesh, std::unique_ptr<Backend::Descriptor>> m_pMaterialDescriptors;
 		};
 
 		/**
@@ -82,14 +83,6 @@ namespace Xenon
 		void onUpdate(Layer* pPreviousLayer, uint32_t imageIndex, uint32_t frameIndex) override;
 
 		/**
-		 * Add draw data to the layer to be rendered.
-		 *
-		 * @param geometry The geometry to render.
-		 * @apram pPipeline The pipeline pointer to render with.
-		 */
-		void addDrawData(Geometry&& geometry, Backend::RasterizingPipeline* pPipeline);
-
-		/**
 		 * Get the total draw count.
 		 * This is the number of sub-meshes the layer will render.
 		 *
@@ -110,6 +103,16 @@ namespace Xenon
 		 * Setup the occlusion pipeline.
 		 */
 		void setupOcclusionPipeline();
+
+		/**
+		 * Get the material descriptor.
+		 *
+		 * @param pipeline The pipeline.
+		 * @param subMesh The sub-mesh.
+		 * @param specification The material specification.
+		 * @return The descriptor pointer.
+		 */
+		[[nodiscard]] Backend::Descriptor* getMaterialDescriptor(Pipeline& pipeline, SubMesh& subMesh, const MaterialSpecification& specification);
 
 		/**
 		 * Issue the draw calls.
@@ -144,8 +147,7 @@ namespace Xenon
 
 		std::unordered_map<std::thread::id, std::unique_ptr<Backend::CommandRecorder>> m_pThreadLocalCommandRecorder;
 
-		std::vector<DrawData> m_DrawData;
-		std::vector<std::vector<DrawEntry>> m_DrawEntries = std::vector<std::vector<DrawEntry>>(GetUsableThreadCount());
+		std::unordered_map<Material, Pipeline> m_pPipelines;
 
 		std::unique_ptr<Backend::RasterizingPipeline> m_pOcclusionPipeline = nullptr;
 		std::unique_ptr<Backend::OcclusionQuery> m_pOcclusionQuery = nullptr;

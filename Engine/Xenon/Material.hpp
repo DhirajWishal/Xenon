@@ -19,6 +19,15 @@ namespace Xenon
 		Backend::Image* m_pImage = nullptr;
 		Backend::ImageView* m_pImageView = nullptr;
 		Backend::ImageSampler* m_pImageSampler = nullptr;
+
+		/**
+		 * Is equals operator overload.
+		 *
+		 * @param other The other texture to compare with.
+		 * @return True if the two textures are equal.
+		 * @return False if the they're not equal.
+		 */
+		[[nodiscard]] bool operator==(const Texture& other) const;
 	};
 
 	/**

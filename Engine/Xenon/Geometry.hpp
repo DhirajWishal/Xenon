@@ -47,6 +47,15 @@ namespace Xenon
 
 		PrimitiveMode m_Mode = PrimitiveMode::Triangles;
 		uint8_t m_IndexSize = 0;
+
+		/**
+		 * Is equals operator overload.
+		 *
+		 * @param other The other sub-mesh to compare with.
+		 * @return True if the two sub-meshes are equal.
+		 * @return False if the they're not equal.
+		 */
+		[[nodiscard]] bool operator==(const SubMesh& other) const;
 	};
 
 	/**
@@ -144,7 +153,7 @@ namespace Xenon
 
 		/**
 		 * Get the stored image samplers.
-		 * 
+		 *
 		 * @return The image samplers.
 		 */
 		[[nodiscard]] const ImageSamplerContainer& getImageSamplers() const noexcept { return m_pImageSamplers; }
@@ -159,5 +168,20 @@ namespace Xenon
 		std::vector<Mesh> m_Meshes;
 
 		Backend::VertexSpecification m_VertexSpecification;
+	};
+}
+
+namespace std
+{
+	/**
+	 * std::hash specialization for the Xenon SubMesh structure.
+	 */
+	template<>
+	struct hash<Xenon::SubMesh>
+	{
+		std::size_t operator()(const Xenon::SubMesh& subMesh) const
+		{
+			return Xenon::GenerateHash(Xenon::ToBytes(&subMesh), sizeof(Xenon::SubMesh));
+		}
 	};
 }

@@ -159,7 +159,11 @@ namespace Xenon
 		/**
 		 * Clear the material database.
 		 */
-		void clear() noexcept { m_pDatabaseEntries.clear(); }
+		void clear() noexcept
+		{
+			m_pDatabaseEntries.clear();
+			m_MaterialSpecifications.clear();
+		}
 
 	private:
 		/**

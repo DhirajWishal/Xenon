@@ -508,7 +508,7 @@ namespace /* anonymous */
 			// Setup the sub-mesh loader. This is done so VS won't fuck up the formatting smh...
 			const auto subMeshLoader = [&subMesh, &model, &geometry, &gltfPrimitive, vertexItr, indexItr, &synchronization]
 			{
-				OPTICK_EVENT_DYNAMIC("Loading sub-mesh data");
+				OPTICK_EVENT_DYNAMIC("Loading Sub-Mesh Data");
 				LoadSubMesh(subMesh, geometry.getVertexSpecification(), model, gltfPrimitive, vertexItr, indexItr);
 				synchronization.count_down();
 			};
@@ -537,53 +537,8 @@ namespace /* anonymous */
 				indexItr += accessor.ByteStride(bufferView) * accessor.count;
 			}
 
-			// Load materials.
-			const auto& material = model.materials[gltfPrimitive.material];
-			if (material.pbrMetallicRoughness.baseColorTexture.index >= 0)
-			{
-				const auto& texture = model.textures[material.pbrMetallicRoughness.baseColorTexture.index];
-				const auto& image = model.images[texture.source];
-				const auto& sampler = model.samplers[texture.sampler];
-
-				const auto imageHash = Xenon::GenerateHash(Xenon::ToBytes(image.image.data()), image.image.size());
-				if (!instance.getMaterialDatabase().contains<Xenon::PBRMetallicRoughnessMaterial>(imageHash))
-				{
-					// Setup the image.
-					Xenon::Backend::ImageSpecification imageSpecification = {};
-					imageSpecification.m_Width = image.width;
-					imageSpecification.m_Height = image.height;
-					imageSpecification.m_Format = Xenon::Backend::DataFormat::R8G8B8A8_SRGB;
-
-					auto pImage = instance.getFactory()->createImage(instance.getBackendDevice(), imageSpecification);
-
-					// Copy the image data to the image.
-					{
-						const auto copySize = pImage->getWidth() * pImage->getHeight() * image.component;
-						auto pStagingBuffer = instance.getFactory()->createBuffer(instance.getBackendDevice(), copySize, Xenon::Backend::BufferType::Staging);
-
-						pStagingBuffer->write(Xenon::ToBytes(image.image.data()), image.image.size());
-						pImage->copyFrom(pStagingBuffer.get());
-					}
-
-					// Setup image view.
-					auto pImageView = instance.getFactory()->createImageView(instance.getBackendDevice(), pImage.get(), {});
-
-					// Setup image sampler.
-					auto pSampler = instance.getFactory()->createImageSampler(instance.getBackendDevice(), GetImageSamplerSpecification(sampler));
-
-					// Set the material.
-					subMesh.m_MaterialIdentifier = instance.getMaterialDatabase().create<Xenon::PBRMetallicRoughnessMaterial>(imageHash, instance, std::move(pImage), std::move(pImageView), std::move(pSampler));
-				}
-
-				// Set the material.
-				subMesh.m_MaterialIdentifier = instance.getMaterialDatabase().get<Xenon::PBRMetallicRoughnessMaterial>(imageHash);
-			}
-			else
-			{
-				subMesh.m_MaterialIdentifier = instance.getDefaultMaterial();
-			}
-
 			// Setup the textures.
+			const auto& material = model.materials[gltfPrimitive.material];
 			subMesh.m_BaseColorTexture = CreateTexture(instance, geometry, model, material.pbrMetallicRoughness.baseColorTexture);
 			subMesh.m_RoughnessTexture = CreateTexture(instance, geometry, model, material.pbrMetallicRoughness.metallicRoughnessTexture);
 			subMesh.m_NormalTexture = CreateTexture(instance, geometry, model, material.normalTexture);
@@ -599,6 +554,21 @@ namespace /* anonymous */
 
 namespace Xenon
 {
+	bool SubMesh::operator==(const SubMesh& other) const
+	{
+		return m_BaseColorTexture == other.m_BaseColorTexture ||
+			m_RoughnessTexture == other.m_RoughnessTexture ||
+			m_NormalTexture == other.m_NormalTexture ||
+			m_OcclusionTexture == other.m_OcclusionTexture ||
+			m_EmissiveTexture == other.m_EmissiveTexture ||
+			m_VertexOffset == other.m_VertexOffset ||
+			m_VertexCount == other.m_VertexCount ||
+			m_IndexOffset == other.m_IndexOffset ||
+			m_IndexCount == other.m_IndexCount ||
+			m_Mode == other.m_Mode ||
+			m_IndexSize == other.m_IndexSize;
+	}
+
 	Xenon::Geometry Geometry::FromFile(Instance& instance, const std::filesystem::path& file)
 	{
 		OPTICK_EVENT();
