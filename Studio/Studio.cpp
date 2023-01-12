@@ -106,6 +106,10 @@ Studio::Studio(Xenon::BackendType type /*= Xenon::BackendType::Any*/)
 
 void Studio::run()
 {
+	// Setup the main material.
+	Xenon::MaterialBuilder materialBuidler;
+	materialBuidler.addBaseColorTexture();	// Use the sub mesh's one.
+
 	// Setup the pipeline.
 #ifdef XENON_DEV_ENABLE_RAY_TRACING
 	auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRayTracingLayer>(m_Scene.getCamera());
@@ -113,13 +117,14 @@ void Studio::run()
 
 	auto pPipeline = m_Instance.getFactory()->createRayTracingPipeline(m_Instance.getBackendDevice(), std::make_unique<CacheHandler>(), getRayTracingPipelineSpecification());
 
-	const auto loaderFunction = [this, &pPipeline, &pRenderTarget]
+	const auto loaderFunction = [this, &pPipeline, &pRenderTarget, &materialBuidler]
 	{
 		const auto grouping = m_Scene.createGroup();
 		const auto& geometry = m_Scene.create<Xenon::Geometry>(grouping, Xenon::Geometry::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"));
+		const auto& material = m_Scene.create<Xenon::Material>(grouping, materialBuidler.getMaterial());
 
 		pRenderTarget->addDrawData(Xenon::Geometry::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"), pPipeline.get());
-	};
+};
 
 #else 
 	auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRasterizingLayer>(m_Scene.getCamera());
@@ -130,10 +135,11 @@ void Studio::run()
 	specification.m_FragmentShader = Xenon::Generated::CreateShaderShader_frag();
 	auto pPipeline = m_Instance.getFactory()->createRasterizingPipeline(m_Instance.getBackendDevice(), std::make_unique<CacheHandler>(), pRenderTarget->getRasterizer(), specification);
 
-	const auto loaderFunction = [this, &pPipeline, &pRenderTarget]
+	const auto loaderFunction = [this, &pPipeline, &pRenderTarget, &materialBuidler]
 	{
 		const auto grouping = m_Scene.createGroup();
 		const auto& geometry = m_Scene.create<Xenon::Geometry>(grouping, Xenon::Geometry::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"));
+		const auto& material = m_Scene.create<Xenon::Material>(grouping, materialBuidler.getMaterial());
 
 		pRenderTarget->addDrawData(Xenon::Geometry::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"), pPipeline.get());
 	};

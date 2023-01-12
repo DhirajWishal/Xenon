@@ -47,6 +47,16 @@ namespace Xenon
 
 		// Setup the default material.
 		m_DefaultMaterialIdentifier = m_MaterialDatabase.create<DefaultMaterial>(0, *this);
+
+		// Setup the default image, image view and image sampler.
+		Backend::ImageSpecification imageSpecification = {};
+		imageSpecification.m_Width = 1;
+		imageSpecification.m_Height = 1;
+		imageSpecification.m_Format = Xenon::Backend::DataFormat::R8G8B8A8_SRGB;
+		m_pDefaultImage = m_pFactory->createImage(m_pDevice.get(), imageSpecification);
+
+		m_pDefaultImageView = m_pFactory->createImageView(m_pDevice.get(), m_pDefaultImage.get(), {});
+		m_pDefaultImageSampler = m_pFactory->createImageSampler(m_pDevice.get(), {});
 	}
 
 	Instance::~Instance()

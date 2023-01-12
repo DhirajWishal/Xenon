@@ -3,8 +3,10 @@
 
 #pragma once
 
-#include "../XenonCore/XObject.hpp"
 #include "../XenonBackend/RasterizingPipeline.hpp"
+#include "../XenonBackend/RayTracingPipeline.hpp"
+
+#include <variant>
 
 namespace Xenon
 {

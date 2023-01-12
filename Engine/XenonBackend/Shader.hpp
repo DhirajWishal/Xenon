@@ -154,4 +154,25 @@ namespace Xenon
 			std::vector<ShaderResource> m_Resources;
 		};
 	}
+
+	/**
+	 * Utility function to easily generate the hash for the shader source object.
+	 *
+	 * @param shader The shader to generate the hash for.
+	 * @param seed The hash seed. Default is 0.
+	 * @return The 64-bit hash value.
+	 */
+	template<>
+	[[nodiscard]] inline uint64_t GenerateHashFor<Backend::Shader>(const Backend::Shader& shader, uint64_t seed) noexcept
+	{
+		return GenerateHash(
+			ToBytes(shader.getSPIRV().getBinaryData()),
+			shader.getSPIRV().getBinarySizeInBytes(),
+			GenerateHash(
+				ToBytes(shader.getDXIL().getBinaryData()),
+				shader.getDXIL().getBinarySizeInBytes(),
+				seed
+			)
+		);
+	}
 }

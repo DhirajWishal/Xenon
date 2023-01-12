@@ -4,7 +4,7 @@
 #pragma once
 
 #include "Instance.hpp"
-#include "MaterialBlob.hpp"
+#include "Material.hpp"
 
 #include <filesystem>
 
@@ -23,17 +23,6 @@ namespace Xenon
 		Triangles,
 		TriangleStrip,
 		TriangleFan
-	};
-
-	/**
-	 * Texture structure.
-	 * This structure contains information about a single texture and how to sample it.
-	 */
-	struct Texture final
-	{
-		Backend::Image* m_pImage = nullptr;
-		Backend::ImageView* m_pImageView = nullptr;
-		Backend::ImageSampler* m_pImageSampler = nullptr;
 	};
 
 	/**

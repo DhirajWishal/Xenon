@@ -433,20 +433,27 @@ namespace /* anonymous */
 	 * @return The created texture structure.
 	 */
 	template<TextureInfo Type>
-	[[nodiscard]] Xenon::Texture CreateTexture(const Xenon::Geometry& geometry, const tinygltf::Model& model, const Type& info)
+	[[nodiscard]] Xenon::Texture CreateTexture(Xenon::Instance& instance, const Xenon::Geometry& geometry, const tinygltf::Model& model, const Type& info)
 	{
-		if (info.index < 0)
-			return {};
-
-		const auto& texture = model.textures[info.index];
-
-		const auto& [pImage, pView] = geometry.getImageAndImageViews()[texture.source];
-		const auto& pSampler = geometry.getImageSamplers()[texture.sampler];
-
 		Xenon::Texture xTexture = {};
-		xTexture.m_pImage = pImage.get();
-		xTexture.m_pImageView = pView.get();
-		xTexture.m_pImageSampler = pSampler.get();
+
+		if (info.index < 0)
+		{
+			xTexture.m_pImage = instance.getDefaultImage();
+			xTexture.m_pImageView = instance.getDefaultImageView();
+			xTexture.m_pImageSampler = instance.getDefaultImageSampler();
+		}
+		else
+		{
+			const auto& texture = model.textures[info.index];
+
+			const auto& [pImage, pView] = geometry.getImageAndImageViews()[texture.source];
+			const auto& pSampler = geometry.getImageSamplers()[texture.sampler];
+
+			xTexture.m_pImage = pImage.get();
+			xTexture.m_pImageView = pView.get();
+			xTexture.m_pImageSampler = pSampler.get();
+		}
 
 		return xTexture;
 	}
@@ -572,11 +579,11 @@ namespace /* anonymous */
 			}
 
 			// Setup the textures.
-			subMesh.m_BaseColorTexture = CreateTexture(geometry, model, material.pbrMetallicRoughness.baseColorTexture);
-			subMesh.m_RoughnessTexture = CreateTexture(geometry, model, material.pbrMetallicRoughness.metallicRoughnessTexture);
-			subMesh.m_NormalTexture = CreateTexture(geometry, model, material.normalTexture);
-			subMesh.m_OcclusionTexture = CreateTexture(geometry, model, material.occlusionTexture);
-			subMesh.m_EmissiveTexture = CreateTexture(geometry, model, material.emissiveTexture);
+			subMesh.m_BaseColorTexture = CreateTexture(instance, geometry, model, material.pbrMetallicRoughness.baseColorTexture);
+			subMesh.m_RoughnessTexture = CreateTexture(instance, geometry, model, material.pbrMetallicRoughness.metallicRoughnessTexture);
+			subMesh.m_NormalTexture = CreateTexture(instance, geometry, model, material.normalTexture);
+			subMesh.m_OcclusionTexture = CreateTexture(instance, geometry, model, material.occlusionTexture);
+			subMesh.m_EmissiveTexture = CreateTexture(instance, geometry, model, material.emissiveTexture);
 		}
 
 		// Load the children.
@@ -669,9 +676,7 @@ namespace Xenon
 
 		// Setup the samplers.
 		for (const auto& sampler : model.samplers)
-		{
 			geometry.m_pImageSamplers.emplace_back(instance.getFactory()->createImageSampler(instance.getBackendDevice(), GetImageSamplerSpecification(sampler)));
-		}
 
 		// Setup animations.
 		for (const auto& animation : model.animations)

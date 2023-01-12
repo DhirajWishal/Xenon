@@ -38,6 +38,7 @@ set(
 	"Components.hpp"
 	"Scene.cpp"
 	"Scene.hpp"
+	"Material.hpp"
 
 	"Layers/ClearScreenLayer.cpp"
 	"Layers/ClearScreenLayer.hpp"
