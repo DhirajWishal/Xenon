@@ -28,6 +28,15 @@ namespace Xenon
 			DescriptorType m_Set = DescriptorType::UserDefined;
 			ResourceType m_Type = ResourceType::Sampler;
 			ResouceOperation m_Operations = ResouceOperation::Read;
+
+			/**
+			 * Is equal to comparison operator.
+			 *
+			 * @param other The other resource to compare against.
+			 * @return True if the two objects are similar.
+			 * @return False if the two objects are not similar.
+			 */
+			[[nodiscard]] bool operator==(const ShaderResource& other) const = default;
 		};
 
 		/**

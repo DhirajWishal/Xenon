@@ -126,6 +126,14 @@ namespace Xenon
 		void update();
 
 		/**
+		 * Setup the scene descriptor for a given pipeline.
+		 *
+		 * @param pSceneDescriptor The scene descriptor pointer.
+		 * @param pPipeline The pipeline pointer.
+		 */
+		void setupDescriptor(Backend::Descriptor* pSceneDescriptor, Backend::RasterizingPipeline* pPipeline);
+
+		/**
 		 * Get the object registry.
 		 *
 		 * @return The registry reference.
@@ -168,20 +176,6 @@ namespace Xenon
 		[[nodiscard]] const Backend::Camera* getCamera() const noexcept { return m_pCamera.get(); }
 
 		/**
-		 * Get the scene descriptor pointer.
-		 *
-		 * @return The descriptor pointer.
-		 */
-		[[nodiscard]] Backend::Descriptor* getDescriptor() noexcept { return m_pSceneDescriptor.get(); }
-
-		/**
-		 * Get the scene descriptor pointer.
-		 *
-		 * @return The descriptor pointer.
-		 */
-		[[nodiscard]] const Backend::Descriptor* getDescriptor() const noexcept { return m_pSceneDescriptor.get(); }
-
-		/**
 		 * Get the drawable count.
 		 * This is the number of objects that can be drawn by a layer (geometry + material).
 		 *
@@ -217,8 +211,6 @@ namespace Xenon
 		SceneInformation m_SceneInformation = {};
 
 		std::unique_ptr<Backend::Camera> m_pCamera = nullptr;
-
-		std::unique_ptr<Backend::Descriptor> m_pSceneDescriptor = nullptr;
 
 		std::unique_ptr<Backend::Buffer> m_pLightSourceUniform = nullptr;
 

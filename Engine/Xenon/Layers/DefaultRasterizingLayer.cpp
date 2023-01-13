@@ -221,7 +221,7 @@ namespace Xenon
 
 				// Create the camera descriptor.
 				pipeline.m_pSceneDescriptor = pipeline.m_pPipeline->createDescriptor(Backend::DescriptorType::Scene);
-				pipeline.m_pSceneDescriptor->attach(0, m_Renderer.getCamera()->getViewports().front().m_pUniformBuffer);
+				m_pScene->setupDescriptor(pipeline.m_pSceneDescriptor.get(), pipeline.m_pPipeline.get());
 			}
 
 			// Get the pipeline from the storage.

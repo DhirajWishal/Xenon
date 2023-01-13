@@ -291,6 +291,13 @@ namespace Xenon
 			explicit RasterizingPipeline(const Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, [[maybe_unused]] const Rasterizer* pRasterizer, const RasterizingPipelineSpecification& specification)
 				: Pipeline(pDevice, std::move(pCacheHandler)), m_Specification(specification) {}
 
+			/**
+			 * Get the pipeline specification.
+			 *
+			 * @return The specification.
+			 */
+			[[nodiscard]] const RasterizingPipelineSpecification& getSpecification() const noexcept { return m_Specification; }
+
 		protected:
 			RasterizingPipelineSpecification m_Specification;
 		};

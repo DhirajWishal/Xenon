@@ -595,6 +595,15 @@ namespace Xenon
 		};
 
 		/**
+		 * Scene bindings enum.
+		 * This contains all the binding types with their corresponding bindings in the scene descriptor.
+		 */
+		enum class SceneBindings : uint32_t
+		{
+			Camera
+		};
+
+		/**
 		 * Resource operation enum.
 		 * This describes what types of operations the shader does to the resource.
 		 */
