@@ -160,7 +160,7 @@ void Studio::run()
 			const auto delta = timer.tick();
 
 			// Set the draw call count.
-			pImGui->setDrawCallCount(pRenderTarget->getTotalDrawCount(), pRenderTarget->getDrawCount());
+			pImGui->setDrawCallCount(m_Scene.getDrawableCount(), pRenderTarget->getDrawCount());
 
 			// Begin the ImGui scene.
 			// Handle the inputs and update the camera only if we need to.

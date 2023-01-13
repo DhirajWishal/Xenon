@@ -37,8 +37,6 @@ namespace Xenon
 		Texture m_OcclusionTexture = {};
 		Texture m_EmissiveTexture = {};
 
-		MaterialIdentifier m_MaterialIdentifier;
-
 		uint64_t m_VertexOffset = 0;
 		uint64_t m_VertexCount = 0;
 
@@ -55,7 +53,7 @@ namespace Xenon
 		 * @return True if the two sub-meshes are equal.
 		 * @return False if the they're not equal.
 		 */
-		[[nodiscard]] bool operator==(const SubMesh& other) const;
+		[[nodiscard]] bool operator==(const SubMesh& other) const = default;
 	};
 
 	/**

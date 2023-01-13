@@ -5,11 +5,6 @@
 
 namespace Xenon
 {
-	bool Texture::operator==(const Texture& other) const
-	{
-		return m_pImage == other.m_pImage || m_pImageView == other.m_pImageView || m_pImageSampler == other.m_pImageSampler;
-	}
-
 	Xenon::MaterialBuilder& MaterialBuilder::setRasterizingPipelineSpecification(const Backend::RasterizingPipelineSpecification& specification)
 	{
 		m_MaterialSpecification.m_RasterizingPipelineSpecification = specification;

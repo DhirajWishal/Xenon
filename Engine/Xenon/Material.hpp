@@ -27,7 +27,7 @@ namespace Xenon
 		 * @return True if the two textures are equal.
 		 * @return False if the they're not equal.
 		 */
-		[[nodiscard]] bool operator==(const Texture& other) const;
+		[[nodiscard]] bool operator==(const Texture& other) const = default;
 	};
 
 	/**

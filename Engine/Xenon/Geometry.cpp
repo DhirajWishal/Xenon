@@ -554,21 +554,6 @@ namespace /* anonymous */
 
 namespace Xenon
 {
-	bool SubMesh::operator==(const SubMesh& other) const
-	{
-		return m_BaseColorTexture == other.m_BaseColorTexture ||
-			m_RoughnessTexture == other.m_RoughnessTexture ||
-			m_NormalTexture == other.m_NormalTexture ||
-			m_OcclusionTexture == other.m_OcclusionTexture ||
-			m_EmissiveTexture == other.m_EmissiveTexture ||
-			m_VertexOffset == other.m_VertexOffset ||
-			m_VertexCount == other.m_VertexCount ||
-			m_IndexOffset == other.m_IndexOffset ||
-			m_IndexCount == other.m_IndexCount ||
-			m_Mode == other.m_Mode ||
-			m_IndexSize == other.m_IndexSize;
-	}
-
 	Xenon::Geometry Geometry::FromFile(Instance& instance, const std::filesystem::path& file)
 	{
 		OPTICK_EVENT();

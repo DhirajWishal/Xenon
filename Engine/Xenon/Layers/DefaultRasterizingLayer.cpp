@@ -27,13 +27,16 @@ namespace Xenon
 		// Begin recording.
 		m_pCommandRecorder->begin();
 
+		// Get the drawable count.
+		const auto subMeshCount = m_pScene->getDrawableCount();
+
 		// Re-create the occlusion query if needed.
 		{
 			auto lock = std::scoped_lock(m_Mutex);
-			if (m_SubMeshCount > 0 && m_pOcclusionQuery->getSampleCount() != m_SubMeshCount)
+			if (subMeshCount > 0 && m_pOcclusionQuery->getSampleCount() != subMeshCount)
 			{
 				m_Renderer.getInstance().getBackendDevice()->waitIdle();
-				m_pOcclusionQuery = m_Renderer.getInstance().getFactory()->createOcclusionQuery(m_Renderer.getInstance().getBackendDevice(), m_SubMeshCount);
+				m_pOcclusionQuery = m_Renderer.getInstance().getFactory()->createOcclusionQuery(m_Renderer.getInstance().getBackendDevice(), subMeshCount);
 			}
 		}
 
@@ -51,7 +54,7 @@ namespace Xenon
 
 #ifdef ENABLE_OCCLUSION_CULL
 		// Query the results only if we have drawn something.
-		if (m_SubMeshCount > 0)
+		if (subMeshCount > 0)
 			m_pCommandRecorder->getQueryResults(m_pOcclusionQuery.get());
 
 #endif // ENABLE_OCCLUSION_CULL
@@ -88,12 +91,14 @@ namespace Xenon
 		const auto& pDescriptor = pipeline.m_pMaterialDescriptors[subMesh] = pipeline.m_pPipeline->createDescriptor(Backend::DescriptorType::Material);
 		for (const auto& [payload, type] : specification.m_Properties)
 		{
+			constexpr Texture useSubMeshTexture = {};
+
 			switch (type)
 			{
 			case MaterialPropertyType::BaseColorTexture:
 			{
 				const auto& texture = std::get<0>(payload);
-				if (texture.m_pImage == nullptr || texture.m_pImageView == nullptr || texture.m_pImageSampler == nullptr)
+				if (texture == useSubMeshTexture)
 					pDescriptor->attach(binding, subMesh.m_BaseColorTexture.m_pImage, subMesh.m_BaseColorTexture.m_pImageView, subMesh.m_BaseColorTexture.m_pImageSampler, Backend::ImageUsage::Graphics);
 
 				else
@@ -105,7 +110,7 @@ namespace Xenon
 			case MaterialPropertyType::RoughnessTexture:
 			{
 				const auto& texture = std::get<0>(payload);
-				if (texture.m_pImage == nullptr || texture.m_pImageView == nullptr || texture.m_pImageSampler == nullptr)
+				if (texture == useSubMeshTexture)
 					pDescriptor->attach(binding, subMesh.m_RoughnessTexture.m_pImage, subMesh.m_RoughnessTexture.m_pImageView, subMesh.m_RoughnessTexture.m_pImageSampler, Backend::ImageUsage::Graphics);
 
 				else
@@ -117,7 +122,7 @@ namespace Xenon
 			case MaterialPropertyType::NormalTexture:
 			{
 				const auto& texture = std::get<0>(payload);
-				if (texture.m_pImage == nullptr || texture.m_pImageView == nullptr || texture.m_pImageSampler == nullptr)
+				if (texture == useSubMeshTexture)
 					pDescriptor->attach(binding, subMesh.m_NormalTexture.m_pImage, subMesh.m_NormalTexture.m_pImageView, subMesh.m_NormalTexture.m_pImageSampler, Backend::ImageUsage::Graphics);
 
 				else
@@ -129,7 +134,7 @@ namespace Xenon
 			case MaterialPropertyType::OcclusionTexture:
 			{
 				const auto& texture = std::get<0>(payload);
-				if (texture.m_pImage == nullptr || texture.m_pImageView == nullptr || texture.m_pImageSampler == nullptr)
+				if (texture == useSubMeshTexture)
 					pDescriptor->attach(binding, subMesh.m_OcclusionTexture.m_pImage, subMesh.m_OcclusionTexture.m_pImageView, subMesh.m_OcclusionTexture.m_pImageSampler, Backend::ImageUsage::Graphics);
 
 				else
@@ -141,7 +146,7 @@ namespace Xenon
 			case MaterialPropertyType::EmissiveTexture:
 			{
 				const auto& texture = std::get<0>(payload);
-				if (texture.m_pImage == nullptr || texture.m_pImageView == nullptr || texture.m_pImageSampler == nullptr)
+				if (texture == useSubMeshTexture)
 					pDescriptor->attach(binding, subMesh.m_EmissiveTexture.m_pImage, subMesh.m_EmissiveTexture.m_pImageView, subMesh.m_EmissiveTexture.m_pImageSampler, Backend::ImageUsage::Graphics);
 
 				else
@@ -170,14 +175,14 @@ namespace Xenon
 
 		// Reset the counters.
 		m_DrawCount = 0;
-		m_SubMeshCount = m_pScene->getDrawableCount();
+		const auto subMeshCount = m_pScene->getDrawableCount();
 
 		// Return if we have nothing to draw.
-		if (m_SubMeshCount == 0)
+		if (subMeshCount == 0)
 			return;
 
 		// Reset the synchronization primitive.
-		m_Synchronization.reset(m_SubMeshCount);
+		m_Synchronization.reset(subMeshCount);
 
 		// Begin the command recorders and set the viewport and scissor.
 		for (const auto& [id, pCommandRecorder] : m_pThreadLocalCommandRecorder)

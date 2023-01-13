@@ -51,13 +51,6 @@ namespace Xenon
 			std::unordered_map<SubMesh, std::unique_ptr<Backend::Descriptor>> m_pMaterialDescriptors;
 		};
 
-		/**
-		 * Get the usable thread count.
-		 *
-		 * @return The usable thread count.
-		 */
-		[[nodiscard]] static uint64_t GetUsableThreadCount() { return GetJobSystem().getThreadCount(); }
-
 	public:
 		/**
 		 * Explicit constructor.
@@ -81,14 +74,6 @@ namespace Xenon
 		 * @param frameIndex The frame's index.
 		 */
 		void onUpdate(Layer* pPreviousLayer, uint32_t imageIndex, uint32_t frameIndex) override;
-
-		/**
-		 * Get the total draw count.
-		 * This is the number of sub-meshes the layer will render.
-		 *
-		 * @return The count.
-		 */
-		[[nodiscard]] uint64_t getTotalDrawCount() const noexcept { return m_SubMeshCount; }
 
 		/**
 		 * Get the draw count.
@@ -154,6 +139,5 @@ namespace Xenon
 		std::unique_ptr<Backend::Descriptor> m_pOcclusionCameraDescriptor = nullptr;
 
 		std::atomic_uint64_t m_DrawCount = 0;
-		uint64_t m_SubMeshCount = 0;
 	};
 }
