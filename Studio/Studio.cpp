@@ -232,6 +232,4 @@ void Studio::updateCamera(std::chrono::nanoseconds delta)
 	{
 		m_bFirstMouse = true;
 	}
-
-	m_Scene.getCamera()->update();
 }

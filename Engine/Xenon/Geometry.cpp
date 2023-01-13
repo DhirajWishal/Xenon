@@ -624,17 +624,15 @@ namespace Xenon
 		}
 
 		// Setup the images.
-		for (const auto& texture : model.textures)
+		geometry.m_pImageAndImageViews.reserve(model.images.size());
+		for (const auto& image : model.images)
 		{
-			const auto& image = model.images[texture.source];
-			auto& [pImage, pImageView] = geometry.m_pImageAndImageViews.emplace_back();
-
 			// Setup the image.
 			Xenon::Backend::ImageSpecification imageSpecification = {};
 			imageSpecification.m_Width = image.width;
 			imageSpecification.m_Height = image.height;
 			imageSpecification.m_Format = Xenon::Backend::DataFormat::R8G8B8A8_SRGB;
-			pImage = instance.getFactory()->createImage(instance.getBackendDevice(), imageSpecification);
+			auto pImage = instance.getFactory()->createImage(instance.getBackendDevice(), imageSpecification);
 
 			// Copy the image data to the image.
 			{
@@ -646,10 +644,13 @@ namespace Xenon
 			}
 
 			// Setup image view.
-			pImageView = instance.getFactory()->createImageView(instance.getBackendDevice(), pImage.get(), {});
+			auto pImageView = instance.getFactory()->createImageView(instance.getBackendDevice(), pImage.get(), {});
+
+			geometry.m_pImageAndImageViews.emplace_back(std::move(pImage), std::move(pImageView));
 		}
 
 		// Setup the samplers.
+		geometry.m_pImageSamplers.reserve(model.samplers.size());
 		for (const auto& sampler : model.samplers)
 			geometry.m_pImageSamplers.emplace_back(instance.getFactory()->createImageSampler(instance.getBackendDevice(), GetImageSamplerSpecification(sampler)));
 

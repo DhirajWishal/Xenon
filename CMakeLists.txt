@@ -5,6 +5,20 @@
 # Set the minimum required CMake version.
 cmake_minimum_required(VERSION 3.22.2)
 
+# Setup multiple configurations if it's possible.
+get_property(IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+
+if(IS_MULTI_CONFIG)
+	set(CMAKE_CONFIGURATION_TYPES "Debug;Profile;Release;" CACHE STRING "" FORCE)
+	set(CMAKE_C_FLAGS_PROFILE "${CMAKE_C_FLAGS_RELEASE}" CACHE STRING "Used by C compilers" FORCE)
+	set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_RELEASE}" CACHE STRING "Used by C++ compilers" FORCE)
+	set(CMAKE_EXE_LINKER_FLAGS_PROFILE "${CMAKE_EXE_LINKER_FLAGS_RELEASE}" CACHE STRING "Used by compilers to generate executables" FORCE)
+	set(CMAKE_SHARED_LINKER_FLAGS_PROFILE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE}" CACHE STRING "Used by compilers to generate shared libraries" FORCE)
+	set(CMAKE_STATIC_LINKER_FLAGS_PROFILE "${CMAKE_STATIC_LINKER_FLAGS_RELEASE}" CACHE STRING "Used by compilers to generate static libraries" FORCE)
+	set(CMAKE_MAP_IMPORTED_CONFIG_PROFILE Release)
+
+endif()
+
 # Set the basic project description.
 project(
 	Xenon
@@ -116,6 +130,8 @@ add_compile_definitions(
 	$<$<CONFIG:Debug>:XENON_DEBUG>
 	$<$<CONFIG:Debug>:USE_OPTICK>
 	$<$<CONFIG:Release>:XENON_RELEASE>
+	$<$<CONFIG:Profile>:XENON_PROFILE>
+	$<$<CONFIG:Profile>:USE_OPTICK>
 
 	$<$<CONFIG:RelWithDebInfo>:XENON_DEBUG>
 	$<$<CONFIG:RelWithDebInfo>:USE_OPTICK>

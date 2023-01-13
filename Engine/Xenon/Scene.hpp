@@ -181,6 +181,33 @@ namespace Xenon
 		 */
 		[[nodiscard]] const Backend::Descriptor* getDescriptor() const noexcept { return m_pSceneDescriptor.get(); }
 
+		/**
+		 * Get the drawable count.
+		 * This is the number of objects that can be drawn by a layer (geometry + material).
+		 *
+		 * @return The total sub-mesh count.
+		 */
+		[[nodiscard]] uint64_t getDrawableCount() const noexcept { return m_DrawableCount; }
+
+	private:
+		/**
+		 * On geometry construction callback.
+		 * This is called by the ECS registry when a new geometry is added.
+		 *
+		 * @param registry The registry to which the geometry is added. In our case it's the same as m_Registry.
+		 * @param group The group to which the geometry is added.
+		 */
+		void onGeometryConstruction(entt::registry& registry, Group group);
+
+		/**
+		 * On material construction callback.
+		 * This is called by the ECS registry when a new material is added.
+		 *
+		 * @param registry The registry to which the material is added. In our case it's the same as m_Registry.
+		 * @param group The group to which the material is added.
+		 */
+		void onMaterialConstruction(entt::registry& registry, Group group);
+
 	private:
 		entt::registry m_Registry;
 		std::mutex m_Mutex;
@@ -194,5 +221,7 @@ namespace Xenon
 		std::unique_ptr<Backend::Descriptor> m_pSceneDescriptor = nullptr;
 
 		std::unique_ptr<Backend::Buffer> m_pLightSourceUniform = nullptr;
+
+		uint64_t m_DrawableCount = 0;
 	};
 }

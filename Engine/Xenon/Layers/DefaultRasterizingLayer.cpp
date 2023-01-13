@@ -170,16 +170,7 @@ namespace Xenon
 
 		// Reset the counters.
 		m_DrawCount = 0;
-		m_SubMeshCount = 0;
-
-		// Set the draw and sub-mesh count. We need to iterate since there is no other way.
-		for (const auto& group : m_pScene->getRegistry().view<Geometry, Material>())
-		{
-			const auto& geometry = m_pScene->getRegistry().get<Geometry>(group);
-
-			for (const auto& mesh : geometry.getMeshes())
-				m_SubMeshCount += mesh.m_SubMeshes.size();
-		}
+		m_SubMeshCount = m_pScene->getDrawableCount();
 
 		// Return if we have nothing to draw.
 		if (m_SubMeshCount == 0)
@@ -352,6 +343,6 @@ namespace Xenon
 			pCommandRecorder->drawIndexed(entry.m_SubMesh.m_VertexOffset, entry.m_SubMesh.m_IndexOffset, entry.m_SubMesh.m_IndexCount);
 
 			m_DrawCount++;
+		}
 	}
-}
 }
