@@ -5,7 +5,6 @@
 
 #include "../Globals.hpp"
 #include "../CacheHandler.hpp"
-#include "../Materials/ImGuiMaterial.hpp"
 
 #include "../Shaders/ImGuiLayer/ImGuiLayer.vert.hpp"
 #include "../Shaders/ImGuiLayer/ImGuiLayer.frag.hpp"

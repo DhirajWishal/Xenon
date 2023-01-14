@@ -63,7 +63,6 @@ private:
 	Xenon::Layer* m_pLayerToShow = nullptr;
 
 	uintptr_t m_ImageHash = 0;
-	Xenon::MaterialIdentifier m_MaterialIdentifier;
 
 	std::unique_ptr<Xenon::Backend::Image> m_pImage = nullptr;
 	std::unique_ptr<Xenon::Backend::ImageView> m_pImageView = nullptr;

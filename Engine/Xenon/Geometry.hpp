@@ -85,13 +85,21 @@ namespace Xenon
 		Geometry() = default;
 
 		/**
-		 * Load the meshes from a file and create the mesh storage class.
+		 * Load the meshes from a file and create the geometry class.
 		 *
 		 * @param instance The instance reference.
 		 * @param file The file path to load the data from.
-		 * @return The created mesh storage.
+		 * @return The created geometry.
 		 */
 		[[nodiscard]] static Geometry FromFile(Instance& instance, const std::filesystem::path& file);
+
+		/**
+		 * Create a quad geometry.
+		 *
+		 * @param instance The instance reference.
+		 * @return The created geometry.
+		 */
+		[[nodiscard]] static Geometry CreateQuad(Instance& instance);
 
 		/**
 		 * Get the vertex specification.

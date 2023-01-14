@@ -714,4 +714,48 @@ namespace Xenon
 
 		return geometry;
 	}
+
+	Xenon::Geometry Geometry::CreateQuad(Instance& instance)
+	{
+		/**
+		 * Vertex structure.
+		 */
+		struct Vertex final
+		{
+			glm::vec2 m_Position;
+			glm::vec2 m_UV;
+		};
+
+		// Define the geometry for a triangle.
+		const std::array<Vertex, 4> triangleVertices =
+		{
+			Vertex{.m_Position = glm::vec2(1.0f, 1.0f), .m_UV = glm::vec2(1.0f, 1.0f)},
+			Vertex{.m_Position = glm::vec2(1.0f, -1.0f), .m_UV = glm::vec2(1.0f, 0.0f)},
+			Vertex{.m_Position = glm::vec2(-1.0f, 1.0f), .m_UV = glm::vec2(0.0f, 1.0f)},
+			Vertex{.m_Position = glm::vec2(-1.0f, -1.0f), .m_UV = glm::vec2(0.0f, 0.0f)}
+		};
+
+		constexpr std::array<uint16_t, 6> triangleIndices =
+		{
+			0, 1, 2,
+			2, 3, 0
+		};
+
+		// Setup the geometry.
+		Geometry geometry;
+		geometry.m_VertexSpecification.addElement(Backend::InputElement::VertexPosition, Backend::AttributeDataType::Vec2, Backend::ComponentDataType::Float);
+		geometry.m_VertexSpecification.addElement(Backend::InputElement::VertexNormal, Backend::AttributeDataType::Vec2, Backend::ComponentDataType::Float);
+
+		// Load the vertex data.
+		constexpr auto vertexBufferSize = triangleVertices.size() * sizeof(Vertex);
+		geometry.m_pVertexBuffer = instance.getFactory()->createBuffer(instance.getBackendDevice(), vertexBufferSize, Backend::BufferType::Vertex);
+		geometry.m_pVertexBuffer->write(ToBytes(triangleVertices.data()), vertexBufferSize);
+
+		// Load the index data.
+		constexpr auto indexBufferSize = triangleIndices.size() * sizeof(uint16_t);
+		geometry.m_pIndexBuffer = instance.getFactory()->createBuffer(instance.getBackendDevice(), indexBufferSize, Backend::BufferType::Index);
+		geometry.m_pIndexBuffer->write(ToBytes(triangleIndices.data()), indexBufferSize);
+
+		return geometry;
+	}
 }

@@ -97,14 +97,6 @@ public:
 	void onUpdate(Layer* pPreviousLayer, uint32_t imageIndex, uint32_t frameIndex) override;
 
 	/**
-	 * Register a material to the layer.
-	 *
-	 * @param hash The material's hash.
-	 * @param identifier The material's identifier.
-	 */
-	void registerMaterial(uint64_t hash, Xenon::MaterialIdentifier identifier);
-
-	/**
 	 * Register a layer to be shown.
 	 *
 	 * @param pLayer The layer to be shown.
@@ -217,6 +209,4 @@ private:
 	Xenon::Backend::VertexSpecification m_VertexSpecification;
 
 	UserData m_UserData;
-
-	Xenon::MaterialIdentifier m_DefaultMaterialIdentifier;
 };
