@@ -4,9 +4,6 @@
 #include "Geometry.hpp"
 #include "../XenonCore/Logging.hpp"
 
-#include "Materials/DefaultMaterial.hpp"
-#include "Materials/PBRMetallicRoughnessMaterial.hpp"
-
 #define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -550,6 +547,50 @@ namespace /* anonymous */
 		for (const auto child : node.children)
 			LoadNode(instance, model, model.nodes[child], geometry, vertices, vertexItr, indices, indexItr, synchronization);
 	}
+
+	/**
+	 * Get the data format from the bits and component count.
+	 *
+	 * @param bits The bits of the pixel.
+	 * @param components The component count.
+	 * @param pixelType The pixel type.
+	 * @return The format.
+	 */
+	[[nodiscard]] constexpr Xenon::Backend::DataFormat GetDataFormat(int bits, int components, int pixelType) noexcept
+	{
+		// For now just don't do anything. We got more things to worry about than this :P
+		switch (pixelType)
+		{
+		case TINYGLTF_COMPONENT_TYPE_BYTE:
+			break;
+
+		case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
+			break;
+
+		case TINYGLTF_COMPONENT_TYPE_SHORT:
+			break;
+
+		case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT:
+			break;
+
+		case TINYGLTF_COMPONENT_TYPE_INT:
+			break;
+
+		case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT:
+			break;
+
+		case TINYGLTF_COMPONENT_TYPE_FLOAT:
+			break;
+
+		case TINYGLTF_COMPONENT_TYPE_DOUBLE:
+			break;
+
+		default:
+			break;
+		}
+
+		return Xenon::Backend::DataFormat::R8G8B8A8_SRGB;
+	}
 }
 
 namespace Xenon
@@ -616,12 +657,12 @@ namespace Xenon
 			Xenon::Backend::ImageSpecification imageSpecification = {};
 			imageSpecification.m_Width = image.width;
 			imageSpecification.m_Height = image.height;
-			imageSpecification.m_Format = Xenon::Backend::DataFormat::R8G8B8A8_SRGB;
+			imageSpecification.m_Format = GetDataFormat(image.bits, image.component, image.pixel_type);
 			auto pImage = instance.getFactory()->createImage(instance.getBackendDevice(), imageSpecification);
 
 			// Copy the image data to the image.
 			{
-				const auto copySize = pImage->getWidth() * pImage->getHeight() * image.component;
+				const auto copySize = pImage->getWidth() * pImage->getHeight() * image.component/* * (image.bits / 8)*/;
 				auto pStagingBuffer = instance.getFactory()->createBuffer(instance.getBackendDevice(), copySize, Xenon::Backend::BufferType::Staging);
 
 				pStagingBuffer->write(Xenon::ToBytes(image.image.data()), image.image.size());

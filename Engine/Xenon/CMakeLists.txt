@@ -27,7 +27,6 @@ set(
 	"RasterizingLayer.hpp"
 	"FrameTimer.cpp"
 	"FrameTimer.hpp"
-	"MaterialBlob.hpp"
 	"MaterialDatabase.hpp"
 	"AssetManager.cpp"
 	"AssetManager.hpp"
@@ -47,11 +46,6 @@ set(
 	"Layers/DefaultRasterizingLayer.hpp"
 	"Layers/DefaultRayTracingLayer.cpp"
 	"Layers/DefaultRayTracingLayer.hpp"
-
-	"Materials/DefaultMaterial.cpp"
-	"Materials/DefaultMaterial.hpp"
-	"Materials/PBRMetallicRoughnessMaterial.cpp"
-	"Materials/PBRMetallicRoughnessMaterial.hpp"
 )
 
 # Add the source group.

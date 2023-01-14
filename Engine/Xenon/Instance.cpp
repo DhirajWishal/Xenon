@@ -3,8 +3,6 @@
 
 #include "Instance.hpp"
 
-#include "Materials/DefaultMaterial.hpp"
-
 #include "../XenonVulkanBackend/VulkanFactory.hpp"
 
 #ifdef XENON_PLATFORM_WINDOWS
@@ -44,9 +42,6 @@ namespace Xenon
 
 		// Create the device.
 		m_pDevice = m_pFactory->createDevice(m_pInstance.get(), renderTargets);
-
-		// Setup the default material.
-		m_DefaultMaterialIdentifier = m_MaterialDatabase.create<DefaultMaterial>(0, *this);
 
 		// Setup the default image, image view and image sampler.
 		Backend::ImageSpecification imageSpecification = {};

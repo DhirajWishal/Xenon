@@ -30,9 +30,6 @@ set(
 	"Layers/ImGuiLayer.cpp"
 	"Layers/ImGuiLayer.hpp"
 
-	"Materials/ImGuiMaterial.cpp"
-	"Materials/ImGuiMaterial.hpp"
-
 	"UIComponents/PerformanceMetrics.cpp"
 	"UIComponents/PerformanceMetrics.hpp"
 	"UIComponents/LayerView.cpp"

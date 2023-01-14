@@ -5,6 +5,7 @@
 
 #include "Xenon/RasterizingLayer.hpp"
 
+#include "XenonCore/SparseArray.hpp"
 #include "XenonCore/Logging.hpp"
 #include "XenonBackend/Buffer.hpp"
 #include "XenonBackend/RasterizingPipeline.hpp"
@@ -28,6 +29,14 @@ class ImGuiLayer final : public Xenon::RasterizingLayer
 	{
 		glm::vec2 m_Scale;
 		glm::vec2 m_Translate;
+	};
+
+	/**
+	 * Material descriptor structure.
+	 */
+	struct MaterialDescriptor final
+	{
+		std::unique_ptr<Xenon::Backend::Descriptor> m_pDescriptor = nullptr;
 	};
 
 	/**
@@ -104,11 +113,21 @@ public:
 
 	/**
 	 * Set the draw call count.
-	 * 
+	 *
 	 * @param totalCount The total draw call count.
 	 * @param actualCount The actual draw call count.
 	 */
 	void setDrawCallCount(uint64_t totalCount, uint64_t actualCount);
+
+	/**
+	 * Get the image ID for an image that is to be rendered using the ImGui layer.
+	 *
+	 * @param pImage The image pointer.
+	 * @param pImageView The image view pointer.
+	 * @param pImageSampler The image sampler pointer.
+	 * @return The texture ID.
+	 */
+	[[nodiscard]] uintptr_t getImageID(Xenon::Backend::Image* pImage, Xenon::Backend::ImageView* pImageView, Xenon::Backend::ImageSampler* pImageSampler);
 
 private:
 	/**
@@ -120,6 +139,11 @@ private:
 	 * Setup the default texture material.
 	 */
 	void setupDefaultMaterial();
+
+	/**
+	 * Setup the pipeline.
+	 */
+	void setupPipeline();
 
 	/**
 	 * Prepare the resources to render.
@@ -174,12 +198,16 @@ private:
 
 	std::unique_ptr<Xenon::Backend::RasterizingPipeline> m_pPipeline = nullptr;
 
-	std::unordered_map<uint64_t, std::unique_ptr<Xenon::Backend::Descriptor>> m_pDescriptorSetMap;
+	std::unordered_map<uintptr_t, std::unique_ptr<Xenon::Backend::Descriptor>> m_pMaterialDescriptors;
 
 	std::unique_ptr<Xenon::Backend::Descriptor> m_pUserDescriptor = nullptr;
 	std::unique_ptr<Xenon::Backend::Buffer> m_pUniformBuffer = nullptr;
 
 	std::shared_ptr<spdlog::logger> m_pDefaultLogger = nullptr;
+
+	std::unique_ptr<Xenon::Backend::Image> m_pImage = nullptr;
+	std::unique_ptr<Xenon::Backend::ImageView> m_pImageView = nullptr;
+	std::unique_ptr<Xenon::Backend::ImageSampler> m_pSampler = nullptr;
 
 	std::vector<std::unique_ptr<Xenon::Backend::Buffer>> m_pVertexBuffers;
 	std::vector<std::unique_ptr<Xenon::Backend::Buffer>> m_pIndexBuffers;
