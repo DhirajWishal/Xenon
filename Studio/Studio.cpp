@@ -151,6 +151,9 @@ void Studio::run()
 	// Set the layer to be shown.
 	pImGui->showLayer(pRenderTarget);
 
+	const auto lighting = m_Scene.createGroup();
+	const auto& lightSource = m_Scene.create<Xenon::Components::LightSource>(lighting, glm::vec4(1.0f), glm::vec3(0.0f), glm::vec3(0.0f), 1.0f, 360.0f);
+
 	{
 		auto ret = Xenon::XObject::GetJobSystem().insert(loaderFunction);
 

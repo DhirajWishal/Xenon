@@ -202,6 +202,11 @@ namespace Xenon
 		 */
 		void onMaterialConstruction(entt::registry& registry, Group group);
 
+		/**
+		 * Setup the lighting.
+		 */
+		void setupLights();
+
 	private:
 		entt::registry m_Registry;
 		std::mutex m_Mutex;
@@ -212,6 +217,7 @@ namespace Xenon
 
 		std::unique_ptr<Backend::Camera> m_pCamera = nullptr;
 
+		std::unique_ptr<Backend::Buffer> m_pSceneInformationUniform = nullptr;
 		std::unique_ptr<Backend::Buffer> m_pLightSourceUniform = nullptr;
 
 		uint64_t m_DrawableCount = 0;

@@ -14,7 +14,7 @@ namespace Xenon
 {
 	namespace Backend
 	{
-		VulkanDescriptor::VulkanDescriptor(VulkanDevice* pDevice, const std::vector<DescriptorBindingInfo>& bindingInfo, DescriptorType type)
+		VulkanDescriptor::VulkanDescriptor(VulkanDevice* pDevice, const std::unordered_map<uint32_t, DescriptorBindingInfo>& bindingInfo, DescriptorType type)
 			: Descriptor(pDevice, bindingInfo, type)
 			, VulkanDeviceBoundObject(pDevice)
 		{

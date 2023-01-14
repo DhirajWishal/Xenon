@@ -600,7 +600,17 @@ namespace Xenon
 		 */
 		enum class SceneBindings : uint32_t
 		{
-			Camera
+			SceneInformation,
+			Camera,
+
+			LightSources,
+
+			// Used for ray tracing.
+			AccelerationStructure,
+
+			// Used for ray tracing.
+			RenderTarget
+
 		};
 
 		/**

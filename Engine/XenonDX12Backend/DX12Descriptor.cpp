@@ -66,7 +66,7 @@ namespace Xenon
 {
 	namespace Backend
 	{
-		DX12Descriptor::DX12Descriptor(DX12Device* pDevice, const std::vector<DescriptorBindingInfo>& bindingInfo, DescriptorType type, DX12DescriptorHeapManager* pManager)
+		DX12Descriptor::DX12Descriptor(DX12Device* pDevice, const std::unordered_map<uint32_t, DescriptorBindingInfo>& bindingInfo, DescriptorType type, DX12DescriptorHeapManager* pManager)
 			: Descriptor(pDevice, bindingInfo, type)
 			, DX12DeviceBoundObject(pDevice)
 			, m_pManager(pManager)

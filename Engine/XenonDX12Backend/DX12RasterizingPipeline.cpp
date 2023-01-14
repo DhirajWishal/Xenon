@@ -23,8 +23,7 @@ namespace /* anonymous */
 	 */
 	void SetupShaderData(
 		const Xenon::Backend::Shader& shader,
-		std::unordered_map<Xenon::Backend::DescriptorType, std::vector<Xenon::Backend::DescriptorBindingInfo>>& bindingMap,
-		std::unordered_map<uint32_t, std::unordered_map<uint32_t, size_t>>& indexToBindingMap,
+		std::unordered_map<Xenon::Backend::DescriptorType, std::unordered_map<uint32_t, Xenon::Backend::DescriptorBindingInfo>>& bindingMap,
 		std::unordered_map<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>& rangeMap,
 		std::vector<D3D12_INPUT_ELEMENT_DESC>& inputs,
 		Xenon::Backend::ShaderType type)
@@ -34,16 +33,14 @@ namespace /* anonymous */
 		{
 			// Fill up the binding info structure.
 			auto& bindings = bindingMap[static_cast<Xenon::Backend::DescriptorType>(Xenon::EnumToInt(resource.m_Set))];
-			auto& indexToBinding = indexToBindingMap[Xenon::EnumToInt(resource.m_Set)];
 
-			if (indexToBinding.contains(resource.m_Binding))
+			if (bindings.contains(resource.m_Binding))
 			{
-				bindings[indexToBinding[resource.m_Binding]].m_ApplicableShaders |= type;
+				bindings[resource.m_Binding].m_ApplicableShaders |= type;
 			}
 			else
 			{
-				indexToBinding[resource.m_Binding] = bindings.size();
-				auto& binding = bindings.emplace_back();
+				auto& binding = bindings[resource.m_Binding];
 				binding.m_Type = resource.m_Type;
 				binding.m_ApplicableShaders = type;
 
@@ -623,16 +620,15 @@ namespace Xenon
 			, DX12DescriptorHeapManager(pDevice)
 			, m_pRasterizer(pRasterizer)
 		{
-			std::unordered_map<DescriptorType, std::vector<DescriptorBindingInfo>> bindingMap;
-			std::unordered_map<uint32_t, std::unordered_map<uint32_t, size_t>> indexToBindingMap;
+			std::unordered_map<DescriptorType, std::unordered_map<uint32_t, DescriptorBindingInfo>> bindingMap;
 
 			// Resolve shader-specific data.
 			std::unordered_map<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>> rangeMap;
 			if (specification.m_VertexShader.getDXIL().isValid())
-				SetupShaderData(specification.m_VertexShader, bindingMap, indexToBindingMap, rangeMap, m_Inputs, ShaderType::Vertex);
+				SetupShaderData(specification.m_VertexShader, bindingMap, rangeMap, m_Inputs, ShaderType::Vertex);
 
 			if (specification.m_FragmentShader.getDXIL().isValid())
-				SetupShaderData(specification.m_FragmentShader, bindingMap, indexToBindingMap, rangeMap, m_Inputs, ShaderType::Fragment);
+				SetupShaderData(specification.m_FragmentShader, bindingMap, rangeMap, m_Inputs, ShaderType::Fragment);
 
 			// Sort the ranges to the correct binding order.
 			auto sortedranges = std::vector<std::pair<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>>(rangeMap.begin(), rangeMap.end());

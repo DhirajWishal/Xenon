@@ -25,7 +25,7 @@ namespace Xenon
 			 * @param type The descriptor type.
 			 * @param pManager The descriptor manager pointer.
 			 */
-			explicit DX12Descriptor(DX12Device* pDevice, const std::vector<DescriptorBindingInfo>& bindingInfo, DescriptorType type, DX12DescriptorHeapManager* pManager);
+			explicit DX12Descriptor(DX12Device* pDevice, const std::unordered_map<uint32_t, DescriptorBindingInfo>& bindingInfo, DescriptorType type, DX12DescriptorHeapManager* pManager);
 
 			/**
 			 * Destructor.

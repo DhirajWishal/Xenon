@@ -39,7 +39,7 @@ namespace Xenon
 			 *
 			 * @param bindingMap The descriptor binding map.
 			 */
-			void setupDescriptorHeapManager(std::unordered_map<DescriptorType, std::vector<DescriptorBindingInfo>>&& bindingMap);
+			void setupDescriptorHeapManager(std::unordered_map<DescriptorType, std::unordered_map<uint32_t, DescriptorBindingInfo>>&& bindingMap);
 
 			/**
 			 * Get the descriptor heap storage.
@@ -55,7 +55,7 @@ namespace Xenon
 			 * @param type The descriptor type.
 			 * @return The binding infos.
 			 */
-			[[nodiscard]] const std::vector<DescriptorBindingInfo>& getBindingInfo(DescriptorType type) const { return m_BindingMap.at(type); }
+			[[nodiscard]] const std::unordered_map<uint32_t, DescriptorBindingInfo>& getBindingInfo(DescriptorType type) const { return m_BindingMap.at(type); }
 
 			/**
 			 * Setup a new descriptor
@@ -156,7 +156,7 @@ namespace Xenon
 		public:
 			std::mutex m_Mutex;
 
-			std::unordered_map<DescriptorType, std::vector<DescriptorBindingInfo>> m_BindingMap;
+			std::unordered_map<DescriptorType, std::unordered_map<uint32_t, DescriptorBindingInfo>> m_BindingMap;
 			std::unordered_map<DescriptorType, std::pair<UINT, UINT>> m_GroupSizes;	// [buffer, sampler]
 
 			std::vector<UINT> m_SamplerIndex;

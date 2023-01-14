@@ -11,6 +11,10 @@ namespace Xenon
 	{
 		m_Registry.on_construct<Geometry>().connect<&Scene::onGeometryConstruction>(this);
 		m_Registry.on_construct<Material>().connect<&Scene::onMaterialConstruction>(this);
+
+		// Setup the buffers.
+		m_pSceneInformationUniform = m_Instance.getFactory()->createBuffer(m_Instance.getBackendDevice(), sizeof(SceneInformation), Backend::BufferType::Uniform);
+		m_pLightSourceUniform = m_Instance.getFactory()->createBuffer(m_Instance.getBackendDevice(), sizeof(Components::LightSource), Backend::BufferType::Uniform);
 	}
 
 	std::future<void> Scene::createMeshStorage(Group group, const std::filesystem::path& file)
@@ -20,6 +24,9 @@ namespace Xenon
 
 	void Scene::update()
 	{
+		setupLights();
+
+		m_pSceneInformationUniform->write(ToBytes(&m_SceneInformation), sizeof(SceneInformation));
 		m_pCamera->update();
 	}
 
@@ -43,8 +50,22 @@ namespace Xenon
 			// Bind everything that we need!
 			switch (static_cast<Backend::SceneBindings>(resource.m_Binding))
 			{
+			case Xenon::Backend::SceneBindings::SceneInformation:
+				pSceneDescriptor->attach(resource.m_Binding, m_pSceneInformationUniform.get());
+				break;
+
 			case Xenon::Backend::SceneBindings::Camera:
 				pSceneDescriptor->attach(resource.m_Binding, m_pCamera->getViewports().front().m_pUniformBuffer);
+				break;
+
+			case Xenon::Backend::SceneBindings::LightSources:
+				pSceneDescriptor->attach(resource.m_Binding, m_pLightSourceUniform.get());
+				break;
+
+			case Xenon::Backend::SceneBindings::AccelerationStructure:
+				break;
+
+			case Xenon::Backend::SceneBindings::RenderTarget:
 				break;
 
 			default:
@@ -69,5 +90,20 @@ namespace Xenon
 			for (const auto& geometry = registry.get<Geometry>(group); const auto & mesh : geometry.getMeshes())
 				m_DrawableCount += mesh.m_SubMeshes.size();
 		}
+	}
+
+	void Scene::setupLights()
+	{
+		std::vector<Components::LightSource> lightSources;
+		for (const auto group : m_Registry.view<Components::LightSource>())
+			lightSources.emplace_back(m_Registry.get<Components::LightSource>(group));
+
+		const auto requiredSize = lightSources.size() * sizeof(Components::LightSource);
+		const auto currentSize = m_pLightSourceUniform->getSize();
+
+		if (requiredSize > currentSize)
+			m_pLightSourceUniform = m_Instance.getFactory()->createBuffer(m_Instance.getBackendDevice(), requiredSize, Backend::BufferType::Uniform);
+
+		m_pLightSourceUniform->write(ToBytes(lightSources.data()), requiredSize);
 	}
 }

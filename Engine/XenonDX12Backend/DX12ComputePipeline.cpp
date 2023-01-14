@@ -21,13 +21,13 @@ namespace /* anonymous */
 	 */
 	void SetupShaderData(
 		const Xenon::Backend::Shader& shader,
-		std::vector<Xenon::Backend::DescriptorBindingInfo>& bindingInfos,
+		std::unordered_map<uint32_t, Xenon::Backend::DescriptorBindingInfo>& bindingInfos,
 		std::vector<CD3DX12_DESCRIPTOR_RANGE1>& descriptorRanges)
 	{
 		// Setup resources.
 		for (const auto& resource : shader.getResources())
 		{
-			auto& binding = bindingInfos.emplace_back();
+			auto& binding = bindingInfos[resource.m_Binding];
 			binding.m_Type = resource.m_Type;
 			binding.m_ApplicableShaders = Xenon::Backend::ShaderType::Compute;
 

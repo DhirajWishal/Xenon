@@ -63,7 +63,7 @@ namespace Xenon
 			void createPipeline();
 
 		private:
-			std::vector<DescriptorBindingInfo> m_BindingInfos;
+			std::unordered_map<uint32_t, DescriptorBindingInfo> m_BindingInfos;
 
 			VkPipelineLayout m_PipelineLayout = VK_NULL_HANDLE;
 			VkPipelineCache m_PipelineCache = VK_NULL_HANDLE;

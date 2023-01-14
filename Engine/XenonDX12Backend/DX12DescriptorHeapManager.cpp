@@ -70,17 +70,13 @@ namespace Xenon
 			m_SamplerHeapIncrementSize = m_pDevice->getDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
 		}
 
-		void DX12DescriptorHeapManager::setupDescriptorHeapManager(std::unordered_map<DescriptorType, std::vector<DescriptorBindingInfo>>&& bindingMap)
+		void DX12DescriptorHeapManager::setupDescriptorHeapManager(std::unordered_map<DescriptorType, std::unordered_map<uint32_t, DescriptorBindingInfo>>&& bindingMap)
 		{
 			m_BindingMap = std::move(bindingMap);
 
-			// Sort the bindings.
-			auto sortedBindings = std::vector<std::pair<DescriptorType, std::vector<DescriptorBindingInfo>>>(m_BindingMap.begin(), m_BindingMap.end());
-			std::ranges::sort(sortedBindings, [](const auto& lhs, const auto& rhs) { return EnumToInt(lhs.first) < EnumToInt(rhs.first); });
-
-			for (const auto& [type, bindingInfos] : sortedBindings)
+			for (const auto& [type, bindingInfos] : m_BindingMap)
 			{
-				for (const auto& info : bindingInfos)
+				for (const auto& [binding, info] : bindingInfos)
 				{
 					m_CbvSrvUavCount++;
 					m_GroupSizes[type].first++;
