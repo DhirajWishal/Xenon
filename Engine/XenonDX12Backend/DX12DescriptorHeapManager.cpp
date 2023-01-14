@@ -73,24 +73,9 @@ namespace Xenon
 		void DX12DescriptorHeapManager::setupDescriptorHeapManager(std::unordered_map<DescriptorType, std::unordered_map<uint32_t, DescriptorBindingInfo>>&& bindingMap)
 		{
 			m_BindingMap = std::move(bindingMap);
-
-			for (const auto& [type, bindingInfos] : m_BindingMap)
-			{
-				for (const auto& [binding, info] : bindingInfos)
-				{
-					m_CbvSrvUavCount++;
-					m_GroupSizes[type].first++;
-					m_SamplerIndex.emplace_back(m_SamplerCount);
-
-					if (info.m_Type == ResourceType::Sampler || info.m_Type == ResourceType::CombinedImageSampler)
-					{
-						m_SamplerCount++;
-						m_GroupSizes[type].second++;
-					}
-
-					m_Ranges.emplace_back().Init(GetDescriptorRangeType(info.m_Type), 1, 0);
-				}
-			}
+			setupRange(m_BindingMap[DescriptorType::UserDefined], DescriptorType::UserDefined);
+			setupRange(m_BindingMap[DescriptorType::Material], DescriptorType::Material);
+			setupRange(m_BindingMap[DescriptorType::Scene], DescriptorType::Scene);
 
 			// Setup and increment the heaps.
 			incrementHeaps();
@@ -256,6 +241,24 @@ namespace Xenon
 				}
 
 				m_SamplerDescriptorHeap = std::move(newHeap);
+			}
+		}
+
+		void DX12DescriptorHeapManager::setupRange(const std::unordered_map<uint32_t, DescriptorBindingInfo>& bindingInfo, DescriptorType type)
+		{
+			for (const auto& [binding, info] : bindingInfo)
+			{
+				m_CbvSrvUavCount++;
+				m_GroupSizes[type].first++;
+				m_SamplerIndex.emplace_back(m_SamplerCount);
+
+				if (info.m_Type == ResourceType::Sampler || info.m_Type == ResourceType::CombinedImageSampler)
+				{
+					m_SamplerCount++;
+					m_GroupSizes[type].second++;
+				}
+
+				m_Ranges.emplace_back().Init(GetDescriptorRangeType(info.m_Type), 1, 0);
 			}
 		}
 	}

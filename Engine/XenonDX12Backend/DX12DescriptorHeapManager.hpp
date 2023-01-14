@@ -153,6 +153,14 @@ namespace Xenon
 			 */
 			void incrementHeaps();
 
+			/**
+			 * Setup the internal descriptor range.
+			 *
+			 * @param bindingInfo The binding infos.
+			 * @param type The descriptor type.
+			 */
+			void setupRange(const std::unordered_map<uint32_t, DescriptorBindingInfo>& bindingInfo, DescriptorType type);
+
 		public:
 			std::mutex m_Mutex;
 

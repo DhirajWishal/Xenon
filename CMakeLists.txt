@@ -51,6 +51,7 @@ set(IMGUI_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/imgui)
 set(IMNODES_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/imnodes)
 set(FMT_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/fmt/include)
 set(ENTT_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/entt/src)
+set(IMGUIZMO_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/ImGuizmo)
 
 # Add the Optick library as a third party static link.
 add_library(
@@ -125,6 +126,31 @@ target_include_directories(
 	PRIVATE ${IMGUI_INCLUDE_DIR}
 )
 
+# Set the ImGuizmo library.
+add_library(
+	XenonThirdParty_ImGuizmo
+	STATIC 
+
+	"${IMGUIZMO_INCLUDE_DIR}/GraphEditor.cpp"
+	"${IMGUIZMO_INCLUDE_DIR}/GraphEditor.h"
+	"${IMGUIZMO_INCLUDE_DIR}/ImCurveEdit.cpp"
+	"${IMGUIZMO_INCLUDE_DIR}/ImCurveEdit.h"
+	"${IMGUIZMO_INCLUDE_DIR}/ImGradient.cpp"
+	"${IMGUIZMO_INCLUDE_DIR}/ImGradient.h"
+	"${IMGUIZMO_INCLUDE_DIR}/ImGuizmo.cpp"
+	"${IMGUIZMO_INCLUDE_DIR}/ImGuizmo.h"
+	"${IMGUIZMO_INCLUDE_DIR}/ImSequencer.cpp"
+	"${IMGUIZMO_INCLUDE_DIR}/ImSequencer.h"
+	"${IMGUIZMO_INCLUDE_DIR}/ImZoomSlider.h"
+)
+
+# Set the include directories.
+target_include_directories(
+	XenonThirdParty_ImGuizmo 
+
+	PRIVATE ${IMGUI_INCLUDE_DIR}
+)
+
 # Set global compile definitions.
 add_compile_definitions(
 	$<$<CONFIG:Debug>:XENON_DEBUG>
@@ -189,6 +215,7 @@ if (MSVC)
 		XenonThirdParty_Optick
 		XenonThirdParty_ImGui
 		XenonThirdParty_imnodes
+		XenonThirdParty_ImGuizmo
 			
 		PROPERTIES FOLDER "ThirdParty"
 	)

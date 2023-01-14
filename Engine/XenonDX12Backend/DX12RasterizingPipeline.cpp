@@ -24,6 +24,7 @@ namespace /* anonymous */
 	void SetupShaderData(
 		const Xenon::Backend::Shader& shader,
 		std::unordered_map<Xenon::Backend::DescriptorType, std::unordered_map<uint32_t, Xenon::Backend::DescriptorBindingInfo>>& bindingMap,
+		std::unordered_map<Xenon::Backend::DescriptorType, std::unordered_map<uint32_t, UINT>>& bindingOffsets,
 		std::unordered_map<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>& rangeMap,
 		std::vector<D3D12_INPUT_ELEMENT_DESC>& inputs,
 		Xenon::Backend::ShaderType type)
@@ -31,8 +32,10 @@ namespace /* anonymous */
 		// Setup resources.
 		for (const auto& resource : shader.getResources())
 		{
+			const auto set = static_cast<Xenon::Backend::DescriptorType>(Xenon::EnumToInt(resource.m_Set));
 			// Fill up the binding info structure.
-			auto& bindings = bindingMap[static_cast<Xenon::Backend::DescriptorType>(Xenon::EnumToInt(resource.m_Set))];
+			auto& bindings = bindingMap[set];
+			auto& offsets = bindingOffsets[set];
 
 			if (bindings.contains(resource.m_Binding))
 			{
@@ -40,6 +43,8 @@ namespace /* anonymous */
 			}
 			else
 			{
+				offsets[resource.m_Binding] = static_cast<UINT>(bindings.size());
+
 				auto& binding = bindings[resource.m_Binding];
 				binding.m_Type = resource.m_Type;
 				binding.m_ApplicableShaders = type;
@@ -625,10 +630,10 @@ namespace Xenon
 			// Resolve shader-specific data.
 			std::unordered_map<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>> rangeMap;
 			if (specification.m_VertexShader.getDXIL().isValid())
-				SetupShaderData(specification.m_VertexShader, bindingMap, rangeMap, m_Inputs, ShaderType::Vertex);
+				SetupShaderData(specification.m_VertexShader, bindingMap, m_BindingOffsets, rangeMap, m_Inputs, ShaderType::Vertex);
 
 			if (specification.m_FragmentShader.getDXIL().isValid())
-				SetupShaderData(specification.m_FragmentShader, bindingMap, rangeMap, m_Inputs, ShaderType::Fragment);
+				SetupShaderData(specification.m_FragmentShader, bindingMap, m_BindingOffsets, rangeMap, m_Inputs, ShaderType::Fragment);
 
 			// Sort the ranges to the correct binding order.
 			auto sortedranges = std::vector<std::pair<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>>(rangeMap.begin(), rangeMap.end());
@@ -653,7 +658,7 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
-			return std::make_unique<DX12Descriptor>(m_pDevice, getBindingInfo(type), type, this);
+			return std::make_unique<DX12Descriptor>(m_pDevice, getBindingInfo(type), type, m_BindingOffsets[type], this);
 		}
 
 		const Xenon::Backend::DX12RasterizingPipeline::PipelineStorage& DX12RasterizingPipeline::getPipeline(const VertexSpecification& vertexSpecification)

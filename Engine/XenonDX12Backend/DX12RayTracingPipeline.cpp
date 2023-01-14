@@ -23,14 +23,18 @@ namespace /* anonymous */
 	void SetupShaderData(
 		const Xenon::Backend::Shader& shader,
 		std::unordered_map<Xenon::Backend::DescriptorType, std::unordered_map<uint32_t, Xenon::Backend::DescriptorBindingInfo>>& bindingMap,
+		std::unordered_map<Xenon::Backend::DescriptorType, std::unordered_map<uint32_t, UINT>>& bindingOffsets,
 		std::unordered_map<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>& rangeMap,
 		Xenon::Backend::ShaderType type)
 	{
 		// Setup resources.
 		for (const auto& resource : shader.getResources())
 		{
+			const auto set = static_cast<Xenon::Backend::DescriptorType>(Xenon::EnumToInt(resource.m_Set));
+
 			// Fill up the binding info structure.
-			auto& bindings = bindingMap[static_cast<Xenon::Backend::DescriptorType>(Xenon::EnumToInt(resource.m_Set))];
+			auto& bindings = bindingMap[set];
+			auto& offsets = bindingOffsets[set];
 
 			if (bindings.contains(resource.m_Binding))
 			{
@@ -38,6 +42,8 @@ namespace /* anonymous */
 			}
 			else
 			{
+				offsets[resource.m_Binding] = static_cast<UINT>(bindings.size());
+
 				auto& binding = bindings[resource.m_Binding];
 				binding.m_Type = resource.m_Type;
 				binding.m_ApplicableShaders |= type;
@@ -112,14 +118,14 @@ namespace Xenon
 				if (group.m_RayGenShader.getDXIL().isValid())
 				{
 					const auto& newName = names.emplace_back(fmt::format(L"rayGenMain_group{}", index));
-					SetupShaderData(group.m_RayGenShader, bindingMap, rangeMap, ShaderType::RayGen);
+					SetupShaderData(group.m_RayGenShader, bindingMap, m_BindingOffsets, rangeMap, ShaderType::RayGen);
 					createDXILLibrary(rayTracingPipeline, CD3DX12_SHADER_BYTECODE(group.m_RayGenShader.getDXIL().getBinaryData(), group.m_RayGenShader.getDXIL().getBinarySizeInBytes()), newName);
 				}
 
 				if (group.m_IntersectionShader.getDXIL().isValid())
 				{
 					const auto& newName = names.emplace_back(fmt::format(L"intersectionMain_group{}", index));
-					SetupShaderData(group.m_IntersectionShader, bindingMap, rangeMap, ShaderType::Intersection);
+					SetupShaderData(group.m_IntersectionShader, bindingMap, m_BindingOffsets, rangeMap, ShaderType::Intersection);
 					createDXILLibrary(rayTracingPipeline, CD3DX12_SHADER_BYTECODE(group.m_IntersectionShader.getDXIL().getBinaryData(), group.m_IntersectionShader.getDXIL().getBinarySizeInBytes()), newName);
 
 					pHitGroup->SetIntersectionShaderImport(newName.c_str());
@@ -128,7 +134,7 @@ namespace Xenon
 				if (group.m_AnyHitShader.getDXIL().isValid())
 				{
 					const auto& newName = names.emplace_back(fmt::format(L"anyHitMain_group{}", index));
-					SetupShaderData(group.m_AnyHitShader, bindingMap, rangeMap, ShaderType::AnyHit);
+					SetupShaderData(group.m_AnyHitShader, bindingMap, m_BindingOffsets, rangeMap, ShaderType::AnyHit);
 					createDXILLibrary(rayTracingPipeline, CD3DX12_SHADER_BYTECODE(group.m_AnyHitShader.getDXIL().getBinaryData(), group.m_AnyHitShader.getDXIL().getBinarySizeInBytes()), newName);
 
 					pHitGroup->SetAnyHitShaderImport(newName.c_str());
@@ -137,7 +143,7 @@ namespace Xenon
 				if (group.m_ClosestHitShader.getDXIL().isValid())
 				{
 					const auto& newName = names.emplace_back(fmt::format(L"closestHitMain_group{}", index));
-					SetupShaderData(group.m_ClosestHitShader, bindingMap, rangeMap, ShaderType::ClosestHit);
+					SetupShaderData(group.m_ClosestHitShader, bindingMap, m_BindingOffsets, rangeMap, ShaderType::ClosestHit);
 					createDXILLibrary(rayTracingPipeline, CD3DX12_SHADER_BYTECODE(group.m_ClosestHitShader.getDXIL().getBinaryData(), group.m_ClosestHitShader.getDXIL().getBinarySizeInBytes()), newName);
 
 					pHitGroup->SetClosestHitShaderImport(newName.c_str());
@@ -146,14 +152,14 @@ namespace Xenon
 				if (group.m_MissShader.getDXIL().isValid())
 				{
 					const auto& newName = names.emplace_back(fmt::format(L"missMain_group{}", index));
-					SetupShaderData(group.m_MissShader, bindingMap, rangeMap, ShaderType::Miss);
+					SetupShaderData(group.m_MissShader, bindingMap, m_BindingOffsets, rangeMap, ShaderType::Miss);
 					createDXILLibrary(rayTracingPipeline, CD3DX12_SHADER_BYTECODE(group.m_MissShader.getDXIL().getBinaryData(), group.m_MissShader.getDXIL().getBinarySizeInBytes()), newName);
 				}
 
 				if (group.m_CallableShader.getDXIL().isValid())
 				{
 					const auto& newName = names.emplace_back(fmt::format(L"callableMain_group{}", index));
-					SetupShaderData(group.m_CallableShader, bindingMap, rangeMap, ShaderType::Callable);
+					SetupShaderData(group.m_CallableShader, bindingMap, m_BindingOffsets, rangeMap, ShaderType::Callable);
 					createDXILLibrary(rayTracingPipeline, CD3DX12_SHADER_BYTECODE(group.m_CallableShader.getDXIL().getBinaryData(), group.m_CallableShader.getDXIL().getBinarySizeInBytes()), newName);
 				}
 
@@ -237,7 +243,7 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
-			return std::make_unique<DX12Descriptor>(m_pDevice, getBindingInfo(type), type, this);
+			return std::make_unique<DX12Descriptor>(m_pDevice, getBindingInfo(type), type, m_BindingOffsets[type], this);
 		}
 
 		std::unique_ptr<ShaderBindingTable> DX12RayTracingPipeline::createShaderBindingTable(const std::vector<BindingGroup>& bindingGroups)

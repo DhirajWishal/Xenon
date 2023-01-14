@@ -44,3 +44,6 @@
 [submodule "ThirdParty/entt"]
 	path = ThirdParty/entt
 	url = https://github.com/skypjack/entt
+[submodule "ThirdParty/ImGuizmo"]
+	path = ThirdParty/ImGuizmo
+	url = https://github.com/CedricGuillemet/ImGuizmo

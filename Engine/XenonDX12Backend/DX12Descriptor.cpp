@@ -66,9 +66,10 @@ namespace Xenon
 {
 	namespace Backend
 	{
-		DX12Descriptor::DX12Descriptor(DX12Device* pDevice, const std::unordered_map<uint32_t, DescriptorBindingInfo>& bindingInfo, DescriptorType type, DX12DescriptorHeapManager* pManager)
+		DX12Descriptor::DX12Descriptor(DX12Device* pDevice, const std::unordered_map<uint32_t, DescriptorBindingInfo>& bindingInfo, DescriptorType type, const std::unordered_map<uint32_t, UINT>& bindingOffsets, DX12DescriptorHeapManager* pManager)
 			: Descriptor(pDevice, bindingInfo, type)
 			, DX12DeviceBoundObject(pDevice)
+			, m_BindingOffsets(bindingOffsets)
 			, m_pManager(pManager)
 		{
 			const auto [buffers, samplers] = m_pManager->setupDescriptor(type);
@@ -87,7 +88,7 @@ namespace Xenon
 
 			auto pDx12Buffer = pBuffer->as<DX12Buffer>();
 			const auto type = m_BindingInformation[binding].m_Type;
-			auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(m_pManager->getCbvSrvUavHeapStartCPU(), m_CbvSrvUavDescriptorHeapStart + binding, m_pManager->getCbvSrvUavHeapIncrementSize());
+			auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(m_pManager->getCbvSrvUavHeapStartCPU(), m_CbvSrvUavDescriptorHeapStart + m_BindingOffsets[binding], m_pManager->getCbvSrvUavHeapIncrementSize());
 
 			if (type == ResourceType::UniformBuffer || type == ResourceType::DynamicUniformBuffer)
 			{
@@ -122,7 +123,7 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
-			CD3DX12_CPU_DESCRIPTOR_HANDLE handle(m_pManager->getCbvSrvUavHeapStartCPU(), m_CbvSrvUavDescriptorHeapStart + binding, m_pManager->getCbvSrvUavHeapIncrementSize());
+			CD3DX12_CPU_DESCRIPTOR_HANDLE handle(m_pManager->getCbvSrvUavHeapStartCPU(), m_CbvSrvUavDescriptorHeapStart + m_BindingOffsets[binding], m_pManager->getCbvSrvUavHeapIncrementSize());
 
 			if (usage & ImageUsage::Graphics || usage & ImageUsage::ColorAttachment || usage & ImageUsage::DepthAttachment)
 			{
