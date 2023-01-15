@@ -832,9 +832,10 @@ namespace Xenon
 			}
 
 			// Get the layouts.
-			const std::array<VkDescriptorSetLayout, 3> layouts = {
+			const std::array<VkDescriptorSetLayout, 4> layouts = {
 				pDevice->getDescriptorSetManager()->getDescriptorSetLayout(m_BindingMap[DescriptorType::UserDefined]),
 				pDevice->getDescriptorSetManager()->getDescriptorSetLayout(m_BindingMap[DescriptorType::Material]),
+				pDevice->getDescriptorSetManager()->getDescriptorSetLayout(m_BindingMap[DescriptorType::PerGeometry]),
 				pDevice->getDescriptorSetManager()->getDescriptorSetLayout(m_BindingMap[DescriptorType::Scene])
 			};
 
@@ -936,7 +937,7 @@ namespace Xenon
 			}
 		}
 
-		void VulkanRasterizingPipeline::createPipelineLayout(const std::array<VkDescriptorSetLayout, 3>& layouts, std::vector<VkPushConstantRange>&& pushConstantRanges)
+		void VulkanRasterizingPipeline::createPipelineLayout(const std::array<VkDescriptorSetLayout, 4>& layouts, std::vector<VkPushConstantRange>&& pushConstantRanges)
 		{
 			VkPipelineLayoutCreateInfo createInfo = {};
 			createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;

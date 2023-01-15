@@ -152,9 +152,10 @@ namespace Xenon
 			 * @param pPipeline The pipeline to which the descriptors are bound to.
 			 * @param pUserDefinedDescrptor The user defined descriptor.
 			 * @param pMaterialDescriptor The material descriptor.
+			 * @param pPerGeometryDescriptor The per-geometry descriptor.
 			 * @param pSceneDescriptor The scene descriptor. Default is nullptr.
 			 */
-			virtual void bind(RasterizingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pSceneDescriptor) = 0;
+			virtual void bind(RasterizingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pPerGeometryDescriptor, Descriptor* pSceneDescriptor) = 0;
 
 			/**
 			 * Bind descriptors to the command recorder.
@@ -163,9 +164,10 @@ namespace Xenon
 			 * @param pPipeline The pipeline to which the descriptors are bound to.
 			 * @param pUserDefinedDescrptor The user defined descriptor.
 			 * @param pMaterialDescriptor The material descriptor.
+			 * @param pPerGeometryDescriptor The per-geometry descriptor.
 			 * @param pSceneDescriptor The scene descriptor. Default is nullptr.
 			 */
-			virtual void bind(RayTracingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pSceneDescriptor) = 0;
+			virtual void bind(RayTracingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pPerGeometryDescriptor, Descriptor* pSceneDescriptor) = 0;
 
 			/**
 			 * Set the viewport.

@@ -738,13 +738,19 @@ namespace Xenon
 		constexpr std::array<uint16_t, 6> triangleIndices =
 		{
 			0, 1, 2,
-			2, 3, 0
+			2, 3, 1
 		};
 
 		// Setup the geometry.
 		Geometry geometry;
 		geometry.m_VertexSpecification.addElement(Backend::InputElement::VertexPosition, Backend::AttributeDataType::Vec2, Backend::ComponentDataType::Float);
-		geometry.m_VertexSpecification.addElement(Backend::InputElement::VertexNormal, Backend::AttributeDataType::Vec2, Backend::ComponentDataType::Float);
+		geometry.m_VertexSpecification.addElement(Backend::InputElement::VertexTextureCoordinate_0, Backend::AttributeDataType::Vec2, Backend::ComponentDataType::Float);
+
+		// Setup the sub-mesh.
+		auto& subMesh = geometry.m_Meshes.emplace_back().m_SubMeshes.emplace_back();
+		subMesh.m_VertexCount = 3;
+		subMesh.m_IndexCount = 6;
+		subMesh.m_IndexSize = sizeof(uint16_t);
 
 		// Load the vertex data.
 		constexpr auto vertexBufferSize = triangleVertices.size() * sizeof(Vertex);

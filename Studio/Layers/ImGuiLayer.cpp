@@ -279,7 +279,7 @@ void ImGuiLayer::onUpdate(Layer* pPreviousLayer, uint32_t imageIndex, uint32_t f
 				static_cast<uint32_t>(maxClip.y)
 			);
 
-			m_pCommandRecorder->bind(m_pPipeline.get(), m_pUserDescriptor.get(), m_pMaterialDescriptors[std::bit_cast<uintptr_t>(pCommandBuffer->TextureId)].get(), nullptr);
+			m_pCommandRecorder->bind(m_pPipeline.get(), m_pUserDescriptor.get(), m_pMaterialDescriptors[std::bit_cast<uintptr_t>(pCommandBuffer->TextureId)].get(), nullptr, nullptr);
 			m_pCommandRecorder->drawIndexed(pCommandBuffer->VtxOffset + vertexOffset, pCommandBuffer->IdxOffset + indexOffset, pCommandBuffer->ElemCount);
 		}
 

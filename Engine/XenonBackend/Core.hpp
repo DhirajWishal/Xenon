@@ -599,9 +599,9 @@ namespace Xenon
 		 * This contains all the binding types with their corresponding binding in the user defined descriptor.
 		 * This is used since some of the binding slots are used by internal buffers (and/ or images).
 		 */
-		enum class UserDefinedBindings : uint32_t
+		enum class PerGeometryBindings : uint32_t
 		{
-
+			Transform
 		};
 
 		/**
@@ -638,13 +638,14 @@ namespace Xenon
 
 		/**
 		 * Descriptor type enum.
+		 * These descriptors are organized by (potentially) the most changing to less changing per draw call.
 		 */
 		enum class DescriptorType : uint8_t
 		{
-			PerGeometry,	// This descriptor type contains all the per-geometry information, like transform and others.
-			Material,		// This descriptor type contains all the material-specific information.
-			Scene,			// This descriptor type contains all the scene related information, like the camera, lighting, acceleration structures, etc...
 			UserDefined,	// This descriptor type contains any other user defined (custom) data.
+			Material,		// This descriptor type contains all the material-specific information.
+			PerGeometry,	// This descriptor type contains all the per-geometry information, like transform and others.
+			Scene			// This descriptor type contains all the scene related information, like the camera, lighting, acceleration structures, etc...
 		};
 
 		/**

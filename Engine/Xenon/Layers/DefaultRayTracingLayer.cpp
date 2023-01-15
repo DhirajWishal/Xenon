@@ -23,7 +23,7 @@ namespace Xenon
 		for (const auto& drawData : m_DrawData)
 		{
 			m_pCommandRecorder->bind(drawData.m_pPipeline);
-			m_pCommandRecorder->bind(drawData.m_pPipeline, nullptr, nullptr, nullptr);
+			m_pCommandRecorder->bind(drawData.m_pPipeline, nullptr, nullptr, nullptr, nullptr);
 			m_pCommandRecorder->drawRayTraced(m_pRayTracer.get(), drawData.m_pShaderBindingTable.get());
 		}
 

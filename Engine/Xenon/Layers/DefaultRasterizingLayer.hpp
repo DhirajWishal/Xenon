@@ -35,6 +35,7 @@ namespace Xenon
 
 			Backend::Descriptor* m_pUserDefinedDescriptor = nullptr;
 			Backend::Descriptor* m_pMaterialDescriptor = nullptr;
+			Backend::Descriptor* m_pPerGeometryDescriptor = nullptr;
 			Backend::Descriptor* m_pSceneDescriptor = nullptr;
 
 			uint64_t m_QueryIndex = 0;
@@ -48,6 +49,7 @@ namespace Xenon
 		{
 			std::unique_ptr<Backend::RasterizingPipeline> m_pPipeline = nullptr;
 			std::unique_ptr<Backend::Descriptor> m_pSceneDescriptor = nullptr;
+			std::unordered_map<Group, std::unique_ptr<Backend::Descriptor>> m_pPerGeometryDescriptors;
 			std::unordered_map<SubMesh, std::unique_ptr<Backend::Descriptor>> m_pMaterialDescriptors;
 		};
 
@@ -88,6 +90,14 @@ namespace Xenon
 		 * Setup the occlusion pipeline.
 		 */
 		void setupOcclusionPipeline();
+
+		/**
+		 * Create the per-geometry descriptor.
+		 *
+		 * @param pipeline The pipeline reference.
+		 * @param group The geometry's group.
+		 */
+		[[nodiscard]] std::unique_ptr<Backend::Descriptor> createPerGeometryDescriptor(Pipeline& pipeline, Group group);
 
 		/**
 		 * Get the material descriptor.

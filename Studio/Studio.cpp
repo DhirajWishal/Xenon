@@ -17,6 +17,8 @@
 
 #include "XenonShaderBank/Debugging/Shader.vert.hpp"
 #include "XenonShaderBank/Debugging/Shader.frag.hpp"
+#include "XenonShaderBank/Billboard/Billboard.vert.hpp"
+#include "XenonShaderBank/Billboard/Billboard.frag.hpp"
 
 #include "XenonShaderBank/Testing/RayTracing/ClosestHit.rchit.hpp"
 #include "XenonShaderBank/Testing/RayTracing/Miss.rmiss.hpp"
@@ -255,8 +257,9 @@ Xenon::Group Studio::createLightSource()
 
 	// Setup the pipeline specification.
 	Xenon::Backend::RasterizingPipelineSpecification specification;
-	specification.m_VertexShader = Xenon::Generated::CreateShaderShader_vert();
-	specification.m_FragmentShader = Xenon::Generated::CreateShaderShader_frag();
+	specification.m_VertexShader = Xenon::Generated::CreateShaderBillboard_vert();
+	specification.m_FragmentShader = Xenon::Generated::CreateShaderBillboard_frag();
+	specification.m_CullMode = Xenon::Backend::CullMode::None;
 	materialBuidler.setRasterizingPipelineSpecification(specification);
 
 	// Create the material.

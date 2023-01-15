@@ -34,6 +34,10 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
+			// Skip if we don't have that binding. Might be because of shader optimizations.
+			if (!m_BindingInformation.contains(binding))
+				return;
+
 			const auto& bufferInfo = pBuffer->as<VulkanBuffer>()->getDescriptorBufferInfo();
 
 			VkWriteDescriptorSet writeDescriptorSet = {};
@@ -54,6 +58,10 @@ namespace Xenon
 		void VulkanDescriptor::attach(uint32_t binding, Image* pImage, ImageView* pView, ImageSampler* pSampler, ImageUsage usage)
 		{
 			OPTICK_EVENT();
+
+			// Skip if we don't have that binding. Might be because of shader optimizations.
+			if (!m_BindingInformation.contains(binding))
+				return;
 
 			VkDescriptorImageInfo imageInfo = {};
 			imageInfo.sampler = pSampler->as<VulkanImageSampler>()->getSampler();

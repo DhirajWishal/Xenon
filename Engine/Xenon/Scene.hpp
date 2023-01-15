@@ -28,6 +28,18 @@ namespace Xenon
 		uint32_t m_LightSourceCount = 0;
 	};
 
+	namespace Internal
+	{
+		/**
+		 * Transform uniform buffer structure.
+		 * This is intended to store a single transform component's data.
+		 */
+		struct TransformUniformBuffer final
+		{
+			std::unique_ptr<Backend::Buffer> m_pUniformBuffer = nullptr;
+		};
+	}
+
 	/**
 	 * Scene class.
 	 * This contains all the information related to a single scene.
@@ -201,6 +213,33 @@ namespace Xenon
 		 * @param group The group to which the material is added.
 		 */
 		void onMaterialConstruction(entt::registry& registry, Group group);
+
+		/**
+		 * On transform component construction callback.
+		 * This is called by the ECS registry when a new transform component is added.
+		 *
+		 * @param registry The registry to which the transform component is added. In our case it's the same as m_Registry.
+		 * @param group The group to which the transform component is added.
+		 */
+		void onTransformComponentConstruction(entt::registry& registry, Group group);
+
+		/**
+		 * On transform component update callback.
+		 * This is called by the ECS registry when a new transform component is updated.
+		 *
+		 * @param registry The registry in which the component was updated. In our case it's the same as m_Registry.
+		 * @param group The group to which the transform component is updated.
+		 */
+		void onTransformComponentUpdate(entt::registry& registry, Group group) const;
+
+		/**
+		 * On transform component destruction callback.
+		 * This is called by the ECS registry when a new transform component is removed.
+		 *
+		 * @param registry The registry to which the transform component is removed. In our case it's the same as m_Registry.
+		 * @param group The group to which the transform component is removed.
+		 */
+		void onTransformComponentDestruction(entt::registry& registry, Group group) const;
 
 		/**
 		 * Setup the lighting.

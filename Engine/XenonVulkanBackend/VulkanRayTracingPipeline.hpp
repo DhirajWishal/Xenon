@@ -68,7 +68,7 @@ namespace Xenon
 			 * @param layouts The descriptor set layouts.
 			 * @param pushConstantRanges The push constant ranges.
 			 */
-			void createPipelineLayout(const std::array<VkDescriptorSetLayout, 3>& layouts, std::vector<VkPushConstantRange>&& pushConstantRanges);
+			void createPipelineLayout(const std::array<VkDescriptorSetLayout, 4>& layouts, std::vector<VkPushConstantRange>&& pushConstantRanges);
 
 			/**
 			 * Load the pipeline cache from the cache handler.

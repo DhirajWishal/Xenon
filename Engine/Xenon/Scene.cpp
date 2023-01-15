@@ -9,8 +9,13 @@ namespace Xenon
 		: m_Instance(instance)
 		, m_pCamera(std::move(pCamera))
 	{
+		// Setup connections.
 		m_Registry.on_construct<Geometry>().connect<&Scene::onGeometryConstruction>(this);
 		m_Registry.on_construct<Material>().connect<&Scene::onMaterialConstruction>(this);
+
+		m_Registry.on_construct<Components::Transform>().connect<&Scene::onTransformComponentConstruction>(this);
+		m_Registry.on_update<Components::Transform>().connect<&Scene::onTransformComponentUpdate>(this);
+		m_Registry.on_destroy<Components::Transform>().connect<&Scene::onTransformComponentDestruction>(this);
 
 		// Setup the buffers.
 		m_pSceneInformationUniform = m_Instance.getFactory()->createBuffer(m_Instance.getBackendDevice(), sizeof(SceneInformation), Backend::BufferType::Uniform);
@@ -90,6 +95,22 @@ namespace Xenon
 			for (const auto& geometry = registry.get<Geometry>(group); const auto & mesh : geometry.getMeshes())
 				m_DrawableCount += mesh.m_SubMeshes.size();
 		}
+	}
+
+	void Scene::onTransformComponentConstruction(entt::registry& registry, Group group)
+	{
+		auto& uniformBuffer = registry.emplace<Internal::TransformUniformBuffer>(group, m_Instance.getFactory()->createBuffer(m_Instance.getBackendDevice(), sizeof(Components::Transform), Backend::BufferType::Uniform));
+		uniformBuffer.m_pUniformBuffer->write(ToBytes(&registry.get<Components::Transform>(group)), sizeof(Components::Transform));
+	}
+
+	void Scene::onTransformComponentUpdate(entt::registry& registry, Group group) const
+	{
+		registry.get<Internal::TransformUniformBuffer>(group).m_pUniformBuffer->write(ToBytes(&registry.get<Components::Transform>(group)), sizeof(Components::Transform));
+	}
+
+	void Scene::onTransformComponentDestruction(entt::registry& registry, Group group) const
+	{
+		registry.remove<Internal::TransformUniformBuffer>(group);
 	}
 
 	void Scene::setupLights()

@@ -742,7 +742,7 @@ namespace Xenon
 			m_pDevice->getDeviceTable().vkCmdBindPipeline(*m_pCurrentBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pPipeline->as<VulkanRasterizingPipeline>()->getPipeline(vertexSpecification).m_Pipeline);
 		}
 
-		void VulkanCommandRecorder::bind(RasterizingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pSceneDescriptor)
+		void VulkanCommandRecorder::bind(RasterizingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pPerGeometryDescriptor, Descriptor* pSceneDescriptor)
 		{
 			OPTICK_EVENT();
 
@@ -754,7 +754,7 @@ namespace Xenon
 					*m_pCurrentBuffer,
 					VK_PIPELINE_BIND_POINT_GRAPHICS,
 					pVkPipeline->getPipelineLayout(),
-					0,
+					EnumToInt(DescriptorType::UserDefined),
 					1,
 					&descriptorSet,
 					0,
@@ -769,7 +769,22 @@ namespace Xenon
 					*m_pCurrentBuffer,
 					VK_PIPELINE_BIND_POINT_GRAPHICS,
 					pVkPipeline->getPipelineLayout(),
+					EnumToInt(DescriptorType::Material),
 					1,
+					&descriptorSet,
+					0,
+					nullptr
+				);
+			}
+
+			if (pPerGeometryDescriptor)
+			{
+				auto descriptorSet = pPerGeometryDescriptor->as<VulkanDescriptor>()->getDescriptorSet();
+				m_pDevice->getDeviceTable().vkCmdBindDescriptorSets(
+					*m_pCurrentBuffer,
+					VK_PIPELINE_BIND_POINT_GRAPHICS,
+					pVkPipeline->getPipelineLayout(),
+					EnumToInt(DescriptorType::PerGeometry),
 					1,
 					&descriptorSet,
 					0,
@@ -784,7 +799,7 @@ namespace Xenon
 					*m_pCurrentBuffer,
 					VK_PIPELINE_BIND_POINT_GRAPHICS,
 					pVkPipeline->getPipelineLayout(),
-					2,
+					EnumToInt(DescriptorType::Scene),
 					1,
 					&descriptorSet,
 					0,
@@ -826,7 +841,7 @@ namespace Xenon
 			m_pDevice->getDeviceTable().vkCmdBindPipeline(*m_pCurrentBuffer, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, pPipeline->as<VulkanRayTracingPipeline>()->getPipeline());
 		}
 
-		void VulkanCommandRecorder::bind(RayTracingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pSceneDescriptor)
+		void VulkanCommandRecorder::bind(RayTracingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pPerGeometryDescriptor, Descriptor* pSceneDescriptor)
 		{
 			OPTICK_EVENT();
 
@@ -838,7 +853,7 @@ namespace Xenon
 					*m_pCurrentBuffer,
 					VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR,
 					pVkPipeline->getPipelineLayout(),
-					0,
+					EnumToInt(DescriptorType::UserDefined),
 					1,
 					&descriptorSet,
 					0,
@@ -853,7 +868,22 @@ namespace Xenon
 					*m_pCurrentBuffer,
 					VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR,
 					pVkPipeline->getPipelineLayout(),
+					EnumToInt(DescriptorType::Material),
 					1,
+					&descriptorSet,
+					0,
+					nullptr
+				);
+			}
+
+			if (pPerGeometryDescriptor)
+			{
+				auto descriptorSet = pPerGeometryDescriptor->as<VulkanDescriptor>()->getDescriptorSet();
+				m_pDevice->getDeviceTable().vkCmdBindDescriptorSets(
+					*m_pCurrentBuffer,
+					VK_PIPELINE_BIND_POINT_GRAPHICS,
+					pVkPipeline->getPipelineLayout(),
+					EnumToInt(DescriptorType::PerGeometry),
 					1,
 					&descriptorSet,
 					0,
@@ -868,7 +898,7 @@ namespace Xenon
 					*m_pCurrentBuffer,
 					VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR,
 					pVkPipeline->getPipelineLayout(),
-					2,
+					EnumToInt(DescriptorType::Scene),
 					1,
 					&descriptorSet,
 					0,

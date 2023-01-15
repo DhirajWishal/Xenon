@@ -65,6 +65,8 @@ namespace Xenon
 
 	void DefaultRasterizingLayer::setupOcclusionPipeline()
 	{
+		OPTICK_EVENT();
+
 #ifdef ENABLE_OCCLUSION_CULL
 		// Create the pipeline.
 		Backend::RasterizingPipelineSpecification specification = {};
@@ -80,8 +82,23 @@ namespace Xenon
 #endif // ENABLE_OCCLUSION_CULL
 	}
 
+	std::unique_ptr<Xenon::Backend::Descriptor> DefaultRasterizingLayer::createPerGeometryDescriptor(Pipeline& pipeline, Group group)
+	{
+		OPTICK_EVENT();
+
+		std::unique_ptr<Xenon::Backend::Descriptor> pDescriptor = pipeline.m_pPipeline->createDescriptor(Backend::DescriptorType::PerGeometry);
+		if (m_pScene->getRegistry().any_of<Components::Transform>(group))
+		{
+			pDescriptor->attach(EnumToInt(Backend::PerGeometryBindings::Transform), m_pScene->getRegistry().get<Internal::TransformUniformBuffer>(group).m_pUniformBuffer.get());
+		}
+
+		return pDescriptor;
+	}
+
 	Xenon::Backend::Descriptor* DefaultRasterizingLayer::getMaterialDescriptor(Pipeline& pipeline, SubMesh& subMesh, const MaterialSpecification& specification)
 	{
+		OPTICK_EVENT();
+
 		// Get if we've already crated a material descriptor for the sub-mesh.
 		if (pipeline.m_pMaterialDescriptors.contains(subMesh))
 			return pipeline.m_pMaterialDescriptors[subMesh].get();
@@ -227,6 +244,13 @@ namespace Xenon
 			// Get the pipeline from the storage.
 			auto& pipeline = m_pPipelines[material];
 
+			// Setup the per-geometry descriptor if we need one for the geometry.
+			if (!pipeline.m_pPerGeometryDescriptors.contains(group))
+				pipeline.m_pPerGeometryDescriptors[group] = createPerGeometryDescriptor(pipeline, group);
+
+			// Get the per-geometry descriptor.
+			auto pPerGeometryDescriptor = pipeline.m_pPerGeometryDescriptors[group].get();
+
 			// Bind the sub-meshes.
 			for (auto& mesh : geometry.getMeshes())
 			{
@@ -242,7 +266,7 @@ namespace Xenon
 					entry.m_pPipeline = pipeline.m_pPipeline.get();
 					entry.m_pVertexBuffer = geometry.getVertexBuffer();
 					entry.m_pIndexBuffer = geometry.getIndexBuffer();
-					entry.m_pUserDefinedDescriptor = nullptr;
+					entry.m_pPerGeometryDescriptor = pPerGeometryDescriptor;
 					entry.m_pMaterialDescriptor = getMaterialDescriptor(pipeline, subMesh, materialSpecification);
 					entry.m_pSceneDescriptor = pipeline.m_pSceneDescriptor.get();
 					entry.m_QueryIndex = index++;
@@ -318,7 +342,7 @@ namespace Xenon
 		pCommandRecorder->bind(m_pOcclusionPipeline.get(), entry.m_VertexSpecification);
 		pCommandRecorder->bind(entry.m_pVertexBuffer, entry.m_VertexSpecification.getSize());
 		pCommandRecorder->bind(entry.m_pIndexBuffer, static_cast<Backend::IndexBufferStride>(entry.m_SubMesh.m_IndexSize));
-		pCommandRecorder->bind(m_pOcclusionPipeline.get(), nullptr, nullptr, m_pOcclusionCameraDescriptor.get());
+		pCommandRecorder->bind(m_pOcclusionPipeline.get(), nullptr, nullptr, nullptr, m_pOcclusionCameraDescriptor.get());
 
 		pCommandRecorder->beginQuery(m_pOcclusionQuery.get(), static_cast<uint32_t>(entry.m_QueryIndex));
 		pCommandRecorder->drawIndexed(entry.m_SubMesh.m_VertexOffset, entry.m_SubMesh.m_IndexOffset, entry.m_SubMesh.m_IndexCount);
@@ -343,7 +367,7 @@ namespace Xenon
 			pCommandRecorder->bind(entry.m_pPipeline, entry.m_VertexSpecification);
 			pCommandRecorder->bind(entry.m_pVertexBuffer, entry.m_VertexSpecification.getSize());
 			pCommandRecorder->bind(entry.m_pIndexBuffer, static_cast<Backend::IndexBufferStride>(entry.m_SubMesh.m_IndexSize));
-			pCommandRecorder->bind(entry.m_pPipeline, entry.m_pUserDefinedDescriptor, entry.m_pMaterialDescriptor, entry.m_pSceneDescriptor);
+			pCommandRecorder->bind(entry.m_pPipeline, entry.m_pUserDefinedDescriptor, entry.m_pMaterialDescriptor, entry.m_pPerGeometryDescriptor, entry.m_pSceneDescriptor);
 
 			pCommandRecorder->drawIndexed(entry.m_SubMesh.m_VertexOffset, entry.m_SubMesh.m_IndexOffset, entry.m_SubMesh.m_IndexCount);
 
