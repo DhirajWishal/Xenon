@@ -658,7 +658,7 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
-			return std::make_unique<DX12Descriptor>(m_pDevice, getBindingInfo(type), type, m_BindingOffsets[type], this);
+			return std::make_unique<DX12Descriptor>(m_pDevice, m_BindingMap[type], type, m_BindingOffsets[type], this);
 		}
 
 		const Xenon::Backend::DX12RasterizingPipeline::PipelineStorage& DX12RasterizingPipeline::getPipeline(const VertexSpecification& vertexSpecification)

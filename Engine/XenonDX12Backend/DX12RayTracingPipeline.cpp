@@ -243,7 +243,7 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
-			return std::make_unique<DX12Descriptor>(m_pDevice, getBindingInfo(type), type, m_BindingOffsets[type], this);
+			return std::make_unique<DX12Descriptor>(m_pDevice, m_BindingMap[type], type, m_BindingOffsets[type], this);
 		}
 
 		std::unique_ptr<ShaderBindingTable> DX12RayTracingPipeline::createShaderBindingTable(const std::vector<BindingGroup>& bindingGroups)
