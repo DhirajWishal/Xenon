@@ -729,10 +729,10 @@ namespace Xenon
 		// Define the geometry for a triangle.
 		const std::array<Vertex, 4> triangleVertices =
 		{
-			Vertex{.m_Position = glm::vec2(1.0f, 1.0f), .m_UV = glm::vec2(1.0f, 1.0f)},
-			Vertex{.m_Position = glm::vec2(1.0f, -1.0f), .m_UV = glm::vec2(1.0f, 0.0f)},
-			Vertex{.m_Position = glm::vec2(-1.0f, 1.0f), .m_UV = glm::vec2(0.0f, 1.0f)},
-			Vertex{.m_Position = glm::vec2(-1.0f, -1.0f), .m_UV = glm::vec2(0.0f, 0.0f)}
+			Vertex{.m_Position = glm::vec2(1.0f, 1.0f), .m_UV = glm::vec2(0.0f, 0.0f)},
+			Vertex{.m_Position = glm::vec2(1.0f, -1.0f), .m_UV = glm::vec2(0.0f, 1.0f)},
+			Vertex{.m_Position = glm::vec2(-1.0f, 1.0f), .m_UV = glm::vec2(1.0f, 0.0f)},
+			Vertex{.m_Position = glm::vec2(-1.0f, -1.0f), .m_UV = glm::vec2(1.0f, 1.0f)}
 		};
 
 		constexpr std::array<uint16_t, 6> triangleIndices =

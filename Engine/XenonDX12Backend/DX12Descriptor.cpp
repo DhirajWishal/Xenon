@@ -86,6 +86,10 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
+			// Return if we don't have the binding. Might be because of shader optimizations.
+			if (!m_BindingInformation.contains(binding))
+				return;
+
 			auto pDx12Buffer = pBuffer->as<DX12Buffer>();
 			const auto type = m_BindingInformation[binding].m_Type;
 			auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(m_pManager->getCbvSrvUavHeapStartCPU(), m_CbvSrvUavDescriptorHeapStart + m_BindingOffsets[binding], m_pManager->getCbvSrvUavHeapIncrementSize());
@@ -122,6 +126,10 @@ namespace Xenon
 		void DX12Descriptor::attach(uint32_t binding, Image* pImage, ImageView* pView, ImageSampler* pSampler, ImageUsage usage)
 		{
 			OPTICK_EVENT();
+
+			// Return if we don't have the binding. Might be because of shader optimizations.
+			if (!m_BindingInformation.contains(binding))
+				return;
 
 			CD3DX12_CPU_DESCRIPTOR_HANDLE handle(m_pManager->getCbvSrvUavHeapStartCPU(), m_CbvSrvUavDescriptorHeapStart + m_BindingOffsets[binding], m_pManager->getCbvSrvUavHeapIncrementSize());
 

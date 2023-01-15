@@ -52,16 +52,16 @@ private:
 	[[nodiscard]] Xenon::Group createLightSource();
 
 	/**
-	 * Update the light source.
-	 *
-	 * @param group The light source group.
+	 * Update the light sources.
 	 */
-	void updateLightSource(Xenon::Group group);
+	void updateLightSources();
 
 private:
 	Xenon::Instance m_Instance;
 	Xenon::Scene m_Scene;
 	Xenon::Renderer m_Renderer;
+
+	std::vector<Xenon::Group> m_LightGroups;
 
 	float m_LastX = 0.0f;
 	float m_LastY = 0.0f;

@@ -26,6 +26,8 @@
 
 #include <imgui.h>
 
+#include <glm/gtc/type_ptr.hpp>
+
 namespace /* anonymous */
 {
 	/**
@@ -152,7 +154,7 @@ void Studio::run()
 	pImGui->showLayer(pRenderTarget);
 
 	// Create the light source.
-	const auto lighting = createLightSource();
+	m_LightGroups.emplace_back(createLightSource());
 
 	{
 		auto ret = Xenon::XObject::GetJobSystem().insert(loaderFunction);
@@ -168,7 +170,12 @@ void Studio::run()
 			// Begin the ImGui scene.
 			// Handle the inputs and update the camera only if we need to.
 			if (pImGui->beginFrame(delta))
+			{
 				updateCamera(delta);
+			}
+
+			// Show and update the light sources.
+			updateLightSources();
 
 			// End the ImGui scene.
 			pImGui->endFrame();
@@ -242,7 +249,7 @@ Xenon::Group Studio::createLightSource()
 	// Setup the group and add the light source and the quad.
 	const auto lighting = m_Scene.createGroup();
 	[[maybe_unused]] const auto& quad = m_Scene.create<Xenon::Geometry>(lighting, Xenon::Geometry::CreateQuad(m_Scene.getInstance()));
-	[[maybe_unused]] const auto& transform = m_Scene.create<Xenon::Components::Transform>(lighting);
+	[[maybe_unused]] const auto& transform = m_Scene.create<Xenon::Components::Transform>(lighting, glm::vec3(0), glm::vec3(0), glm::vec3(0.5f));
 	[[maybe_unused]] const auto& lightSource = m_Scene.create<Xenon::Components::LightSource>(lighting, glm::vec4(1.0f), glm::vec3(0.0f), glm::vec3(0.0f), 1.0f, 360.0f);
 
 	// Setup the light bulb image and it's view and sampler.
@@ -260,6 +267,7 @@ Xenon::Group Studio::createLightSource()
 	specification.m_VertexShader = Xenon::Generated::CreateShaderBillboard_vert();
 	specification.m_FragmentShader = Xenon::Generated::CreateShaderBillboard_frag();
 	specification.m_CullMode = Xenon::Backend::CullMode::None;
+
 	materialBuidler.setRasterizingPipelineSpecification(specification);
 
 	// Create the material.
@@ -268,7 +276,19 @@ Xenon::Group Studio::createLightSource()
 	return lighting;
 }
 
-void Studio::updateLightSource(Xenon::Group group)
+void Studio::updateLightSources()
 {
+	ImGui::Begin("Light Sources");
+	for (const auto& group : m_LightGroups)
+	{
+		auto& transform = m_Scene.getRegistry().get<Xenon::Components::Transform>(group);
 
+		ImGui::Text("Light ID: %i", Xenon::EnumToInt(group));
+		ImGui::InputFloat3("Position", glm::value_ptr(transform.m_Position));
+		ImGui::InputFloat3("Rotation", glm::value_ptr(transform.m_Rotation));
+		ImGui::InputFloat3("Scale", glm::value_ptr(transform.m_Scale));
+		ImGui::Separator();
+	}
+
+	ImGui::End();
 }

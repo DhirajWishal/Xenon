@@ -35,11 +35,25 @@ float4x4 scale(float4x4 mat, float3 scale)
 
 VSOutput main(VSInput input)
 {
-	float4x4 modelMatrix = translate(GetIdentityMatrix(), transform.m_Position);
-	modelMatrix = scale(modelMatrix, transform.m_Scale);
+	float4x4 modelMatrix = camera.view;
+
+	modelMatrix[0][0] = 1;
+	modelMatrix[0][1] = 0;
+	modelMatrix[0][2] = 0;
+	
+	modelMatrix[1][0] = 0;
+	modelMatrix[1][1] = 1;
+	modelMatrix[1][2] = 0;
+	
+	modelMatrix[2][0] = 0;
+	modelMatrix[2][1] = 0;
+	modelMatrix[2][2] = 1;
+
+	float3 transformedPosition = float3(input.position, 1.0f) + transform.m_Position;
+	transformedPosition = transformedPosition - mul(transformedPosition, transform.m_Scale);
 
 	VSOutput output;
-	output.position = mul(camera.projection * camera.view * modelMatrix, float4(input.position, 1.0f, 100.0f));
+	output.position = mul(camera.projection, mul(modelMatrix, float4(transformedPosition, 1.0f)));
 	output.textureCoordinates = input.textureCoordinates;
 
 	return output;
