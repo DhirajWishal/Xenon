@@ -102,6 +102,15 @@ namespace Xenon
 		[[nodiscard]] static Geometry CreateQuad(Instance& instance);
 
 		/**
+		 * Create an image from loading the data from a file.
+		 *
+		 * @param instance The instance reference.
+		 * @param file The image file to load from.
+		 * @return The created image pointer.
+		 */
+		[[nodiscard]] static std::unique_ptr<Backend::Image> CreateImageFromFile(Instance& instance, const std::filesystem::path& file);
+
+		/**
 		 * Get the vertex specification.
 		 *
 		 * @return The vertex specification.

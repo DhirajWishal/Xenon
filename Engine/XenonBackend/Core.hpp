@@ -595,6 +595,16 @@ namespace Xenon
 		};
 
 		/**
+		 * User defined bindings enum.
+		 * This contains all the binding types with their corresponding binding in the user defined descriptor.
+		 * This is used since some of the binding slots are used by internal buffers (and/ or images).
+		 */
+		enum class UserDefinedBindings : uint32_t
+		{
+
+		};
+
+		/**
 		 * Scene bindings enum.
 		 * This contains all the binding types with their corresponding bindings in the scene descriptor.
 		 */
@@ -631,9 +641,10 @@ namespace Xenon
 		 */
 		enum class DescriptorType : uint8_t
 		{
-			UserDefined,	// This descriptor type contains any other user defined data, like the model matrix.
+			PerGeometry,	// This descriptor type contains all the per-geometry information, like transform and others.
 			Material,		// This descriptor type contains all the material-specific information.
-			Scene			// This descriptor type contains all the scene related information, like the camera, lighting, acceleration structures, etc...
+			Scene,			// This descriptor type contains all the scene related information, like the camera, lighting, acceleration structures, etc...
+			UserDefined,	// This descriptor type contains any other user defined (custom) data.
 		};
 
 		/**

@@ -82,7 +82,7 @@ namespace /* anonymous */
 	 *
 	 * @return The pipeline specification.
 	 */
-	Xenon::Backend::RayTracingPipelineSpecification getRayTracingPipelineSpecification()
+	[[nodiscard]] Xenon::Backend::RayTracingPipelineSpecification getRayTracingPipelineSpecification()
 	{
 		Xenon::Backend::RayTracingPipelineSpecification specification = {};
 		specification.m_ShaderGroups.emplace_back().m_RayGenShader = Xenon::Generated::CreateShaderRayGen_rgen();
@@ -121,10 +121,8 @@ void Studio::run()
 	const auto loaderFunction = [this, &pPipeline, &pRenderTarget, &materialBuidler]
 	{
 		const auto grouping = m_Scene.createGroup();
-		const auto& geometry = m_Scene.create<Xenon::Geometry>(grouping, Xenon::Geometry::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"));
-		const auto& material = m_Scene.create<Xenon::Material>(grouping, materialBuidler);
-
-		pRenderTarget->addDrawData(Xenon::Geometry::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"), pPipeline.get());
+		[[maybe_unused]] const auto& geometry = m_Scene.create<Xenon::Geometry>(grouping, Xenon::Geometry::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"));
+		[[maybe_unused]] const auto& material = m_Scene.create<Xenon::Material>(grouping, materialBuidler);
 	};
 
 #else 
@@ -139,8 +137,8 @@ void Studio::run()
 	const auto loaderFunction = [this, &materialBuidler]
 	{
 		const auto grouping = m_Scene.createGroup();
-		const auto& geometry = m_Scene.create<Xenon::Geometry>(grouping, Xenon::Geometry::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"));
-		const auto& material = m_Scene.create<Xenon::Material>(grouping, materialBuidler);
+		[[maybe_unused]] const auto& geometry = m_Scene.create<Xenon::Geometry>(grouping, Xenon::Geometry::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"));
+		[[maybe_unused]] const auto& material = m_Scene.create<Xenon::Material>(grouping, materialBuidler);
 	};
 
 #endif // XENON_DEV_ENABLE_RAY_TRACING
@@ -151,8 +149,8 @@ void Studio::run()
 	// Set the layer to be shown.
 	pImGui->showLayer(pRenderTarget);
 
-	const auto lighting = m_Scene.createGroup();
-	const auto& lightSource = m_Scene.create<Xenon::Components::LightSource>(lighting, glm::vec4(1.0f), glm::vec3(0.0f), glm::vec3(0.0f), 1.0f, 360.0f);
+	// Create the light source.
+	const auto lighting = createLightSource();
 
 	{
 		auto ret = Xenon::XObject::GetJobSystem().insert(loaderFunction);
@@ -235,4 +233,39 @@ void Studio::updateCamera(std::chrono::nanoseconds delta)
 	{
 		m_bFirstMouse = true;
 	}
+}
+
+Xenon::Group Studio::createLightSource()
+{
+	// Setup the group and add the light source and the quad.
+	const auto lighting = m_Scene.createGroup();
+	[[maybe_unused]] const auto& quad = m_Scene.create<Xenon::Geometry>(lighting, Xenon::Geometry::CreateQuad(m_Scene.getInstance()));
+	[[maybe_unused]] const auto& transform = m_Scene.create<Xenon::Components::Transform>(lighting);
+	[[maybe_unused]] const auto& lightSource = m_Scene.create<Xenon::Components::LightSource>(lighting, glm::vec4(1.0f), glm::vec3(0.0f), glm::vec3(0.0f), 1.0f, 360.0f);
+
+	// Setup the light bulb image and it's view and sampler.
+	auto& bulb = m_Scene.create<LightBulb>(lighting);
+	bulb.m_pImage = Xenon::Geometry::CreateImageFromFile(m_Scene.getInstance(), XENON_ASSET_DIR "LightBulb/idea.png");	// TODO: This needs to be standardized.
+	bulb.m_pImageView = m_Scene.getInstance().getFactory()->createImageView(m_Scene.getInstance().getBackendDevice(), bulb.m_pImage.get(), {});
+	bulb.m_pImageSampler = m_Scene.getInstance().getFactory()->createImageSampler(m_Scene.getInstance().getBackendDevice(), {});
+
+	// Setup the material builder.
+	Xenon::MaterialBuilder materialBuidler;
+	materialBuidler.addBaseColorTexture({ .m_pImage = bulb.m_pImage.get(), .m_pImageView = bulb.m_pImageView.get(), .m_pImageSampler = bulb.m_pImageSampler.get() });
+
+	// Setup the pipeline specification.
+	Xenon::Backend::RasterizingPipelineSpecification specification;
+	specification.m_VertexShader = Xenon::Generated::CreateShaderShader_vert();
+	specification.m_FragmentShader = Xenon::Generated::CreateShaderShader_frag();
+	materialBuidler.setRasterizingPipelineSpecification(specification);
+
+	// Create the material.
+	[[maybe_unused]] const auto& material = m_Scene.create<Xenon::Material>(lighting, materialBuidler);
+
+	return lighting;
+}
+
+void Studio::updateLightSource(Xenon::Group group)
+{
+
 }

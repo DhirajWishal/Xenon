@@ -12,6 +12,17 @@
  */
 class Studio final
 {
+	/**
+	 * Light bulb structure.
+	 * This contains all the necessary information about a single light source.
+	 */
+	struct LightBulb final
+	{
+		std::unique_ptr<Xenon::Backend::Image> m_pImage = nullptr;
+		std::unique_ptr<Xenon::Backend::ImageView> m_pImageView = nullptr;
+		std::unique_ptr<Xenon::Backend::ImageSampler> m_pImageSampler = nullptr;
+	};
+
 public:
 	/**
 	 * Explicit constructor.
@@ -32,6 +43,20 @@ private:
 	 * @param delta The delta time.
 	 */
 	void updateCamera(std::chrono::nanoseconds delta);
+
+	/**
+	 * Create a new light source.
+	 *
+	 * @return The light source group.
+	 */
+	[[nodiscard]] Xenon::Group createLightSource();
+
+	/**
+	 * Update the light source.
+	 *
+	 * @param group The light source group.
+	 */
+	void updateLightSource(Xenon::Group group);
 
 private:
 	Xenon::Instance m_Instance;

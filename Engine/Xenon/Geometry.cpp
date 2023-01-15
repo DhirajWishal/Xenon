@@ -758,4 +758,33 @@ namespace Xenon
 
 		return geometry;
 	}
+
+	std::unique_ptr<Xenon::Backend::Image> Geometry::CreateImageFromFile(Instance& instance, const std::filesystem::path& file)
+	{
+		constexpr uint8_t bits = 8;
+
+		int width = 0;
+		int height = 0;
+		int components = 0;
+		const auto pPixels = stbi_load(file.string().c_str(), &width, &height, &components, STBI_rgb_alpha);
+
+		if (width == 0 || height == 0 || pPixels == nullptr)
+			return nullptr;
+
+		// Setup the image.
+		Xenon::Backend::ImageSpecification imageSpecification = {};
+		imageSpecification.m_Width = width;
+		imageSpecification.m_Height = height;
+		imageSpecification.m_Format = GetDataFormat(bits, components, TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE);
+		auto pImage = instance.getFactory()->createImage(instance.getBackendDevice(), imageSpecification);
+
+		const auto copySize = pImage->getWidth() * pImage->getHeight() * components/* * (bits / 8)*/;
+		auto pStagingBuffer = instance.getFactory()->createBuffer(instance.getBackendDevice(), copySize, Xenon::Backend::BufferType::Staging);
+
+		pStagingBuffer->write(Xenon::ToBytes(pPixels), copySize);
+		pImage->copyFrom(pStagingBuffer.get());
+
+		STBI_FREE(pPixels);
+		return pImage;
+	}
 }

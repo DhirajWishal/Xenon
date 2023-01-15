@@ -8,9 +8,12 @@
 
 #define XENON_SETUP_DESCRIPTOR(set, bindingIndex)	[[vk::binding(bindingIndex, set)]]
 
-#define XENON_DESCRIPTOR_TYPE_USER_DEFINED	0
+#define XENON_DESCRIPTOR_TYPE_PER_GEOMETRY	0
 #define XENON_DESCRIPTOR_TYPE_MATERIAL		1
 #define XENON_DESCRIPTOR_TYPE_SCENE			2
+#define XENON_DESCRIPTOR_TYPE_USER_DEFINED	3
+
+#define XENON_PER_GEOMETRY_DESCRIPTOR_BINDING_TRANSFORM		0
 
 #define XENON_SCENE_DESCRIPTOR_BINDING_SCENE_INFORMATION		0
 #define XENON_SCENE_DESCRIPTOR_BINDING_CAMERA					1
@@ -32,6 +35,21 @@ float4x4 GetIdentityMatrix()
 
 	return identity;
 }
+
+/**
+ * Transform structure.
+ * This contains information about a single transform of a geometry.
+ */
+struct Transform
+{
+	float3 m_Position;
+	float3 m_Rotation;
+	float3 m_Scale;
+};
+
+#define XENON_SETUP_TRANSFORM(name)																					\
+	XENON_SETUP_DESCRIPTOR(XENON_DESCRIPTOR_TYPE_PER_GEOMETRY, XENON_PER_GEOMETRY_DESCRIPTOR_BINDING_TRANSFORM)		\
+	cbuffer name : register(b0, XENON_DESCRIPTOR_SPACE(XENON_DESCRIPTOR_TYPE_PER_GEOMETRY)) { Transform name; }
 
 /**
  * Light source structure.
