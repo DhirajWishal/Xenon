@@ -284,10 +284,21 @@ void Studio::updateLightSources()
 		auto& transform = m_Scene.getRegistry().get<Xenon::Components::Transform>(group);
 
 		ImGui::Text("Light ID: %i", Xenon::EnumToInt(group));
+		ImGui::NewLine();
 		ImGui::InputFloat3("Position", glm::value_ptr(transform.m_Position));
 		ImGui::InputFloat3("Rotation", glm::value_ptr(transform.m_Rotation));
 		ImGui::InputFloat3("Scale", glm::value_ptr(transform.m_Scale));
 		ImGui::Separator();
+
+		// VS please fix your formatting...
+		const auto updateFunction = [transform](auto& object)
+		{
+			object.m_Position = transform.m_Position;
+			object.m_Rotation = transform.m_Rotation;
+			object.m_Scale = transform.m_Scale;
+		};
+
+		m_Scene.getRegistry().patch<Xenon::Components::Transform>(group, updateFunction);
 	}
 
 	ImGui::End();

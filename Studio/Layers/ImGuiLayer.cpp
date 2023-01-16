@@ -218,11 +218,7 @@ bool ImGuiLayer::beginFrame(std::chrono::nanoseconds delta)
 	// Show all the UI components.
 	showUIs(delta);
 
-	return !(io.WantCaptureMouse ||
-		io.WantCaptureKeyboard ||
-		io.WantTextInput ||
-		io.WantSetMousePos ||
-		io.WantSaveIniSettings) || m_UIStorage.m_LayerViewUI.isInFocus();
+	return !(io.WantCaptureMouse || io.WantCaptureKeyboard) || m_UIStorage.m_LayerViewUI.isInFocus();
 }
 
 void ImGuiLayer::endFrame() const

@@ -3,6 +3,10 @@
 
 #include "Scene.hpp"
 
+#include <glm/mat4x4.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 namespace Xenon
 {
 	Scene::Scene(Instance& instance, std::unique_ptr<Backend::Camera>&& pCamera)
@@ -99,13 +103,30 @@ namespace Xenon
 
 	void Scene::onTransformComponentConstruction(entt::registry& registry, Group group)
 	{
-		auto& uniformBuffer = registry.emplace<Internal::TransformUniformBuffer>(group, m_Instance.getFactory()->createBuffer(m_Instance.getBackendDevice(), sizeof(Components::Transform), Backend::BufferType::Uniform));
-		uniformBuffer.m_pUniformBuffer->write(ToBytes(&registry.get<Components::Transform>(group)), sizeof(Components::Transform));
+		const auto& transform = registry.get<Components::Transform>(group);
+		const auto modelMatrix =
+			glm::translate(glm::mat4(1.0f), transform.m_Position) *
+			glm::scale(glm::mat4(1.0f), transform.m_Scale) *
+			glm::rotate(glm::mat4(1.0f), transform.m_Rotation.x, glm::vec3(1.0f, 0.0f, 0.0f)) *
+			glm::rotate(glm::mat4(1.0f), transform.m_Rotation.y, glm::vec3(0.0f, 1.0f, 0.0f)) *
+			glm::rotate(glm::mat4(1.0f), transform.m_Rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+
+		auto& uniformBuffer = registry.emplace<Internal::TransformUniformBuffer>(group, m_Instance.getFactory()->createBuffer(m_Instance.getBackendDevice(), sizeof(modelMatrix), Backend::BufferType::Uniform));
+		uniformBuffer.m_pUniformBuffer->write(ToBytes(glm::value_ptr(modelMatrix)), sizeof(modelMatrix));
 	}
 
 	void Scene::onTransformComponentUpdate(entt::registry& registry, Group group) const
 	{
-		registry.get<Internal::TransformUniformBuffer>(group).m_pUniformBuffer->write(ToBytes(&registry.get<Components::Transform>(group)), sizeof(Components::Transform));
+		const auto& transform = registry.get<Components::Transform>(group);
+		const auto modelMatrix =
+			glm::translate(glm::mat4(1.0f), transform.m_Position) *
+			glm::scale(glm::mat4(1.0f), transform.m_Scale) *
+			glm::rotate(glm::mat4(1.0f), transform.m_Rotation.x, glm::vec3(1.0f, 0.0f, 0.0f)) *
+			glm::rotate(glm::mat4(1.0f), transform.m_Rotation.y, glm::vec3(0.0f, 1.0f, 0.0f)) *
+			glm::rotate(glm::mat4(1.0f), transform.m_Rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+
+		registry.get<Internal::TransformUniformBuffer>(group).m_pUniformBuffer->write(ToBytes(glm::value_ptr(modelMatrix)), sizeof(modelMatrix));
+
 	}
 
 	void Scene::onTransformComponentDestruction(entt::registry& registry, Group group) const
