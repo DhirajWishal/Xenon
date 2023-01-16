@@ -28,6 +28,15 @@ namespace Xenon
 			DescriptorType m_Set = DescriptorType::UserDefined;
 			ResourceType m_Type = ResourceType::Sampler;
 			ResouceOperation m_Operations = ResouceOperation::Read;
+
+			/**
+			 * Is equal to comparison operator.
+			 *
+			 * @param other The other resource to compare against.
+			 * @return True if the two objects are similar.
+			 * @return False if the two objects are not similar.
+			 */
+			[[nodiscard]] bool operator==(const ShaderResource& other) const = default;
 		};
 
 		/**
@@ -153,5 +162,26 @@ namespace Xenon
 			std::vector<ShaderAttribute> m_OutputAttributes;
 			std::vector<ShaderResource> m_Resources;
 		};
+	}
+
+	/**
+	 * Utility function to easily generate the hash for the shader source object.
+	 *
+	 * @param shader The shader to generate the hash for.
+	 * @param seed The hash seed. Default is 0.
+	 * @return The 64-bit hash value.
+	 */
+	template<>
+	[[nodiscard]] inline uint64_t GenerateHashFor<Backend::Shader>(const Backend::Shader& shader, uint64_t seed) noexcept
+	{
+		return GenerateHash(
+			ToBytes(shader.getSPIRV().getBinaryData()),
+			shader.getSPIRV().getBinarySizeInBytes(),
+			GenerateHash(
+				ToBytes(shader.getDXIL().getBinaryData()),
+				shader.getDXIL().getBinarySizeInBytes(),
+				seed
+			)
+		);
 	}
 }

@@ -21,13 +21,16 @@ namespace /* anonymous */
 	 */
 	void SetupShaderData(
 		const Xenon::Backend::Shader& shader,
-		std::vector<Xenon::Backend::DescriptorBindingInfo>& bindingInfos,
+		std::unordered_map<uint32_t, Xenon::Backend::DescriptorBindingInfo>& bindingInfos,
+		std::unordered_map<uint32_t, UINT>& bindingOffsets,
 		std::vector<CD3DX12_DESCRIPTOR_RANGE1>& descriptorRanges)
 	{
 		// Setup resources.
 		for (const auto& resource : shader.getResources())
 		{
-			auto& binding = bindingInfos.emplace_back();
+			bindingOffsets[resource.m_Binding] = static_cast<UINT>(bindingInfos.size());
+
+			auto& binding = bindingInfos[resource.m_Binding];
 			binding.m_Type = resource.m_Type;
 			binding.m_ApplicableShaders = Xenon::Backend::ShaderType::Compute;
 
@@ -60,7 +63,7 @@ namespace Xenon
 		{
 			// Setup the shader information.
 			std::vector<CD3DX12_DESCRIPTOR_RANGE1> descriptorRanges;
-			SetupShaderData(computeShader, m_BindingInfos, descriptorRanges);
+			SetupShaderData(computeShader, m_BindingInfos, m_BindingOffsets, descriptorRanges);
 
 			// Generate the pipeline hash.
 			m_PipelineHash = GenerateHash(ToBytes(computeShader.getDXIL().getBinary().data()), computeShader.getDXIL().getBinary().size() * sizeof(uint64_t));
@@ -79,7 +82,7 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
-			return std::make_unique<DX12Descriptor>(m_pDevice, m_BindingInfos, DescriptorType::UserDefined, this);
+			return std::make_unique<DX12Descriptor>(m_pDevice, m_BindingInfos, DescriptorType::UserDefined, m_BindingOffsets, this);
 		}
 
 		void DX12ComputePipeline::createRootSignature(std::vector<CD3DX12_DESCRIPTOR_RANGE1>&& descriptorRanges)

@@ -355,3 +355,6 @@ out/
 
 Build/
 !Developer/*/*.opt
+
+**/Generated/**.dxil.hpp
+**/Generated/**.spirv.hpp

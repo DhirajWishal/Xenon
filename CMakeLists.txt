@@ -5,6 +5,20 @@
 # Set the minimum required CMake version.
 cmake_minimum_required(VERSION 3.22.2)
 
+# Setup multiple configurations if it's possible.
+get_property(IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+
+if(IS_MULTI_CONFIG)
+	set(CMAKE_CONFIGURATION_TYPES "Debug;Profile;Release;" CACHE STRING "" FORCE)
+	set(CMAKE_C_FLAGS_PROFILE "${CMAKE_C_FLAGS_RELEASE}" CACHE STRING "Used by C compilers" FORCE)
+	set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_RELEASE}" CACHE STRING "Used by C++ compilers" FORCE)
+	set(CMAKE_EXE_LINKER_FLAGS_PROFILE "${CMAKE_EXE_LINKER_FLAGS_RELEASE}" CACHE STRING "Used by compilers to generate executables" FORCE)
+	set(CMAKE_SHARED_LINKER_FLAGS_PROFILE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE}" CACHE STRING "Used by compilers to generate shared libraries" FORCE)
+	set(CMAKE_STATIC_LINKER_FLAGS_PROFILE "${CMAKE_STATIC_LINKER_FLAGS_RELEASE}" CACHE STRING "Used by compilers to generate static libraries" FORCE)
+	set(CMAKE_MAP_IMPORTED_CONFIG_PROFILE Release)
+
+endif()
+
 # Set the basic project description.
 project(
 	Xenon
@@ -36,6 +50,8 @@ set(OPTICK_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/optick/src)
 set(IMGUI_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/imgui)
 set(IMNODES_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/imnodes)
 set(FMT_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/fmt/include)
+set(ENTT_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/entt/src)
+set(IMGUIZMO_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/ImGuizmo)
 
 # Add the Optick library as a third party static link.
 add_library(
@@ -110,11 +126,38 @@ target_include_directories(
 	PRIVATE ${IMGUI_INCLUDE_DIR}
 )
 
+# Set the ImGuizmo library.
+add_library(
+	XenonThirdParty_ImGuizmo
+	STATIC 
+
+	"${IMGUIZMO_INCLUDE_DIR}/GraphEditor.cpp"
+	"${IMGUIZMO_INCLUDE_DIR}/GraphEditor.h"
+	"${IMGUIZMO_INCLUDE_DIR}/ImCurveEdit.cpp"
+	"${IMGUIZMO_INCLUDE_DIR}/ImCurveEdit.h"
+	"${IMGUIZMO_INCLUDE_DIR}/ImGradient.cpp"
+	"${IMGUIZMO_INCLUDE_DIR}/ImGradient.h"
+	"${IMGUIZMO_INCLUDE_DIR}/ImGuizmo.cpp"
+	"${IMGUIZMO_INCLUDE_DIR}/ImGuizmo.h"
+	"${IMGUIZMO_INCLUDE_DIR}/ImSequencer.cpp"
+	"${IMGUIZMO_INCLUDE_DIR}/ImSequencer.h"
+	"${IMGUIZMO_INCLUDE_DIR}/ImZoomSlider.h"
+)
+
+# Set the include directories.
+target_include_directories(
+	XenonThirdParty_ImGuizmo 
+
+	PRIVATE ${IMGUI_INCLUDE_DIR}
+)
+
 # Set global compile definitions.
 add_compile_definitions(
 	$<$<CONFIG:Debug>:XENON_DEBUG>
 	$<$<CONFIG:Debug>:USE_OPTICK>
 	$<$<CONFIG:Release>:XENON_RELEASE>
+	$<$<CONFIG:Profile>:XENON_PROFILE>
+	$<$<CONFIG:Profile>:USE_OPTICK>
 
 	$<$<CONFIG:RelWithDebInfo>:XENON_DEBUG>
 	$<$<CONFIG:RelWithDebInfo>:USE_OPTICK>
@@ -125,6 +168,7 @@ add_compile_definitions(
 	$<$<PLATFORM_ID:Darwin>:XENON_PLATFORM_MAC>
 
 	XENON_GLTF_ASSET_DIR="${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/glTF-Sample-Models/"
+	XENON_ASSET_DIR="${CMAKE_CURRENT_SOURCE_DIR}/Assets/"
 	XENON_LOG_LEVEL=${XENON_LOG_LEVEL}
 
 	FMT_HEADER_ONLY
@@ -132,7 +176,7 @@ add_compile_definitions(
 	# Conditionally enable ray tracing. 
 	# This is required since not all devices support ray tracing for all backends (for me Vulkan ray tracing does not work).
 	# Comment this out to disable ray tracing from the studio.
-	XENON_DEV_ENABLE_RAY_TRACING
+	# XENON_DEV_ENABLE_RAY_TRACING
 )
 
 # Include the main subdirectories.
@@ -172,6 +216,7 @@ if (MSVC)
 		XenonThirdParty_Optick
 		XenonThirdParty_ImGui
 		XenonThirdParty_imnodes
+		XenonThirdParty_ImGuizmo
 			
 		PROPERTIES FOLDER "ThirdParty"
 	)

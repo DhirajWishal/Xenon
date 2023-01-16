@@ -567,7 +567,7 @@ namespace Xenon
 			m_pCurrentCommandList->SetPipelineState(pPipeline->as<DX12RasterizingPipeline>()->getPipeline(vertexSpecification).m_PipelineState.Get());
 		}
 
-		void DX12CommandRecorder::bind(RasterizingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pSceneDescriptor)
+		void DX12CommandRecorder::bind(RasterizingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pPerGeometryDescriptor, Descriptor* pSceneDescriptor)
 		{
 			OPTICK_EVENT();
 
@@ -599,6 +599,19 @@ namespace Xenon
 
 				if (pDx12MaterialDescriptor->hasSampler())
 					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[1]->GetGPUDescriptorHandleForHeapStart(), samplerStart, pDx12MaterialDescriptor->getSamplerDescriptorHeapIncrementSize()));
+			}
+
+			if (pPerGeometryDescriptor)
+			{
+				auto pDx12PerGeometryDescriptor = pPerGeometryDescriptor->as<DX12Descriptor>();
+				const auto cbvSrvUavStart = pDx12PerGeometryDescriptor->getCbvSrvUavDescriptorHeapStart();
+				const auto samplerStart = pDx12PerGeometryDescriptor->getSamplerDescriptorHeapStart();
+
+				if (pDx12PerGeometryDescriptor->hasBuffers())
+					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[0]->GetGPUDescriptorHandleForHeapStart(), cbvSrvUavStart, pDx12PerGeometryDescriptor->getCbvSrvUavDescriptorHeapIncrementSize()));
+
+				if (pDx12PerGeometryDescriptor->hasSampler())
+					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[1]->GetGPUDescriptorHandleForHeapStart(), samplerStart, pDx12PerGeometryDescriptor->getSamplerDescriptorHeapIncrementSize()));
 			}
 
 			if (pSceneDescriptor)
@@ -655,7 +668,7 @@ namespace Xenon
 			m_pCurrentCommandList->SetPipelineState1(pPipeline->as<DX12RayTracingPipeline>()->getStateObject());
 		}
 
-		void DX12CommandRecorder::bind(RayTracingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pSceneDescriptor)
+		void DX12CommandRecorder::bind(RayTracingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pPerGeometryDescriptor, Descriptor* pSceneDescriptor)
 		{
 			OPTICK_EVENT();
 
@@ -687,6 +700,19 @@ namespace Xenon
 
 				if (pDx12MaterialDescriptor->hasSampler())
 					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[1]->GetGPUDescriptorHandleForHeapStart(), samplerStart, pDx12MaterialDescriptor->getSamplerDescriptorHeapIncrementSize()));
+			}
+
+			if (pPerGeometryDescriptor)
+			{
+				auto pDx12PerGeometryDescriptor = pPerGeometryDescriptor->as<DX12Descriptor>();
+				const auto cbvSrvUavStart = pDx12PerGeometryDescriptor->getCbvSrvUavDescriptorHeapStart();
+				const auto samplerStart = pDx12PerGeometryDescriptor->getSamplerDescriptorHeapStart();
+
+				if (pDx12PerGeometryDescriptor->hasBuffers())
+					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[0]->GetGPUDescriptorHandleForHeapStart(), cbvSrvUavStart, pDx12PerGeometryDescriptor->getCbvSrvUavDescriptorHeapIncrementSize()));
+
+				if (pDx12PerGeometryDescriptor->hasSampler())
+					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(index++, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[1]->GetGPUDescriptorHandleForHeapStart(), samplerStart, pDx12PerGeometryDescriptor->getSamplerDescriptorHeapIncrementSize()));
 			}
 
 			if (pSceneDescriptor)

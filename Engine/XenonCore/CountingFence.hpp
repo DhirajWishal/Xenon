@@ -4,6 +4,7 @@
 #pragma once
 
 #include <atomic>
+#include <chrono>
 
 namespace Xenon
 {
@@ -48,6 +49,13 @@ namespace Xenon
 		 * @param value The value to reset with.
 		 */
 		void reset(uint64_t value);
+
+		/**
+		 * Get the currently stored value.
+		 *
+		 * @return The value.
+		 */
+		[[nodiscard]] uint64_t getValue() const { return m_Counter; }
 
 	private:
 		std::atomic_uint64_t m_Counter;

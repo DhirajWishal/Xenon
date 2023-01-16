@@ -62,8 +62,11 @@ private:
 	ImGuiLayer* m_pImGuiLayer = nullptr;
 	Xenon::Layer* m_pLayerToShow = nullptr;
 
-	uint64_t m_ImageHash = 0;
-	Xenon::MaterialIdentifier m_MaterialIdentifier;
+	uintptr_t m_ImageHash = 0;
+
+	std::unique_ptr<Xenon::Backend::Image> m_pImage = nullptr;
+	std::unique_ptr<Xenon::Backend::ImageView> m_pImageView = nullptr;
+	std::unique_ptr<Xenon::Backend::ImageSampler> m_pSampler = nullptr;
 
 	bool m_bIsInFocus = false;
 };

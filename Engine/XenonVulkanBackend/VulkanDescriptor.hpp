@@ -21,10 +21,10 @@ namespace Xenon
 			 * Explicit constructor.
 			 *
 			 * @param pDevice The device pointer.
-			 * @param bindingInfo The descriptor's binding information. Make sure that the binding information are in the binding order (the first one is binging 0, second is 1 and so on).
+			 * @param bindingInfo The descriptor's binding information.
 			 * @param type The descriptor type.
 			 */
-			explicit VulkanDescriptor(VulkanDevice* pDevice, const std::vector<DescriptorBindingInfo>& bindingInfo, DescriptorType type);
+			explicit VulkanDescriptor(VulkanDevice* pDevice, const std::unordered_map<uint32_t, DescriptorBindingInfo>& bindingInfo, DescriptorType type);
 
 			/**
 			 * Destructor.

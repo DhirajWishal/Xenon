@@ -26,7 +26,6 @@ namespace /* anonymous */
 	 *
 	 * @param shader The shader to get the bindings from.
 	 * @param bindingMap The binding map contains set-binding info.
-	 * @param indexToBindingMap The map to go from the binding index to binding information.
 	 * @param pushConstants The push constants vector to load the data.
 	 * @param inputDescriptions The input descriptions vector. It will only add data to the vector if we're in the vertex shader.
 	 * @param inputAttributeDescriptions The input attributes vector. It will only add data to the vector if we're in the vertex shader.
@@ -34,8 +33,7 @@ namespace /* anonymous */
 	 */
 	void GetShaderBindings(
 		const Xenon::Backend::Shader& shader,
-		std::unordered_map<Xenon::Backend::DescriptorType, std::vector<Xenon::Backend::DescriptorBindingInfo>>& bindingMap,
-		std::unordered_map<uint32_t, std::unordered_map<uint32_t, size_t>>& indexToBindingMap,
+		std::unordered_map<Xenon::Backend::DescriptorType, std::unordered_map<uint32_t, Xenon::Backend::DescriptorBindingInfo>>& bindingMap,
 		std::vector<VkPushConstantRange>& pushConstants,
 		std::vector<VkVertexInputBindingDescription>& inputBindingDescriptions,
 		std::vector<VkVertexInputAttributeDescription>& inputAttributeDescriptions,
@@ -45,16 +43,14 @@ namespace /* anonymous */
 		for (const auto& resource : shader.getResources())
 		{
 			auto& bindings = bindingMap[static_cast<Xenon::Backend::DescriptorType>(Xenon::EnumToInt(resource.m_Set))];
-			auto& indexToBinding = indexToBindingMap[Xenon::EnumToInt(resource.m_Set)];
 
-			if (indexToBinding.contains(resource.m_Binding))
+			if (bindings.contains(resource.m_Binding))
 			{
-				bindings[indexToBinding[resource.m_Binding]].m_ApplicableShaders |= type;
+				bindings[resource.m_Binding].m_ApplicableShaders |= type;
 			}
 			else
 			{
-				indexToBinding[resource.m_Binding] = bindings.size();
-				auto& binding = bindings.emplace_back();
+				auto& binding = bindings[resource.m_Binding];
 				binding.m_Type = resource.m_Type;
 				binding.m_ApplicableShaders = type;
 			}
@@ -789,12 +785,11 @@ namespace Xenon
 			, m_pRasterizer(pRasterizer)
 		{
 			// Get the shader information.
-			std::unordered_map<uint32_t, std::unordered_map<uint32_t, size_t>> indexToBindingMap;
 			std::vector<VkPushConstantRange> pushConstants;
 
 			if (m_Specification.m_VertexShader.getSPIRV().isValid())
 			{
-				GetShaderBindings(m_Specification.m_VertexShader, m_BindingMap, indexToBindingMap, pushConstants, m_VertexInputBindings, m_VertexInputAttributes, ShaderType::Vertex);
+				GetShaderBindings(m_Specification.m_VertexShader, m_BindingMap, pushConstants, m_VertexInputBindings, m_VertexInputAttributes, ShaderType::Vertex);
 
 				auto& createInfo = m_ShaderStageCreateInfo.emplace_back();
 				createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -816,7 +811,7 @@ namespace Xenon
 
 			if (m_Specification.m_FragmentShader.getSPIRV().isValid())
 			{
-				GetShaderBindings(m_Specification.m_FragmentShader, m_BindingMap, indexToBindingMap, pushConstants, m_VertexInputBindings, m_VertexInputAttributes, ShaderType::Fragment);
+				GetShaderBindings(m_Specification.m_FragmentShader, m_BindingMap, pushConstants, m_VertexInputBindings, m_VertexInputAttributes, ShaderType::Fragment);
 
 				auto& createInfo = m_ShaderStageCreateInfo.emplace_back();
 				createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -836,22 +831,16 @@ namespace Xenon
 				XENON_VK_ASSERT(pDevice->getDeviceTable().vkCreateShaderModule(pDevice->getLogicalDevice(), &moduleCreateInfo, nullptr, &createInfo.module), "Failed to create the fragment shader module!");
 			}
 
-			// Setup any missing bindings.
-			if (!m_BindingMap.contains(DescriptorType::UserDefined)) m_BindingMap[DescriptorType::UserDefined];
-			if (!m_BindingMap.contains(DescriptorType::Material)) m_BindingMap[DescriptorType::Material];
-			if (!m_BindingMap.contains(DescriptorType::Scene)) m_BindingMap[DescriptorType::Scene];
-
-			// Sort the bindings to the correct binding order.
-			auto sortedBindings = std::vector<std::pair<DescriptorType, std::vector<DescriptorBindingInfo>>>(m_BindingMap.begin(), m_BindingMap.end());
-			std::ranges::sort(sortedBindings, [](const auto& lhs, const auto& rhs) { return EnumToInt(lhs.first) < EnumToInt(rhs.first); });
-
 			// Get the layouts.
-			std::vector<VkDescriptorSetLayout> layouts;
-			for (const auto& [set, bindings] : sortedBindings)
-				layouts.emplace_back(pDevice->getDescriptorSetManager()->getDescriptorSetLayout(bindings));
+			const std::array<VkDescriptorSetLayout, 4> layouts = {
+				pDevice->getDescriptorSetManager()->getDescriptorSetLayout(m_BindingMap[DescriptorType::UserDefined]),
+				pDevice->getDescriptorSetManager()->getDescriptorSetLayout(m_BindingMap[DescriptorType::Material]),
+				pDevice->getDescriptorSetManager()->getDescriptorSetLayout(m_BindingMap[DescriptorType::PerGeometry]),
+				pDevice->getDescriptorSetManager()->getDescriptorSetLayout(m_BindingMap[DescriptorType::Scene])
+			};
 
 			// Create the pipeline layout.
-			createPipelineLayout(std::move(layouts), std::move(pushConstants));
+			createPipelineLayout(layouts, std::move(pushConstants));
 
 			// Setup the initial pipeline data.
 			setupPipelineInfo();
@@ -948,7 +937,7 @@ namespace Xenon
 			}
 		}
 
-		void VulkanRasterizingPipeline::createPipelineLayout(std::vector<VkDescriptorSetLayout>&& layouts, std::vector<VkPushConstantRange>&& pushConstantRanges)
+		void VulkanRasterizingPipeline::createPipelineLayout(const std::array<VkDescriptorSetLayout, 4>& layouts, std::vector<VkPushConstantRange>&& pushConstantRanges)
 		{
 			VkPipelineLayoutCreateInfo createInfo = {};
 			createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;

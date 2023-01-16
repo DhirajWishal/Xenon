@@ -595,6 +595,35 @@ namespace Xenon
 		};
 
 		/**
+		 * User defined bindings enum.
+		 * This contains all the binding types with their corresponding binding in the user defined descriptor.
+		 * This is used since some of the binding slots are used by internal buffers (and/ or images).
+		 */
+		enum class PerGeometryBindings : uint32_t
+		{
+			Transform
+		};
+
+		/**
+		 * Scene bindings enum.
+		 * This contains all the binding types with their corresponding bindings in the scene descriptor.
+		 */
+		enum class SceneBindings : uint32_t
+		{
+			SceneInformation,
+			Camera,
+
+			LightSources,
+
+			// Used for ray tracing.
+			AccelerationStructure,
+
+			// Used for ray tracing.
+			RenderTarget
+
+		};
+
+		/**
 		 * Resource operation enum.
 		 * This describes what types of operations the shader does to the resource.
 		 */
@@ -609,11 +638,13 @@ namespace Xenon
 
 		/**
 		 * Descriptor type enum.
+		 * These descriptors are organized by (potentially) the most changing to less changing per draw call.
 		 */
 		enum class DescriptorType : uint8_t
 		{
-			UserDefined,	// This descriptor type contains any other user defined data, like the model matrix.
+			UserDefined,	// This descriptor type contains any other user defined (custom) data.
 			Material,		// This descriptor type contains all the material-specific information.
+			PerGeometry,	// This descriptor type contains all the per-geometry information, like transform and others.
 			Scene			// This descriptor type contains all the scene related information, like the camera, lighting, acceleration structures, etc...
 		};
 

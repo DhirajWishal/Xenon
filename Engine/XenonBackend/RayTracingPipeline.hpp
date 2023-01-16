@@ -118,4 +118,40 @@ namespace Xenon
 			RayTracingPipelineSpecification m_Specification = {};
 		};
 	}
+
+	/**
+	 * Utility function to easily generate the hash for the shader group object.
+	 *
+	 * @param shaderGroup The shader group to generate the hash for.
+	 * @param seed The hash seed. Default is 0.
+	 * @return The 64-bit hash value.
+	 */
+	template<>
+	[[nodiscard]] inline uint64_t GenerateHashFor<Backend::ShaderGroup>(const Backend::ShaderGroup& shaderGroup, uint64_t seed) noexcept
+	{
+		const auto rgsHash = GenerateHashFor(shaderGroup.m_RayGenShader, seed);
+		const auto iHash = GenerateHashFor(shaderGroup.m_IntersectionShader, rgsHash);
+		const auto ahHash = GenerateHashFor(shaderGroup.m_AnyHitShader, iHash);
+		const auto chHash = GenerateHashFor(shaderGroup.m_ClosestHitShader, ahHash);
+		const auto mHash = GenerateHashFor(shaderGroup.m_MissShader, chHash);
+		return GenerateHashFor(shaderGroup.m_CallableShader, mHash);
+	}
+
+	/**
+	 * Utility function to easily generate the hash for the rasterizing pipeline specification object.
+	 *
+	 * @param specification The rasterizing pipeline to generate the hash for.
+	 * @param seed The hash seed. Default is 0.
+	 * @return The 64-bit hash value.
+	 */
+	template<>
+	[[nodiscard]] inline uint64_t GenerateHashFor<Backend::RayTracingPipelineSpecification>(const Backend::RayTracingPipelineSpecification& specification, uint64_t seed) noexcept
+	{
+		uint64_t shaderGroupHash = seed;
+		for (const auto& shaderGroup : specification.m_ShaderGroups)
+			shaderGroupHash = GenerateHashFor(shaderGroup, shaderGroupHash);
+
+		const std::array<uint32_t, 3> constants = { specification.m_MaxPayloadSize, specification.m_MaxAttributeSize, specification.m_MaxRayRecursionDepth };
+		return GenerateHash(ToBytes(constants.data()), constants.size() * sizeof(uint32_t), shaderGroupHash);
+	}
 }

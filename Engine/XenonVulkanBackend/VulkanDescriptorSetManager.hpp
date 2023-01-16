@@ -22,7 +22,7 @@ namespace Xenon
 			 */
 			struct VulkanDescriptorStorage final
 			{
-				std::vector<DescriptorBindingInfo> m_BindingInfo;
+				std::unordered_map<uint32_t, DescriptorBindingInfo> m_BindingInfo;
 				std::vector<std::pair<VkDescriptorPool, uint32_t>> m_Pools;	// [Descriptor pool, active descriptor set count]
 				VkDescriptorSetLayout m_Layout = VK_NULL_HANDLE;
 			};
@@ -47,7 +47,7 @@ namespace Xenon
 			 * @param descriptorType The descriptor type.
 			 * @return The descriptor set layout.
 			 */
-			[[nodicard]] VkDescriptorSetLayout getDescriptorSetLayout(const std::vector<DescriptorBindingInfo>& bindingInfo);
+			[[nodicard]] VkDescriptorSetLayout getDescriptorSetLayout(const std::unordered_map<uint32_t, DescriptorBindingInfo>& bindingInfo);
 
 			/**
 			 * Create a new descriptor set.
@@ -56,7 +56,7 @@ namespace Xenon
 			 * @param descriptorType The descriptor type.
 			 * @return The descriptor pool and its set.
 			 */
-			[[nodiscard]] std::pair<VkDescriptorPool, VkDescriptorSet> createDescriptorSet(const std::vector<DescriptorBindingInfo>& bindingInfo);
+			[[nodiscard]] std::pair<VkDescriptorPool, VkDescriptorSet> createDescriptorSet(const std::unordered_map<uint32_t, DescriptorBindingInfo>& bindingInfo);
 
 			/**
 			 * Free the descriptor set.
@@ -66,7 +66,16 @@ namespace Xenon
 			 * @param bindingInfo The descriptor binding info.
 			 * @param descriptorType The descriptor type.
 			 */
-			void freeDescriptorSet(VkDescriptorPool pool, VkDescriptorSet descriptorSet, const std::vector<DescriptorBindingInfo>& bindingInfo);
+			void freeDescriptorSet(VkDescriptorPool pool, VkDescriptorSet descriptorSet, const std::unordered_map<uint32_t, DescriptorBindingInfo>& bindingInfo);
+
+		private:
+			/**
+			 * Generate a hash for the binding infos.
+			 *
+			 * @param bindingInfo The binding infos.
+			 * @return The generated hash.
+			 */
+			[[nodiscard]] uint64_t getBindingInfoHash(const std::unordered_map<uint32_t, DescriptorBindingInfo>& bindingInfo) const;
 
 		private:
 			std::unordered_map<uint64_t, VulkanDescriptorStorage> m_DescriptorSetStorages;

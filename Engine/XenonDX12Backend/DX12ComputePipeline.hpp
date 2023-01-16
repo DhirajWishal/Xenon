@@ -65,7 +65,8 @@ namespace Xenon
 			void createPipelineStateObject();
 
 		private:
-			std::vector<Xenon::Backend::DescriptorBindingInfo> m_BindingInfos;
+			std::unordered_map<uint32_t, DescriptorBindingInfo> m_BindingInfos;
+			std::unordered_map<uint32_t, UINT> m_BindingOffsets;
 
 			ComPtr<ID3D12RootSignature> m_RootSignature;
 			ComPtr<ID3D12PipelineState> m_PipelineState;

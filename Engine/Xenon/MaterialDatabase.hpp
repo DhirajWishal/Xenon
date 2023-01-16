@@ -3,9 +3,7 @@
 
 #pragma once
 
-#include "MaterialBlob.hpp"
-
-#include <list>
+#include "Material.hpp"
 
 namespace Xenon
 {
@@ -15,25 +13,6 @@ namespace Xenon
 	 */
 	class MaterialDatabase final : public XObject
 	{
-		/**
-		 * Interface database entry structure.
-		 */
-		struct IDatabaseEntry
-		{
-			IDatabaseEntry() = default;
-			virtual ~IDatabaseEntry() = default;
-		};
-
-		/**
-		 * Database entry structure.
-		 * This structure contains multiple materials with unique hashes used to identify the material instances.
-		 */
-		template<class Material>
-		struct DatabaseEntry final : public IDatabaseEntry
-		{
-			std::unordered_map<uint64_t, std::unique_ptr<Material>> m_pMaterials;
-		};
-
 	public:
 		/**
 		 * Default constructor.
@@ -41,116 +20,52 @@ namespace Xenon
 		MaterialDatabase() = default;
 
 		/**
-		 * Get a material entry from the database.
+		 * Store a material specification in the instance class.
+		 * This enables us to store materials for a given database and reduce memory consumption.
 		 *
-		 * @tparam Material The material type.
-		 * @return The database entry pointer.
+		 * @param specification The material specification to store.
+		 * @return The material.
 		 */
-		template<class Material>
-		[[nodiscard]] DatabaseEntry<Material>* getMaterialEntry()
+		[[nodiscard]] Material storeSpecification(const MaterialSpecification& specification)
 		{
-			if (!isRegistered<Material>())
-				registerMaterial<Material>();
+			const auto material = static_cast<Material>(GenerateHashFor(specification));
+			if (!m_MaterialSpecifications.contains(material))
+				m_MaterialSpecifications[material] = specification;
 
-			return static_cast<DatabaseEntry<Material>*>(m_pDatabaseEntries[getTypeIndex<Material>()].get());
+			return material;
 		}
 
 		/**
-		 * Get a material entry from the database.
+		 * Get the material specification using it's ID.
 		 *
-		 * @tparam Material The material type.
-		 * @return The database entry pointer.
+		 * @param material The material.
+		 * @return The material specification reference.
 		 */
-		template<class Material>
-		[[nodiscard]] const DatabaseEntry<Material>* getMaterialEntry() const
+		[[nodiscard]] MaterialSpecification& getSpecification(Material material)
 		{
-			if (!isRegistered<Material>())
-				return nullptr;
-
-			return static_cast<const DatabaseEntry<Material>*>(m_pDatabaseEntries.at(getTypeIndex<Material>()).get());
+			return m_MaterialSpecifications.at(material);
 		}
 
 		/**
-		 * Create a new material.
+		 * Get the material specification using it's ID.
 		 *
-		 * @tparam Material The material type.
-		 * @tparam Arguments The constructor argument types.
-		 * @param hash The material hash.
-		 * @param arguments The constructor arguments.
-		 * @return The created material's identifier.
+		 * @param material The material.
+		 * @return The material specification reference.
 		 */
-		template<class Material, class...Arguments>
-		[[nodiscard]] MaterialIdentifier create(uint64_t hash, Arguments&&... arguments)
+		[[nodiscard]] const MaterialSpecification& getSpecification(Material material) const
 		{
-			MaterialIdentifier identifier;
-			identifier.m_pMaterial = getMaterialEntry<Material>()->m_pMaterials.emplace(hash, std::make_unique<Material>(std::forward<Arguments>(arguments)...)).first->second.get();
-			identifier.m_MaterialTypeIndex = getTypeIndex<Material>();
-
-			return identifier;
+			return m_MaterialSpecifications.at(material);
 		}
-
-		/**
-		 * Get a material from the system.
-		 *
-		 * @tparam Material The material type.
-		 * @param hash The material hash.
-		 * @return The material's identifier.
-		 */
-		template<class Material>
-		[[nodiscard]] MaterialIdentifier get(uint64_t hash)
-		{
-			MaterialIdentifier identifier;
-			identifier.m_pMaterial = getMaterialEntry<Material>()->m_pMaterials[hash].get();
-			identifier.m_MaterialTypeIndex = getTypeIndex<Material>();
-
-			return identifier;
-		}
-
-		/**
-		 * Check if a material is stored in the database.
-		 *
-		 * @tparam Material The material type.
-		 * @param hash The material hash.
-		 * @return True if the material is stored in the system.
-		 * @return False if the material is not stored in the system.
-		 */
-		template<class Material>
-		[[nodiscard]] bool contains(uint64_t hash) const { return isRegistered<Material>() && getMaterialEntry<Material>()->m_pMaterials.contains(hash); }
 
 		/**
 		 * Clear the material database.
 		 */
-		void clear() noexcept { m_pDatabaseEntries.clear(); }
+		void clear() noexcept
+		{
+			m_MaterialSpecifications.clear();
+		}
 
 	private:
-		/**
-		 * Get the type index of a material.
-		 *
-		 * @tparam Material The material type.
-		 * @return The material type's type index.
-		 */
-		template<class Material>
-		[[nodiscard]] std::type_index getTypeIndex() const { return std::type_index(typeid(Material)); }
-
-		/**
-		 * Check if a material is registered in the system.
-		 *
-		 * @tparam Material The material type to check.
-		 * @return True if the material is registered.
-		 * @return False if the material is not registered.
-		 */
-		template<class Material>
-		[[nodiscard]] bool isRegistered() const { return m_pDatabaseEntries.contains(getTypeIndex<Material>()); }
-
-		/**
-		 * Register a new material type.
-		 *
-		 * @tparam Material The material type to register.
-		 */
-		template<class Material>
-		void registerMaterial() { m_pDatabaseEntries[getTypeIndex<Material>()] = std::make_unique<DatabaseEntry<Material>>(); }
-
-	private:
-		std::unordered_map<std::type_index, std::unique_ptr<IDatabaseEntry>> m_pDatabaseEntries;
+		std::unordered_map<Material, MaterialSpecification> m_MaterialSpecifications;
 	};
 }

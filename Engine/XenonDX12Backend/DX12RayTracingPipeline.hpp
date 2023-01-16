@@ -97,6 +97,8 @@ namespace Xenon
 			void createGlobalRootSignature(std::vector<std::pair<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>>&& rangePairs);
 
 		private:
+			std::unordered_map<DescriptorType, std::unordered_map<uint32_t, UINT>> m_BindingOffsets;
+
 			std::vector<ComPtr<ID3D12RootSignature>> m_LocalRootSignatures;
 			ComPtr<ID3D12RootSignature> m_GlobalRootSignature;
 			ComPtr<ID3D12StateObject> m_PipelineState;

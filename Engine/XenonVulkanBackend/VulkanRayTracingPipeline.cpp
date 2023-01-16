@@ -19,29 +19,25 @@ namespace /* anonymous */
 	 *
 	 * @param source The shader source.
 	 * @param bindingMap The shader's binding map.
-	 * @param indexToBindingMap The index to binding map.
 	 * @param type The shader type.
 	 */
 	void GetShaderBindings(
 		const Xenon::Backend::Shader& source,
-		std::unordered_map<Xenon::Backend::DescriptorType, std::vector<Xenon::Backend::DescriptorBindingInfo>>& bindingMap,
-		std::unordered_map<uint32_t, std::unordered_map<uint32_t, size_t>>& indexToBindingMap,
+		std::unordered_map<Xenon::Backend::DescriptorType, std::unordered_map<uint32_t, Xenon::Backend::DescriptorBindingInfo>>& bindingMap,
 		Xenon::Backend::ShaderType type)
 	{
 		// Get the resources.
 		for (const auto& resource : source.getResources())
 		{
 			auto& bindings = bindingMap[static_cast<Xenon::Backend::DescriptorType>(Xenon::EnumToInt(resource.m_Set))];
-			auto& indexToBinding = indexToBindingMap[Xenon::EnumToInt(resource.m_Set)];
 
-			if (indexToBinding.contains(resource.m_Binding))
+			if (bindings.contains(resource.m_Binding))
 			{
-				bindings[indexToBinding[resource.m_Binding]].m_ApplicableShaders |= type;
+				bindings[resource.m_Binding].m_ApplicableShaders |= type;
 			}
 			else
 			{
-				indexToBinding[resource.m_Binding] = bindings.size();
-				auto& binding = bindings.emplace_back();
+				auto& binding = bindings[resource.m_Binding];
 				binding.m_Type = resource.m_Type;
 				binding.m_ApplicableShaders = type;
 			}
@@ -70,8 +66,6 @@ namespace Xenon
 			std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 			std::vector<VkRayTracingShaderGroupCreateInfoKHR> vkShaderGroups;
 
-			std::unordered_map<uint32_t, std::unordered_map<uint32_t, size_t>> indexToBindingMap;
-
 			std::vector<uint64_t> shaderHashes = { specification.m_MaxRayRecursionDepth, specification.m_MaxPayloadSize, specification.m_MaxAttributeSize };
 			for (const auto& group : specification.m_ShaderGroups)
 			{
@@ -84,7 +78,7 @@ namespace Xenon
 
 				if (group.m_RayGenShader.getSPIRV().isValid())
 				{
-					GetShaderBindings(group.m_RayGenShader, m_BindingMap, indexToBindingMap, ShaderType::RayGen);
+					GetShaderBindings(group.m_RayGenShader, m_BindingMap, ShaderType::RayGen);
 					shaderHashes.emplace_back(GenerateHash(ToBytes(group.m_RayGenShader.getSPIRV().getBinaryData()), group.m_RayGenShader.getSPIRV().getBinarySizeInBytes()));
 					shaderStages.emplace_back(createShaderStage(group.m_RayGenShader, VK_SHADER_STAGE_RAYGEN_BIT_KHR));
 					vkShaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
@@ -94,7 +88,7 @@ namespace Xenon
 
 				if (group.m_IntersectionShader.getSPIRV().isValid())
 				{
-					GetShaderBindings(group.m_IntersectionShader, m_BindingMap, indexToBindingMap, ShaderType::Intersection);
+					GetShaderBindings(group.m_IntersectionShader, m_BindingMap, ShaderType::Intersection);
 					shaderHashes.emplace_back(GenerateHash(ToBytes(group.m_IntersectionShader.getSPIRV().getBinaryData()), group.m_IntersectionShader.getSPIRV().getBinarySizeInBytes()));
 					shaderStages.emplace_back(createShaderStage(group.m_IntersectionShader, VK_SHADER_STAGE_INTERSECTION_BIT_KHR));
 					vkShaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_PROCEDURAL_HIT_GROUP_KHR;
@@ -104,7 +98,7 @@ namespace Xenon
 
 				if (group.m_AnyHitShader.getSPIRV().isValid())
 				{
-					GetShaderBindings(group.m_AnyHitShader, m_BindingMap, indexToBindingMap, ShaderType::AnyHit);
+					GetShaderBindings(group.m_AnyHitShader, m_BindingMap, ShaderType::AnyHit);
 					shaderHashes.emplace_back(GenerateHash(ToBytes(group.m_AnyHitShader.getSPIRV().getBinaryData()), group.m_AnyHitShader.getSPIRV().getBinarySizeInBytes()));
 					shaderStages.emplace_back(createShaderStage(group.m_AnyHitShader, VK_SHADER_STAGE_ANY_HIT_BIT_KHR));
 					vkShaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_TRIANGLES_HIT_GROUP_KHR;
@@ -114,7 +108,7 @@ namespace Xenon
 
 				if (group.m_ClosestHitShader.getSPIRV().isValid())
 				{
-					GetShaderBindings(group.m_ClosestHitShader, m_BindingMap, indexToBindingMap, ShaderType::ClosestHit);
+					GetShaderBindings(group.m_ClosestHitShader, m_BindingMap, ShaderType::ClosestHit);
 					shaderHashes.emplace_back(GenerateHash(ToBytes(group.m_ClosestHitShader.getSPIRV().getBinaryData()), group.m_ClosestHitShader.getSPIRV().getBinarySizeInBytes()));
 					shaderStages.emplace_back(createShaderStage(group.m_ClosestHitShader, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR));
 					vkShaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_TRIANGLES_HIT_GROUP_KHR;
@@ -124,7 +118,7 @@ namespace Xenon
 
 				if (group.m_MissShader.getSPIRV().isValid())
 				{
-					GetShaderBindings(group.m_MissShader, m_BindingMap, indexToBindingMap, ShaderType::Miss);
+					GetShaderBindings(group.m_MissShader, m_BindingMap, ShaderType::Miss);
 					shaderHashes.emplace_back(GenerateHash(ToBytes(group.m_MissShader.getSPIRV().getBinaryData()), group.m_MissShader.getSPIRV().getBinarySizeInBytes()));
 					shaderStages.emplace_back(createShaderStage(group.m_MissShader, VK_SHADER_STAGE_MISS_BIT_KHR));
 					vkShaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
@@ -134,7 +128,7 @@ namespace Xenon
 
 				if (group.m_CallableShader.getSPIRV().isValid())
 				{
-					GetShaderBindings(group.m_CallableShader, m_BindingMap, indexToBindingMap, ShaderType::Callable);
+					GetShaderBindings(group.m_CallableShader, m_BindingMap, ShaderType::Callable);
 					shaderHashes.emplace_back(GenerateHash(ToBytes(group.m_CallableShader.getSPIRV().getBinaryData()), group.m_CallableShader.getSPIRV().getBinarySizeInBytes()));
 					shaderStages.emplace_back(createShaderStage(group.m_CallableShader, VK_SHADER_STAGE_CALLABLE_BIT_KHR));
 					vkShaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
@@ -146,22 +140,16 @@ namespace Xenon
 			// Get the pipeline hash.
 			m_PipelineHash = GenerateHash(ToBytes(shaderHashes.data()), sizeof(uint64_t) * shaderHashes.size());
 
-			// Setup any missing bindings.
-			if (!m_BindingMap.contains(DescriptorType::UserDefined)) m_BindingMap[DescriptorType::UserDefined];
-			if (!m_BindingMap.contains(DescriptorType::Material)) m_BindingMap[DescriptorType::Material];
-			if (!m_BindingMap.contains(DescriptorType::Scene)) m_BindingMap[DescriptorType::Scene];
-
-			// Sort the bindings to the correct binding order.
-			auto sortedBindings = std::vector<std::pair<DescriptorType, std::vector<DescriptorBindingInfo>>>(m_BindingMap.begin(), m_BindingMap.end());
-			std::ranges::sort(sortedBindings, [](const auto& lhs, const auto& rhs) { return EnumToInt(lhs.first) < EnumToInt(rhs.first); });
-
 			// Get the layouts.
-			std::vector<VkDescriptorSetLayout> layouts;
-			for (const auto& [set, bindings] : sortedBindings)
-				layouts.emplace_back(pDevice->getDescriptorSetManager()->getDescriptorSetLayout(bindings));
+			const std::array<VkDescriptorSetLayout, 4> layouts = {
+				pDevice->getDescriptorSetManager()->getDescriptorSetLayout(m_BindingMap[DescriptorType::UserDefined]),
+				pDevice->getDescriptorSetManager()->getDescriptorSetLayout(m_BindingMap[DescriptorType::Material]),
+				pDevice->getDescriptorSetManager()->getDescriptorSetLayout(m_BindingMap[DescriptorType::PerGeometry]),
+				pDevice->getDescriptorSetManager()->getDescriptorSetLayout(m_BindingMap[DescriptorType::Scene])
+			};
 
 			// Create the pipeline layout.
-			createPipelineLayout(std::move(layouts), {});
+			createPipelineLayout(layouts, {});
 
 			// Load the pipeline cache.
 			loadPipelineCache();
@@ -192,7 +180,7 @@ namespace Xenon
 			return std::make_unique<VulkanShaderBindingTable>(m_pDevice, this, bindingGroups);
 		}
 
-		void VulkanRayTracingPipeline::createPipelineLayout(std::vector<VkDescriptorSetLayout>&& layouts, std::vector<VkPushConstantRange>&& pushConstantRanges)
+		void VulkanRayTracingPipeline::createPipelineLayout(const std::array<VkDescriptorSetLayout, 4>& layouts, std::vector<VkPushConstantRange>&& pushConstantRanges)
 		{
 			VkPipelineLayoutCreateInfo createInfo = {};
 			createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;

@@ -68,7 +68,7 @@ namespace Xenon
 			 * @param layouts The descriptor set layouts.
 			 * @param pushConstantRanges The push constant ranges.
 			 */
-			void createPipelineLayout(std::vector<VkDescriptorSetLayout>&& layouts, std::vector<VkPushConstantRange>&& pushConstantRanges);
+			void createPipelineLayout(const std::array<VkDescriptorSetLayout, 4>& layouts, std::vector<VkPushConstantRange>&& pushConstantRanges);
 
 			/**
 			 * Load the pipeline cache from the cache handler.
@@ -98,7 +98,7 @@ namespace Xenon
 			void createPipeline(std::vector<VkPipelineShaderStageCreateInfo>&& shaderStageCreateInfos, std::vector<VkRayTracingShaderGroupCreateInfoKHR>&& shaderGroups);
 
 		private:
-			std::unordered_map<DescriptorType, std::vector<DescriptorBindingInfo>> m_BindingMap;
+			std::unordered_map<DescriptorType, std::unordered_map<uint32_t, DescriptorBindingInfo>> m_BindingMap;
 
 			VkPipelineLayout m_PipelineLayout = VK_NULL_HANDLE;
 			VkPipelineCache m_PipelineCache = VK_NULL_HANDLE;

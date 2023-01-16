@@ -5,7 +5,8 @@
 #include "CacheHandler.hpp"
 #include "Layers/ImGuiLayer.hpp"
 
-#include "Xenon/MeshStorage.hpp"
+#include "Xenon/MonoCamera.hpp"
+#include "Xenon/Geometry.hpp"
 #include "Xenon/FrameTimer.hpp"
 
 #include "XenonCore/Logging.hpp"
@@ -16,12 +17,16 @@
 
 #include "XenonShaderBank/Debugging/Shader.vert.hpp"
 #include "XenonShaderBank/Debugging/Shader.frag.hpp"
+#include "XenonShaderBank/Billboard/Billboard.vert.hpp"
+#include "XenonShaderBank/Billboard/Billboard.frag.hpp"
 
 #include "XenonShaderBank/Testing/RayTracing/ClosestHit.rchit.hpp"
 #include "XenonShaderBank/Testing/RayTracing/Miss.rmiss.hpp"
 #include "XenonShaderBank/Testing/RayTracing/RayGen.rgen.hpp"
 
 #include <imgui.h>
+
+#include <glm/gtc/type_ptr.hpp>
 
 namespace /* anonymous */
 {
@@ -81,7 +86,7 @@ namespace /* anonymous */
 	 *
 	 * @return The pipeline specification.
 	 */
-	Xenon::Backend::RayTracingPipelineSpecification getRayTracingPipelineSpecification()
+	[[nodiscard]] Xenon::Backend::RayTracingPipelineSpecification getRayTracingPipelineSpecification()
 	{
 		Xenon::Backend::RayTracingPipelineSpecification specification = {};
 		specification.m_ShaderGroups.emplace_back().m_RayGenShader = Xenon::Generated::CreateShaderRayGen_rgen();
@@ -97,44 +102,59 @@ namespace /* anonymous */
 
 Studio::Studio(Xenon::BackendType type /*= Xenon::BackendType::Any*/)
 	: m_Instance("Xenon Studio", 0, Xenon::RenderTargetType::All, type)
-	, m_Camera(m_Instance, 1920, 1080)
-	, m_Renderer(m_Instance, &m_Camera, GetRendererTitle(type))
+	, m_Scene(m_Instance, std::make_unique<Xenon::MonoCamera>(m_Instance, 1920, 1080))
+	, m_Renderer(m_Instance, m_Scene.getCamera(), GetRendererTitle(type))
 {
 	XENON_LOG_INFORMATION("Starting the {}", GetRendererTitle(m_Instance.getBackendType()));
 }
 
 void Studio::run()
 {
+	// Setup the main material.
+	Xenon::MaterialBuilder materialBuidler;
+	materialBuidler.addBaseColorTexture();	// Use the sub mesh's one.
+
 	// Setup the pipeline.
 #ifdef XENON_DEV_ENABLE_RAY_TRACING
-	auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRayTracingLayer>(&m_Camera);
-	auto pPipeline = m_Instance.getFactory()->createRayTracingPipeline(m_Instance.getBackendDevice(), std::make_unique<CacheHandler>(), getRayTracingPipelineSpecification());
+	auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRayTracingLayer>(m_Scene.getCamera());
+	pRenderTarget->setScene(m_Scene);
 
-	const auto loaderFunction = [this, &pPipeline, &pRenderTarget]
+	materialBuidler.setRayTracingPipelineSpecification(getRayTracingPipelineSpecification());
+	auto pPipeline = m_Instance.getFactory()->createRayTracingPipeline(m_Instance.getBackendDevice(), std::make_unique<CacheHandler>(), materialBuidler.getRayTracingPipelineSpecification());
+
+	const auto loaderFunction = [this, &pPipeline, &pRenderTarget, &materialBuidler]
 	{
-		pRenderTarget->addDrawData(Xenon::MeshStorage::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"), pPipeline.get());
+		const auto grouping = m_Scene.createGroup();
+		[[maybe_unused]] const auto& geometry = m_Scene.create<Xenon::Geometry>(grouping, Xenon::Geometry::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"));
+		[[maybe_unused]] const auto& material = m_Scene.create<Xenon::Material>(grouping, materialBuidler);
 	};
 
 #else 
-	auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRasterizingLayer>(&m_Camera);
+	auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRasterizingLayer>(m_Scene.getCamera());
+	pRenderTarget->setScene(m_Scene);
 
 	Xenon::Backend::RasterizingPipelineSpecification specification;
 	specification.m_VertexShader = Xenon::Generated::CreateShaderShader_vert();
 	specification.m_FragmentShader = Xenon::Generated::CreateShaderShader_frag();
-	auto pPipeline = m_Instance.getFactory()->createRasterizingPipeline(m_Instance.getBackendDevice(), std::make_unique<CacheHandler>(), pRenderTarget->getRasterizer(), specification);
+	materialBuidler.setRasterizingPipelineSpecification(specification);
 
-	const auto loaderFunction = [this, &pPipeline, &pRenderTarget]
+	const auto loaderFunction = [this, &materialBuidler]
 	{
-		pRenderTarget->addDrawData(Xenon::MeshStorage::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"), pPipeline.get());
+		const auto grouping = m_Scene.createGroup();
+		[[maybe_unused]] const auto& geometry = m_Scene.create<Xenon::Geometry>(grouping, Xenon::Geometry::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"));
+		[[maybe_unused]] const auto& material = m_Scene.create<Xenon::Material>(grouping, materialBuidler);
 	};
 
 #endif // XENON_DEV_ENABLE_RAY_TRACING
 
 	// Create the layers.
-	auto pImGui = m_Renderer.createLayer<ImGuiLayer>(&m_Camera);
+	auto pImGui = m_Renderer.createLayer<ImGuiLayer>(m_Scene.getCamera());
 
 	// Set the layer to be shown.
 	pImGui->showLayer(pRenderTarget);
+
+	// Create the light source.
+	m_LightGroups.emplace_back(createLightSource());
 
 	{
 		auto ret = Xenon::XObject::GetJobSystem().insert(loaderFunction);
@@ -145,15 +165,23 @@ void Studio::run()
 			const auto delta = timer.tick();
 
 			// Set the draw call count.
-			pImGui->setDrawCallCount(pRenderTarget->getTotalDrawCount(), pRenderTarget->getDrawCount());
+			pImGui->setDrawCallCount(m_Scene.getDrawableCount(), pRenderTarget->getDrawCount());
 
 			// Begin the ImGui scene.
 			// Handle the inputs and update the camera only if we need to.
 			if (pImGui->beginFrame(delta))
+			{
 				updateCamera(delta);
+			}
 
-			// End the ImGui scene and render everything.
+			// Show and update the light sources.
+			updateLightSources();
+
+			// End the ImGui scene.
 			pImGui->endFrame();
+
+			// Update the scene object and render everything.
+			m_Scene.update();
 		} while (m_Renderer.update());
 
 		// Wait till the data has been added before quitting.
@@ -171,22 +199,22 @@ void Studio::updateCamera(std::chrono::nanoseconds delta)
 {
 	// Move the camera.
 	if (m_Renderer.getKeyboard().m_KeyW)
-		m_Camera.moveForward(delta);
+		m_Scene.getCamera()->moveForward(delta);
 
 	if (m_Renderer.getKeyboard().m_KeyA)
-		m_Camera.moveLeft(delta);
+		m_Scene.getCamera()->moveLeft(delta);
 
 	if (m_Renderer.getKeyboard().m_KeyS)
-		m_Camera.moveBackward(delta);
+		m_Scene.getCamera()->moveBackward(delta);
 
 	if (m_Renderer.getKeyboard().m_KeyD)
-		m_Camera.moveRight(delta);
+		m_Scene.getCamera()->moveRight(delta);
 
 	if (m_Renderer.getKeyboard().m_Up)
-		m_Camera.moveUp(delta);
+		m_Scene.getCamera()->moveUp(delta);
 
 	if (m_Renderer.getKeyboard().m_Down)
-		m_Camera.moveDown(delta);
+		m_Scene.getCamera()->moveDown(delta);
 
 	// Rotate the camera.
 	if (m_Renderer.getMouse().m_ButtonLeft == Xenon::MouseButtonEvent::Press)
@@ -201,19 +229,66 @@ void Studio::updateCamera(std::chrono::nanoseconds delta)
 			m_bFirstMouse = false;
 		}
 
-		const float xoffset = (positionX - m_LastX) * m_Camera.m_RotationBias * 0.75f;
-		const float yoffset = (m_LastY - positionY) * m_Camera.m_RotationBias; // Reversed since y-coordinates go from bottom to top
+		const float xoffset = (positionX - m_LastX) * m_Scene.getCamera()->m_RotationBias * 0.75f;
+		const float yoffset = (m_LastY - positionY) * m_Scene.getCamera()->m_RotationBias; // Reversed since y-coordinates go from bottom to top
 
 		m_LastX = positionX;
 		m_LastY = positionY;
 
-		m_Camera.updateYaw(xoffset, delta);
-		m_Camera.updatePitch(yoffset, delta);
+		m_Scene.getCamera()->updateYaw(xoffset, delta);
+		m_Scene.getCamera()->updatePitch(yoffset, delta);
 	}
 	else
 	{
 		m_bFirstMouse = true;
 	}
+}
 
-	m_Camera.update();
+Xenon::Group Studio::createLightSource()
+{
+	// Setup the group and add the light source and the quad.
+	const auto lighting = m_Scene.createGroup();
+	[[maybe_unused]] const auto& quad = m_Scene.create<Xenon::Geometry>(lighting, Xenon::Geometry::CreateQuad(m_Scene.getInstance()));
+	[[maybe_unused]] const auto& transform = m_Scene.create<Xenon::Components::Transform>(lighting, glm::vec3(0), glm::vec3(0), glm::vec3(0.5f));
+	[[maybe_unused]] const auto& lightSource = m_Scene.create<Xenon::Components::LightSource>(lighting, glm::vec4(1.0f), glm::vec3(0.0f), glm::vec3(0.0f), 1.0f, 360.0f);
+
+	// Setup the light bulb image and it's view and sampler.
+	auto& bulb = m_Scene.create<LightBulb>(lighting);
+	bulb.m_pImage = Xenon::Geometry::CreateImageFromFile(m_Scene.getInstance(), XENON_ASSET_DIR "LightBulb/idea.png");	// TODO: This needs to be standardized.
+	bulb.m_pImageView = m_Scene.getInstance().getFactory()->createImageView(m_Scene.getInstance().getBackendDevice(), bulb.m_pImage.get(), {});
+	bulb.m_pImageSampler = m_Scene.getInstance().getFactory()->createImageSampler(m_Scene.getInstance().getBackendDevice(), {});
+
+	// Setup the material builder.
+	Xenon::MaterialBuilder materialBuidler;
+	materialBuidler.addBaseColorTexture({ .m_pImage = bulb.m_pImage.get(), .m_pImageView = bulb.m_pImageView.get(), .m_pImageSampler = bulb.m_pImageSampler.get() });
+
+	// Setup the pipeline specification.
+	Xenon::Backend::RasterizingPipelineSpecification specification;
+	specification.m_VertexShader = Xenon::Generated::CreateShaderBillboard_vert();
+	specification.m_FragmentShader = Xenon::Generated::CreateShaderBillboard_frag();
+	specification.m_CullMode = Xenon::Backend::CullMode::None;
+
+	materialBuidler.setRasterizingPipelineSpecification(specification);
+
+	// Create the material.
+	[[maybe_unused]] const auto& material = m_Scene.create<Xenon::Material>(lighting, materialBuidler);
+
+	return lighting;
+}
+
+void Studio::updateLightSources()
+{
+	ImGui::Begin("Light Sources");
+	for (const auto& group : m_LightGroups)
+	{
+		auto& transform = m_Scene.getRegistry().get<Xenon::Components::Transform>(group);
+
+		ImGui::Text("Light ID: %i", Xenon::EnumToInt(group));
+		ImGui::InputFloat3("Position", glm::value_ptr(transform.m_Position));
+		ImGui::InputFloat3("Rotation", glm::value_ptr(transform.m_Rotation));
+		ImGui::InputFloat3("Scale", glm::value_ptr(transform.m_Scale));
+		ImGui::Separator();
+	}
+
+	ImGui::End();
 }
