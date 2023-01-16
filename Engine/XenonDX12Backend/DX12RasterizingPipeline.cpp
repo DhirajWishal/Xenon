@@ -33,6 +33,7 @@ namespace /* anonymous */
 		for (const auto& resource : shader.getResources())
 		{
 			const auto set = static_cast<Xenon::Backend::DescriptorType>(Xenon::EnumToInt(resource.m_Set));
+
 			// Fill up the binding info structure.
 			auto& bindings = bindingMap[set];
 			auto& offsets = bindingOffsets[set];

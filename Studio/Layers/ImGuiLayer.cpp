@@ -237,7 +237,15 @@ void ImGuiLayer::endFrame() const
 		view[0][1] = -view[0][1];
 		view[1][1] = -view[1][1];
 		view[2][1] = -view[2][1];
+
+#ifdef XENON_PLATFORM_WINDOWS
+		// Flip if we're using Vulkan (because of the inverted y-axis in DirectX.
+		view[3][1] = g_Globals.m_CurrentBackendType == Xenon::BackendType::Vulkan ? -view[3][1] : view[3][1];
+
+#else
 		view[3][1] = -view[3][1];
+
+#endif // XENON_PLATFORM_WINDOWS
 
 		constexpr auto currentGizmoMode = ImGuizmo::LOCAL;
 		constexpr auto currentGizmoOperation = ImGuizmo::UNIVERSAL;
@@ -246,8 +254,7 @@ void ImGuiLayer::endFrame() const
 		for (const auto group : m_pScene->getRegistry().view<Xenon::Components::Transform>())
 		{
 			// Get the transform and compute the model matrix.
-			const auto& transform = m_pScene->getRegistry().get<Xenon::Components::Transform>(group);
-			auto modelMatrix = transform.computeModelMatrix();
+			auto modelMatrix = m_pScene->getRegistry().get<Xenon::Components::Transform>(group).computeModelMatrix();
 
 			// Setup and show ImGuizmo.
 			const auto position = m_UIStorage.m_LayerViewUI.getPosition();
