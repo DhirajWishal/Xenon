@@ -26,13 +26,10 @@ namespace Xenon
 		m_pLightSourceUniform = m_Instance.getFactory()->createBuffer(m_Instance.getBackendDevice(), sizeof(Components::LightSource), Backend::BufferType::Uniform);
 	}
 
-	std::future<void> Scene::createMeshStorage(Group group, const std::filesystem::path& file)
-	{
-		return GetJobSystem().insert([this, group, file] { [[maybe_unused]] const auto& result = create<Geometry>(group, Geometry::FromFile(m_Instance, file)); });
-	}
-
 	void Scene::update()
 	{
+		const auto lock = std::scoped_lock(m_Mutex);
+
 		setupLights();
 
 		m_pSceneInformationUniform->write(ToBytes(&m_SceneInformation), sizeof(SceneInformation));
@@ -115,8 +112,10 @@ namespace Xenon
 		uniformBuffer.m_pUniformBuffer->write(ToBytes(glm::value_ptr(modelMatrix)), sizeof(modelMatrix));
 	}
 
-	void Scene::onTransformComponentUpdate(entt::registry& registry, Group group) const
+	void Scene::onTransformComponentUpdate(entt::registry& registry, Group group)
 	{
+		const auto lock = std::scoped_lock(m_Mutex);
+
 		const auto& transform = registry.get<Components::Transform>(group);
 		const auto modelMatrix =
 			glm::translate(glm::mat4(1.0f), transform.m_Position) *
