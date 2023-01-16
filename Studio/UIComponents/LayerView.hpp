@@ -58,6 +58,20 @@ public:
 	 */
 	[[nodiscard]] bool isInFocus() const noexcept { return m_bIsInFocus; }
 
+	/**
+	 * Get the window position.
+	 *
+	 * @return The position.
+	 */
+	[[nodiscard]] glm::vec2 getPosition() const noexcept { return m_Position; }
+
+	/**
+	 * Get the window size.
+	 *
+	 * @return The size.
+	 */
+	[[nodiscard]] glm::vec2 getSize() const noexcept { return m_Size; }
+
 private:
 	ImGuiLayer* m_pImGuiLayer = nullptr;
 	Xenon::Layer* m_pLayerToShow = nullptr;
@@ -67,6 +81,9 @@ private:
 	std::unique_ptr<Xenon::Backend::Image> m_pImage = nullptr;
 	std::unique_ptr<Xenon::Backend::ImageView> m_pImageView = nullptr;
 	std::unique_ptr<Xenon::Backend::ImageSampler> m_pSampler = nullptr;
+
+	glm::vec2 m_Position;
+	glm::vec2 m_Size;
 
 	bool m_bIsInFocus = false;
 };

@@ -4,7 +4,6 @@
 #include "Scene.hpp"
 
 #include <glm/mat4x4.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 namespace Xenon
@@ -101,28 +100,16 @@ namespace Xenon
 	void Scene::onTransformComponentConstruction(entt::registry& registry, Group group)
 	{
 		const auto& transform = registry.get<Components::Transform>(group);
-		const auto modelMatrix =
-			glm::translate(glm::mat4(1.0f), transform.m_Position) *
-			glm::scale(glm::mat4(1.0f), transform.m_Scale) *
-			glm::rotate(glm::mat4(1.0f), transform.m_Rotation.x, glm::vec3(1.0f, 0.0f, 0.0f)) *
-			glm::rotate(glm::mat4(1.0f), transform.m_Rotation.y, glm::vec3(0.0f, 1.0f, 0.0f)) *
-			glm::rotate(glm::mat4(1.0f), transform.m_Rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+		const auto modelMatrix = transform.computeModelMatrix();
 
 		auto& uniformBuffer = registry.emplace<Internal::TransformUniformBuffer>(group, m_Instance.getFactory()->createBuffer(m_Instance.getBackendDevice(), sizeof(modelMatrix), Backend::BufferType::Uniform));
 		uniformBuffer.m_pUniformBuffer->write(ToBytes(glm::value_ptr(modelMatrix)), sizeof(modelMatrix));
 	}
 
-	void Scene::onTransformComponentUpdate(entt::registry& registry, Group group)
+	void Scene::onTransformComponentUpdate(entt::registry& registry, Group group) const
 	{
-		const auto lock = std::scoped_lock(m_Mutex);
-
 		const auto& transform = registry.get<Components::Transform>(group);
-		const auto modelMatrix =
-			glm::translate(glm::mat4(1.0f), transform.m_Position) *
-			glm::scale(glm::mat4(1.0f), transform.m_Scale) *
-			glm::rotate(glm::mat4(1.0f), transform.m_Rotation.x, glm::vec3(1.0f, 0.0f, 0.0f)) *
-			glm::rotate(glm::mat4(1.0f), transform.m_Rotation.y, glm::vec3(0.0f, 1.0f, 0.0f)) *
-			glm::rotate(glm::mat4(1.0f), transform.m_Rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+		const auto modelMatrix = transform.computeModelMatrix();
 
 		registry.get<Internal::TransformUniformBuffer>(group).m_pUniformBuffer->write(ToBytes(glm::value_ptr(modelMatrix)), sizeof(modelMatrix));
 

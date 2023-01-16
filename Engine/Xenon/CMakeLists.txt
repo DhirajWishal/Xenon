@@ -34,6 +34,7 @@ set(
 	"Package.hpp"
 	"RayTracingLayer.cpp"
 	"RayTracingLayer.hpp"
+	"Components.cpp"
 	"Components.hpp"
 	"Scene.cpp"
 	"Scene.hpp"

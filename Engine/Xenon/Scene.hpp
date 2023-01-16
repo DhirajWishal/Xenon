@@ -227,7 +227,7 @@ namespace Xenon
 		 * @param registry The registry in which the component was updated. In our case it's the same as m_Registry.
 		 * @param group The group to which the transform component is updated.
 		 */
-		void onTransformComponentUpdate(entt::registry& registry, Group group);
+		void onTransformComponentUpdate(entt::registry& registry, Group group) const;
 
 		/**
 		 * On transform component destruction callback.

@@ -149,6 +149,7 @@ void Studio::run()
 
 	// Create the layers.
 	auto pImGui = m_Renderer.createLayer<ImGuiLayer>(m_Scene.getCamera());
+	pImGui->setScene(m_Scene);
 
 	// Set the layer to be shown.
 	pImGui->showLayer(pRenderTarget);
