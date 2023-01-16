@@ -190,6 +190,9 @@ namespace Xenon
 		if (m_pScene == nullptr)
 			return;
 
+		// Lock the scene!
+		auto lock = std::scoped_lock(m_pScene->getMutex());
+
 		// Reset the counters.
 		m_DrawCount = 0;
 		const auto subMeshCount = m_pScene->getDrawableCount();

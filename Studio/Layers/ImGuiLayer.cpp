@@ -10,9 +10,14 @@
 #include "../Shaders/ImGuiLayer/ImGuiLayer.frag.hpp"
 
 #include "Xenon/Renderer.hpp"
+#include "Xenon/MonoCamera.hpp"
 
 #include <imgui.h>
 #include <imnodes.h>
+#include <ImGuizmo.h>
+
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 
 constexpr auto g_DefaultMaterialHash = 0;
 
@@ -59,6 +64,7 @@ ImGuiLayer::~ImGuiLayer()
 bool ImGuiLayer::beginFrame(std::chrono::nanoseconds delta)
 {
 	ImGui::NewFrame();
+	ImGuizmo::BeginFrame();
 
 	// Process the ImGui events.
 	auto& io = ImGui::GetIO();
@@ -218,15 +224,63 @@ bool ImGuiLayer::beginFrame(std::chrono::nanoseconds delta)
 	// Show all the UI components.
 	showUIs(delta);
 
-	return !(io.WantCaptureMouse ||
-		io.WantCaptureKeyboard ||
-		io.WantTextInput ||
-		io.WantSetMousePos ||
-		io.WantSaveIniSettings) || m_UIStorage.m_LayerViewUI.isInFocus();
+	return !(io.WantCaptureMouse || io.WantCaptureKeyboard) || m_UIStorage.m_LayerViewUI.isInFocus();
 }
 
 void ImGuiLayer::endFrame() const
 {
+	// Finally show the ImGuizmo stuff. Probably we need to move this to it's own UI component.
+	if (m_UIStorage.m_LayerViewUI.isVisible())
+	{
+		auto [view, projection] = m_pScene->getCamera()->as<Xenon::MonoCamera>()->getCameraBuffer();
+
+		view[0][1] = -view[0][1];
+		view[1][1] = -view[1][1];
+		view[2][1] = -view[2][1];
+
+#ifdef XENON_PLATFORM_WINDOWS
+		// Flip if we're using Vulkan (because of the inverted y-axis in DirectX.
+		view[3][1] = g_Globals.m_CurrentBackendType == Xenon::BackendType::Vulkan ? -view[3][1] : view[3][1];
+
+#else
+		view[3][1] = -view[3][1];
+
+#endif // XENON_PLATFORM_WINDOWS
+
+		constexpr auto currentGizmoMode = ImGuizmo::LOCAL;
+		constexpr auto currentGizmoOperation = ImGuizmo::UNIVERSAL;
+
+		auto lock = std::scoped_lock(m_pScene->getMutex());
+		for (const auto group : m_pScene->getRegistry().view<Xenon::Components::Transform>())
+		{
+			// Get the transform and compute the model matrix.
+			auto modelMatrix = m_pScene->getRegistry().get<Xenon::Components::Transform>(group).computeModelMatrix();
+
+			// Setup and show ImGuizmo.
+			const auto position = m_UIStorage.m_LayerViewUI.getPosition();
+			const auto size = m_UIStorage.m_LayerViewUI.getSize();
+			ImGuizmo::SetRect(position.x, position.y, size.x, size.y);
+			ImGuizmo::Manipulate(glm::value_ptr(view), glm::value_ptr(projection), currentGizmoOperation, currentGizmoMode, glm::value_ptr(modelMatrix), nullptr, nullptr, nullptr, nullptr);
+
+			// Decompose the matrix and update the component.
+			glm::vec3 scale;
+			glm::quat rotation;
+			glm::vec3 translation;
+			glm::vec3 skew;
+			glm::vec4 perspective;
+			glm::decompose(modelMatrix, scale, rotation, translation, skew, perspective);
+
+			const auto patchFunction = [translation, scale, rotation](auto& object)
+			{
+				object.m_Position = translation;
+				object.m_Rotation = glm::eulerAngles(rotation);
+				object.m_Scale = scale;
+			};
+
+			m_pScene->getRegistry().patch<Xenon::Components::Transform>(group, patchFunction);
+		}
+	}
+
 	ImGui::End();
 	ImGui::Render();
 }

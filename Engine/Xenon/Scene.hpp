@@ -60,19 +60,7 @@ namespace Xenon
 		 *
 		 * @return The created group.
 		 */
-		[[nodiscard]] Group createGroup() { return m_Registry.create(); }
-
-		/**
-		 * Create a new mesh by loading it from a file.
-		 * Note that this will load the asset asynchronously and returns a future. Use that to wait if you want.
-		 *
-		 * To get the loaded asset, use the get() function once the returned future is complete.
-		 *
-		 * @param group The group to which the mesh storage is bound to.
-		 * @param file The file to load the meshes from.
-		 * @return The future stating if the asset loading is complete or not.
-		 */
-		[[nodiscard]] std::future<void> createMeshStorage(Group group, const std::filesystem::path& file);
+		[[nodiscard]] Group createGroup() { const auto lock = std::scoped_lock(m_Mutex); return m_Registry.create(); }
 
 		/**
 		 * Create a new object.
@@ -115,6 +103,7 @@ namespace Xenon
 		template<class Object>
 		[[nodiscard]] Object& get(Group group)
 		{
+			const auto lock = std::scoped_lock(m_Mutex);
 			return m_Registry.get<Object>(group);
 		}
 
@@ -194,6 +183,14 @@ namespace Xenon
 		 * @return The total sub-mesh count.
 		 */
 		[[nodiscard]] uint64_t getDrawableCount() const noexcept { return m_DrawableCount; }
+
+		/**
+		 * Get the scene object's mutex.
+		 * This might be needed when synchronizing draw calls.
+		 *
+		 * @return The mutex reference.
+		 */
+		[[nodiscard]] std::mutex& getMutex() noexcept { return m_Mutex; }
 
 	private:
 		/**

@@ -75,6 +75,7 @@ namespace Xenon
 			m_BindingMap = std::move(bindingMap);
 			setupRange(m_BindingMap[DescriptorType::UserDefined], DescriptorType::UserDefined);
 			setupRange(m_BindingMap[DescriptorType::Material], DescriptorType::Material);
+			setupRange(m_BindingMap[DescriptorType::PerGeometry], DescriptorType::PerGeometry);
 			setupRange(m_BindingMap[DescriptorType::Scene], DescriptorType::Scene);
 
 			// Setup and increment the heaps.

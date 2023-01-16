@@ -38,13 +38,11 @@ float4x4 GetIdentityMatrix()
 
 /**
  * Transform structure.
- * This contains information about a single transform of a geometry.
+ * This contains the model matrix of a geometry.
  */
 struct Transform
 {
-	float3 m_Position;
-	float3 m_Rotation;
-	float3 m_Scale;
+	float4x4 m_Matrix;
 };
 
 #define XENON_SETUP_TRANSFORM(name)																					\

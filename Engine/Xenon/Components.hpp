@@ -5,6 +5,7 @@
 
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
+#include <glm/mat4x4.hpp>
 
 #define XENON_HLSL_VEC3_ALIGNMENT alignas(sizeof(glm::vec4))
 
@@ -21,6 +22,13 @@ namespace Xenon
 			XENON_HLSL_VEC3_ALIGNMENT glm::vec3 m_Position = glm::vec3(0);
 			XENON_HLSL_VEC3_ALIGNMENT glm::vec3 m_Rotation = glm::vec3(0);
 			XENON_HLSL_VEC3_ALIGNMENT glm::vec3 m_Scale = glm::vec3(1.0);
+
+			/**
+			 * Compute the model matrix from the transform data.
+			 *
+			 * @return The model matrix which will be passed to the shader.
+			 */
+			[[nodiscard]] glm::mat4 computeModelMatrix() const;
 		};
 
 		/**

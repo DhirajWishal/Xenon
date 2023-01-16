@@ -49,8 +49,16 @@ void LayerView::begin(std::chrono::nanoseconds delta)
 	{
 		if (ImGui::Begin("Layer View", &m_bIsOpen))
 		{
-			ImGui::Image(std::bit_cast<void*>(m_ImageHash), ImGui::GetContentRegionAvail());
+			const auto size = ImGui::GetContentRegionAvail();
+			m_Size.x = size.x;
+			m_Size.y = size.y;
+
+			ImGui::Image(std::bit_cast<void*>(m_ImageHash), size);
 			m_bIsInFocus = ImGui::IsWindowFocused();
+
+			const auto pos = ImGui::GetWindowPos();
+			m_Position.x = pos.x;
+			m_Position.y = pos.y;
 		}
 
 		ImGui::End();

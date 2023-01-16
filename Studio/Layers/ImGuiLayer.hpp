@@ -32,14 +32,6 @@ class ImGuiLayer final : public Xenon::RasterizingLayer
 	};
 
 	/**
-	 * Material descriptor structure.
-	 */
-	struct MaterialDescriptor final
-	{
-		std::unique_ptr<Xenon::Backend::Descriptor> m_pDescriptor = nullptr;
-	};
-
-	/**
 	 * UI storage structure.
 	 * This structure contains all the UI components which are used by the studio.
 	 * This layer also manages them.

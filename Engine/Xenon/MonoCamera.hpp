@@ -52,6 +52,13 @@ namespace Xenon
 		 */
 		[[nodiscard]] std::vector<Backend::Viewport> getViewports() override { return { m_Viewport }; }
 
+		/**
+		 * Get the camera buffer with the camera's matrices.
+		 *
+		 * @return The camera buffer.
+		 */
+		[[nodiscard]] const CameraBuffer& getCameraBuffer() const noexcept { return m_CameraBuffer; }
+
 	private:
 		BackendType m_BackendType = BackendType::Any;
 		CameraBuffer m_CameraBuffer;

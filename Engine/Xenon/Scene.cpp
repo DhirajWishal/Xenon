@@ -3,6 +3,9 @@
 
 #include "Scene.hpp"
 
+#include <glm/mat4x4.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 namespace Xenon
 {
 	Scene::Scene(Instance& instance, std::unique_ptr<Backend::Camera>&& pCamera)
@@ -22,13 +25,10 @@ namespace Xenon
 		m_pLightSourceUniform = m_Instance.getFactory()->createBuffer(m_Instance.getBackendDevice(), sizeof(Components::LightSource), Backend::BufferType::Uniform);
 	}
 
-	std::future<void> Scene::createMeshStorage(Group group, const std::filesystem::path& file)
-	{
-		return GetJobSystem().insert([this, group, file] { [[maybe_unused]] const auto& result = create<Geometry>(group, Geometry::FromFile(m_Instance, file)); });
-	}
-
 	void Scene::update()
 	{
+		const auto lock = std::scoped_lock(m_Mutex);
+
 		setupLights();
 
 		m_pSceneInformationUniform->write(ToBytes(&m_SceneInformation), sizeof(SceneInformation));
@@ -99,13 +99,20 @@ namespace Xenon
 
 	void Scene::onTransformComponentConstruction(entt::registry& registry, Group group)
 	{
-		auto& uniformBuffer = registry.emplace<Internal::TransformUniformBuffer>(group, m_Instance.getFactory()->createBuffer(m_Instance.getBackendDevice(), sizeof(Components::Transform), Backend::BufferType::Uniform));
-		uniformBuffer.m_pUniformBuffer->write(ToBytes(&registry.get<Components::Transform>(group)), sizeof(Components::Transform));
+		const auto& transform = registry.get<Components::Transform>(group);
+		const auto modelMatrix = transform.computeModelMatrix();
+
+		auto& uniformBuffer = registry.emplace<Internal::TransformUniformBuffer>(group, m_Instance.getFactory()->createBuffer(m_Instance.getBackendDevice(), sizeof(modelMatrix), Backend::BufferType::Uniform));
+		uniformBuffer.m_pUniformBuffer->write(ToBytes(glm::value_ptr(modelMatrix)), sizeof(modelMatrix));
 	}
 
 	void Scene::onTransformComponentUpdate(entt::registry& registry, Group group) const
 	{
-		registry.get<Internal::TransformUniformBuffer>(group).m_pUniformBuffer->write(ToBytes(&registry.get<Components::Transform>(group)), sizeof(Components::Transform));
+		const auto& transform = registry.get<Components::Transform>(group);
+		const auto modelMatrix = transform.computeModelMatrix();
+
+		registry.get<Internal::TransformUniformBuffer>(group).m_pUniformBuffer->write(ToBytes(glm::value_ptr(modelMatrix)), sizeof(modelMatrix));
+
 	}
 
 	void Scene::onTransformComponentDestruction(entt::registry& registry, Group group) const
