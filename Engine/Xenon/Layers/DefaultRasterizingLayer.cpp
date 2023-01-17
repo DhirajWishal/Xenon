@@ -95,13 +95,15 @@ namespace Xenon
 		return pDescriptor;
 	}
 
-	Xenon::Backend::Descriptor* DefaultRasterizingLayer::getMaterialDescriptor(Pipeline& pipeline, SubMesh& subMesh, const MaterialSpecification& specification)
+	void DefaultRasterizingLayer::setupMaterialDescriptor(Pipeline& pipeline, SubMesh& subMesh, const MaterialSpecification& specification)
 	{
 		OPTICK_EVENT();
 
+		auto lock = std::scoped_lock(m_Mutex);
+
 		// Get if we've already crated a material descriptor for the sub-mesh.
 		if (pipeline.m_pMaterialDescriptors.contains(subMesh))
-			return pipeline.m_pMaterialDescriptors[subMesh].get();
+			return;
 
 		// Else let's quickly create one.
 		uint32_t binding = 0;
@@ -178,8 +180,6 @@ namespace Xenon
 
 			binding++;
 		}
-
-		return pDescriptor.get();
 	}
 
 	void DefaultRasterizingLayer::issueDrawCalls()
@@ -195,14 +195,14 @@ namespace Xenon
 
 		// Reset the counters.
 		m_DrawCount = 0;
-		const auto subMeshCount = m_pScene->getDrawableCount();
+		const auto geometryCount = m_pScene->getDrawableGeometryCount();
 
 		// Return if we have nothing to draw.
-		if (subMeshCount == 0)
+		if (geometryCount == 0)
 			return;
 
 		// Reset the synchronization primitive.
-		m_Synchronization.reset(subMeshCount);
+		m_Synchronization.reset(geometryCount);
 
 		// Begin the command recorders and set the viewport and scissor.
 		for (const auto& [id, pCommandRecorder] : m_pThreadLocalCommandRecorder)
@@ -218,65 +218,10 @@ namespace Xenon
 		}
 
 		// Issue the binding calls.
-		uint64_t index = 0;
 		for (const auto& group : m_pScene->getRegistry().view<Geometry, Material>())
 		{
 			OPTICK_EVENT_DYNAMIC("Binding Geometry");
-			auto& geometry = m_pScene->getRegistry().get<Geometry>(group);
-			const auto& material = m_pScene->getRegistry().get<Material>(group);
-			const auto& materialSpecification = m_Renderer.getInstance().getMaterialDatabase().getSpecification(material);
-
-			// Create the pipeline if the required material does not exist.
-			if (!m_pPipelines.contains(material))
-			{
-				OPTICK_EVENT_DYNAMIC("Creating Pipeline For Material");
-
-				auto& pipeline = m_pPipelines[material];
-				pipeline.m_pPipeline = m_Renderer.getInstance().getFactory()->createRasterizingPipeline(
-					m_Renderer.getInstance().getBackendDevice(),
-					nullptr,
-					m_pRasterizer.get(),
-					materialSpecification.m_RasterizingPipelineSpecification
-				);
-
-				// Create the camera descriptor.
-				pipeline.m_pSceneDescriptor = pipeline.m_pPipeline->createDescriptor(Backend::DescriptorType::Scene);
-				m_pScene->setupDescriptor(pipeline.m_pSceneDescriptor.get(), pipeline.m_pPipeline.get());
-			}
-
-			// Get the pipeline from the storage.
-			auto& pipeline = m_pPipelines[material];
-
-			// Setup the per-geometry descriptor if we need one for the geometry.
-			if (!pipeline.m_pPerGeometryDescriptors.contains(group))
-				pipeline.m_pPerGeometryDescriptors[group] = createPerGeometryDescriptor(pipeline, group);
-
-			// Get the per-geometry descriptor.
-			auto pPerGeometryDescriptor = pipeline.m_pPerGeometryDescriptors[group].get();
-
-			// Bind the sub-meshes.
-			for (auto& mesh : geometry.getMeshes())
-			{
-				OPTICK_EVENT_DYNAMIC("Binding Mesh");
-
-				for (auto& subMesh : mesh.m_SubMeshes)
-				{
-					OPTICK_EVENT_DYNAMIC("Binding Draw Entry (sub-mesh)");
-
-					DrawEntry entry = {};
-					entry.m_SubMesh = subMesh;
-					entry.m_VertexSpecification = geometry.getVertexSpecification();
-					entry.m_pPipeline = pipeline.m_pPipeline.get();
-					entry.m_pVertexBuffer = geometry.getVertexBuffer();
-					entry.m_pIndexBuffer = geometry.getIndexBuffer();
-					entry.m_pPerGeometryDescriptor = pPerGeometryDescriptor;
-					entry.m_pMaterialDescriptor = getMaterialDescriptor(pipeline, subMesh, materialSpecification);
-					entry.m_pSceneDescriptor = pipeline.m_pSceneDescriptor.get();
-					entry.m_QueryIndex = index++;
-
-					GetJobSystem().insert([this, entry] { bindingCall(entry); });
-				}
-			}
+			GetJobSystem().insert([this, group] { issueDrawCalls(group); });
 		}
 
 		// Wait till all the work is done.
@@ -298,9 +243,51 @@ namespace Xenon
 		m_pCommandRecorder->executeChildren();
 	}
 
-	void DefaultRasterizingLayer::bindingCall(const DrawEntry& entry)
+	void DefaultRasterizingLayer::issueDrawCalls(Group group)
 	{
 		OPTICK_EVENT();
+
+		auto& geometry = m_pScene->getRegistry().get<Geometry>(group);
+		const auto& material = m_pScene->getRegistry().get<Material>(group);
+		const auto& materialSpecification = m_Renderer.getInstance().getMaterialDatabase().getSpecification(material);
+
+		// Create the pipeline if the required material does not exist.
+		{
+			auto lock = std::scoped_lock(m_Mutex);
+			if (!m_pPipelines.contains(material))
+			{
+				OPTICK_EVENT_DYNAMIC("Creating Pipeline For Material");
+
+				auto& pipeline = m_pPipelines[material];
+				pipeline.m_pPipeline = m_Renderer.getInstance().getFactory()->createRasterizingPipeline(
+					m_Renderer.getInstance().getBackendDevice(),
+					nullptr,
+					m_pRasterizer.get(),
+					materialSpecification.m_RasterizingPipelineSpecification
+				);
+
+				// Create the camera descriptor.
+				pipeline.m_pSceneDescriptor = pipeline.m_pPipeline->createDescriptor(Backend::DescriptorType::Scene);
+				m_pScene->setupDescriptor(pipeline.m_pSceneDescriptor.get(), pipeline.m_pPipeline.get());
+			}
+		}
+
+		// Get the pipeline from the storage.
+		auto& pipeline = m_pPipelines[material];
+
+		// Setup the material descriptors if we need to.
+		for (auto& mesh : geometry.getMeshes())
+		{
+			for (auto& subMesh : mesh.m_SubMeshes)
+				setupMaterialDescriptor(pipeline, subMesh, materialSpecification);
+		}
+
+		// Setup the per-geometry descriptor if we need one for the geometry.
+		{
+			auto lock = std::scoped_lock(m_Mutex);
+			if (!pipeline.m_pPerGeometryDescriptors.contains(group))
+				pipeline.m_pPerGeometryDescriptors[group] = createPerGeometryDescriptor(pipeline, group);
+		}
 
 		// Setup the command recorders if we don't have one for this thread.
 		const auto id = std::this_thread::get_id();
@@ -323,58 +310,70 @@ namespace Xenon
 			pCommandRecorder->setScissor(0, 0, m_Renderer.getCamera()->getWidth(), m_Renderer.getCamera()->getHeight());
 		}
 
+		const auto& pCommandRecorder = m_pThreadLocalCommandRecorder.at(id).get();
+
 #ifdef ENABLE_OCCLUSION_CULL
-		// Run the occlusion pass on the entry.
-		occlusionPass(entry);
+		// Occlusion pass time!
+		occlusionPass(pCommandRecorder, geometry);
 
 #endif // ENABLE_OCCLUSION_CULL
 
-		// Run the geometry pass on the entry.
-		geometryPass(entry);
+		// Geometry pass time!
+		geometryPass(pCommandRecorder, pipeline.m_pPerGeometryDescriptors[group].get(), geometry, pipeline);
 
 		// Notify the parent that we're done.
 		m_Synchronization.arrive();
 	}
 
-	void DefaultRasterizingLayer::occlusionPass(const DrawEntry& entry) const
+	void DefaultRasterizingLayer::occlusionPass(Backend::CommandRecorder* pCommandRecorder, Geometry& geometry) const
 	{
 		OPTICK_EVENT();
 
-		const auto& pCommandRecorder = m_pThreadLocalCommandRecorder.at(std::this_thread::get_id());
+		pCommandRecorder->bind(m_pOcclusionPipeline.get(), geometry.getVertexSpecification());
+		pCommandRecorder->bind(geometry.getVertexBuffer(), geometry.getVertexSpecification().getSize());
 
-		pCommandRecorder->bind(m_pOcclusionPipeline.get(), entry.m_VertexSpecification);
-		pCommandRecorder->bind(entry.m_pVertexBuffer, entry.m_VertexSpecification.getSize());
-		pCommandRecorder->bind(entry.m_pIndexBuffer, static_cast<Backend::IndexBufferStride>(entry.m_SubMesh.m_IndexSize));
-		pCommandRecorder->bind(m_pOcclusionPipeline.get(), nullptr, nullptr, nullptr, m_pOcclusionCameraDescriptor.get());
+		// Bind the sub-meshes.
+		for (const auto& mesh : geometry.getMeshes())
+		{
+			OPTICK_EVENT_DYNAMIC("Binding Mesh");
 
-		pCommandRecorder->beginQuery(m_pOcclusionQuery.get(), static_cast<uint32_t>(entry.m_QueryIndex));
-		pCommandRecorder->drawIndexed(entry.m_SubMesh.m_VertexOffset, entry.m_SubMesh.m_IndexOffset, entry.m_SubMesh.m_IndexCount);
-		pCommandRecorder->endQuery(m_pOcclusionQuery.get(), static_cast<uint32_t>(entry.m_QueryIndex));
+			for (const auto& subMesh : mesh.m_SubMeshes)
+			{
+				OPTICK_EVENT_DYNAMIC("Issuing Occlusion Pass Draw Calls");
+
+				pCommandRecorder->bind(geometry.getIndexBuffer(), static_cast<Backend::IndexBufferStride>(subMesh.m_IndexSize));
+				pCommandRecorder->bind(m_pOcclusionPipeline.get(), nullptr, nullptr, nullptr, m_pOcclusionCameraDescriptor.get());
+
+				pCommandRecorder->beginQuery(m_pOcclusionQuery.get(), static_cast<uint32_t>(0));
+				pCommandRecorder->drawIndexed(subMesh.m_VertexOffset, subMesh.m_IndexOffset, subMesh.m_IndexCount);
+				pCommandRecorder->endQuery(m_pOcclusionQuery.get(), static_cast<uint32_t>(0));
+			}
+		}
 	}
 
-	void DefaultRasterizingLayer::geometryPass(const DrawEntry& entry)
+	void DefaultRasterizingLayer::geometryPass(Backend::CommandRecorder* pCommandRecorder, Backend::Descriptor* pPerGeometryDescriptor, Geometry& geometry, Pipeline& pipeline)
 	{
 		OPTICK_EVENT();
 
-		const auto& pCommandRecorder = m_pThreadLocalCommandRecorder.at(std::this_thread::get_id());
+		pCommandRecorder->bind(pipeline.m_pPipeline.get(), geometry.getVertexSpecification());
+		pCommandRecorder->bind(geometry.getVertexBuffer(), geometry.getVertexSpecification().getSize());
 
-#ifdef ENABLE_OCCLUSION_CULL
-		// Draw only if we're in the camera's view frustum.
-		if (m_pOcclusionQuery->getSamples()[entry.m_QueryIndex] > 0)
-
-#endif // ENABLE_OCCLUSION_CULL
-
+		// Bind the sub-meshes.
+		for (auto& mesh : geometry.getMeshes())
 		{
-			OPTICK_EVENT_DYNAMIC("Issuing Draw Calls");
+			OPTICK_EVENT_DYNAMIC("Binding Mesh");
 
-			pCommandRecorder->bind(entry.m_pPipeline, entry.m_VertexSpecification);
-			pCommandRecorder->bind(entry.m_pVertexBuffer, entry.m_VertexSpecification.getSize());
-			pCommandRecorder->bind(entry.m_pIndexBuffer, static_cast<Backend::IndexBufferStride>(entry.m_SubMesh.m_IndexSize));
-			pCommandRecorder->bind(entry.m_pPipeline, entry.m_pUserDefinedDescriptor, entry.m_pMaterialDescriptor, entry.m_pPerGeometryDescriptor, entry.m_pSceneDescriptor);
+			for (auto& subMesh : mesh.m_SubMeshes)
+			{
+				OPTICK_EVENT_DYNAMIC("Issuing Draw Calls");
 
-			pCommandRecorder->drawIndexed(entry.m_SubMesh.m_VertexOffset, entry.m_SubMesh.m_IndexOffset, entry.m_SubMesh.m_IndexCount);
+				pCommandRecorder->bind(geometry.getIndexBuffer(), static_cast<Backend::IndexBufferStride>(subMesh.m_IndexSize));
+				pCommandRecorder->bind(pipeline.m_pPipeline.get(), nullptr, pipeline.m_pMaterialDescriptors[subMesh].get(), pPerGeometryDescriptor, pipeline.m_pSceneDescriptor.get());
 
-			m_DrawCount++;
+				pCommandRecorder->drawIndexed(subMesh.m_VertexOffset, subMesh.m_IndexOffset, subMesh.m_IndexCount);
+
+				m_DrawCount++;
+			}
 		}
 	}
 }

@@ -85,6 +85,8 @@ namespace Xenon
 		{
 			for (const auto& geometry = registry.get<Geometry>(group); const auto & mesh : geometry.getMeshes())
 				m_DrawableCount += mesh.m_SubMeshes.size();
+
+			m_DrawableGeometryCount++;
 		}
 	}
 
@@ -94,6 +96,8 @@ namespace Xenon
 		{
 			for (const auto& geometry = registry.get<Geometry>(group); const auto & mesh : geometry.getMeshes())
 				m_DrawableCount += mesh.m_SubMeshes.size();
+
+			m_DrawableGeometryCount++;
 		}
 	}
 

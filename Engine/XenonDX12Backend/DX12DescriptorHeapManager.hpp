@@ -18,7 +18,7 @@ namespace Xenon
 		 * The heaps in the vector are freshly copied from a non shader-visible heap to a shader-visible descriptor heap(s) which can be attached to a command list
 		 * to be executed using shaders.
 		 */
-		using DX12PipelineDescriptorHeapStorage = std::vector<ID3D12DescriptorHeap*>;
+		using DX12PipelineDescriptorHeapStorage = std::array<ID3D12DescriptorHeap*, 2>;
 
 		/**
 		 * DirectX 12 descriptor heap manager class.

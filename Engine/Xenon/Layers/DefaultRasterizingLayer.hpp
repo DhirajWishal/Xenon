@@ -100,14 +100,20 @@ namespace Xenon
 		[[nodiscard]] std::unique_ptr<Backend::Descriptor> createPerGeometryDescriptor(Pipeline& pipeline, Group group);
 
 		/**
-		 * Get the material descriptor.
+		 * Setup the material descriptor.
 		 *
 		 * @param pipeline The pipeline.
 		 * @param subMesh The sub-mesh.
 		 * @param specification The material specification.
-		 * @return The descriptor pointer.
 		 */
-		[[nodiscard]] Backend::Descriptor* getMaterialDescriptor(Pipeline& pipeline, SubMesh& subMesh, const MaterialSpecification& specification);
+		void setupMaterialDescriptor(Pipeline& pipeline, SubMesh& subMesh, const MaterialSpecification& specification);
+
+		/**
+		 * Issue draw calls using a geometry's group.
+		 *
+		 * @param group The group.
+		 */
+		void issueDrawCalls(Group group);
 
 		/**
 		 * Issue the draw calls.
@@ -115,26 +121,22 @@ namespace Xenon
 		void issueDrawCalls();
 
 		/**
-		 * Binding call function.
-		 * This function is passed to the job system to bind the required passes.
-		 *
-		 * @param entry The draw entry.
-		 */
-		void bindingCall(const DrawEntry& entry);
-
-		/**
 		 * Draw the occlusion pass of the sub-mesh.
 		 *
-		 * @param entry The draw entry.
+		 * @param pCommandRecorder The command recorder pointer.
+		 * @param geometry The geometry reference.
 		 */
-		void occlusionPass(const DrawEntry& entry) const;
+		void occlusionPass(Backend::CommandRecorder* pCommandRecorder, Geometry& geometry) const;
 
 		/**
 		 * Draw the geometry pass of the sub-mesh.
 		 *
-		 * @param entry The draw entry.
+		 * @param pCommandRecorder The command recorder pointer.
+		 * @param pPerGeometryDescriptor The per-geometry descriptor pointer.
+		 * @param geometry The geometry reference.
+		 * @param pipeline The pipeline to draw with.
 		 */
-		void geometryPass(const DrawEntry& entry);
+		void geometryPass(Backend::CommandRecorder* pCommandRecorder, Backend::Descriptor* pPerGeometryDescriptor, Geometry& geometry, Pipeline& pipeline);
 
 	private:
 		std::mutex m_Mutex;
