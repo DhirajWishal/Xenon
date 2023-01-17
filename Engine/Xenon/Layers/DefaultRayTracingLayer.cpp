@@ -8,8 +8,8 @@
 
 namespace Xenon
 {
-	DefaultRayTracingLayer::DefaultRayTracingLayer(Renderer& renderer, Backend::Camera* pCamera)
-		: RayTracingLayer(renderer, pCamera)
+	DefaultRayTracingLayer::DefaultRayTracingLayer(Renderer& renderer, Backend::Camera* pCamera, uint32_t priority/* = 10*/)
+		: RayTracingLayer(renderer, priority, pCamera)
 	{
 	}
 

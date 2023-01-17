@@ -63,8 +63,9 @@ namespace Xenon
 		 *
 		 * @param renderer The renderer reference.
 		 * @param pCamera The camera pointer used by the renderer.
+		 * @param priority The priority of the layer. Default is 5.
 		 */
-		explicit DefaultRasterizingLayer(Renderer& renderer, Backend::Camera* pCamera);
+		explicit DefaultRasterizingLayer(Renderer& renderer, Backend::Camera* pCamera, uint32_t priority = 5);
 
 		/**
 		 * Destructor.
@@ -88,14 +89,6 @@ namespace Xenon
 		 * @return The count.
 		 */
 		[[nodiscard]] uint64_t getDrawCount() const noexcept { return m_DrawCount; }
-
-		/**
-		 * Get all the command buffers that will be batched and submitted.
-		 * This method is called by the renderer and is used to collect all the command buffers that will be batched together when submitting.
-		 *
-		 * @param pCommandBuffers The command buffers vector to which the command buffers need to be attached.
-		 */
-		void onRegisterCommandBuffers(std::vector<Backend::CommandRecorder*>& pCommandBuffers) override;
 
 	private:
 		/**

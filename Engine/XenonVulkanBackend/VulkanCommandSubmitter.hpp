@@ -31,14 +31,8 @@ namespace Xenon
 
 			/**
 			 * Submit the command recorders to the GPU.
-			 *
-			 * @param pCommandRecorders The command recorders to submit.
-			 * @param pSwapchain The swapchain pointer. This is needed when rendering images to a window. Default is nullptr.
-			 */
-			void submit(const std::vector<CommandRecorder*>& pCommandRecorders, Swapchain* pSwapchain = nullptr) override;
-
-			/**
-			 * Submit the command recorders to the GPU.
+			 * The dimensions of the vector contains information about batching. Each vector of command recorders (batch) will be executed in parallel (as a batch).
+			 * And each batch will wait till the previous batch is executed before starting it's work.
 			 *
 			 * @param pCommandRecorders The command recorders to submit.
 			 * @param pSwapchain The swapchain pointer. This is needed when rendering images to a window. Default is nullptr.

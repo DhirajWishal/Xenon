@@ -31,21 +31,10 @@ namespace Xenon
 			semaphoreCreateInfo.flags = 0;
 
 			XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkCreateSemaphore(m_pDevice->getLogicalDevice(), &semaphoreCreateInfo, nullptr, &m_SignalSemaphore), "Failed to create the signal semaphore!");
-
-			// Setup the submit info structure.
-			m_SubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-			m_SubmitInfo.waitSemaphoreCount = 0;
-			m_SubmitInfo.pWaitSemaphores = nullptr;
-			m_SubmitInfo.commandBufferCount = 1;
-			m_SubmitInfo.pCommandBuffers = &m_CommandBuffer;
-			m_SubmitInfo.pWaitDstStageMask = nullptr;
-			m_SubmitInfo.signalSemaphoreCount = 1;
-			m_SubmitInfo.pSignalSemaphores = &m_SignalSemaphore;
 		}
 
 		VulkanCommandBuffer::VulkanCommandBuffer(VulkanCommandBuffer&& other) noexcept
 			: VulkanDeviceBoundObject(std::move(other))
-			, m_SubmitInfo(std::exchange(other.m_SubmitInfo, {}))
 			, m_CommandBuffer(std::exchange(other.m_CommandBuffer, VK_NULL_HANDLE))
 			, m_CommandPool(std::exchange(other.m_CommandPool, VK_NULL_HANDLE))
 			, m_SignalSemaphore(std::exchange(other.m_SignalSemaphore, VK_NULL_HANDLE))
@@ -53,8 +42,6 @@ namespace Xenon
 			, m_StageFlags(std::exchange(other.m_StageFlags, 0))
 			, m_IsFenceFree(std::exchange(other.m_IsFenceFree, true))
 		{
-			m_SubmitInfo.pCommandBuffers = &m_CommandBuffer;
-			m_SubmitInfo.pSignalSemaphores = &m_SignalSemaphore;
 		}
 
 		VulkanCommandBuffer::~VulkanCommandBuffer()
@@ -113,16 +100,12 @@ namespace Xenon
 		{
 			VulkanDeviceBoundObject::operator=(std::move(other));
 
-			m_SubmitInfo = std::exchange(other.m_SubmitInfo, {});
 			m_CommandBuffer = std::exchange(other.m_CommandBuffer, VK_NULL_HANDLE);
 			m_CommandPool = std::exchange(other.m_CommandPool, VK_NULL_HANDLE);
 			m_SignalSemaphore = std::exchange(other.m_SignalSemaphore, VK_NULL_HANDLE);
 			m_Fence = std::exchange(other.m_Fence, VK_NULL_HANDLE);
 			m_StageFlags = std::exchange(other.m_StageFlags, 0);
 			m_IsFenceFree = std::exchange(other.m_IsFenceFree, true);
-
-			m_SubmitInfo.pCommandBuffers = &m_CommandBuffer;
-			m_SubmitInfo.pSignalSemaphores = &m_SignalSemaphore;
 
 			return *this;
 		}

@@ -31,21 +31,6 @@ namespace Xenon
 			}
 		}
 
-		void DX12CommandSubmitter::submit(const std::vector<CommandRecorder*>& pCommandRecorders, Swapchain* pSwapchain /*= nullptr*/)
-		{
-			OPTICK_EVENT();
-
-			m_Fence->Signal(0);
-			for (UINT i = 0; i < static_cast<UINT>(pCommandRecorders.size()); i++)
-			{
-				const std::array<ID3D12CommandList*, 1> pCommandLists = { pCommandRecorders[i]->as<DX12CommandRecorder>()->getCurrentCommandList() };
-				m_pDevice->getDirectQueue()->ExecuteCommandLists(1, pCommandLists.data());
-				XENON_DX12_ASSERT(m_pDevice->getDirectQueue()->Signal(m_Fence.Get(), i + 1), "Failed to signal the fence!");
-			}
-
-			m_bIsWaiting = true;
-		}
-
 		void DX12CommandSubmitter::submit(const std::vector<std::vector<Backend::CommandRecorder*>>& pCommandRecorders, Swapchain* pSwapchain /*= nullptr*/)
 		{
 			OPTICK_EVENT();

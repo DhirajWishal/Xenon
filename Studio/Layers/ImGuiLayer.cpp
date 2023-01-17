@@ -33,7 +33,7 @@ namespace /* anonymous */
 }
 
 ImGuiLayer::ImGuiLayer(Xenon::Renderer& renderer, Xenon::Backend::Camera* pCamera)
-	: RasterizingLayer(renderer, pCamera, Xenon::Backend::AttachmentType::Color)
+	: RasterizingLayer(renderer, 100, pCamera, Xenon::Backend::AttachmentType::Color)
 	, m_UIStorage(this)
 	, m_pVertexBuffers(renderer.getCommandRecorder()->getBufferCount())
 	, m_pIndexBuffers(renderer.getCommandRecorder()->getBufferCount())

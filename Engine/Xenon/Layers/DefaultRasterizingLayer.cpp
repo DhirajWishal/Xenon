@@ -12,8 +12,8 @@
 
 namespace Xenon
 {
-	DefaultRasterizingLayer::DefaultRasterizingLayer(Renderer& renderer, Backend::Camera* pCamera)
-		: RasterizingLayer(renderer, pCamera, Backend::AttachmentType::Color | Backend::AttachmentType::Depth | Backend::AttachmentType::Stencil)
+	DefaultRasterizingLayer::DefaultRasterizingLayer(Renderer& renderer, Backend::Camera* pCamera, uint32_t priority/* = 5*/)
+		: RasterizingLayer(renderer, priority, pCamera, Backend::AttachmentType::Color | Backend::AttachmentType::Depth | Backend::AttachmentType::Stencil)
 		, m_pOcclusionQuery(renderer.getInstance().getFactory()->createOcclusionQuery(m_Renderer.getInstance().getBackendDevice(), 1))
 	{
 		// Setup the occlusion pipeline.
@@ -61,12 +61,6 @@ namespace Xenon
 
 		// End the command recorder recording.
 		m_pCommandRecorder->end();
-	}
-
-	void DefaultRasterizingLayer::onRegisterCommandBuffers(std::vector<Backend::CommandRecorder*>& pCommandBuffers)
-	{
-		for (const auto& [material, pipeline] : m_pPipelines)
-			pCommandBuffers.emplace_back(pipeline.m_pSecondaryCommandRecorder.get());
 	}
 
 	void DefaultRasterizingLayer::setupOcclusionPipeline()

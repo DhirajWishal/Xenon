@@ -39,62 +39,9 @@ namespace Xenon
 			m_pDevice->getDeviceTable().vkDestroyFence(m_pDevice->getLogicalDevice(), m_WaitFence, nullptr);
 		}
 
-		void VulkanCommandSubmitter::submit(const std::vector<CommandRecorder*>& pCommandRecorders, Swapchain* pSwapchain /*= nullptr*/)
-		{
-			OPTICK_EVENT();
-
-			auto pVkSwapchain = pSwapchain->as<VulkanSwapchain>();
-			const VkPipelineStageFlags swapchainWaitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-
-			std::vector<VkSubmitInfo> submitInfos;
-			submitInfos.reserve(pCommandRecorders.size());
-			m_bIsWaiting = !pCommandRecorders.empty();
-
-			// Create the submit info structure.
-			VulkanCommandBuffer* pPreviousCommandBuffer = nullptr;
-			for (const auto pCommandRecorder : pCommandRecorders)
-			{
-				auto pVkCommandBuffer = pCommandRecorder->as<VulkanCommandRecorder>()->getCurrentCommandBuffer();
-				auto& submitInfo = submitInfos.emplace_back(pVkCommandBuffer->getSubmitInfo());
-
-				if (pPreviousCommandBuffer)
-				{
-					submitInfo.waitSemaphoreCount = 1;
-					submitInfo.pWaitSemaphores = pPreviousCommandBuffer->getSignalSemaphoreAddress();
-					submitInfo.pWaitDstStageMask = pPreviousCommandBuffer->getStageFlagsAddress();
-				}
-				else if (pVkSwapchain != nullptr && pVkSwapchain->isRenderable())
-				{
-					submitInfo.waitSemaphoreCount = 1;
-					submitInfo.pWaitSemaphores = pVkSwapchain->getInFlightSemaphorePtr();
-					submitInfo.pWaitDstStageMask = &swapchainWaitStage;
-				}
-
-				pPreviousCommandBuffer = pVkCommandBuffer;
-			}
-
-			// Get the semaphores from the swapchain if provided.
-			if (pPreviousCommandBuffer && pVkSwapchain != nullptr && pVkSwapchain->isRenderable())
-			{
-				auto& submitInfo = submitInfos.back();
-				submitInfo.signalSemaphoreCount = 1;
-				submitInfo.pSignalSemaphores = pVkSwapchain->getRenderFinishedSemaphorePtr();
-			}
-
-			// Submit the queue.
-			m_pDevice->getGraphicsQueue().access([this, submitInfos = std::move(submitInfos)](const VulkanQueue& queue)
-				{
-					XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkQueueSubmit(queue.getQueue(), static_cast<uint32_t>(submitInfos.size()), submitInfos.data(), m_WaitFence), "Failed to submit the queue!");
-				}
-			);
-		}
-
 		void VulkanCommandSubmitter::submit(const std::vector<std::vector<Backend::CommandRecorder*>>& pCommandRecorders, Swapchain* pSwapchain /*= nullptr*/)
 		{
 			OPTICK_EVENT();
-
-			auto pVkSwapchain = pSwapchain->as<VulkanSwapchain>();
-			const VkPipelineStageFlags swapchainWaitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
 			std::vector<VkSubmitInfo> submitInfos;
 			std::vector<std::vector<VkCommandBuffer>> commandBuffers;
@@ -108,6 +55,7 @@ namespace Xenon
 			waitStageFlags.reserve(pCommandRecorders.size() + (pSwapchain ? 1 : 0));
 			signalSemaphores.reserve(pCommandRecorders.size() + (pSwapchain ? 1 : 0));
 
+			auto pVkSwapchain = pSwapchain->as<VulkanSwapchain>();
 			if (pVkSwapchain != nullptr && pVkSwapchain->isRenderable())
 			{
 				waitSemaphores.emplace_back().emplace_back(*pVkSwapchain->getInFlightSemaphorePtr());
@@ -122,19 +70,20 @@ namespace Xenon
 				auto& batchCommandBuffers = commandBuffers.emplace_back();
 				batchCommandBuffers.reserve(pCommandRecorderBatch.size());
 
-				auto& submitInfo = submitInfos.emplace_back();
-				submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-				submitInfo.commandBufferCount = static_cast<uint32_t>(pCommandRecorderBatch.size());
-				submitInfo.pCommandBuffers = batchCommandBuffers.data();
+				auto& batchSignalSemaphores = signalSemaphores.emplace_back();
+				batchSignalSemaphores.reserve(pCommandRecorderBatch.size());
 
 				std::vector<VkPipelineStageFlags> waitFlags;
-				auto& batchSignalSemaphores = signalSemaphores.emplace_back();
+				waitFlags.reserve(pCommandRecorderBatch.size());
+
+				auto& submitInfo = submitInfos.emplace_back();
+				submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 				for (const auto pCommandRecorder : pCommandRecorderBatch)
 				{
 					auto pVkCommandBuffer = pCommandRecorder->as<VulkanCommandRecorder>()->getCurrentCommandBuffer();
 					batchCommandBuffers.emplace_back(*pVkCommandBuffer);
-					batchSignalSemaphores.emplace_back(*pVkCommandBuffer->getSignalSemaphoreAddress());
-					waitFlags.emplace_back(!pVkCommandBuffer->getStageFlagsAddress());
+					batchSignalSemaphores.emplace_back(pVkCommandBuffer->getSignalSemaphore());
+					waitFlags.emplace_back(pVkCommandBuffer->getStageFlags());
 
 					if (!waitSemaphores.empty())
 					{
@@ -147,21 +96,21 @@ namespace Xenon
 					}
 				}
 
+				submitInfo.commandBufferCount = static_cast<uint32_t>(pCommandRecorderBatch.size());
+				submitInfo.pCommandBuffers = batchCommandBuffers.data();
 				submitInfo.signalSemaphoreCount = static_cast<uint32_t>(batchSignalSemaphores.size());
 				submitInfo.pSignalSemaphores = batchSignalSemaphores.data();
 
-				waitStageFlags.emplace_back(waitFlags);
+				waitStageFlags.emplace_back(std::move(waitFlags));
+				waitSemaphores.emplace_back(batchSignalSemaphores);
 			}
 
 			// Get the semaphores from the swapchain if provided.
-			if (pVkSwapchain != nullptr && pVkSwapchain->isRenderable())
+			if (!submitInfos.empty() && pVkSwapchain != nullptr && pVkSwapchain->isRenderable())
 			{
-				auto& semaphores = signalSemaphores.back();
-				semaphores.emplace_back(*pVkSwapchain->getRenderFinishedSemaphorePtr());
-
 				auto& submitInfo = submitInfos.back();
-				submitInfo.signalSemaphoreCount = static_cast<uint32_t>(semaphores.size());
-				submitInfo.pSignalSemaphores = semaphores.data();
+				submitInfo.signalSemaphoreCount = 1;
+				submitInfo.pSignalSemaphores = pVkSwapchain->getRenderFinishedSemaphorePtr();
 			}
 
 			// Submit the queue.

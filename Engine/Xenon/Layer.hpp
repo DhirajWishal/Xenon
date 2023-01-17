@@ -24,8 +24,9 @@ namespace Xenon
 		 * Explicit constructor.
 		 *
 		 * @param renderer The renderer reference.
+		 * @param priority The priority of the layer.
 		 */
-		explicit Layer(Renderer& renderer);
+		explicit Layer(Renderer& renderer, uint32_t priority);
 
 		/**
 		 * Update the layer.
@@ -43,14 +44,6 @@ namespace Xenon
 		 * @return The image pointer.
 		 */
 		[[nodiscard]] virtual Backend::Image* getColorAttachment() = 0;
-
-		/**
-		 * Get all the command buffers that will be batched and submitted.
-		 * This method is called by the renderer and is used to collect all the command buffers that will be batched together when submitting.
-		 *
-		 * @param pCommandBuffers The command buffers vector to which the command buffers need to be attached.
-		 */
-		virtual void onRegisterCommandBuffers(std::vector<Backend::CommandRecorder*>& pCommandBuffers) { pCommandBuffers.emplace_back(m_pCommandRecorder.get()); }
 
 		/**
 		 * Set the scene to perform operations on.
@@ -126,12 +119,9 @@ namespace Xenon
 
 		std::unique_ptr<Backend::CommandRecorder> m_pCommandRecorder = nullptr;
 
-		std::vector<Backend::CommandRecorder*> m_pSubmitCommandrecorders;
-
+	private:
 		uint32_t m_Priority = 0;
 
-	private:
 		bool m_IsActive = true;
-
 	};
 }

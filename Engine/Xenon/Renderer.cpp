@@ -52,20 +52,8 @@ namespace Xenon
 		// Wait till all the required jobs are done.
 		m_CountingFence.wait();
 
-		// Get all the command recorders to submit.
-		std::vector<std::vector<Backend::CommandRecorder*>> pCommandRecorders(m_pLayers.empty() ? 0 : 1);
-		uint32_t previousPriority = -1;
-		for (const auto& pLayer : m_pLayers)
-		{
-			if (previousPriority == pLayer->getPriority())
-				pLayer->onRegisterCommandBuffers(pCommandRecorders.back());
-
-			else
-				pLayer->onRegisterCommandBuffers(pCommandRecorders.emplace_back());
-		}
-
 		// Submit the commands to the GPU.
-		m_pCommandSubmitters[m_pCommandRecorder->getCurrentIndex()]->submit(pCommandRecorders, m_pSwapChain.get());
+		m_pCommandSubmitters[m_pCommandRecorder->getCurrentIndex()]->submit(m_pSubmitCommandRecorders, m_pSwapChain.get());
 
 		// Present the swapchain.
 		m_pSwapChain->present();
@@ -89,6 +77,33 @@ namespace Xenon
 	void Renderer::close()
 	{
 		m_IsOpen = false;
+	}
+
+	void Renderer::insertLayer(std::unique_ptr<Layer>&& pLayer)
+	{
+		const auto itr = std::ranges::lower_bound(m_pLayers, pLayer, [](const auto& lhs, const auto& rhs) { return lhs->getPriority() < rhs->getPriority(); });
+		m_pLayers.emplace(itr, std::move(pLayer));
+
+		// Update the command recorders.
+		updateSubmitCommandRecorders();
+	}
+
+	void Renderer::updateSubmitCommandRecorders()
+	{
+		m_pSubmitCommandRecorders.clear();
+
+		uint32_t previousPriority = -1;
+		for (const auto& pLayer : m_pLayers)
+		{
+			auto pCommandRecorder = pLayer->getCommandRecorder();
+			if (previousPriority == pLayer->getPriority())
+				m_pSubmitCommandRecorders.back().emplace_back(pCommandRecorder);
+
+			else
+				m_pSubmitCommandRecorders.emplace_back().emplace_back(pCommandRecorder);
+		}
+
+		m_pSubmitCommandRecorders.emplace_back().emplace_back(m_pCommandRecorder.get());
 	}
 
 	void Renderer::updateLayer(Layer* pLayer, Layer* pPreviousLayer, uint32_t imageIndex, uint32_t frameIndex)

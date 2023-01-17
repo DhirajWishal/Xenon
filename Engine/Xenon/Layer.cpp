@@ -6,9 +6,10 @@
 
 namespace Xenon
 {
-	Layer::Layer(Renderer& renderer)
+	Layer::Layer(Renderer& renderer, uint32_t priority)
 		: m_Renderer(renderer)
 		, m_pCommandRecorder(renderer.getInstance().getFactory()->createCommandRecorder(renderer.getInstance().getBackendDevice(), Backend::CommandRecorderUsage::Graphics, renderer.getCommandRecorder()->getBufferCount()))
+		, m_Priority(priority)
 	{
 	}
 }
