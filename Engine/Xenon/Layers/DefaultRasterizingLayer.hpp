@@ -51,6 +51,10 @@ namespace Xenon
 			std::unique_ptr<Backend::Descriptor> m_pSceneDescriptor = nullptr;
 			std::unordered_map<Group, std::unique_ptr<Backend::Descriptor>> m_pPerGeometryDescriptors;
 			std::unordered_map<SubMesh, std::unique_ptr<Backend::Descriptor>> m_pMaterialDescriptors;
+
+			std::unique_ptr<Backend::CommandRecorder> m_pSecondaryCommandRecorder = nullptr;
+
+			std::vector<Group> m_Groups;
 		};
 
 	public:
@@ -85,6 +89,14 @@ namespace Xenon
 		 */
 		[[nodiscard]] uint64_t getDrawCount() const noexcept { return m_DrawCount; }
 
+		/**
+		 * Get all the command buffers that will be batched and submitted.
+		 * This method is called by the renderer and is used to collect all the command buffers that will be batched together when submitting.
+		 *
+		 * @param pCommandBuffers The command buffers vector to which the command buffers need to be attached.
+		 */
+		void onRegisterCommandBuffers(std::vector<Backend::CommandRecorder*>& pCommandBuffers) override;
+
 	private:
 		/**
 		 * Setup the occlusion pipeline.
@@ -113,7 +125,7 @@ namespace Xenon
 		 *
 		 * @param group The group.
 		 */
-		void issueDrawCalls(Group group);
+		void issueDrawCalls(const Material& material, Pipeline& pipeline);
 
 		/**
 		 * Issue the draw calls.

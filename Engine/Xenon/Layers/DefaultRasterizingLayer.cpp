@@ -63,6 +63,12 @@ namespace Xenon
 		m_pCommandRecorder->end();
 	}
 
+	void DefaultRasterizingLayer::onRegisterCommandBuffers(std::vector<Backend::CommandRecorder*>& pCommandBuffers)
+	{
+		for (const auto& [material, pipeline] : m_pPipelines)
+			pCommandBuffers.emplace_back(pipeline.m_pSecondaryCommandRecorder.get());
+	}
+
 	void DefaultRasterizingLayer::setupOcclusionPipeline()
 	{
 		OPTICK_EVENT();
@@ -195,70 +201,23 @@ namespace Xenon
 
 		// Reset the counters.
 		m_DrawCount = 0;
-		const auto geometryCount = m_pScene->getDrawableGeometryCount();
 
 		// Return if we have nothing to draw.
-		if (geometryCount == 0)
+		if (m_pScene->getDrawableGeometryCount() == 0)
 			return;
 
-		// Reset the synchronization primitive.
-		m_Synchronization.reset(geometryCount);
-
-		// Begin the command recorders and set the viewport and scissor.
-		for (const auto& [id, pCommandRecorder] : m_pThreadLocalCommandRecorder)
-		{
-			OPTICK_EVENT_DYNAMIC("Begin Secondary Recorders");
-
-			// Begin the command recorder.
-			pCommandRecorder->begin(m_pCommandRecorder.get());
-
-			// Set the scissor and view port.
-			pCommandRecorder->setViewport(0.0f, 0.0f, static_cast<float>(m_Renderer.getCamera()->getWidth()), static_cast<float>(m_Renderer.getCamera()->getHeight()), 0.0f, 1.0f);
-			pCommandRecorder->setScissor(0, 0, m_Renderer.getCamera()->getWidth(), m_Renderer.getCamera()->getHeight());
-		}
-
-		// Issue the binding calls.
+		// Registry any new materials.
 		for (const auto& group : m_pScene->getRegistry().view<Geometry, Material>())
 		{
-			OPTICK_EVENT_DYNAMIC("Binding Geometry");
-			GetJobSystem().insert([this, group] { issueDrawCalls(group); });
-		}
+			const auto& material = m_pScene->getRegistry().get<Material>(group);
+			const auto& materialSpecification = m_Renderer.getInstance().getMaterialDatabase().getSpecification(material);
 
-		// Wait till all the work is done.
-		m_Synchronization.wait();
-
-		// End the command recorders and select the next one.
-		for (const auto& [id, pCommandRecorder] : m_pThreadLocalCommandRecorder)
-		{
-			OPTICK_EVENT_DYNAMIC("End Secondary Recorders");
-
-			// End the command recorder.
-			pCommandRecorder->end();
-
-			// Select the next command recorder.
-			pCommandRecorder->next();
-		}
-
-		// Execute all the secondary command recorders (children).
-		m_pCommandRecorder->executeChildren();
-	}
-
-	void DefaultRasterizingLayer::issueDrawCalls(Group group)
-	{
-		OPTICK_EVENT();
-
-		auto& geometry = m_pScene->getRegistry().get<Geometry>(group);
-		const auto& material = m_pScene->getRegistry().get<Material>(group);
-		const auto& materialSpecification = m_Renderer.getInstance().getMaterialDatabase().getSpecification(material);
-
-		// Create the pipeline if the required material does not exist.
-		{
-			auto lock = std::scoped_lock(m_Mutex);
 			if (!m_pPipelines.contains(material))
 			{
 				OPTICK_EVENT_DYNAMIC("Creating Pipeline For Material");
 
 				auto& pipeline = m_pPipelines[material];
+
 				pipeline.m_pPipeline = m_Renderer.getInstance().getFactory()->createRasterizingPipeline(
 					m_Renderer.getInstance().getBackendDevice(),
 					nullptr,
@@ -269,57 +228,93 @@ namespace Xenon
 				// Create the camera descriptor.
 				pipeline.m_pSceneDescriptor = pipeline.m_pPipeline->createDescriptor(Backend::DescriptorType::Scene);
 				m_pScene->setupDescriptor(pipeline.m_pSceneDescriptor.get(), pipeline.m_pPipeline.get());
+
+				// Create the secondary command recorder.
+				pipeline.m_pSecondaryCommandRecorder =
+					m_Renderer.getInstance().getFactory()->createCommandRecorder(
+						m_Renderer.getInstance().getBackendDevice(),
+						Backend::CommandRecorderUsage::Secondary,
+						m_pCommandRecorder->getBufferCount()
+					);
 			}
-		}
 
-		// Get the pipeline from the storage.
-		auto& pipeline = m_pPipelines[material];
+			auto& pipeline = m_pPipelines[material];
 
-		// Setup the material descriptors if we need to.
-		for (auto& mesh : geometry.getMeshes())
-		{
-			for (auto& subMesh : mesh.m_SubMeshes)
-				setupMaterialDescriptor(pipeline, subMesh, materialSpecification);
-		}
+			// Append the group.
+			pipeline.m_Groups.emplace_back(group);
 
-		// Setup the per-geometry descriptor if we need one for the geometry.
-		{
-			auto lock = std::scoped_lock(m_Mutex);
+			// Setup the per-geometry descriptor if we need one for the geometry.
 			if (!pipeline.m_pPerGeometryDescriptors.contains(group))
 				pipeline.m_pPerGeometryDescriptors[group] = createPerGeometryDescriptor(pipeline, group);
 		}
 
-		// Setup the command recorders if we don't have one for this thread.
-		const auto id = std::this_thread::get_id();
-		if (!m_pThreadLocalCommandRecorder.contains(id))
+		// Reset the synchronization primitive.
+		m_Synchronization.reset(m_pPipelines.size());
+
+		// Iterate over the pipelines and bind everything.
+		for (auto& [material, pipeline] : m_pPipelines)
 		{
-			auto lock = std::scoped_lock(m_Mutex);
+			OPTICK_EVENT_DYNAMIC("Binding Geometry");
+			GetJobSystem().insert([this, &material, &pipeline] { issueDrawCalls(material, pipeline); });
+		}
 
-			// Create the thread-specific command recorder.
-			const auto& pCommandRecorder = m_pThreadLocalCommandRecorder[id] = m_Renderer.getInstance().getFactory()->createCommandRecorder(
-				m_Renderer.getInstance().getBackendDevice(),
-				Backend::CommandRecorderUsage::Secondary,
-				m_Renderer.getCommandRecorder()->getBufferCount()
-			);
+		// Wait till all the work is done.
+		m_Synchronization.wait();
+	}
 
-			// Begin the command recorder.
-			pCommandRecorder->begin(m_pCommandRecorder.get());
+	void DefaultRasterizingLayer::issueDrawCalls(const Material& material, Pipeline& pipeline)
+	{
+		OPTICK_EVENT();
 
-			// Set the scissor and view port.
+		const auto& pCommandRecorder = pipeline.m_pSecondaryCommandRecorder.get();
+
+		// Begin the command recorder.
+		pCommandRecorder->begin(m_pCommandRecorder.get());
+
+		// Set the scissor and view port.
+		if (m_Renderer.getInstance().getBackendType() == BackendType::Vulkan)
+		{
 			pCommandRecorder->setViewport(0.0f, 0.0f, static_cast<float>(m_Renderer.getCamera()->getWidth()), static_cast<float>(m_Renderer.getCamera()->getHeight()), 0.0f, 1.0f);
 			pCommandRecorder->setScissor(0, 0, m_Renderer.getCamera()->getWidth(), m_Renderer.getCamera()->getHeight());
 		}
 
-		const auto& pCommandRecorder = m_pThreadLocalCommandRecorder.at(id).get();
+		// Draw the geometries!
+		for (const auto& [group, pPerGeometryDescriptor] : pipeline.m_pPerGeometryDescriptors)
+		{
+			auto& geometry = m_pScene->getRegistry().get<Geometry>(group);
+			const auto& materialSpecification = m_Renderer.getInstance().getMaterialDatabase().getSpecification(material);
+
+			// Setup the material descriptors if we need to.
+			for (auto& mesh : geometry.getMeshes())
+			{
+				for (auto& subMesh : mesh.m_SubMeshes)
+					setupMaterialDescriptor(pipeline, subMesh, materialSpecification);
+			}
 
 #ifdef ENABLE_OCCLUSION_CULL
-		// Occlusion pass time!
-		occlusionPass(pCommandRecorder, geometry);
+			// Occlusion pass time!
+			occlusionPass(pCommandRecorder, geometry);
 
 #endif // ENABLE_OCCLUSION_CULL
 
-		// Geometry pass time!
-		geometryPass(pCommandRecorder, pipeline.m_pPerGeometryDescriptors[group].get(), geometry, pipeline);
+			// Geometry pass time!
+			geometryPass(pCommandRecorder, pPerGeometryDescriptor.get(), geometry, pipeline);
+		}
+
+		// End the command recorder.
+		pCommandRecorder->end();
+
+		// Execute the children.
+		if (m_Renderer.getInstance().getBackendType() == BackendType::DirectX_12)
+		{
+			m_pCommandRecorder->setViewport(0.0f, 0.0f, static_cast<float>(m_Renderer.getCamera()->getWidth()), static_cast<float>(m_Renderer.getCamera()->getHeight()), 0.0f, 1.0f);
+			m_pCommandRecorder->setScissor(0, 0, m_Renderer.getCamera()->getWidth(), m_Renderer.getCamera()->getHeight());
+		}
+
+		m_pCommandRecorder->executeChild(pCommandRecorder, pipeline.m_pPipeline.get());
+
+		// Select the next command recorder.
+		pCommandRecorder->next();
 
 		// Notify the parent that we're done.
 		m_Synchronization.arrive();

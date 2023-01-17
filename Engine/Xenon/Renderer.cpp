@@ -52,8 +52,20 @@ namespace Xenon
 		// Wait till all the required jobs are done.
 		m_CountingFence.wait();
 
+		// Get all the command recorders to submit.
+		std::vector<std::vector<Backend::CommandRecorder*>> pCommandRecorders(m_pLayers.empty() ? 0 : 1);
+		uint32_t previousPriority = -1;
+		for (const auto& pLayer : m_pLayers)
+		{
+			if (previousPriority == pLayer->getPriority())
+				pLayer->onRegisterCommandBuffers(pCommandRecorders.back());
+
+			else
+				pLayer->onRegisterCommandBuffers(pCommandRecorders.emplace_back());
+		}
+
 		// Submit the commands to the GPU.
-		m_pCommandSubmitters[m_pCommandRecorder->getCurrentIndex()]->submit(m_pSubmitCommandRecorders, m_pSwapChain.get());
+		m_pCommandSubmitters[m_pCommandRecorder->getCurrentIndex()]->submit(pCommandRecorders, m_pSwapChain.get());
 
 		// Present the swapchain.
 		m_pSwapChain->present();

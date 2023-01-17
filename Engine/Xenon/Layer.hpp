@@ -45,6 +45,14 @@ namespace Xenon
 		[[nodiscard]] virtual Backend::Image* getColorAttachment() = 0;
 
 		/**
+		 * Get all the command buffers that will be batched and submitted.
+		 * This method is called by the renderer and is used to collect all the command buffers that will be batched together when submitting.
+		 *
+		 * @param pCommandBuffers The command buffers vector to which the command buffers need to be attached.
+		 */
+		virtual void onRegisterCommandBuffers(std::vector<Backend::CommandRecorder*>& pCommandBuffers) { pCommandBuffers.emplace_back(m_pCommandRecorder.get()); }
+
+		/**
 		 * Set the scene to perform operations on.
 		 *
 		 * @param scene The scene to attach.
@@ -98,6 +106,15 @@ namespace Xenon
 		[[nodiscard]] const Backend::CommandRecorder* getCommandRecorder() const noexcept { return m_pCommandRecorder.get(); }
 
 		/**
+		 * Get the priority of the current layer.
+		 * If two layers have the same priority, it means that it does not depend on each other. The renderer will batch all the command recorders of the
+		 * two layers and submit them in one call.
+		 *
+		 * @return The priority index.
+		 */
+		[[nodiscard]] uint32_t getPriority() const noexcept { return m_Priority; }
+
+		/**
 		 * Select the next command buffer.
 		 * This is called by the renderer and the overriding class doesn't need to do this (and shouldn't!).
 		 */
@@ -109,7 +126,12 @@ namespace Xenon
 
 		std::unique_ptr<Backend::CommandRecorder> m_pCommandRecorder = nullptr;
 
+		std::vector<Backend::CommandRecorder*> m_pSubmitCommandrecorders;
+
+		uint32_t m_Priority = 0;
+
 	private:
 		bool m_IsActive = true;
+
 	};
 }

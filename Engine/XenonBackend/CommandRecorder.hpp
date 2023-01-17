@@ -241,9 +241,20 @@ namespace Xenon
 			virtual void endQuery(OcclusionQuery* pOcclusionQuery, uint32_t index) = 0;
 
 			/**
-			 * Execute all the child command recorders.
+			 * Execute a child (secondary) command recorder.
+			 *
+			 * @param pChildRecorder The child command recorder.
+			 * @param pActivePipeline The active pipeline of the child recorder.
 			 */
-			virtual void executeChildren() = 0;
+			virtual void executeChild(CommandRecorder* pChildRecorder, RasterizingPipeline* pActivePipeline) = 0;
+
+			/**
+			 * Execute a child (secondary) command recorder.
+			 *
+			 * @param pChildRecorder The child command recorder.
+			 * @param pActivePipeline The active pipeline of the child recorder.
+			 */
+			virtual void executeChild(CommandRecorder* pChildRecorder, RayTracingPipeline* pActivePipeline) = 0;
 
 			/**
 			 * Get the query results from the command recorder.

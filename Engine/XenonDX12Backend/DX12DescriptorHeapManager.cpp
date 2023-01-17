@@ -91,7 +91,6 @@ namespace Xenon
 			{
 				D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
 				heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-				m_ShaderVisibleHeaps.fill(nullptr);
 
 				if (m_CbvSrvUavCount > 0 && m_CbvSrvUavDescriptorCount > 0)
 				{

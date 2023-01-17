@@ -227,9 +227,20 @@ namespace Xenon
 			void endQuery(OcclusionQuery* pOcclusionQuery, uint32_t index) override;
 
 			/**
-			 * Execute all the child command recorders.
+			 * Execute a child (secondary) command recorder.
+			 *
+			 * @param pChildRecorder The child command recorder.
+			 * @param pActivePipeline The active pipeline of the child recorder.
 			 */
-			void executeChildren() override;
+			void executeChild(CommandRecorder* pChildRecorder, RasterizingPipeline* pActivePipeline) override;
+
+			/**
+			 * Execute a child (secondary) command recorder.
+			 *
+			 * @param pChildRecorder The child command recorder.
+			 * @param pActivePipeline The active pipeline of the child recorder.
+			 */
+			void executeChild(CommandRecorder* pChildRecorder, RayTracingPipeline* pActivePipeline) override;
 
 			/**
 			 * Get the query results from the command recorder.
@@ -270,13 +281,6 @@ namespace Xenon
 			 */
 			void wait(uint64_t timeout = UINT64_MAX) override;
 
-			/**
-			 * Add the current command list's bundle command list.
-			 *
-			 * @param pCommandList The command list pointer.
-			 */
-			void addBundle(ID3D12GraphicsCommandList* pCommandList);
-
 		public:
 			/**
 			 * Get the current command list.
@@ -299,7 +303,6 @@ namespace Xenon
 
 			std::vector<ComPtr<ID3D12GraphicsCommandList5 >> m_pCommandLists;
 			std::vector<ComPtr<ID3D12Fence>> m_pCommandListFences;
-			std::vector<ID3D12GraphicsCommandList*> m_pBundleCommandLists;
 
 			ID3D12GraphicsCommandList5* m_pCurrentCommandList = nullptr;
 			ID3D12Fence* m_pCurrentCommandListFence = nullptr;
