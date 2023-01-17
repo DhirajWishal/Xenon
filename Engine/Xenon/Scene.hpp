@@ -185,6 +185,13 @@ namespace Xenon
 		[[nodiscard]] uint64_t getDrawableCount() const noexcept { return m_DrawableCount; }
 
 		/**
+		 * Get the drawable geometry count.
+		 *
+		 * @return The geometry count.
+		 */
+		[[nodiscard]] uint64_t getDrawableGeometryCount() const noexcept { return m_DrawableGeometryCount; }
+
+		/**
 		 * Get the scene object's mutex.
 		 * This might be needed when synchronizing draw calls.
 		 *
@@ -257,5 +264,6 @@ namespace Xenon
 		std::unique_ptr<Backend::Buffer> m_pLightSourceUniform = nullptr;
 
 		uint64_t m_DrawableCount = 0;
+		uint64_t m_DrawableGeometryCount = 0;
 	};
 }
