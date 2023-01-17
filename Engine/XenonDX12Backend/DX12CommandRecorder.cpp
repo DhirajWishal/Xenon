@@ -878,12 +878,7 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
-			const auto result = m_pCurrentCommandList->Close();
-			XENON_DX12_ASSERT(result, "Failed to stop the current command list! {}", std::system_category().message(result));
-
-			if (FAILED(result))
-				__debugbreak();
-
+			XENON_DX12_ASSERT(m_pCurrentCommandList->Close(), "Failed to stop the current command list!");
 			m_IsRecording = false;
 		}
 

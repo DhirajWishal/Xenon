@@ -11,7 +11,7 @@ namespace Xenon
 		DX12Instance::DX12Instance(const std::string& applicationName, uint32_t applicationVersion)
 			: Instance(applicationName, applicationVersion)
 		{
-#ifdef XENON_DEBUG_G
+#ifdef XENON_DEBUG
 			if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&m_Debugger))))
 			{
 				m_Debugger->EnableDebugLayer();
@@ -33,18 +33,6 @@ namespace Xenon
 			spDebugController1->SetEnableGPUBasedValidation(true);
 
 #endif // XENON_DEBUG
-
-			if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&m_Debugger))))
-			{
-				m_Debugger->EnableDebugLayer();
-
-				// Enable additional debug layers.
-				m_FactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
-			}
-			else
-			{
-				XENON_LOG_ERROR("Failed to create the debug interface.");
-			}
 		}
 	}
 }

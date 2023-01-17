@@ -51,10 +51,6 @@ namespace Xenon
 			std::unique_ptr<Backend::Descriptor> m_pSceneDescriptor = nullptr;
 			std::unordered_map<Group, std::unique_ptr<Backend::Descriptor>> m_pPerGeometryDescriptors;
 			std::unordered_map<SubMesh, std::unique_ptr<Backend::Descriptor>> m_pMaterialDescriptors;
-
-			std::unique_ptr<Backend::CommandRecorder> m_pSecondaryCommandRecorder = nullptr;
-
-			std::vector<Group> m_Groups;
 		};
 
 	public:
@@ -114,13 +110,6 @@ namespace Xenon
 		void setupMaterialDescriptor(Pipeline& pipeline, SubMesh& subMesh, const MaterialSpecification& specification);
 
 		/**
-		 * Issue draw calls using a geometry's group.
-		 *
-		 * @param group The group.
-		 */
-		void issueDrawCalls(const Material& material, Pipeline& pipeline);
-
-		/**
 		 * Issue the draw calls.
 		 */
 		void issueDrawCalls();
@@ -128,20 +117,18 @@ namespace Xenon
 		/**
 		 * Draw the occlusion pass of the sub-mesh.
 		 *
-		 * @param pCommandRecorder The command recorder pointer.
 		 * @param geometry The geometry reference.
 		 */
-		void occlusionPass(Backend::CommandRecorder* pCommandRecorder, Geometry& geometry) const;
+		void occlusionPass(Geometry& geometry);
 
 		/**
 		 * Draw the geometry pass of the sub-mesh.
 		 *
-		 * @param pCommandRecorder The command recorder pointer.
 		 * @param pPerGeometryDescriptor The per-geometry descriptor pointer.
 		 * @param geometry The geometry reference.
 		 * @param pipeline The pipeline to draw with.
 		 */
-		void geometryPass(Backend::CommandRecorder* pCommandRecorder, Backend::Descriptor* pPerGeometryDescriptor, Geometry& geometry, Pipeline& pipeline);
+		void geometryPass(Backend::Descriptor* pPerGeometryDescriptor, Geometry& geometry, Pipeline& pipeline);
 
 	private:
 		std::mutex m_Mutex;
