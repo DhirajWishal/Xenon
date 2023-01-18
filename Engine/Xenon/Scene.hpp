@@ -56,6 +56,26 @@ namespace Xenon
 		explicit Scene(Instance& instance, std::unique_ptr<Backend::Camera>&& pCamera);
 
 		/**
+		 * Begin updating the scene.
+		 * This must be done to create new groups, objects and others.
+		 * Call this function at the beginning of a new frame.
+		 */
+		void beginUpdate();
+
+		/**
+		 * End updating the scene.
+		 * This must be done to update the internal buffers.
+		 * Call this function right before updating the renderer.
+		 */
+		void endUpdate();
+
+		/**
+		 * Cleanup everything.
+		 * Make sure the call this method before anything else right after terminating the main loop to not cause any deadlocks.
+		 */
+		void cleanup();
+
+		/**
 		 * Create a new group.
 		 *
 		 * @return The created group.
@@ -121,18 +141,12 @@ namespace Xenon
 		}
 
 		/**
-		 * Update the internal buffers.
-		 * Make sure this method is called before rendering!
-		 */
-		void update();
-
-		/**
 		 * Setup the scene descriptor for a given pipeline.
 		 *
 		 * @param pSceneDescriptor The scene descriptor pointer.
 		 * @param pPipeline The pipeline pointer.
 		 */
-		void setupDescriptor(Backend::Descriptor* pSceneDescriptor, Backend::RasterizingPipeline* pPipeline);
+		void setupDescriptor(Backend::Descriptor* pSceneDescriptor, const Backend::RasterizingPipeline* pPipeline);
 
 		/**
 		 * Get the object registry.
@@ -253,6 +267,7 @@ namespace Xenon
 	private:
 		entt::registry m_Registry;
 		std::mutex m_Mutex;
+		std::unique_lock<std::mutex> m_UniqueLock;
 
 		Instance& m_Instance;
 
@@ -265,5 +280,7 @@ namespace Xenon
 
 		uint64_t m_DrawableCount = 0;
 		uint64_t m_DrawableGeometryCount = 0;
+
+		std::atomic_bool m_IsUpdatable = true;
 	};
 }

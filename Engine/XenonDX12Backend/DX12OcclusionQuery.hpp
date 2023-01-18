@@ -60,7 +60,6 @@ namespace Xenon
 
 		private:
 			ComPtr<ID3D12QueryHeap> m_QueryHeap;
-			ComPtr<ID3D12Resource> m_QueryBuffer;
 
 			D3D12MA::Allocation* m_pAllocation = nullptr;
 		};

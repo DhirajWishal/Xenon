@@ -21,10 +21,6 @@ namespace Xenon
 		// specification.m_FragmentShader = Generated::CreateShaderOcclusion_frag();
 
 		m_pOcclusionPipeline = m_Renderer.getInstance().getFactory()->createRasterizingPipeline(m_Renderer.getInstance().getBackendDevice(), nullptr, m_pRasterizer.get(), specification);
-
-		// Setup the occlusion camera descriptor.
-		m_pOcclusionSceneDescriptor = m_pOcclusionPipeline->createDescriptor(Backend::DescriptorType::Scene);
-		m_pOcclusionSceneDescriptor->attach(0, m_Renderer.getCamera()->getViewports().front().m_pUniformBuffer);
 	}
 
 	void OcclusionLayer::onUpdate(Layer* pPreviousLayer, uint32_t imageIndex, uint32_t frameIndex)
@@ -34,24 +30,64 @@ namespace Xenon
 		// Begin recording.
 		m_pCommandRecorder->begin();
 
-		// Get the drawable count.
-		const auto subMeshCount = m_pScene->getDrawableCount();
+		uint64_t subMeshCount = 0;
 
-		// Re-create the occlusion query if needed.
+		// Reset the occlusion query. This must be done before binding the render target!
+		if (m_pScene)
 		{
-			auto lock = std::scoped_lock(m_Mutex);
-			if (subMeshCount > 0 && m_pOcclusionQuery->getSampleCount() != subMeshCount)
-			{
-				m_Renderer.getInstance().getBackendDevice()->waitIdle();
-				m_pOcclusionQuery = m_Renderer.getInstance().getFactory()->createOcclusionQuery(m_Renderer.getInstance().getBackendDevice(), subMeshCount);
-			}
-		}
+			// Get the drawable count.
+			subMeshCount = m_pScene->getDrawableCount();
 
-		// Reset the query.
-		m_pCommandRecorder->resetQuery(m_pOcclusionQuery.get());
+			// Re-create the occlusion query if needed.
+			{
+				auto lock = std::scoped_lock(m_Mutex);
+				if (subMeshCount > 0 && m_pOcclusionQuery->getSampleCount() != subMeshCount)
+				{
+					m_Renderer.getInstance().getBackendDevice()->waitIdle();
+					m_pOcclusionQuery = m_Renderer.getInstance().getFactory()->createOcclusionQuery(m_Renderer.getInstance().getBackendDevice(), subMeshCount);
+				}
+			}
+
+			// Reset the query.
+			m_pCommandRecorder->resetQuery(m_pOcclusionQuery.get());
+		}
 
 		// Bind the render target.
 		m_pCommandRecorder->bind(m_pRasterizer.get(), { 1.0f, static_cast<uint32_t>(0) });
+
+		// Draw if we have a scene attached.
+		if (m_pScene)
+			issueDrawCalls();
+
+		// Query the results only if we have drawn something.
+		if (subMeshCount > 0)
+			m_pCommandRecorder->getQueryResults(m_pOcclusionQuery.get());
+
+		// End the command recorder recording.
+		m_pCommandRecorder->end();
+	}
+
+	uint64_t OcclusionLayer::getSamples(uint32_t index) const
+	{
+		// If the index is within the samples count, index it.
+		if (const auto& samples = m_pOcclusionQuery->getSamples(); index < samples.size())
+			return samples[index];
+
+		// Else return 0.
+		return 0;
+	}
+
+	void OcclusionLayer::issueDrawCalls()
+	{
+		// Setup the occlusion scene descriptor if needed.
+		if (!m_pOcclusionSceneDescriptors.contains(m_pScene))
+		{
+			const auto& pOcclusionSceneDescriptor = m_pOcclusionSceneDescriptors[m_pScene] = m_pOcclusionPipeline->createDescriptor(Backend::DescriptorType::Scene);
+			m_pScene->setupDescriptor(pOcclusionSceneDescriptor.get(), m_pOcclusionPipeline.get());
+		}
+
+		// Get the scene descriptor.
+		auto pOcclusionSceneDescriptor = m_pOcclusionSceneDescriptors[m_pScene].get();
 
 		// Set the scissor and view port.
 		m_pCommandRecorder->setViewport(0.0f, 0.0f, static_cast<float>(m_Renderer.getCamera()->getWidth()), static_cast<float>(m_Renderer.getCamera()->getHeight()), 0.0f, 1.0f);
@@ -84,7 +120,7 @@ namespace Xenon
 					OPTICK_EVENT_DYNAMIC("Issuing Occlusion Pass Draw Calls");
 
 					m_pCommandRecorder->bind(geometry.getIndexBuffer(), static_cast<Backend::IndexBufferStride>(subMesh.m_IndexSize));
-					m_pCommandRecorder->bind(m_pOcclusionPipeline.get(), nullptr, nullptr, pPerGeometryDescriptor, m_pOcclusionSceneDescriptor.get());
+					m_pCommandRecorder->bind(m_pOcclusionPipeline.get(), nullptr, nullptr, pPerGeometryDescriptor, pOcclusionSceneDescriptor);
 
 					m_pCommandRecorder->beginQuery(m_pOcclusionQuery.get(), index);
 					m_pCommandRecorder->drawIndexed(subMesh.m_VertexOffset, subMesh.m_IndexOffset, subMesh.m_IndexCount);
@@ -94,23 +130,21 @@ namespace Xenon
 				}
 			}
 		}
-
-		// Query the results only if we have drawn something.
-		if (subMeshCount > 0)
-			m_pCommandRecorder->getQueryResults(m_pOcclusionQuery.get());
-
-		// End the command recorder recording.
-		m_pCommandRecorder->end();
 	}
 
 	std::unique_ptr<Xenon::Backend::Descriptor> OcclusionLayer::createPerGeometryDescriptor(Group group)
 	{
 		OPTICK_EVENT();
 
-		std::unique_ptr<Xenon::Backend::Descriptor> pDescriptor = m_pOcclusionPipeline->createDescriptor(Backend::DescriptorType::PerGeometry);
-		if (m_pScene->getRegistry().any_of<Components::Transform>(group))
-			pDescriptor->attach(EnumToInt(Backend::PerGeometryBindings::Transform), m_pScene->getRegistry().get<Internal::TransformUniformBuffer>(group).m_pUniformBuffer.get());
+		// Create only if we need one of them. Else just don't...
+		// if (m_pScene->getRegistry().any_of<Components::Transform>(group))
+		// {
+		// 	auto pDescriptor = m_pOcclusionPipeline->createDescriptor(Backend::DescriptorType::PerGeometry);
+		// 	pDescriptor->attach(EnumToInt(Backend::PerGeometryBindings::Transform), m_pScene->getRegistry().get<Internal::TransformUniformBuffer>(group).m_pUniformBuffer.get());
+		// 
+		// 	return pDescriptor;
+		// }
 
-		return pDescriptor;
+		return nullptr;
 	}
 }

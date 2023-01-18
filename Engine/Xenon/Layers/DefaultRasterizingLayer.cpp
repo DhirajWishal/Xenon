@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "DefaultRasterizingLayer.hpp"
+
 #include "../Renderer.hpp"
+
 #include "../../XenonCore/Logging.hpp"
 
 #include <optick.h>
@@ -140,13 +142,11 @@ namespace Xenon
 		if (m_pScene == nullptr)
 			return;
 
-		// Lock the scene!
-		auto lock = std::scoped_lock(m_pScene->getMutex());
-
 		// Reset the counters.
 		m_DrawCount = 0;
 
 		// Registry any new materials.
+		uint32_t index = 0;
 		for (const auto& group : m_pScene->getRegistry().view<Geometry, Material>())
 		{
 			const auto& material = m_pScene->getRegistry().get<Material>(group);
@@ -192,7 +192,34 @@ namespace Xenon
 			}
 
 			// Geometry pass time!
-			geometryPass(pPerGeometryDescriptor, geometry, pipeline);
+			m_pCommandRecorder->bind(pipeline.m_pPipeline.get(), geometry.getVertexSpecification());
+			m_pCommandRecorder->bind(geometry.getVertexBuffer(), geometry.getVertexSpecification().getSize());
+
+			// Bind the sub-meshes.
+			for (auto& mesh : geometry.getMeshes())
+			{
+				OPTICK_EVENT_DYNAMIC("Binding Mesh");
+
+				for (auto& subMesh : mesh.m_SubMeshes)
+				{
+					OPTICK_EVENT_DYNAMIC("Issuing Draw Calls");
+
+					// If the sub-mesh is occluded just skip.
+					if (m_pOcclusionLayer && m_pOcclusionLayer->getSamples(index) == 0)
+					{
+						index++;
+						continue;
+					}
+
+					m_pCommandRecorder->bind(geometry.getIndexBuffer(), static_cast<Backend::IndexBufferStride>(subMesh.m_IndexSize));
+					m_pCommandRecorder->bind(pipeline.m_pPipeline.get(), nullptr, pipeline.m_pMaterialDescriptors[subMesh].get(), pPerGeometryDescriptor, pipeline.m_pSceneDescriptor.get());
+
+					m_pCommandRecorder->drawIndexed(subMesh.m_VertexOffset, subMesh.m_IndexOffset, subMesh.m_IndexCount);
+
+					m_DrawCount++;
+					index++;
+				}
+			}
 		}
 	}
 

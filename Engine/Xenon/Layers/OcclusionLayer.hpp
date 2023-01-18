@@ -38,7 +38,20 @@ namespace Xenon
 		 */
 		void onUpdate(Layer* pPreviousLayer, uint32_t imageIndex, uint32_t frameIndex) override;
 
+		/**
+		 * Get the samples of a single index (sub-mesh).
+		 *
+		 * @paarm index The sub-mesh index.
+		 * @return The sample count.
+		 */
+		[[nodiscard]] uint64_t getSamples(uint32_t index) const;
+
 	private:
+		/**
+		 * Issue all the draw calls.
+		 */
+		void issueDrawCalls();
+
 		/**
 		 * Create a new per-geometry descriptor.
 		 *
@@ -52,7 +65,8 @@ namespace Xenon
 
 		std::unique_ptr<Backend::RasterizingPipeline> m_pOcclusionPipeline = nullptr;
 		std::unique_ptr<Backend::OcclusionQuery> m_pOcclusionQuery = nullptr;
-		std::unique_ptr<Backend::Descriptor> m_pOcclusionSceneDescriptor = nullptr;
+
+		std::unordered_map<const Scene*, std::unique_ptr<Backend::Descriptor>> m_pOcclusionSceneDescriptors;
 
 		std::unordered_map<Group, std::unique_ptr<Backend::Descriptor>> m_pPerGeometryDescriptors;
 	};

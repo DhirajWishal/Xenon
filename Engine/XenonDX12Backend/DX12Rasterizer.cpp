@@ -223,7 +223,7 @@ namespace Xenon
 					return;
 				}
 
-				colorOptimizedClearValue.Format = m_pDevice->ConvertFormat(specification.m_Format);
+				colorOptimizedClearValue.Format = DX12Device::ConvertFormat(specification.m_Format);
 				m_RenderTargets.emplace_back(m_pDevice, specification, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_HEAP_TYPE_DEFAULT, D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES, &colorOptimizedClearValue);
 				specification.m_MultiSamplingCount = MultiSamplingCount::x1;
 			}
@@ -239,7 +239,7 @@ namespace Xenon
 					return;
 				}
 
-				colorOptimizedClearValue.Format = m_pDevice->ConvertFormat(specification.m_Format);
+				colorOptimizedClearValue.Format = DX12Device::ConvertFormat(specification.m_Format);
 				m_RenderTargets.emplace_back(m_pDevice, specification, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_HEAP_TYPE_DEFAULT, D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES, &colorOptimizedClearValue);
 			}
 
@@ -254,7 +254,7 @@ namespace Xenon
 					return;
 				}
 
-				colorOptimizedClearValue.Format = m_pDevice->ConvertFormat(specification.m_Format);
+				colorOptimizedClearValue.Format = DX12Device::ConvertFormat(specification.m_Format);
 				m_RenderTargets.emplace_back(m_pDevice, specification, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_HEAP_TYPE_DEFAULT, D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES, &colorOptimizedClearValue);
 			}
 
@@ -273,7 +273,7 @@ namespace Xenon
 					return;
 				}
 
-				depthOptimizedClearValue.Format = m_pDevice->ConvertFormat(specification.m_Format);
+				depthOptimizedClearValue.Format = DX12Device::ConvertFormat(specification.m_Format);
 				m_RenderTargets.emplace_back(m_pDevice, specification, D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_HEAP_TYPE_DEFAULT, D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES, &depthOptimizedClearValue);
 			}
 
@@ -288,7 +288,7 @@ namespace Xenon
 					return;
 				}
 
-				depthOptimizedClearValue.Format = m_pDevice->ConvertFormat(specification.m_Format);
+				depthOptimizedClearValue.Format = DX12Device::ConvertFormat(specification.m_Format);
 				m_RenderTargets.emplace_back(m_pDevice, specification, D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_HEAP_TYPE_DEFAULT, D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES, &depthOptimizedClearValue);
 			}
 
@@ -303,7 +303,7 @@ namespace Xenon
 					return;
 				}
 
-				depthOptimizedClearValue.Format = m_pDevice->ConvertFormat(specification.m_Format);
+				depthOptimizedClearValue.Format = DX12Device::ConvertFormat(specification.m_Format);
 				m_RenderTargets.emplace_back(m_pDevice, specification, D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_HEAP_TYPE_DEFAULT, D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES, &depthOptimizedClearValue);
 			}
 		}
@@ -313,7 +313,7 @@ namespace Xenon
 			const auto required = D3D12_FORMAT_SUPPORT1_TEXTURE2D | formatSupport;
 			for (const auto format : candidates)
 			{
-				if (m_pDevice->getFormatSupport(m_pDevice->ConvertFormat(format), required).first)
+				if (m_pDevice->getFormatSupport(DX12Device::ConvertFormat(format), required).first)
 					return format;
 			}
 

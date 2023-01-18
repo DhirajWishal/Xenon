@@ -9,7 +9,8 @@
 namespace Xenon
 {
 	Scene::Scene(Instance& instance, std::unique_ptr<Backend::Camera>&& pCamera)
-		: m_Instance(instance)
+		: m_UniqueLock(m_Mutex)
+		, m_Instance(instance)
 		, m_pCamera(std::move(pCamera))
 	{
 		// Setup connections.
@@ -23,19 +24,40 @@ namespace Xenon
 		// Setup the buffers.
 		m_pSceneInformationUniform = m_Instance.getFactory()->createBuffer(m_Instance.getBackendDevice(), sizeof(SceneInformation), Backend::BufferType::Uniform);
 		m_pLightSourceUniform = m_Instance.getFactory()->createBuffer(m_Instance.getBackendDevice(), sizeof(Components::LightSource), Backend::BufferType::Uniform);
+
+		// Unlock the lock so the user can do whatever they want.
+		m_UniqueLock.unlock();
 	}
 
-	void Scene::update()
+	void Scene::beginUpdate()
 	{
-		const auto lock = std::scoped_lock(m_Mutex);
+		if (m_UniqueLock) m_UniqueLock.unlock();
+	}
+
+	void Scene::endUpdate()
+	{
+		if (!m_UniqueLock) m_UniqueLock.lock();
 
 		setupLights();
 
 		m_pSceneInformationUniform->write(ToBytes(&m_SceneInformation), sizeof(SceneInformation));
 		m_pCamera->update();
+
+		m_IsUpdatable = false;
 	}
 
-	void Scene::setupDescriptor(Backend::Descriptor* pSceneDescriptor, Backend::RasterizingPipeline* pPipeline)
+	void Scene::cleanup()
+	{
+		m_Instance.getBackendDevice()->waitIdle();
+		if (m_UniqueLock) m_UniqueLock.unlock();
+
+		m_Registry.clear();
+		m_pCamera.reset();
+		m_pSceneInformationUniform.reset();
+		m_pLightSourceUniform.reset();
+	}
+
+	void Scene::setupDescriptor(Backend::Descriptor* pSceneDescriptor, const Backend::RasterizingPipeline* pPipeline)
 	{
 		// Get all the unique resources.
 		std::vector<Backend::ShaderResource> resources = pPipeline->getSpecification().m_VertexShader.getResources();

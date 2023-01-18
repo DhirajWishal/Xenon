@@ -81,7 +81,7 @@ namespace Xenon
 
 	void Renderer::insertLayer(std::unique_ptr<Layer>&& pLayer)
 	{
-		const auto itr = std::ranges::lower_bound(m_pLayers, pLayer, [](const auto& lhs, const auto& rhs) { return lhs->getPriority() < rhs->getPriority(); });
+		const auto itr = std::ranges::upper_bound(m_pLayers, pLayer, [](const auto& lhs, const auto& rhs) { return lhs->getPriority() < rhs->getPriority(); });
 		m_pLayers.emplace(itr, std::move(pLayer));
 
 		// Update the command recorders.
@@ -101,6 +101,8 @@ namespace Xenon
 
 			else
 				m_pSubmitCommandRecorders.emplace_back().emplace_back(pCommandRecorder);
+
+			previousPriority = pLayer->getPriority();
 		}
 
 		m_pSubmitCommandRecorders.emplace_back().emplace_back(m_pCommandRecorder.get());

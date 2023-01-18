@@ -1017,17 +1017,20 @@ namespace Xenon
 			m_TessellationStateCreateInfo.patchControlPoints = m_Specification.m_TessellationPatchControlPoints;
 
 			// Color blend state.
-			for (const auto& attachment : m_Specification.m_ColorBlendAttachments)
+			if (m_pRasterizer->getAttachmentTypes() & AttachmentType::Color)
 			{
-				auto& vAttachmentState = m_CBASS.emplace_back();
-				vAttachmentState.blendEnable = XENON_VK_BOOL(attachment.m_EnableBlend);
-				vAttachmentState.alphaBlendOp = GetBlendOp(attachment.m_AlphaBlendOperator);
-				vAttachmentState.colorBlendOp = GetBlendOp(attachment.m_BlendOperator);
-				vAttachmentState.colorWriteMask = GetComponentFlags(attachment.m_ColorWriteMask);
-				vAttachmentState.srcColorBlendFactor = GetBlendFactor(attachment.m_SrcBlendFactor);
-				vAttachmentState.dstColorBlendFactor = GetBlendFactor(attachment.m_DstBlendFactor);
-				vAttachmentState.srcAlphaBlendFactor = GetBlendFactor(attachment.m_SrcAlphaBlendFactor);
-				vAttachmentState.dstAlphaBlendFactor = GetBlendFactor(attachment.m_DstAlphaBlendFactor);
+				for (const auto& attachment : m_Specification.m_ColorBlendAttachments)
+				{
+					auto& vAttachmentState = m_CBASS.emplace_back();
+					vAttachmentState.blendEnable = XENON_VK_BOOL(attachment.m_EnableBlend);
+					vAttachmentState.alphaBlendOp = GetBlendOp(attachment.m_AlphaBlendOperator);
+					vAttachmentState.colorBlendOp = GetBlendOp(attachment.m_BlendOperator);
+					vAttachmentState.colorWriteMask = GetComponentFlags(attachment.m_ColorWriteMask);
+					vAttachmentState.srcColorBlendFactor = GetBlendFactor(attachment.m_SrcBlendFactor);
+					vAttachmentState.dstColorBlendFactor = GetBlendFactor(attachment.m_DstBlendFactor);
+					vAttachmentState.srcAlphaBlendFactor = GetBlendFactor(attachment.m_SrcAlphaBlendFactor);
+					vAttachmentState.dstAlphaBlendFactor = GetBlendFactor(attachment.m_DstAlphaBlendFactor);
+				}
 			}
 
 			m_ColorBlendStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -1070,7 +1073,12 @@ namespace Xenon
 			m_MultisampleStateCreateInfo.alphaToOneEnable = XENON_VK_BOOL(m_Specification.m_EnableAlphaToOne);
 			m_MultisampleStateCreateInfo.minSampleShading = m_Specification.m_MinSampleShading;
 			m_MultisampleStateCreateInfo.pSampleMask = nullptr;	// TODO
-			m_MultisampleStateCreateInfo.rasterizationSamples = VulkanDevice::ConvertSamplingCount(m_pRasterizer->getImageAttachment(AttachmentType::Color)->getSpecification().m_MultiSamplingCount);
+
+			if (m_pRasterizer->getAttachmentTypes() & AttachmentType::Color)
+				m_MultisampleStateCreateInfo.rasterizationSamples = VulkanDevice::ConvertSamplingCount(m_pRasterizer->getImageAttachment(AttachmentType::Color)->getSpecification().m_MultiSamplingCount);
+			else
+				m_MultisampleStateCreateInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+
 			m_MultisampleStateCreateInfo.sampleShadingEnable = XENON_VK_BOOL(m_Specification.m_EnableSampleShading);
 
 			// Depth stencil state.

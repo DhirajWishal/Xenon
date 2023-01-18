@@ -3,7 +3,8 @@
 
 #pragma once
 
-#include "../RasterizingLayer.hpp"
+#include "OcclusionLayer.hpp"
+
 #include "../Geometry.hpp"
 
 #include "../../XenonCore/TaskNode.hpp"
@@ -86,6 +87,14 @@ namespace Xenon
 		 */
 		[[nodiscard]] uint64_t getDrawCount() const noexcept { return m_DrawCount; }
 
+		/**
+		 * Set the occlusion layer to get occlusion results from.
+		 * This is needed if you need to enable occlusion.
+		 *
+		 * @param pOcclusionLayer The layer to set.
+		 */
+		void setOcclusionLayer(const OcclusionLayer* pOcclusionLayer) noexcept { m_pOcclusionLayer = pOcclusionLayer; }
+
 	private:
 		/**
 		 * Create the per-geometry descriptor.
@@ -127,5 +136,7 @@ namespace Xenon
 		std::unordered_map<Material, Pipeline> m_pPipelines;
 
 		std::atomic_uint64_t m_DrawCount = 0;
+
+		const OcclusionLayer* m_pOcclusionLayer = nullptr;
 	};
 }
