@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "Geometry.hpp"
+
 #include "../XenonCore/Logging.hpp"
+#include "../XenonCore/CountingFence.hpp"
 
 #define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
@@ -649,30 +651,40 @@ namespace Xenon
 			}
 		}
 
+		// Setup the image synchronization primitive.
+		auto imageSynchronization = CountingFence(model.images.size());
+
 		// Setup the images.
 		geometry.m_pImageAndImageViews.reserve(model.images.size());
 		for (const auto& image : model.images)
 		{
-			// Setup the image.
-			Xenon::Backend::ImageSpecification imageSpecification = {};
-			imageSpecification.m_Width = image.width;
-			imageSpecification.m_Height = image.height;
-			imageSpecification.m_Format = GetDataFormat(image.bits, image.component, image.pixel_type);
-			auto pImage = instance.getFactory()->createImage(instance.getBackendDevice(), imageSpecification);
-
-			// Copy the image data to the image.
+			auto& [pImage, pImageView] = geometry.m_pImageAndImageViews.emplace_back();
+			const auto imageLoader = [&instance, &pImage, &pImageView, &image, &imageSynchronization]
 			{
-				const auto copySize = pImage->getWidth() * pImage->getHeight() * image.component/* * (image.bits / 8)*/;
-				auto pStagingBuffer = instance.getFactory()->createBuffer(instance.getBackendDevice(), copySize, Xenon::Backend::BufferType::Staging);
+				// Setup the image.
+				Xenon::Backend::ImageSpecification imageSpecification = {};
+				imageSpecification.m_Width = image.width;
+				imageSpecification.m_Height = image.height;
+				imageSpecification.m_Format = GetDataFormat(image.bits, image.component, image.pixel_type);
+				pImage = instance.getFactory()->createImage(instance.getBackendDevice(), imageSpecification);
 
-				pStagingBuffer->write(Xenon::ToBytes(image.image.data()), image.image.size());
-				pImage->copyFrom(pStagingBuffer.get());
-			}
+				// Copy the image data to the image.
+				{
+					const auto copySize = pImage->getWidth() * pImage->getHeight() * image.component/* * (image.bits / 8)*/;
+					auto pStagingBuffer = instance.getFactory()->createBuffer(instance.getBackendDevice(), copySize, Xenon::Backend::BufferType::Staging);
 
-			// Setup image view.
-			auto pImageView = instance.getFactory()->createImageView(instance.getBackendDevice(), pImage.get(), {});
+					pStagingBuffer->write(Xenon::ToBytes(image.image.data()), image.image.size());
+					pImage->copyFrom(pStagingBuffer.get());
+				}
 
-			geometry.m_pImageAndImageViews.emplace_back(std::move(pImage), std::move(pImageView));
+				// Setup image view.
+				pImageView = instance.getFactory()->createImageView(instance.getBackendDevice(), pImage.get(), {});
+
+				// Notify that we're done.
+				imageSynchronization.arrive();
+			};
+
+			XObject::GetJobSystem().insert(imageLoader);
 		}
 
 		// Setup the samplers.
@@ -684,6 +696,9 @@ namespace Xenon
 		for (const auto& animation : model.animations)
 		{
 		}
+
+		// Wait till all the images are loaded before we proceed.
+		imageSynchronization.wait();
 
 		// Load the mesh information.
 		auto vertices = std::vector<unsigned char>(vertexBufferSize);

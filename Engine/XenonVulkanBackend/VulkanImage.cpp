@@ -139,7 +139,11 @@ namespace Xenon
 			VmaAllocationCreateInfo allocationCreateInfo = {};
 			allocationCreateInfo.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
 
-			XENON_VK_ASSERT(vmaCreateImage(m_pDevice->getAllocator(), &imageCreateInfo, &allocationCreateInfo, &m_Image, &m_Allocation, nullptr), "Failed to create the image!");
+			m_pDevice->getAllocator().access([this, imageCreateInfo, allocationCreateInfo](VmaAllocator allocator)
+				{
+					XENON_VK_ASSERT(vmaCreateImage(allocator, &imageCreateInfo, &allocationCreateInfo, &m_Image, &m_Allocation, nullptr), "Failed to create the image!");
+				}
+			);
 
 			m_AttachmentDescription.flags = 0;
 			m_AttachmentDescription.format = imageCreateInfo.format;
@@ -167,7 +171,7 @@ namespace Xenon
 		VulkanImage::~VulkanImage()
 		{
 			if (m_pDevice)
-				vmaDestroyImage(m_pDevice->getAllocator(), m_Image, m_Allocation);
+				m_pDevice->getAllocator().access([this](VmaAllocator allocator) { vmaDestroyImage(allocator, m_Image, m_Allocation); });
 		}
 
 		void VulkanImage::copyFrom(Buffer* pSrcBuffer, CommandRecorder* pCommandRecorder /*= nullptr*/)

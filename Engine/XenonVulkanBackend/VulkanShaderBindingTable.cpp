@@ -217,7 +217,11 @@ namespace Xenon
 			allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
 			allocationCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
 
-			XENON_VK_ASSERT(vmaCreateBuffer(m_pDevice->getAllocator(), &createInfo, &allocationCreateInfo, &m_Table, &m_Allocation, nullptr), "Failed to shader binding table!");
+			m_pDevice->getAllocator().access([this, createInfo, allocationCreateInfo](VmaAllocator allocator)
+				{
+					XENON_VK_ASSERT(vmaCreateBuffer(allocator, &createInfo, &allocationCreateInfo, &m_Table, &m_Allocation, nullptr), "Failed to shader binding table!");
+				}
+			);
 
 			// Get the buffer memory.
 			auto pRayGenMemory = map();
@@ -290,20 +294,24 @@ namespace Xenon
 
 		VulkanShaderBindingTable::~VulkanShaderBindingTable()
 		{
-			vmaDestroyBuffer(m_pDevice->getAllocator(), m_Table, m_Allocation);
+			m_pDevice->getAllocator().access([this](VmaAllocator allocator) { vmaDestroyBuffer(allocator, m_Table, m_Allocation); });
 		}
 
 		std::byte* VulkanShaderBindingTable::map()
 		{
 			std::byte* pMemory = nullptr;
-			XENON_VK_ASSERT(vmaMapMemory(m_pDevice->getAllocator(), m_Allocation, std::bit_cast<void**>(&pMemory)), "Failed to map the shader bindng table memory!");
+			m_pDevice->getAllocator().access([this, &pMemory](VmaAllocator allocator)
+				{
+					XENON_VK_ASSERT(vmaMapMemory(allocator, m_Allocation, std::bit_cast<void**>(&pMemory)), "Failed to map the shader bindng table memory!");
+				}
+			);
 
 			return pMemory;
 		}
 
 		void VulkanShaderBindingTable::unmap()
 		{
-			vmaUnmapMemory(m_pDevice->getAllocator(), m_Allocation);
+			m_pDevice->getAllocator().access([this](VmaAllocator allocator) { vmaUnmapMemory(allocator, m_Allocation); });
 		}
 
 		VkDeviceAddress VulkanShaderBindingTable::getDeviceAddress() const

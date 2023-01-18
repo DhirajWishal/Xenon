@@ -12,13 +12,37 @@ namespace Xenon
 		OPTICK_EVENT();
 
 		m_Counter -= decrement;
+		if (m_Counter == 0)
+			m_ConditionVariable.notify_all();
+	}
+
+	void CountingFence::waitBlocking()
+	{
+		OPTICK_EVENT();
+
+		auto lock = std::unique_lock(m_Mutex);
+		m_ConditionVariable.wait(lock, [this] { return m_Counter == 0; });
+	}
+
+	void CountingFence::waitSpinning() const
+	{
+		OPTICK_EVENT();
+
+		while (m_Counter > 0);
+	}
+
+	void CountingFence::wait()
+	{
+		OPTICK_EVENT();
+
+		waitBlocking();
 	}
 
 	void CountingFence::wait() const
 	{
 		OPTICK_EVENT();
 
-		while (m_Counter > 0);
+		waitSpinning();
 	}
 
 	void CountingFence::reset(uint64_t value)

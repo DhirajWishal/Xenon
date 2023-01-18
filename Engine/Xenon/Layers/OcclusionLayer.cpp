@@ -47,11 +47,8 @@ namespace Xenon
 			}
 		}
 
-#ifdef ENABLE_OCCLUSION_CULL
 		// Reset the query.
 		m_pCommandRecorder->resetQuery(m_pOcclusionQuery.get());
-
-#endif // ENABLE_OCCLUSION_CULL
 
 		// Bind the render target.
 		m_pCommandRecorder->bind(m_pRasterizer.get(), { 1.0f, static_cast<uint32_t>(0) });
@@ -60,6 +57,7 @@ namespace Xenon
 		m_pCommandRecorder->setViewport(0.0f, 0.0f, static_cast<float>(m_Renderer.getCamera()->getWidth()), static_cast<float>(m_Renderer.getCamera()->getHeight()), 0.0f, 1.0f);
 		m_pCommandRecorder->setScissor(0, 0, m_Renderer.getCamera()->getWidth(), m_Renderer.getCamera()->getHeight());
 
+		uint32_t index = 0;
 		for (const auto& group : m_pScene->getRegistry().view<Geometry, Material>())
 		{
 			// Setup the per-geometry descriptor if we need one for the geometry.
@@ -88,9 +86,11 @@ namespace Xenon
 					m_pCommandRecorder->bind(geometry.getIndexBuffer(), static_cast<Backend::IndexBufferStride>(subMesh.m_IndexSize));
 					m_pCommandRecorder->bind(m_pOcclusionPipeline.get(), nullptr, nullptr, pPerGeometryDescriptor, m_pOcclusionSceneDescriptor.get());
 
-					m_pCommandRecorder->beginQuery(m_pOcclusionQuery.get(), static_cast<uint32_t>(0));
+					m_pCommandRecorder->beginQuery(m_pOcclusionQuery.get(), index);
 					m_pCommandRecorder->drawIndexed(subMesh.m_VertexOffset, subMesh.m_IndexOffset, subMesh.m_IndexCount);
-					m_pCommandRecorder->endQuery(m_pOcclusionQuery.get(), static_cast<uint32_t>(0));
+					m_pCommandRecorder->endQuery(m_pOcclusionQuery.get(), index);
+
+					index++;
 				}
 			}
 		}
