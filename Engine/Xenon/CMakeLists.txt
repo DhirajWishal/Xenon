@@ -47,6 +47,8 @@ set(
 	"Layers/DefaultRasterizingLayer.hpp"
 	"Layers/DefaultRayTracingLayer.cpp"
 	"Layers/DefaultRayTracingLayer.hpp"
+	"Layers/OcclusionLayer.cpp"
+	"Layers/OcclusionLayer.hpp"
 )
 
 # Add the source group.

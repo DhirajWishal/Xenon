@@ -88,11 +88,6 @@ namespace Xenon
 
 	private:
 		/**
-		 * Setup the occlusion pipeline.
-		 */
-		void setupOcclusionPipeline();
-
-		/**
 		 * Create the per-geometry descriptor.
 		 *
 		 * @param pipeline The pipeline reference.
@@ -107,19 +102,12 @@ namespace Xenon
 		 * @param subMesh The sub-mesh.
 		 * @param specification The material specification.
 		 */
-		void setupMaterialDescriptor(Pipeline& pipeline, SubMesh& subMesh, const MaterialSpecification& specification);
+		void setupMaterialDescriptor(Pipeline& pipeline, SubMesh& subMesh, const MaterialSpecification& specification) const;
 
 		/**
 		 * Issue the draw calls.
 		 */
 		void issueDrawCalls();
-
-		/**
-		 * Draw the occlusion pass of the sub-mesh.
-		 *
-		 * @param geometry The geometry reference.
-		 */
-		void occlusionPass(Geometry& geometry);
 
 		/**
 		 * Draw the geometry pass of the sub-mesh.
@@ -137,10 +125,6 @@ namespace Xenon
 		std::unordered_map<std::thread::id, std::unique_ptr<Backend::CommandRecorder>> m_pThreadLocalCommandRecorder;
 
 		std::unordered_map<Material, Pipeline> m_pPipelines;
-
-		std::unique_ptr<Backend::RasterizingPipeline> m_pOcclusionPipeline = nullptr;
-		std::unique_ptr<Backend::OcclusionQuery> m_pOcclusionQuery = nullptr;
-		std::unique_ptr<Backend::Descriptor> m_pOcclusionCameraDescriptor = nullptr;
 
 		std::atomic_uint64_t m_DrawCount = 0;
 	};
