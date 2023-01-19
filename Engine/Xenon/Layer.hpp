@@ -29,6 +29,12 @@ namespace Xenon
 		explicit Layer(Renderer& renderer, uint32_t priority);
 
 		/**
+		 * On pre-update function.
+		 * This object is called by the renderer before issuing it to the job system to be executed.
+		 */
+		virtual void onPreUpdate() {}
+
+		/**
 		 * Update the layer.
 		 * This is called by the renderer and all the required commands must be updated (if required) in this call.
 		 *

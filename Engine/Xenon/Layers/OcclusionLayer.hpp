@@ -29,6 +29,12 @@ namespace Xenon
 		explicit OcclusionLayer(Renderer& renderer, Backend::Camera* pCamera, uint32_t priority = 5);
 
 		/**
+		 * On pre-update function.
+		 * This object is called by the renderer before issuing it to the job system to be executed.
+		 */
+		void onPreUpdate() override;
+
+		/**
 		 * Update the layer.
 		 * This is called by the renderer and all the required commands must be updated (if required) in this call.
 		 *
@@ -39,12 +45,12 @@ namespace Xenon
 		void onUpdate(Layer* pPreviousLayer, uint32_t imageIndex, uint32_t frameIndex) override;
 
 		/**
-		 * Get the samples of a single index (sub-mesh).
+		 * Get the samples of a single sub-mesh.
 		 *
-		 * @paarm index The sub-mesh index.
+		 * @paarm subMesh The sub-mesh.
 		 * @return The sample count.
 		 */
-		[[nodiscard]] uint64_t getSamples(uint32_t index) const;
+		[[nodiscard]] uint64_t getSamples(const SubMesh& subMesh);
 
 	private:
 		/**
@@ -69,5 +75,10 @@ namespace Xenon
 		std::unordered_map<const Scene*, std::unique_ptr<Backend::Descriptor>> m_pOcclusionSceneDescriptors;
 
 		std::unordered_map<Group, std::unique_ptr<Backend::Descriptor>> m_pPerGeometryDescriptors;
+		std::unordered_map<SubMesh, uint32_t> m_SubMeshIndexMap;
+
+		std::vector<uint64_t> m_Samples;
+
+		bool m_bHasQueryData = false;
 	};
 }

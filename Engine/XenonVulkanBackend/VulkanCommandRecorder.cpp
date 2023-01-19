@@ -995,21 +995,6 @@ namespace Xenon
 		void VulkanCommandRecorder::getQueryResults(OcclusionQuery* pOcclusionQuery)
 		{
 			OPTICK_EVENT();
-
-			auto pVkOcclusionQuery = pOcclusionQuery->as<VulkanOcclusionQuery>();
-
-			const auto result = m_pDevice->getDeviceTable().vkGetQueryPoolResults(
-				m_pDevice->getLogicalDevice(),
-				pVkOcclusionQuery->getQueryPool(),
-				0,
-				static_cast<uint32_t>(pVkOcclusionQuery->getSampleCount()),
-				pVkOcclusionQuery->getSampleCount() * sizeof(uint64_t),
-				pVkOcclusionQuery->getSamplesPointer(),
-				sizeof(uint64_t),
-				VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_PARTIAL_BIT);
-
-			if (result != VK_NOT_READY)
-				XENON_VK_ASSERT(result, "Failed to get the query pool results!");
 		}
 
 		void VulkanCommandRecorder::buildAccelerationStructure(const VkAccelerationStructureBuildGeometryInfoKHR& geometryInfo, const std::vector<VkAccelerationStructureBuildRangeInfoKHR*>& buildRanges)

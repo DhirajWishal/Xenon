@@ -2,7 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "OcclusionLayer.hpp"
+
 #include "../Renderer.hpp"
+#include "../DefaultCacheHandler.hpp"
+
+#include "../../XenonCore/Logging.hpp"
 
 #include "../../XenonShaderBank/Occlusion/Occlusion.vert.hpp"
 #include "../../XenonShaderBank/Occlusion/Occlusion.frag.hpp"
@@ -20,7 +24,30 @@ namespace Xenon
 		specification.m_VertexShader = Generated::CreateShaderOcclusion_vert();
 		// specification.m_FragmentShader = Generated::CreateShaderOcclusion_frag();
 
-		m_pOcclusionPipeline = m_Renderer.getInstance().getFactory()->createRasterizingPipeline(m_Renderer.getInstance().getBackendDevice(), nullptr, m_pRasterizer.get(), specification);
+		m_pOcclusionPipeline = m_Renderer.getInstance().getFactory()->createRasterizingPipeline(m_Renderer.getInstance().getBackendDevice(), std::make_unique<DefaultCacheHandler>(), m_pRasterizer.get(), specification);
+	}
+
+	void OcclusionLayer::onPreUpdate()
+	{
+		OPTICK_EVENT();
+		auto lock = std::scoped_lock(m_Mutex);
+
+		if (m_pScene)
+		{
+			// Get the drawable count.
+			const auto subMeshCount = m_pScene->getDrawableCount();
+
+			// Re-create the occlusion query if needed.
+			if (subMeshCount > 0 && m_pOcclusionQuery->getSampleCount() != subMeshCount)
+			{
+				m_Renderer.getInstance().getBackendDevice()->waitIdle();
+				m_pOcclusionQuery = m_Renderer.getInstance().getFactory()->createOcclusionQuery(m_Renderer.getInstance().getBackendDevice(), subMeshCount);
+				m_bHasQueryData = false;
+			}
+		}
+
+		if (m_bHasQueryData)
+			m_Samples = m_pOcclusionQuery->getSamples();
 	}
 
 	void OcclusionLayer::onUpdate(Layer* pPreviousLayer, uint32_t imageIndex, uint32_t frameIndex)
@@ -38,18 +65,9 @@ namespace Xenon
 			// Get the drawable count.
 			subMeshCount = m_pScene->getDrawableCount();
 
-			// Re-create the occlusion query if needed.
-			{
-				auto lock = std::scoped_lock(m_Mutex);
-				if (subMeshCount > 0 && m_pOcclusionQuery->getSampleCount() != subMeshCount)
-				{
-					m_Renderer.getInstance().getBackendDevice()->waitIdle();
-					m_pOcclusionQuery = m_Renderer.getInstance().getFactory()->createOcclusionQuery(m_Renderer.getInstance().getBackendDevice(), subMeshCount);
-				}
-			}
-
 			// Reset the query.
 			m_pCommandRecorder->resetQuery(m_pOcclusionQuery.get());
+			m_bHasQueryData = false;
 		}
 
 		// Bind the render target.
@@ -61,24 +79,36 @@ namespace Xenon
 
 		// Query the results only if we have drawn something.
 		if (subMeshCount > 0)
+		{
+			auto lock = std::scoped_lock(m_Mutex);
 			m_pCommandRecorder->getQueryResults(m_pOcclusionQuery.get());
+			m_bHasQueryData = true;
+		}
 
 		// End the command recorder recording.
 		m_pCommandRecorder->end();
 	}
 
-	uint64_t OcclusionLayer::getSamples(uint32_t index) const
+	uint64_t OcclusionLayer::getSamples(const SubMesh& subMesh)
 	{
-		// If the index is within the samples count, index it.
-		if (const auto& samples = m_pOcclusionQuery->getSamples(); index < samples.size())
-			return samples[index];
+		OPTICK_EVENT();
+		auto lock = std::scoped_lock(m_Mutex);
 
-		// Else return 0.
-		return 0;
+		// If it does not contain the sub-mesh then return 1.
+		if (!m_SubMeshIndexMap.contains(subMesh))
+			return 1;
+
+		// If the index is within the samples count, index it.
+		if (const auto index = m_SubMeshIndexMap.at(subMesh); index < m_Samples.size())
+			return m_Samples[index];
+
+		return 1;
 	}
 
 	void OcclusionLayer::issueDrawCalls()
 	{
+		OPTICK_EVENT();
+
 		// Setup the occlusion scene descriptor if needed.
 		if (!m_pOcclusionSceneDescriptors.contains(m_pScene))
 		{
@@ -122,9 +152,15 @@ namespace Xenon
 					m_pCommandRecorder->bind(geometry.getIndexBuffer(), static_cast<Backend::IndexBufferStride>(subMesh.m_IndexSize));
 					m_pCommandRecorder->bind(m_pOcclusionPipeline.get(), nullptr, nullptr, pPerGeometryDescriptor, pOcclusionSceneDescriptor);
 
-					m_pCommandRecorder->beginQuery(m_pOcclusionQuery.get(), index);
+					uint32_t subMeshIndex = 0;
+					{
+						auto lock = std::scoped_lock(m_Mutex);
+						subMeshIndex = m_SubMeshIndexMap[subMesh] = index;
+					}
+
+					m_pCommandRecorder->beginQuery(m_pOcclusionQuery.get(), subMeshIndex);
 					m_pCommandRecorder->drawIndexed(subMesh.m_VertexOffset, subMesh.m_IndexOffset, subMesh.m_IndexCount);
-					m_pCommandRecorder->endQuery(m_pOcclusionQuery.get(), index);
+					m_pCommandRecorder->endQuery(m_pOcclusionQuery.get(), subMeshIndex);
 
 					index++;
 				}

@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "Studio.hpp"
-#include "CacheHandler.hpp"
 #include "Layers/ImGuiLayer.hpp"
 
 #include "Xenon/MonoCamera.hpp"
 #include "Xenon/Geometry.hpp"
 #include "Xenon/FrameTimer.hpp"
+#include "Xenon/DefaultCacheHandler.hpp"
 
 #include "XenonCore/Logging.hpp"
 #include "XenonBackend/ShaderSource.hpp"
@@ -126,7 +126,7 @@ void Studio::run()
 	pRenderTarget->setScene(m_Scene);
 
 	materialBuidler.setRayTracingPipelineSpecification(getRayTracingPipelineSpecification());
-	auto pPipeline = m_Instance.getFactory()->createRayTracingPipeline(m_Instance.getBackendDevice(), std::make_unique<CacheHandler>(), materialBuidler.getRayTracingPipelineSpecification());
+	auto pPipeline = m_Instance.getFactory()->createRayTracingPipeline(m_Instance.getBackendDevice(), std::make_unique<Xenon::DefaultCacheHandler>(), materialBuidler.getRayTracingPipelineSpecification());
 
 	const auto loaderFunction = [this, &pPipeline, &pRenderTarget, &materialBuidler]
 	{

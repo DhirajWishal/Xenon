@@ -42,6 +42,7 @@ namespace Xenon
 		m_CountingFence.reset(m_pLayers.size() + 1);
 		for (const auto& pLayer : m_pLayers)
 		{
+			pLayer->onPreUpdate();
 			GetJobSystem().insert([this, pLayer = pLayer.get(), pPreviousLayer, imageIndex, frameIndex] { updateLayer(pLayer, pPreviousLayer, imageIndex, frameIndex); });
 			pPreviousLayer = pLayer.get();
 		}

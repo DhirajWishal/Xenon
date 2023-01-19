@@ -846,25 +846,6 @@ namespace Xenon
 				// Copy the occlusion data from the queue to the buffer.
 				m_pCurrentCommandList->ResolveQueryData(pDxOcclusionQuery->getHeap(), D3D12_QUERY_TYPE_BINARY_OCCLUSION, 0, static_cast<UINT>(pOcclusionQuery->getSampleCount()), pDxOcclusionQuery->getBuffer(), 0);
 			}
-
-			{
-				OPTICK_EVENT_DYNAMIC("Copy Query Data");
-
-				// Copy the available data.
-				const D3D12_RANGE mapRange = CD3DX12_RANGE(1, 0);
-
-				uint64_t* pSampleData = nullptr;
-				XENON_DX12_ASSERT(pDxOcclusionQuery->getBuffer()->Map(0, nullptr, std::bit_cast<void**>(&pSampleData)), "Failed to map the occlusion query buffer!");
-				pDxOcclusionQuery->getBuffer()->Unmap(0, &mapRange);
-
-#ifdef XENON_PLATFORM_WINDOWS
-				std::copy_n(std::execution::unseq, pSampleData, pDxOcclusionQuery->getSampleCount(), pDxOcclusionQuery->getSamplesPointer());
-
-#else
-				std::copy_n(pSampleData, pDxOcclusionQuery->getSampleCount(), pDxOcclusionQuery->getSamplesPointer());
-
-#endif // XENON_PLATFORM_WINDOWS
-			}
 		}
 
 		void DX12CommandRecorder::buildAccelerationStructure(const D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC& desc)

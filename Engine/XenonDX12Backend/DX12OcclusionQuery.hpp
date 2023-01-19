@@ -31,6 +31,14 @@ namespace Xenon
 			~DX12OcclusionQuery() override;
 
 			/**
+			 * Get the samples.
+			 * This will query the samples from the backend.
+			 *
+			 * @return The samples.
+			 */
+			[[nodiscard]] std::vector<uint64_t> getSamples() override;
+
+			/**
 			 * Get the occlusion query heap.
 			 *
 			 * @return The heap pointer.

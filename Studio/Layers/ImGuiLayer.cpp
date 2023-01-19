@@ -4,11 +4,11 @@
 #include "ImGuiLayer.hpp"
 
 #include "../Globals.hpp"
-#include "../CacheHandler.hpp"
 
 #include "../Shaders/ImGuiLayer/ImGuiLayer.vert.hpp"
 #include "../Shaders/ImGuiLayer/ImGuiLayer.frag.hpp"
 
+#include "Xenon/DefaultCacheHandler.hpp"
 #include "Xenon/Renderer.hpp"
 #include "Xenon/MonoCamera.hpp"
 
@@ -480,7 +480,7 @@ void ImGuiLayer::setupPipeline()
 	// Create the pipeline.
 	m_pPipeline = m_Renderer.getInstance().getFactory()->createRasterizingPipeline(
 		m_Renderer.getInstance().getBackendDevice(),
-		std::make_unique<CacheHandler>(),
+		std::make_unique<Xenon::DefaultCacheHandler>(),
 		m_pRasterizer.get(),
 		specification
 	);

@@ -40,6 +40,8 @@ set(
 	"Scene.hpp"
 	"Material.cpp"
 	"Material.hpp"
+	"DefaultCacheHandler.cpp"
+	"DefaultCacheHandler.hpp"
 
 	"Layers/ClearScreenLayer.cpp"
 	"Layers/ClearScreenLayer.hpp"

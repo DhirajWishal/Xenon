@@ -20,29 +20,6 @@ namespace Xenon
 	class DefaultRasterizingLayer final : public RasterizingLayer
 	{
 		/**
-		 * Draw entry structure.
-		 * This is used by the worker thread to draw.
-		 */
-		struct DrawEntry final
-		{
-			SubMesh m_SubMesh;
-
-			Backend::VertexSpecification m_VertexSpecification;
-
-			Backend::Buffer* m_pVertexBuffer = nullptr;
-			Backend::Buffer* m_pIndexBuffer = nullptr;
-
-			Backend::RasterizingPipeline* m_pPipeline = nullptr;
-
-			Backend::Descriptor* m_pUserDefinedDescriptor = nullptr;
-			Backend::Descriptor* m_pMaterialDescriptor = nullptr;
-			Backend::Descriptor* m_pPerGeometryDescriptor = nullptr;
-			Backend::Descriptor* m_pSceneDescriptor = nullptr;
-
-			uint64_t m_QueryIndex = 0;
-		};
-
-		/**
 		 * Pipeline structure.
 		 * This contains information regarding a single pipeline and it's descriptors.
 		 */
@@ -93,7 +70,7 @@ namespace Xenon
 		 *
 		 * @param pOcclusionLayer The layer to set.
 		 */
-		void setOcclusionLayer(const OcclusionLayer* pOcclusionLayer) noexcept { m_pOcclusionLayer = pOcclusionLayer; }
+		void setOcclusionLayer(OcclusionLayer* pOcclusionLayer) noexcept { m_pOcclusionLayer = pOcclusionLayer; }
 
 	private:
 		/**
@@ -137,6 +114,6 @@ namespace Xenon
 
 		std::atomic_uint64_t m_DrawCount = 0;
 
-		const OcclusionLayer* m_pOcclusionLayer = nullptr;
+		OcclusionLayer* m_pOcclusionLayer = nullptr;
 	};
 }

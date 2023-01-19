@@ -4,6 +4,7 @@
 #include "DefaultRasterizingLayer.hpp"
 
 #include "../Renderer.hpp"
+#include "../DefaultCacheHandler.hpp"
 
 #include "../../XenonCore/Logging.hpp"
 
@@ -146,7 +147,6 @@ namespace Xenon
 		m_DrawCount = 0;
 
 		// Registry any new materials.
-		uint32_t index = 0;
 		for (const auto& group : m_pScene->getRegistry().view<Geometry, Material>())
 		{
 			const auto& material = m_pScene->getRegistry().get<Material>(group);
@@ -161,7 +161,7 @@ namespace Xenon
 				auto& pipeline = m_pPipelines[material];
 				pipeline.m_pPipeline = m_Renderer.getInstance().getFactory()->createRasterizingPipeline(
 					m_Renderer.getInstance().getBackendDevice(),
-					nullptr,
+					std::make_unique<DefaultCacheHandler>(),
 					m_pRasterizer.get(),
 					materialSpecification.m_RasterizingPipelineSpecification
 				);
@@ -170,8 +170,8 @@ namespace Xenon
 				pipeline.m_pSceneDescriptor = pipeline.m_pPipeline->createDescriptor(Backend::DescriptorType::Scene);
 				m_pScene->setupDescriptor(pipeline.m_pSceneDescriptor.get(), pipeline.m_pPipeline.get());
 			}
-			// Get the pipeline.
 
+			// Get the pipeline.
 			auto& pipeline = m_pPipelines[material];
 
 			// Setup the per-geometry descriptor if we need one for the geometry.
@@ -192,34 +192,7 @@ namespace Xenon
 			}
 
 			// Geometry pass time!
-			m_pCommandRecorder->bind(pipeline.m_pPipeline.get(), geometry.getVertexSpecification());
-			m_pCommandRecorder->bind(geometry.getVertexBuffer(), geometry.getVertexSpecification().getSize());
-
-			// Bind the sub-meshes.
-			for (auto& mesh : geometry.getMeshes())
-			{
-				OPTICK_EVENT_DYNAMIC("Binding Mesh");
-
-				for (auto& subMesh : mesh.m_SubMeshes)
-				{
-					OPTICK_EVENT_DYNAMIC("Issuing Draw Calls");
-
-					// If the sub-mesh is occluded just skip.
-					if (m_pOcclusionLayer && m_pOcclusionLayer->getSamples(index) == 0)
-					{
-						index++;
-						continue;
-					}
-
-					m_pCommandRecorder->bind(geometry.getIndexBuffer(), static_cast<Backend::IndexBufferStride>(subMesh.m_IndexSize));
-					m_pCommandRecorder->bind(pipeline.m_pPipeline.get(), nullptr, pipeline.m_pMaterialDescriptors[subMesh].get(), pPerGeometryDescriptor, pipeline.m_pSceneDescriptor.get());
-
-					m_pCommandRecorder->drawIndexed(subMesh.m_VertexOffset, subMesh.m_IndexOffset, subMesh.m_IndexCount);
-
-					m_DrawCount++;
-					index++;
-				}
-			}
+			geometryPass(pPerGeometryDescriptor, geometry, pipeline);
 		}
 	}
 
@@ -231,13 +204,17 @@ namespace Xenon
 		m_pCommandRecorder->bind(geometry.getVertexBuffer(), geometry.getVertexSpecification().getSize());
 
 		// Bind the sub-meshes.
-		for (auto& mesh : geometry.getMeshes())
+		for (const auto& mesh : geometry.getMeshes())
 		{
 			OPTICK_EVENT_DYNAMIC("Binding Mesh");
 
-			for (auto& subMesh : mesh.m_SubMeshes)
+			for (const auto& subMesh : mesh.m_SubMeshes)
 			{
 				OPTICK_EVENT_DYNAMIC("Issuing Draw Calls");
+
+				// If the sub-mesh is occluded just skip.
+				if (m_pOcclusionLayer && m_pOcclusionLayer->getSamples(subMesh) == 0)
+					continue;
 
 				m_pCommandRecorder->bind(geometry.getIndexBuffer(), static_cast<Backend::IndexBufferStride>(subMesh.m_IndexSize));
 				m_pCommandRecorder->bind(pipeline.m_pPipeline.get(), nullptr, pipeline.m_pMaterialDescriptors[subMesh].get(), pPerGeometryDescriptor, pipeline.m_pSceneDescriptor.get());

@@ -4,6 +4,13 @@
 #include "DX12OcclusionQuery.hpp"
 #include "DX12Macros.hpp"
 
+#include <optick.h>
+
+#ifdef XENON_PLATFORM_WINDOWS
+#include <execution> 
+
+#endif // XENON_PLATFORM_WINDOWS
+
 namespace Xenon
 {
 	namespace Backend
@@ -38,6 +45,29 @@ namespace Xenon
 		DX12OcclusionQuery::~DX12OcclusionQuery()
 		{
 			m_pAllocation->Release();
+		}
+
+		std::vector<uint64_t> DX12OcclusionQuery::getSamples()
+		{
+			OPTICK_EVENT();
+
+			// Copy the available data.
+			const D3D12_RANGE mapRange = CD3DX12_RANGE(1, 0);
+
+			uint64_t* pSampleData = nullptr;
+			XENON_DX12_ASSERT(getBuffer()->Map(0, nullptr, std::bit_cast<void**>(&pSampleData)), "Failed to map the occlusion query buffer!");
+			getBuffer()->Unmap(0, &mapRange);
+
+			auto samples = std::vector<uint64_t>(m_SampleCount);
+#ifdef XENON_PLATFORM_WINDOWS
+			std::copy_n(std::execution::unseq, pSampleData, getSampleCount(), samples.data());
+
+#else
+			std::copy_n(pSampleData, getSampleCount(), samples.data());
+
+#endif // XENON_PLATFORM_WINDOWS
+
+			return samples;
 		}
 	}
 }
