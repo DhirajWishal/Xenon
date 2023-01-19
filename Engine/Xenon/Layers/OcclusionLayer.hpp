@@ -18,6 +18,23 @@ namespace Xenon
 	 */
 	class OcclusionLayer final : public RasterizingLayer
 	{
+		/**
+		 * Occlusion query samples structure.
+		 * This contains information about the occlusion query, the number of samples and other information that were gathered from the occlusion query.
+		 * This structure is intended to be explicit for one command buffer in a command recorder.
+		 */
+		struct OcclusionQuerySamples final
+		{
+			std::unordered_map<SubMesh, uint64_t> m_SubMeshSamples;
+			std::unordered_map<SubMesh, uint32_t> m_SubMeshIndexMap;
+
+			std::unique_ptr<Backend::OcclusionQuery> m_pOcclusionQuery = nullptr;
+
+			std::vector<uint64_t> m_Samples;
+
+			bool m_bHasQueryData = false;
+		};
+
 	public:
 		/**
 		 * Explicit constructor.
@@ -70,15 +87,11 @@ namespace Xenon
 		std::mutex m_Mutex;
 
 		std::unique_ptr<Backend::RasterizingPipeline> m_pOcclusionPipeline = nullptr;
-		std::unique_ptr<Backend::OcclusionQuery> m_pOcclusionQuery = nullptr;
 
 		std::unordered_map<const Scene*, std::unique_ptr<Backend::Descriptor>> m_pOcclusionSceneDescriptors;
 
 		std::unordered_map<Group, std::unique_ptr<Backend::Descriptor>> m_pPerGeometryDescriptors;
-		std::unordered_map<SubMesh, uint32_t> m_SubMeshIndexMap;
 
-		std::vector<uint64_t> m_Samples;
-
-		bool m_bHasQueryData = false;
+		std::vector<OcclusionQuerySamples> m_OcclusionQuerySamples;
 	};
 }

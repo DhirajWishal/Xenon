@@ -17,7 +17,6 @@ namespace Xenon
 {
 	OcclusionLayer::OcclusionLayer(Renderer& renderer, Backend::Camera* pCamera, uint32_t priority /*= 5*/)
 		: RasterizingLayer(renderer, priority, pCamera, Backend::AttachmentType::Depth | Backend::AttachmentType::Stencil)
-		, m_pOcclusionQuery(renderer.getInstance().getFactory()->createOcclusionQuery(m_Renderer.getInstance().getBackendDevice(), 1))
 	{
 		// Create the pipeline.
 		Backend::RasterizingPipelineSpecification specification = {};
@@ -25,12 +24,19 @@ namespace Xenon
 		// specification.m_FragmentShader = Generated::CreateShaderOcclusion_frag();
 
 		m_pOcclusionPipeline = m_Renderer.getInstance().getFactory()->createRasterizingPipeline(m_Renderer.getInstance().getBackendDevice(), std::make_unique<DefaultCacheHandler>(), m_pRasterizer.get(), specification);
+
+		// Setup the occlusion query samples.
+		m_OcclusionQuerySamples.reserve(m_pCommandRecorder->getBufferCount());
+		for (uint32_t i = 0; i < m_pCommandRecorder->getBufferCount(); i++)
+			m_OcclusionQuerySamples.emplace_back().m_pOcclusionQuery = m_Renderer.getInstance().getFactory()->createOcclusionQuery(m_Renderer.getInstance().getBackendDevice(), 1);
 	}
 
 	void OcclusionLayer::onPreUpdate()
 	{
 		OPTICK_EVENT();
-		auto lock = std::scoped_lock(m_Mutex);
+
+		// Get the query samples structure for the current command buffer.
+		auto& querySample = m_OcclusionQuerySamples[m_pCommandRecorder->getCurrentIndex()];
 
 		if (m_pScene)
 		{
@@ -38,16 +44,22 @@ namespace Xenon
 			const auto subMeshCount = m_pScene->getDrawableCount();
 
 			// Re-create the occlusion query if needed.
-			if (subMeshCount > 0 && m_pOcclusionQuery->getSampleCount() != subMeshCount)
+			if (subMeshCount > 0 && querySample.m_pOcclusionQuery->getSampleCount() != subMeshCount)
 			{
 				m_Renderer.getInstance().getBackendDevice()->waitIdle();
-				m_pOcclusionQuery = m_Renderer.getInstance().getFactory()->createOcclusionQuery(m_Renderer.getInstance().getBackendDevice(), subMeshCount);
-				m_bHasQueryData = false;
+				querySample.m_pOcclusionQuery = m_Renderer.getInstance().getFactory()->createOcclusionQuery(m_Renderer.getInstance().getBackendDevice(), subMeshCount);
+				querySample.m_bHasQueryData = false;
 			}
 		}
 
-		if (m_bHasQueryData)
-			m_Samples = m_pOcclusionQuery->getSamples();
+		// If we have query data, get them and setup the samples map.
+		if (querySample.m_bHasQueryData)
+		{
+			querySample.m_Samples = querySample.m_pOcclusionQuery->getSamples();
+
+			for (const auto& [subMesh, index] : querySample.m_SubMeshIndexMap)
+				querySample.m_SubMeshSamples[subMesh] = querySample.m_Samples[index];
+		}
 	}
 
 	void OcclusionLayer::onUpdate(Layer* pPreviousLayer, uint32_t imageIndex, uint32_t frameIndex)
@@ -58,6 +70,7 @@ namespace Xenon
 		m_pCommandRecorder->begin();
 
 		uint64_t subMeshCount = 0;
+		auto& querySample = m_OcclusionQuerySamples[m_pCommandRecorder->getCurrentIndex()];
 
 		// Reset the occlusion query. This must be done before binding the render target!
 		if (m_pScene)
@@ -66,8 +79,8 @@ namespace Xenon
 			subMeshCount = m_pScene->getDrawableCount();
 
 			// Reset the query.
-			m_pCommandRecorder->resetQuery(m_pOcclusionQuery.get());
-			m_bHasQueryData = false;
+			m_pCommandRecorder->resetQuery(querySample.m_pOcclusionQuery.get());
+			querySample.m_bHasQueryData = false;
 		}
 
 		// Bind the render target.
@@ -81,8 +94,8 @@ namespace Xenon
 		if (subMeshCount > 0)
 		{
 			auto lock = std::scoped_lock(m_Mutex);
-			m_pCommandRecorder->getQueryResults(m_pOcclusionQuery.get());
-			m_bHasQueryData = true;
+			m_pCommandRecorder->getQueryResults(querySample.m_pOcclusionQuery.get());
+			querySample.m_bHasQueryData = true;
 		}
 
 		// End the command recorder recording.
@@ -92,17 +105,9 @@ namespace Xenon
 	uint64_t OcclusionLayer::getSamples(const SubMesh& subMesh)
 	{
 		OPTICK_EVENT();
+
 		auto lock = std::scoped_lock(m_Mutex);
-
-		// If it does not contain the sub-mesh then return 1.
-		if (!m_SubMeshIndexMap.contains(subMesh))
-			return 1;
-
-		// If the index is within the samples count, index it.
-		if (const auto index = m_SubMeshIndexMap.at(subMesh); index < m_Samples.size())
-			return m_Samples[index];
-
-		return 1;
+		return m_OcclusionQuerySamples[m_pCommandRecorder->getCurrentIndex()].m_SubMeshSamples[subMesh];
 	}
 
 	void OcclusionLayer::issueDrawCalls()
@@ -122,6 +127,9 @@ namespace Xenon
 		// Set the scissor and view port.
 		m_pCommandRecorder->setViewport(0.0f, 0.0f, static_cast<float>(m_Renderer.getCamera()->getWidth()), static_cast<float>(m_Renderer.getCamera()->getHeight()), 0.0f, 1.0f);
 		m_pCommandRecorder->setScissor(0, 0, m_Renderer.getCamera()->getWidth(), m_Renderer.getCamera()->getHeight());
+
+		// Get the query samples structure for the current command buffer.
+		auto& querySample = m_OcclusionQuerySamples[m_pCommandRecorder->getCurrentIndex()];
 
 		uint32_t index = 0;
 		for (const auto& group : m_pScene->getRegistry().view<Geometry, Material>())
@@ -152,15 +160,10 @@ namespace Xenon
 					m_pCommandRecorder->bind(geometry.getIndexBuffer(), static_cast<Backend::IndexBufferStride>(subMesh.m_IndexSize));
 					m_pCommandRecorder->bind(m_pOcclusionPipeline.get(), nullptr, nullptr, pPerGeometryDescriptor, pOcclusionSceneDescriptor);
 
-					uint32_t subMeshIndex = 0;
-					{
-						auto lock = std::scoped_lock(m_Mutex);
-						subMeshIndex = m_SubMeshIndexMap[subMesh] = index;
-					}
-
-					m_pCommandRecorder->beginQuery(m_pOcclusionQuery.get(), subMeshIndex);
+					const auto subMeshIndex = querySample.m_SubMeshIndexMap[subMesh] = index;
+					m_pCommandRecorder->beginQuery(querySample.m_pOcclusionQuery.get(), subMeshIndex);
 					m_pCommandRecorder->drawIndexed(subMesh.m_VertexOffset, subMesh.m_IndexOffset, subMesh.m_IndexCount);
-					m_pCommandRecorder->endQuery(m_pOcclusionQuery.get(), subMeshIndex);
+					m_pCommandRecorder->endQuery(querySample.m_pOcclusionQuery.get(), subMeshIndex);
 
 					index++;
 				}

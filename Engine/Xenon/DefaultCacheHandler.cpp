@@ -3,6 +3,8 @@
 
 #include "DefaultCacheHandler.hpp"
 
+#include "../XenonCore/Logging.hpp"
+
 #include <fstream>
 
 namespace Xenon
@@ -10,7 +12,7 @@ namespace Xenon
 	std::vector<std::byte> DefaultCacheHandler::load(uint64_t hash)
 	{
 		std::vector<std::byte> cacheData;
-		auto cacheFile = std::fstream(std::to_string(hash) + ".bin", std::ios::in | std::ios::binary | std::ios::ate);
+		auto cacheFile = std::fstream(fmt::format("{}.bin", hash), std::ios::in | std::ios::binary | std::ios::ate);
 		if (cacheFile.is_open())
 		{
 			const auto size = cacheFile.tellg();
@@ -27,7 +29,7 @@ namespace Xenon
 
 	void DefaultCacheHandler::store(uint64_t hash, const std::vector<std::byte>& bytes)
 	{
-		auto cacheFile = std::fstream(std::to_string(hash) + ".bin", std::ios::out | std::ios::binary);
+		auto cacheFile = std::fstream(fmt::format("{}.bin", hash), std::ios::out | std::ios::binary);
 		if (cacheFile.is_open())
 		{
 			cacheFile.write(std::bit_cast<const char*>(bytes.data()), bytes.size());
