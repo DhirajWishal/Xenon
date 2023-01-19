@@ -3,7 +3,8 @@
 
 #pragma once
 
-#include "../RasterizingLayer.hpp"
+#include "OcclusionLayer.hpp"
+
 #include "../Geometry.hpp"
 
 #include "../../XenonCore/TaskNode.hpp"
@@ -18,29 +19,6 @@ namespace Xenon
 	 */
 	class DefaultRasterizingLayer final : public RasterizingLayer
 	{
-		/**
-		 * Draw entry structure.
-		 * This is used by the worker thread to draw.
-		 */
-		struct DrawEntry final
-		{
-			SubMesh m_SubMesh;
-
-			Backend::VertexSpecification m_VertexSpecification;
-
-			Backend::Buffer* m_pVertexBuffer = nullptr;
-			Backend::Buffer* m_pIndexBuffer = nullptr;
-
-			Backend::RasterizingPipeline* m_pPipeline = nullptr;
-
-			Backend::Descriptor* m_pUserDefinedDescriptor = nullptr;
-			Backend::Descriptor* m_pMaterialDescriptor = nullptr;
-			Backend::Descriptor* m_pPerGeometryDescriptor = nullptr;
-			Backend::Descriptor* m_pSceneDescriptor = nullptr;
-
-			uint64_t m_QueryIndex = 0;
-		};
-
 		/**
 		 * Pipeline structure.
 		 * This contains information regarding a single pipeline and it's descriptors.
@@ -59,8 +37,9 @@ namespace Xenon
 		 *
 		 * @param renderer The renderer reference.
 		 * @param pCamera The camera pointer used by the renderer.
+		 * @param priority The priority of the layer. Default is 5.
 		 */
-		explicit DefaultRasterizingLayer(Renderer& renderer, Backend::Camera* pCamera);
+		explicit DefaultRasterizingLayer(Renderer& renderer, Backend::Camera* pCamera, uint32_t priority = 5);
 
 		/**
 		 * Destructor.
@@ -85,12 +64,15 @@ namespace Xenon
 		 */
 		[[nodiscard]] uint64_t getDrawCount() const noexcept { return m_DrawCount; }
 
-	private:
 		/**
-		 * Setup the occlusion pipeline.
+		 * Set the occlusion layer to get occlusion results from.
+		 * This is needed if you need to enable occlusion.
+		 *
+		 * @param pOcclusionLayer The layer to set.
 		 */
-		void setupOcclusionPipeline();
+		void setOcclusionLayer(OcclusionLayer* pOcclusionLayer) noexcept { m_pOcclusionLayer = pOcclusionLayer; }
 
+	private:
 		/**
 		 * Create the per-geometry descriptor.
 		 *
@@ -106,14 +88,7 @@ namespace Xenon
 		 * @param subMesh The sub-mesh.
 		 * @param specification The material specification.
 		 */
-		void setupMaterialDescriptor(Pipeline& pipeline, SubMesh& subMesh, const MaterialSpecification& specification);
-
-		/**
-		 * Issue draw calls using a geometry's group.
-		 *
-		 * @param group The group.
-		 */
-		void issueDrawCalls(Group group);
+		void setupMaterialDescriptor(Pipeline& pipeline, SubMesh& subMesh, const MaterialSpecification& specification) const;
 
 		/**
 		 * Issue the draw calls.
@@ -121,22 +96,13 @@ namespace Xenon
 		void issueDrawCalls();
 
 		/**
-		 * Draw the occlusion pass of the sub-mesh.
-		 *
-		 * @param pCommandRecorder The command recorder pointer.
-		 * @param geometry The geometry reference.
-		 */
-		void occlusionPass(Backend::CommandRecorder* pCommandRecorder, Geometry& geometry) const;
-
-		/**
 		 * Draw the geometry pass of the sub-mesh.
 		 *
-		 * @param pCommandRecorder The command recorder pointer.
 		 * @param pPerGeometryDescriptor The per-geometry descriptor pointer.
 		 * @param geometry The geometry reference.
 		 * @param pipeline The pipeline to draw with.
 		 */
-		void geometryPass(Backend::CommandRecorder* pCommandRecorder, Backend::Descriptor* pPerGeometryDescriptor, Geometry& geometry, Pipeline& pipeline);
+		void geometryPass(Backend::Descriptor* pPerGeometryDescriptor, Geometry& geometry, Pipeline& pipeline);
 
 	private:
 		std::mutex m_Mutex;
@@ -146,10 +112,8 @@ namespace Xenon
 
 		std::unordered_map<Material, Pipeline> m_pPipelines;
 
-		std::unique_ptr<Backend::RasterizingPipeline> m_pOcclusionPipeline = nullptr;
-		std::unique_ptr<Backend::OcclusionQuery> m_pOcclusionQuery = nullptr;
-		std::unique_ptr<Backend::Descriptor> m_pOcclusionCameraDescriptor = nullptr;
-
 		std::atomic_uint64_t m_DrawCount = 0;
+
+		OcclusionLayer* m_pOcclusionLayer = nullptr;
 	};
 }

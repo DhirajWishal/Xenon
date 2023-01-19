@@ -333,7 +333,6 @@ namespace Xenon
 
 			begin();
 			m_pParentCommandRecorder = pParent->as<DX12CommandRecorder>();
-			m_pParentCommandRecorder->addBundle(m_pCurrentCommandList);
 		}
 
 		void DX12CommandRecorder::copy(Buffer* pSource, uint64_t srcOffset, Buffer* pDestination, uint64_t dstOffset, uint64_t size)
@@ -437,7 +436,7 @@ namespace Xenon
 			sourceLocation.pResource = pDxBuffer->getResource();
 			sourceLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
 			sourceLocation.PlacedFootprint.Offset = 0;
-			sourceLocation.PlacedFootprint.Footprint.Format = m_pDevice->ConvertFormat(pDxImage->getDataFormat());
+			sourceLocation.PlacedFootprint.Footprint.Format = DX12Device::ConvertFormat(pDxImage->getDataFormat());
 			sourceLocation.PlacedFootprint.Footprint.Depth = 1;
 			sourceLocation.PlacedFootprint.Footprint.Width = pDxImage->getWidth();
 			sourceLocation.PlacedFootprint.Footprint.Height = pDxImage->getHeight();
@@ -497,7 +496,7 @@ namespace Xenon
 			destinationLocation.pResource = pDxDestinationImage->getResource();
 			destinationLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
 			destinationLocation.PlacedFootprint.Offset = 0;
-			destinationLocation.PlacedFootprint.Footprint.Format = m_pDevice->ConvertFormat(pDxDestinationImage->getDataFormat());
+			destinationLocation.PlacedFootprint.Footprint.Format = DX12Device::ConvertFormat(pDxDestinationImage->getDataFormat());
 			destinationLocation.PlacedFootprint.Footprint.Depth = 1;
 			destinationLocation.PlacedFootprint.Footprint.Width = pDxDestinationImage->getWidth();
 			destinationLocation.PlacedFootprint.Footprint.Height = pDxDestinationImage->getHeight();
@@ -507,7 +506,7 @@ namespace Xenon
 			sourceLocation.pResource = pDxSourceImage->getResource();
 			sourceLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
 			sourceLocation.PlacedFootprint.Offset = 0;
-			sourceLocation.PlacedFootprint.Footprint.Format = m_pDevice->ConvertFormat(pDxSourceImage->getDataFormat());
+			sourceLocation.PlacedFootprint.Footprint.Format = DX12Device::ConvertFormat(pDxSourceImage->getDataFormat());
 			sourceLocation.PlacedFootprint.Footprint.Depth = 1;
 			sourceLocation.PlacedFootprint.Footprint.Width = pDxSourceImage->getWidth();
 			sourceLocation.PlacedFootprint.Footprint.Height = pDxSourceImage->getHeight();
@@ -563,8 +562,12 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
-			m_pCurrentCommandList->SetGraphicsRootSignature(pPipeline->as<DX12RasterizingPipeline>()->getRootSignature());
-			m_pCurrentCommandList->SetPipelineState(pPipeline->as<DX12RasterizingPipeline>()->getPipeline(vertexSpecification).m_PipelineState.Get());
+			const auto pDxPipeline = pPipeline->as<DX12RasterizingPipeline>();
+			m_pCurrentCommandList->SetGraphicsRootSignature(pDxPipeline->getRootSignature());
+			m_pCurrentCommandList->SetPipelineState(pDxPipeline->getPipeline(vertexSpecification).m_PipelineState.Get());
+
+			const auto& heaps = pDxPipeline->getDescriptorHeapStorage();
+			m_pCurrentCommandList->SetDescriptorHeaps(static_cast<UINT>(heaps.size()), heaps.data());
 		}
 
 		void DX12CommandRecorder::bind(RasterizingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pPerGeometryDescriptor, Descriptor* pSceneDescriptor)
@@ -572,7 +575,6 @@ namespace Xenon
 			OPTICK_EVENT();
 
 			const auto& heaps = pPipeline->as<DX12RasterizingPipeline>()->getDescriptorHeapStorage();
-			m_pCurrentCommandList->SetDescriptorHeaps(static_cast<UINT>(heaps.size()), heaps.data());
 
 			UINT index = 0;
 			if (pUserDefinedDescriptor)
@@ -665,7 +667,11 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
-			m_pCurrentCommandList->SetPipelineState1(pPipeline->as<DX12RayTracingPipeline>()->getStateObject());
+			const auto pDxPipeline = pPipeline->as<DX12RayTracingPipeline>();
+			m_pCurrentCommandList->SetPipelineState1(pDxPipeline->getStateObject());
+
+			const auto& heaps = pDxPipeline->getDescriptorHeapStorage();
+			m_pCurrentCommandList->SetDescriptorHeaps(static_cast<UINT>(heaps.size()), heaps.data());
 		}
 
 		void DX12CommandRecorder::bind(RayTracingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pPerGeometryDescriptor, Descriptor* pSceneDescriptor)
@@ -673,7 +679,6 @@ namespace Xenon
 			OPTICK_EVENT();
 
 			const auto& heaps = pPipeline->as<DX12RayTracingPipeline>()->getDescriptorHeapStorage();
-			m_pCurrentCommandList->SetDescriptorHeaps(static_cast<UINT>(heaps.size()), heaps.data());
 
 			UINT index = 0;
 			if (pUserDefinedDescriptor)
@@ -733,14 +738,9 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
-			if (m_Usage & CommandRecorderUsage::Secondary && m_pParentCommandRecorder)
+			auto lock = std::scoped_lock(m_Mutex);
+			if (m_Usage & CommandRecorderUsage::Graphics && !m_pParentCommandRecorder)
 			{
-				m_pParentCommandRecorder->setViewport(x, y, width, height, minDepth, maxDepth);
-			}
-			else
-			{
-				auto lock = std::scoped_lock(m_Mutex);
-
 				const D3D12_VIEWPORT viewport = CD3DX12_VIEWPORT(x, y, width, height, minDepth, maxDepth);
 				m_pCurrentCommandList->RSSetViewports(1, &viewport);
 			}
@@ -750,14 +750,9 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
-			if (m_Usage & CommandRecorderUsage::Secondary && m_pParentCommandRecorder)
+			auto lock = std::scoped_lock(m_Mutex);
+			if (m_Usage & CommandRecorderUsage::Graphics && !m_pParentCommandRecorder)
 			{
-				m_pParentCommandRecorder->setViewportNatural(x, y, width, height, minDepth, maxDepth);
-			}
-			else
-			{
-				auto lock = std::scoped_lock(m_Mutex);
-
 				const D3D12_VIEWPORT viewport = CD3DX12_VIEWPORT(x, height - y, width, -height, minDepth, maxDepth);
 				m_pCurrentCommandList->RSSetViewports(1, &viewport);
 			}
@@ -767,14 +762,9 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
-			if (m_Usage & CommandRecorderUsage::Secondary && m_pParentCommandRecorder)
+			auto lock = std::scoped_lock(m_Mutex);
+			if (m_Usage & CommandRecorderUsage::Graphics && !m_pParentCommandRecorder)
 			{
-				m_pParentCommandRecorder->setScissor(x, y, width, height);
-			}
-			else
-			{
-				auto lock = std::scoped_lock(m_Mutex);
-
 				const D3D12_RECT scissor = CD3DX12_RECT(x, y, width, height);
 				m_pCurrentCommandList->RSSetScissorRects(1, &scissor);
 			}
@@ -819,15 +809,29 @@ namespace Xenon
 			m_pCurrentCommandList->EndQuery(pOcclusionQuery->as<DX12OcclusionQuery>()->getHeap(), D3D12_QUERY_TYPE_BINARY_OCCLUSION, index);
 		}
 
-		void DX12CommandRecorder::executeChildren()
+		void DX12CommandRecorder::executeChild(CommandRecorder* pChildRecorder, RasterizingPipeline* pActivePipeline)
 		{
 			OPTICK_EVENT();
 
 			auto lock = std::scoped_lock(m_Mutex);
-			for (const auto pBundleCommandList : m_pBundleCommandLists)
-				m_pCurrentCommandList->ExecuteBundle(pBundleCommandList);
 
-			m_pBundleCommandLists.clear();
+			const auto pDxPipeline = pActivePipeline->as<DX12RasterizingPipeline>();
+			m_pCurrentCommandList->SetGraphicsRootSignature(pDxPipeline->getRootSignature());
+
+			const auto& heaps = pDxPipeline->getDescriptorHeapStorage();
+			m_pCurrentCommandList->SetDescriptorHeaps(static_cast<UINT>(heaps.size()), heaps.data());
+
+			m_pCurrentCommandList->ExecuteBundle(pChildRecorder->as<DX12CommandRecorder>()->getCurrentCommandList());
+		}
+
+		void DX12CommandRecorder::executeChild(CommandRecorder* pChildRecorder, RayTracingPipeline* pActivePipeline)
+		{
+			OPTICK_EVENT();
+
+			const auto& heaps = pActivePipeline->as<DX12RayTracingPipeline>()->getDescriptorHeapStorage();
+			m_pCurrentCommandList->SetDescriptorHeaps(static_cast<UINT>(heaps.size()), heaps.data());
+
+			m_pCurrentCommandList->ExecuteBundle(pChildRecorder->as<DX12CommandRecorder>()->getCurrentCommandList());
 		}
 
 		void DX12CommandRecorder::getQueryResults(OcclusionQuery* pOcclusionQuery)
@@ -841,25 +845,6 @@ namespace Xenon
 
 				// Copy the occlusion data from the queue to the buffer.
 				m_pCurrentCommandList->ResolveQueryData(pDxOcclusionQuery->getHeap(), D3D12_QUERY_TYPE_BINARY_OCCLUSION, 0, static_cast<UINT>(pOcclusionQuery->getSampleCount()), pDxOcclusionQuery->getBuffer(), 0);
-			}
-
-			{
-				OPTICK_EVENT_DYNAMIC("Copy Query Data");
-
-				// Copy the available data.
-				const D3D12_RANGE mapRange = CD3DX12_RANGE(1, 0);
-
-				uint64_t* pSampleData = nullptr;
-				XENON_DX12_ASSERT(pDxOcclusionQuery->getBuffer()->Map(0, nullptr, std::bit_cast<void**>(&pSampleData)), "Failed to map the occlusion query buffer!");
-				pDxOcclusionQuery->getBuffer()->Unmap(0, &mapRange);
-
-#ifdef XENON_PLATFORM_WINDOWS
-				std::copy_n(std::execution::unseq, pSampleData, pDxOcclusionQuery->getSampleCount(), pDxOcclusionQuery->getSamplesPointer());
-
-#else
-				std::copy_n(pSampleData, pDxOcclusionQuery->getSampleCount(), pDxOcclusionQuery->getSamplesPointer());
-
-#endif // XENON_PLATFORM_WINDOWS
 			}
 		}
 
@@ -875,7 +860,6 @@ namespace Xenon
 			OPTICK_EVENT();
 
 			XENON_DX12_ASSERT(m_pCurrentCommandList->Close(), "Failed to stop the current command list!");
-
 			m_IsRecording = false;
 		}
 
@@ -934,14 +918,6 @@ namespace Xenon
 				WaitForSingleObject(eventHandle, static_cast<DWORD>(timeout));
 				CloseHandle(eventHandle);
 			}
-		}
-
-		void DX12CommandRecorder::addBundle(ID3D12GraphicsCommandList* pCommandList)
-		{
-			OPTICK_EVENT();
-
-			auto lock = std::scoped_lock(m_Mutex);
-			m_pBundleCommandLists.emplace_back(pCommandList);
 		}
 	}
 }

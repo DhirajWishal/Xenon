@@ -42,6 +42,7 @@ namespace Xenon
 		m_CountingFence.reset(m_pLayers.size() + 1);
 		for (const auto& pLayer : m_pLayers)
 		{
+			pLayer->onPreUpdate();
 			GetJobSystem().insert([this, pLayer = pLayer.get(), pPreviousLayer, imageIndex, frameIndex] { updateLayer(pLayer, pPreviousLayer, imageIndex, frameIndex); });
 			pPreviousLayer = pLayer.get();
 		}
@@ -77,6 +78,35 @@ namespace Xenon
 	void Renderer::close()
 	{
 		m_IsOpen = false;
+	}
+
+	void Renderer::insertLayer(std::unique_ptr<Layer>&& pLayer)
+	{
+		const auto itr = std::ranges::upper_bound(m_pLayers, pLayer, [](const auto& lhs, const auto& rhs) { return lhs->getPriority() < rhs->getPriority(); });
+		m_pLayers.emplace(itr, std::move(pLayer));
+
+		// Update the command recorders.
+		updateSubmitCommandRecorders();
+	}
+
+	void Renderer::updateSubmitCommandRecorders()
+	{
+		m_pSubmitCommandRecorders.clear();
+
+		uint32_t previousPriority = -1;
+		for (const auto& pLayer : m_pLayers)
+		{
+			auto pCommandRecorder = pLayer->getCommandRecorder();
+			if (previousPriority == pLayer->getPriority())
+				m_pSubmitCommandRecorders.back().emplace_back(pCommandRecorder);
+
+			else
+				m_pSubmitCommandRecorders.emplace_back().emplace_back(pCommandRecorder);
+
+			previousPriority = pLayer->getPriority();
+		}
+
+		m_pSubmitCommandRecorders.emplace_back().emplace_back(m_pCommandRecorder.get());
 	}
 
 	void Renderer::updateLayer(Layer* pLayer, Layer* pPreviousLayer, uint32_t imageIndex, uint32_t frameIndex)

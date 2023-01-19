@@ -91,7 +91,7 @@ namespace Xenon
 			{
 				D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
 				heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-				m_ShaderVisibleHeaps.fill(nullptr);
+				m_ShaderVisibleHeaps.clear();
 
 				if (m_CbvSrvUavCount > 0 && m_CbvSrvUavDescriptorCount > 0)
 				{
@@ -110,7 +110,7 @@ namespace Xenon
 							D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV
 						);
 
-						m_ShaderVisibleHeaps[0] = m_ShaderVisibleCbvSrvUavDescriptorHeap.Get();
+						m_ShaderVisibleHeaps.emplace_back(m_ShaderVisibleCbvSrvUavDescriptorHeap.Get());
 					}
 				}
 
@@ -132,7 +132,7 @@ namespace Xenon
 						);
 					}
 
-					m_ShaderVisibleHeaps[1] = m_ShaderVisibleSamplerDescriptorHeap.Get();
+					m_ShaderVisibleHeaps.emplace_back(m_ShaderVisibleSamplerDescriptorHeap.Get());
 				}
 			}
 

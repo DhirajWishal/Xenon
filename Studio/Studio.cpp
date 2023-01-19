@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "Studio.hpp"
-#include "CacheHandler.hpp"
 #include "Layers/ImGuiLayer.hpp"
 
 #include "Xenon/MonoCamera.hpp"
 #include "Xenon/Geometry.hpp"
 #include "Xenon/FrameTimer.hpp"
+#include "Xenon/DefaultCacheHandler.hpp"
 
 #include "XenonCore/Logging.hpp"
 #include "XenonBackend/ShaderSource.hpp"
@@ -27,6 +27,8 @@
 #include <imgui.h>
 
 #include <glm/gtc/type_ptr.hpp>
+
+constexpr auto g_DefaultRenderingPriority = 5;
 
 namespace /* anonymous */
 {
@@ -114,13 +116,17 @@ void Studio::run()
 	Xenon::MaterialBuilder materialBuidler;
 	materialBuidler.addBaseColorTexture();	// Use the sub mesh's one.
 
+	// Create the occlusion layer for occlusion culling.
+	auto pOcclusionLayer = m_Renderer.createLayer<Xenon::OcclusionLayer>(m_Scene.getCamera(), g_DefaultRenderingPriority);
+	pOcclusionLayer->setScene(m_Scene);
+
 	// Setup the pipeline.
 #ifdef XENON_DEV_ENABLE_RAY_TRACING
 	auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRayTracingLayer>(m_Scene.getCamera());
 	pRenderTarget->setScene(m_Scene);
 
 	materialBuidler.setRayTracingPipelineSpecification(getRayTracingPipelineSpecification());
-	auto pPipeline = m_Instance.getFactory()->createRayTracingPipeline(m_Instance.getBackendDevice(), std::make_unique<CacheHandler>(), materialBuidler.getRayTracingPipelineSpecification());
+	auto pPipeline = m_Instance.getFactory()->createRayTracingPipeline(m_Instance.getBackendDevice(), std::make_unique<Xenon::DefaultCacheHandler>(), materialBuidler.getRayTracingPipelineSpecification());
 
 	const auto loaderFunction = [this, &pPipeline, &pRenderTarget, &materialBuidler]
 	{
@@ -130,8 +136,9 @@ void Studio::run()
 	};
 
 #else 
-	auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRasterizingLayer>(m_Scene.getCamera());
+	auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRasterizingLayer>(m_Scene.getCamera(), g_DefaultRenderingPriority);
 	pRenderTarget->setScene(m_Scene);
+	pRenderTarget->setOcclusionLayer(pOcclusionLayer);
 
 	Xenon::Backend::RasterizingPipelineSpecification specification;
 	specification.m_VertexShader = Xenon::Generated::CreateShaderShader_vert();
@@ -165,6 +172,9 @@ void Studio::run()
 		{
 			const auto delta = timer.tick();
 
+			// Begin updating the scene.
+			m_Scene.beginUpdate();
+
 			// Set the draw call count.
 			pImGui->setDrawCallCount(m_Scene.getDrawableCount(), pRenderTarget->getDrawCount());
 
@@ -181,15 +191,17 @@ void Studio::run()
 			// End the ImGui scene.
 			pImGui->endFrame();
 
-			// Update the scene object and render everything.
-			m_Scene.update();
+			// End the scene updating process and update the scene object and render everything.
+			m_Scene.endUpdate();
 		} while (m_Renderer.update());
+
+		m_Scene.cleanup();
 
 		// Wait till the data has been added before quitting.
 		ret.get();
 	}
 
-	// Cleanup the renderer and instance.
+	// Cleanup the main objects.
 	m_Renderer.cleanup();
 	m_Instance.cleanup();
 

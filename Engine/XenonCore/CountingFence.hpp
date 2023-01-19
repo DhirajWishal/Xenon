@@ -4,7 +4,8 @@
 #pragma once
 
 #include <atomic>
-#include <chrono>
+#include <mutex>
+#include <condition_variable>
 
 namespace Xenon
 {
@@ -39,7 +40,24 @@ namespace Xenon
 
 		/**
 		 * Wait till the counter has reached 0.
-		 * This internally uses a spin lock.
+		 * This will block the calling thread until the counter has reached 0.
+		 */
+		void waitBlocking();
+
+		/**
+		 * Wait till the counter has reached 0.
+		 * This will use a spin-lock for this purpose.
+		 */
+		void waitSpinning() const;
+
+		/**
+		 * Wait till the counter has reached 0.
+		 */
+		void wait();
+
+		/**
+		 * Wait till the counter has reached 0.
+		 * This internally uses a spin lock and might not be safe!.
 		 */
 		void wait() const;
 
@@ -58,6 +76,8 @@ namespace Xenon
 		[[nodiscard]] uint64_t getValue() const { return m_Counter; }
 
 	private:
+		std::mutex m_Mutex;
+		std::condition_variable m_ConditionVariable;
 		std::atomic_uint64_t m_Counter;
 	};
 }

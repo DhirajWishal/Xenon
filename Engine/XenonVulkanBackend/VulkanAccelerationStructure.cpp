@@ -18,7 +18,7 @@ namespace Xenon
 		VulkanAccelerationStructure::~VulkanAccelerationStructure()
 		{
 			m_pDevice->getDeviceTable().vkDestroyAccelerationStructureKHR(m_pDevice->getLogicalDevice(), m_AccelerationStructure, nullptr);
-			vmaDestroyBuffer(m_pDevice->getAllocator(), m_Buffer, m_Allocation);
+			m_pDevice->getAllocator().access([this](VmaAllocator allocator) { vmaDestroyBuffer(allocator, m_Buffer, m_Allocation); });
 		}
 
 		void VulkanAccelerationStructure::createAccelerationStructure(const VkAccelerationStructureBuildSizesInfoKHR& sizeInfo, VkAccelerationStructureTypeKHR type)
@@ -38,7 +38,11 @@ namespace Xenon
 			allocationCreateInfo.flags = 0;
 			allocationCreateInfo.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
 
-			XENON_VK_ASSERT(vmaCreateBuffer(m_pDevice->getAllocator(), &createInfo, &allocationCreateInfo, &m_Buffer, &m_Allocation, nullptr), "Failed to create the acceleration structure buffer!");
+			m_pDevice->getAllocator().access([this, createInfo, allocationCreateInfo](VmaAllocator allocator)
+				{
+					XENON_VK_ASSERT(vmaCreateBuffer(allocator, &createInfo, &allocationCreateInfo, &m_Buffer, &m_Allocation, nullptr), "Failed to create the acceleration structure buffer!");
+				}
+			);
 
 			// Acceleration structure
 			VkAccelerationStructureCreateInfoKHR accelerationStructureCreateInfo = {};

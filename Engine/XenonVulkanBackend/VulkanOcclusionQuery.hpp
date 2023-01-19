@@ -31,6 +31,14 @@ namespace Xenon
 			~VulkanOcclusionQuery() override;
 
 			/**
+			 * Get the samples.
+			 * This will query the samples from the backend.
+			 *
+			 * @return The samples.
+			 */
+			[[nodiscard]] std::vector<uint64_t> getSamples() override;
+
+			/**
 			 * Get the query pool.
 			 *
 			 * @return The query pool.

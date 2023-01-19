@@ -156,6 +156,8 @@ namespace /* anonymous */
 					logFile << "PERFORMANCE | ";
 
 				logFile << pCallbackData->pMessage << std::endl;
+
+				logFile.flush();
 			}
 		}
 

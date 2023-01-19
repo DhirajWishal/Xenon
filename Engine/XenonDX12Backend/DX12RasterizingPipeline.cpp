@@ -780,20 +780,23 @@ namespace Xenon
 			m_PipelineStateDescriptor.BlendState.AlphaToCoverageEnable = FALSE;
 			m_PipelineStateDescriptor.BlendState.IndependentBlendEnable = FALSE;
 
-			for (uint8_t i = 0; i < m_Specification.m_ColorBlendAttachments.size(); i++)
+			if (m_pRasterizer->getAttachmentTypes() & AttachmentType::Color)
 			{
-				const auto& attachment = m_Specification.m_ColorBlendAttachments[i];
+				for (uint8_t i = 0; i < m_Specification.m_ColorBlendAttachments.size(); i++)
+				{
+					const auto& attachment = m_Specification.m_ColorBlendAttachments[i];
 
-				m_PipelineStateDescriptor.BlendState.RenderTarget[i].BlendEnable = attachment.m_EnableBlend;
-				m_PipelineStateDescriptor.BlendState.RenderTarget[i].LogicOpEnable = FALSE;
-				m_PipelineStateDescriptor.BlendState.RenderTarget[i].SrcBlend = GetBlend(attachment.m_SrcBlendFactor);
-				m_PipelineStateDescriptor.BlendState.RenderTarget[i].DestBlend = GetBlend(attachment.m_DstBlendFactor);
-				m_PipelineStateDescriptor.BlendState.RenderTarget[i].BlendOp = GetBlendOperator(attachment.m_BlendOperator);
-				m_PipelineStateDescriptor.BlendState.RenderTarget[i].SrcBlendAlpha = GetBlend(attachment.m_SrcAlphaBlendFactor);
-				m_PipelineStateDescriptor.BlendState.RenderTarget[i].DestBlendAlpha = GetBlend(attachment.m_DstAlphaBlendFactor);
-				m_PipelineStateDescriptor.BlendState.RenderTarget[i].BlendOpAlpha = GetBlendOperator(attachment.m_AlphaBlendOperator);
-				m_PipelineStateDescriptor.BlendState.RenderTarget[i].LogicOp = GetColorBlendLogic(m_Specification.m_ColorBlendLogic);
-				m_PipelineStateDescriptor.BlendState.RenderTarget[i].RenderTargetWriteMask = GetWriteEnable(attachment.m_ColorWriteMask);
+					m_PipelineStateDescriptor.BlendState.RenderTarget[i].BlendEnable = attachment.m_EnableBlend;
+					m_PipelineStateDescriptor.BlendState.RenderTarget[i].LogicOpEnable = FALSE;
+					m_PipelineStateDescriptor.BlendState.RenderTarget[i].SrcBlend = GetBlend(attachment.m_SrcBlendFactor);
+					m_PipelineStateDescriptor.BlendState.RenderTarget[i].DestBlend = GetBlend(attachment.m_DstBlendFactor);
+					m_PipelineStateDescriptor.BlendState.RenderTarget[i].BlendOp = GetBlendOperator(attachment.m_BlendOperator);
+					m_PipelineStateDescriptor.BlendState.RenderTarget[i].SrcBlendAlpha = GetBlend(attachment.m_SrcAlphaBlendFactor);
+					m_PipelineStateDescriptor.BlendState.RenderTarget[i].DestBlendAlpha = GetBlend(attachment.m_DstAlphaBlendFactor);
+					m_PipelineStateDescriptor.BlendState.RenderTarget[i].BlendOpAlpha = GetBlendOperator(attachment.m_AlphaBlendOperator);
+					m_PipelineStateDescriptor.BlendState.RenderTarget[i].LogicOp = GetColorBlendLogic(m_Specification.m_ColorBlendLogic);
+					m_PipelineStateDescriptor.BlendState.RenderTarget[i].RenderTargetWriteMask = GetWriteEnable(attachment.m_ColorWriteMask);
+				}
 			}
 
 			m_PipelineStateDescriptor.DepthStencilState.DepthEnable = m_Specification.m_EnableDepthTest;
@@ -818,20 +821,14 @@ namespace Xenon
 			const auto& renderTargets = m_pRasterizer->getRenderTargets();
 
 			for (uint8_t i = 0; i < m_PipelineStateDescriptor.NumRenderTargets; i++)
-			{
-				const auto& image = renderTargets[i];
-				m_PipelineStateDescriptor.RTVFormats[i] = m_pDevice->ConvertFormat(image.getDataFormat());
-
-				// Get the color image's sample count and quality.
-				if (i == 0)
-				{
-					m_PipelineStateDescriptor.SampleDesc.Count = EnumToInt(image.getSpecification().m_MultiSamplingCount);
-					m_PipelineStateDescriptor.SampleDesc.Quality = image.getQualityLevel();
-				}
-			}
+				m_PipelineStateDescriptor.RTVFormats[i] = DX12Device::ConvertFormat(renderTargets[i].getDataFormat());
 
 			if (m_pRasterizer->hasTarget(AttachmentType::Depth | AttachmentType::Stencil))
-				m_PipelineStateDescriptor.DSVFormat = m_pDevice->ConvertFormat(renderTargets.back().getDataFormat());
+				m_PipelineStateDescriptor.DSVFormat = DX12Device::ConvertFormat(renderTargets.back().getDataFormat());
+
+			// Use the last render target's sample description.
+			if (!renderTargets.empty())
+				m_PipelineStateDescriptor.SampleDesc = renderTargets.back().getSampleDesc();
 		}
 
 		std::vector<std::byte> DX12RasterizingPipeline::loadPipelineStateCache(uint64_t hash) const

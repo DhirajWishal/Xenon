@@ -24,8 +24,15 @@ namespace Xenon
 		 * Explicit constructor.
 		 *
 		 * @param renderer The renderer reference.
+		 * @param priority The priority of the layer.
 		 */
-		explicit Layer(Renderer& renderer);
+		explicit Layer(Renderer& renderer, uint32_t priority);
+
+		/**
+		 * On pre-update function.
+		 * This object is called by the renderer before issuing it to the job system to be executed.
+		 */
+		virtual void onPreUpdate() {}
 
 		/**
 		 * Update the layer.
@@ -98,6 +105,15 @@ namespace Xenon
 		[[nodiscard]] const Backend::CommandRecorder* getCommandRecorder() const noexcept { return m_pCommandRecorder.get(); }
 
 		/**
+		 * Get the priority of the current layer.
+		 * If two layers have the same priority, it means that it does not depend on each other. The renderer will batch all the command recorders of the
+		 * two layers and submit them in one call.
+		 *
+		 * @return The priority index.
+		 */
+		[[nodiscard]] uint32_t getPriority() const noexcept { return m_Priority; }
+
+		/**
 		 * Select the next command buffer.
 		 * This is called by the renderer and the overriding class doesn't need to do this (and shouldn't!).
 		 */
@@ -110,6 +126,8 @@ namespace Xenon
 		std::unique_ptr<Backend::CommandRecorder> m_pCommandRecorder = nullptr;
 
 	private:
+		uint32_t m_Priority = 0;
+
 		bool m_IsActive = true;
 	};
 }

@@ -22,8 +22,6 @@ set(
 	"Main.cpp"
 	"Studio.cpp"
 	"Studio.hpp"
-	"CacheHandler.cpp"
-	"CacheHandler.hpp"
 	"UIComponent.hpp"
 	"Globals.hpp"
 

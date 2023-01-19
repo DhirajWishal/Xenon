@@ -40,6 +40,8 @@ set(
 	"Scene.hpp"
 	"Material.cpp"
 	"Material.hpp"
+	"DefaultCacheHandler.cpp"
+	"DefaultCacheHandler.hpp"
 
 	"Layers/ClearScreenLayer.cpp"
 	"Layers/ClearScreenLayer.hpp"
@@ -47,6 +49,8 @@ set(
 	"Layers/DefaultRasterizingLayer.hpp"
 	"Layers/DefaultRayTracingLayer.cpp"
 	"Layers/DefaultRayTracingLayer.hpp"
+	"Layers/OcclusionLayer.cpp"
+	"Layers/OcclusionLayer.hpp"
 )
 
 # Add the source group.

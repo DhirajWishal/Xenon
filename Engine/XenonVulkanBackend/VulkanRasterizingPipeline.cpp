@@ -939,6 +939,8 @@ namespace Xenon
 
 		void VulkanRasterizingPipeline::createPipelineLayout(const std::array<VkDescriptorSetLayout, 4>& layouts, std::vector<VkPushConstantRange>&& pushConstantRanges)
 		{
+			OPTICK_EVENT();
+
 			VkPipelineLayoutCreateInfo createInfo = {};
 			createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 			createInfo.pNext = nullptr;
@@ -969,7 +971,22 @@ namespace Xenon
 			createInfo.initialDataSize = cacheData.size();
 			createInfo.pInitialData = cacheData.data();
 
-			XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkCreatePipelineCache(m_pDevice->getLogicalDevice(), &createInfo, nullptr, &pipeline.m_PipelineCache), "Failed to load the pipeline cache!");
+			const auto result = m_pDevice->getDeviceTable().vkCreatePipelineCache(m_pDevice->getLogicalDevice(), &createInfo, nullptr, &pipeline.m_PipelineCache);
+
+			// If the error is unknown, try again without the cache data.
+			if (result == VK_ERROR_UNKNOWN)
+			{
+				XENON_LOG_ERROR("Unknown Vulkan error caught while creating the pipeline cache object! Trying without the cache data.");
+
+				createInfo.initialDataSize = 0;
+				createInfo.pInitialData = nullptr;
+
+				XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkCreatePipelineCache(m_pDevice->getLogicalDevice(), &createInfo, nullptr, &pipeline.m_PipelineCache), "Failed to load the pipeline cache!");
+			}
+			else
+			{
+				XENON_VK_ASSERT(result, "Failed to load the pipeline cache!");
+			}
 		}
 
 		void VulkanRasterizingPipeline::savePipelineCache(uint64_t hash, PipelineStorage& pipeline) const
@@ -994,6 +1011,8 @@ namespace Xenon
 
 		void VulkanRasterizingPipeline::setupPipelineInfo()
 		{
+			OPTICK_EVENT();
+
 			// Input assembly state.
 			m_InputAssemblyStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 			m_InputAssemblyStateCreateInfo.pNext = nullptr;
@@ -1017,17 +1036,20 @@ namespace Xenon
 			m_TessellationStateCreateInfo.patchControlPoints = m_Specification.m_TessellationPatchControlPoints;
 
 			// Color blend state.
-			for (const auto& attachment : m_Specification.m_ColorBlendAttachments)
+			if (m_pRasterizer->getAttachmentTypes() & AttachmentType::Color)
 			{
-				auto& vAttachmentState = m_CBASS.emplace_back();
-				vAttachmentState.blendEnable = XENON_VK_BOOL(attachment.m_EnableBlend);
-				vAttachmentState.alphaBlendOp = GetBlendOp(attachment.m_AlphaBlendOperator);
-				vAttachmentState.colorBlendOp = GetBlendOp(attachment.m_BlendOperator);
-				vAttachmentState.colorWriteMask = GetComponentFlags(attachment.m_ColorWriteMask);
-				vAttachmentState.srcColorBlendFactor = GetBlendFactor(attachment.m_SrcBlendFactor);
-				vAttachmentState.dstColorBlendFactor = GetBlendFactor(attachment.m_DstBlendFactor);
-				vAttachmentState.srcAlphaBlendFactor = GetBlendFactor(attachment.m_SrcAlphaBlendFactor);
-				vAttachmentState.dstAlphaBlendFactor = GetBlendFactor(attachment.m_DstAlphaBlendFactor);
+				for (const auto& attachment : m_Specification.m_ColorBlendAttachments)
+				{
+					auto& vAttachmentState = m_CBASS.emplace_back();
+					vAttachmentState.blendEnable = XENON_VK_BOOL(attachment.m_EnableBlend);
+					vAttachmentState.alphaBlendOp = GetBlendOp(attachment.m_AlphaBlendOperator);
+					vAttachmentState.colorBlendOp = GetBlendOp(attachment.m_BlendOperator);
+					vAttachmentState.colorWriteMask = GetComponentFlags(attachment.m_ColorWriteMask);
+					vAttachmentState.srcColorBlendFactor = GetBlendFactor(attachment.m_SrcBlendFactor);
+					vAttachmentState.dstColorBlendFactor = GetBlendFactor(attachment.m_DstBlendFactor);
+					vAttachmentState.srcAlphaBlendFactor = GetBlendFactor(attachment.m_SrcAlphaBlendFactor);
+					vAttachmentState.dstAlphaBlendFactor = GetBlendFactor(attachment.m_DstAlphaBlendFactor);
+				}
 			}
 
 			m_ColorBlendStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -1070,7 +1092,12 @@ namespace Xenon
 			m_MultisampleStateCreateInfo.alphaToOneEnable = XENON_VK_BOOL(m_Specification.m_EnableAlphaToOne);
 			m_MultisampleStateCreateInfo.minSampleShading = m_Specification.m_MinSampleShading;
 			m_MultisampleStateCreateInfo.pSampleMask = nullptr;	// TODO
-			m_MultisampleStateCreateInfo.rasterizationSamples = VulkanDevice::ConvertSamplingCount(m_pRasterizer->getImageAttachment(AttachmentType::Color)->getSpecification().m_MultiSamplingCount);
+
+			if (m_pRasterizer->getAttachmentTypes() & AttachmentType::Color)
+				m_MultisampleStateCreateInfo.rasterizationSamples = VulkanDevice::ConvertSamplingCount(m_pRasterizer->getImageAttachment(AttachmentType::Color)->getSpecification().m_MultiSamplingCount);
+			else
+				m_MultisampleStateCreateInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+
 			m_MultisampleStateCreateInfo.sampleShadingEnable = XENON_VK_BOOL(m_Specification.m_EnableSampleShading);
 
 			// Depth stencil state.
@@ -1094,6 +1121,8 @@ namespace Xenon
 
 		void VulkanRasterizingPipeline::createPipeline(PipelineStorage& pipeline) const
 		{
+			OPTICK_EVENT();
+
 			if (pipeline.m_Pipeline != VK_NULL_HANDLE)
 				m_pDevice->getDeviceTable().vkDestroyPipeline(m_pDevice->getLogicalDevice(), pipeline.m_Pipeline, nullptr);
 

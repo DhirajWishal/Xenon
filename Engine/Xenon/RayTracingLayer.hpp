@@ -20,9 +20,10 @@ namespace Xenon
 		 * Explicit constructor.
 		 *
 		 * @param renderer The renderer reference.
+		 * @param priority The priority of the layer.
 		 * @param pCamera The camera which is used to render the scene.
 		 */
-		explicit RayTracingLayer(Renderer& renderer, Backend::Camera* pCamera);
+		explicit RayTracingLayer(Renderer& renderer, uint32_t priority, Backend::Camera* pCamera);
 
 		/**
 		 * Get the color attachment from the layer.

@@ -35,8 +35,9 @@ namespace Xenon
 		 *
 		 * @param renderer The renderer reference.
 		 * @param pCamera The camera which is used to render the scene.
+		 * @param priority The priority of the layer. Default is 10.
 		 */
-		explicit DefaultRayTracingLayer(Renderer& renderer, Backend::Camera* pCamera);
+		explicit DefaultRayTracingLayer(Renderer& renderer, Backend::Camera* pCamera, uint32_t priority = 10);
 
 		/**
 		 * Destructor.

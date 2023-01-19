@@ -196,7 +196,7 @@ namespace Xenon
 				XENON_VK_ASSERT(VK_ERROR_UNKNOWN, "Failed to push the device deletion function to the deletion queue!");
 			}
 
-			vmaDestroyAllocator(m_Allocator);
+			vmaDestroyAllocator(m_Allocator.getUnsafe());
 			m_DeviceTable.vkDestroyDevice(m_LogicalDevice, nullptr);
 		}
 
@@ -701,7 +701,7 @@ namespace Xenon
 			createInfo.vulkanApiVersion = VulkanVersion;
 
 			// Create the allocator.
-			XENON_VK_ASSERT(vmaCreateAllocator(&createInfo, &m_Allocator), "Failed to create the allocator!");
+			XENON_VK_ASSERT(vmaCreateAllocator(&createInfo, &m_Allocator.getUnsafe()), "Failed to create the allocator!");
 		}
 	}
 }

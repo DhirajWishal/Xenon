@@ -368,9 +368,6 @@ namespace Xenon
 
 			m_pCurrentBuffer->wait();
 			m_pDevice->getDeviceTable().vkBeginCommandBuffer(*m_pCurrentBuffer, &beginInfo);
-
-			// Insert the child (this) command buffer.
-			pVkParent->addChild(*m_pCurrentBuffer);
 		}
 
 		void VulkanCommandRecorder::changeImageLayout(VkImage image, VkImageLayout currentLayout, VkImageLayout newLayout, VkImageAspectFlags aspectFlags, uint32_t mipLevels /*= 1*/, uint32_t layers /*= 1*/)
@@ -975,38 +972,29 @@ namespace Xenon
 			m_pDevice->getDeviceTable().vkCmdEndQuery(*m_pCurrentBuffer, pOcclusionQuery->as<VulkanOcclusionQuery>()->getQueryPool(), index);
 		}
 
-		void VulkanCommandRecorder::executeChildren()
+		void VulkanCommandRecorder::executeChild(CommandRecorder* pChildRecorder, RasterizingPipeline* pActivePipeline)
 		{
 			OPTICK_EVENT();
 
-			auto lock = std::scoped_lock(m_ChildCommandMutex);
+			auto lock = std::scoped_lock(m_Mutex);
 
-			// Skip if we don't have any children :(
-			if (m_ChildCommandBuffers.empty())
-				return;
+			VkCommandBuffer childBuffer = *pChildRecorder->as<VulkanCommandRecorder>()->getCurrentCommandBuffer();
+			m_pDevice->getDeviceTable().vkCmdExecuteCommands(*m_pCurrentBuffer, 1, &childBuffer);
+		}
 
-			m_pDevice->getDeviceTable().vkCmdExecuteCommands(*m_pCurrentBuffer, static_cast<uint32_t>(m_ChildCommandBuffers.size()), m_ChildCommandBuffers.data());
-			m_ChildCommandBuffers.clear();
+		void VulkanCommandRecorder::executeChild(CommandRecorder* pChildRecorder, RayTracingPipeline* pActivePipeline)
+		{
+			OPTICK_EVENT();
+
+			auto lock = std::scoped_lock(m_Mutex);
+
+			VkCommandBuffer childBuffer = *pChildRecorder->as<VulkanCommandRecorder>()->getCurrentCommandBuffer();
+			m_pDevice->getDeviceTable().vkCmdExecuteCommands(*m_pCurrentBuffer, 1, &childBuffer);
 		}
 
 		void VulkanCommandRecorder::getQueryResults(OcclusionQuery* pOcclusionQuery)
 		{
 			OPTICK_EVENT();
-
-			auto pVkOcclusionQuery = pOcclusionQuery->as<VulkanOcclusionQuery>();
-
-			const auto result = m_pDevice->getDeviceTable().vkGetQueryPoolResults(
-				m_pDevice->getLogicalDevice(),
-				pVkOcclusionQuery->getQueryPool(),
-				0,
-				static_cast<uint32_t>(pVkOcclusionQuery->getSampleCount()),
-				pVkOcclusionQuery->getSampleCount() * sizeof(uint64_t),
-				pVkOcclusionQuery->getSamplesPointer(),
-				sizeof(uint64_t),
-				VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_PARTIAL_BIT);
-
-			if (result != VK_NOT_READY)
-				XENON_VK_ASSERT(result, "Failed to get the query pool results!");
 		}
 
 		void VulkanCommandRecorder::buildAccelerationStructure(const VkAccelerationStructureBuildGeometryInfoKHR& geometryInfo, const std::vector<VkAccelerationStructureBuildRangeInfoKHR*>& buildRanges)
@@ -1074,14 +1062,6 @@ namespace Xenon
 			OPTICK_EVENT();
 
 			m_pCurrentBuffer->wait(timeout);
-		}
-
-		void VulkanCommandRecorder::addChild(VkCommandBuffer commandBuffer)
-		{
-			OPTICK_EVENT();
-
-			auto lock = std::scoped_lock(m_ChildCommandMutex);
-			m_ChildCommandBuffers.emplace_back(commandBuffer);
 		}
 	}
 }
