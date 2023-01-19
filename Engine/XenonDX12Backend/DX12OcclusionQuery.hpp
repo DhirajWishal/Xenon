@@ -1,4 +1,4 @@
-// Copyright 2022 Dhiraj Wishal
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -31,6 +31,14 @@ namespace Xenon
 			~DX12OcclusionQuery() override;
 
 			/**
+			 * Get the samples.
+			 * This will query the samples from the backend.
+			 *
+			 * @return The samples.
+			 */
+			[[nodiscard]] std::vector<uint64_t> getSamples() override;
+
+			/**
 			 * Get the occlusion query heap.
 			 *
 			 * @return The heap pointer.
@@ -60,7 +68,6 @@ namespace Xenon
 
 		private:
 			ComPtr<ID3D12QueryHeap> m_QueryHeap;
-			ComPtr<ID3D12Resource> m_QueryBuffer;
 
 			D3D12MA::Allocation* m_pAllocation = nullptr;
 		};

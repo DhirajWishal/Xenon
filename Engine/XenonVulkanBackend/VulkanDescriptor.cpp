@@ -1,4 +1,4 @@
-// Copyright 2022 Dhiraj Wishal
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "VulkanDescriptor.hpp"
@@ -14,7 +14,7 @@ namespace Xenon
 {
 	namespace Backend
 	{
-		VulkanDescriptor::VulkanDescriptor(VulkanDevice* pDevice, const std::vector<DescriptorBindingInfo>& bindingInfo, DescriptorType type)
+		VulkanDescriptor::VulkanDescriptor(VulkanDevice* pDevice, const std::unordered_map<uint32_t, DescriptorBindingInfo>& bindingInfo, DescriptorType type)
 			: Descriptor(pDevice, bindingInfo, type)
 			, VulkanDeviceBoundObject(pDevice)
 		{
@@ -33,6 +33,10 @@ namespace Xenon
 		void VulkanDescriptor::attach(uint32_t binding, Buffer* pBuffer)
 		{
 			OPTICK_EVENT();
+
+			// Skip if we don't have that binding. Might be because of shader optimizations.
+			if (!m_BindingInformation.contains(binding))
+				return;
 
 			const auto& bufferInfo = pBuffer->as<VulkanBuffer>()->getDescriptorBufferInfo();
 
@@ -54,6 +58,10 @@ namespace Xenon
 		void VulkanDescriptor::attach(uint32_t binding, Image* pImage, ImageView* pView, ImageSampler* pSampler, ImageUsage usage)
 		{
 			OPTICK_EVENT();
+
+			// Skip if we don't have that binding. Might be because of shader optimizations.
+			if (!m_BindingInformation.contains(binding))
+				return;
 
 			VkDescriptorImageInfo imageInfo = {};
 			imageInfo.sampler = pSampler->as<VulkanImageSampler>()->getSampler();

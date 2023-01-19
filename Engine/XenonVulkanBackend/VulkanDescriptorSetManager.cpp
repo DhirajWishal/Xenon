@@ -1,4 +1,4 @@
-// Copyright 2022 Dhiraj Wishal
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "VulkanDescriptorSetManager.hpp"
@@ -81,7 +81,7 @@ namespace Xenon
 			m_pDevice->getDeviceTable().vkDestroyDescriptorSetLayout(m_pDevice->getLogicalDevice(), m_DummyDescriptorSetLayout, nullptr);
 		}
 
-		VkDescriptorSetLayout VulkanDescriptorSetManager::getDescriptorSetLayout(const std::vector<DescriptorBindingInfo>& bindingInfo)
+		VkDescriptorSetLayout VulkanDescriptorSetManager::getDescriptorSetLayout(const std::unordered_map<uint32_t, DescriptorBindingInfo>& bindingInfo)
 		{
 			OPTICK_EVENT();
 
@@ -89,7 +89,7 @@ namespace Xenon
 			if (bindingInfo.empty())
 				return m_DummyDescriptorSetLayout;
 
-			const auto bindingHash = GenerateHash(ToBytes(bindingInfo.data()), bindingInfo.size() * sizeof(DescriptorBindingInfo));
+			const auto bindingHash = getBindingInfoHash(bindingInfo);
 
 			// Create a new one if the layout for the hash does not exist.
 			if (!m_DescriptorSetStorages.contains(bindingHash))
@@ -100,10 +100,8 @@ namespace Xenon
 				bindings.reserve(bindingInfo.size());
 				poolSizes.reserve(bindingInfo.size());
 
-				for (uint32_t index = 0; index < bindingInfo.size(); index++)
+				for (const auto& [index, binding] : bindingInfo)
 				{
-					const auto& binding = bindingInfo[index];
-
 					auto& vkBinding = bindings.emplace_back();
 					vkBinding.binding = index;
 					vkBinding.descriptorCount = 1;
@@ -149,7 +147,7 @@ namespace Xenon
 			return m_DescriptorSetStorages[bindingHash].m_Layout;
 		}
 
-		std::pair<VkDescriptorPool, VkDescriptorSet> VulkanDescriptorSetManager::createDescriptorSet(const std::vector<DescriptorBindingInfo>& bindingInfo)
+		std::pair<VkDescriptorPool, VkDescriptorSet> VulkanDescriptorSetManager::createDescriptorSet(const std::unordered_map<uint32_t, DescriptorBindingInfo>& bindingInfo)
 		{
 			OPTICK_EVENT();
 
@@ -157,7 +155,7 @@ namespace Xenon
 			if (bindingInfo.empty())
 				return std::make_pair(m_DummyDescriptorPool, m_DummyDescriptorSet);
 
-			const auto bindingHash = GenerateHash(ToBytes(bindingInfo.data()), bindingInfo.size() * sizeof(DescriptorBindingInfo));
+			const auto bindingHash = getBindingInfoHash(bindingInfo);
 
 			// Create a new one if the layout for the hash does not exist.
 			if (!m_DescriptorSetStorages.contains(bindingHash))
@@ -168,10 +166,8 @@ namespace Xenon
 				bindings.reserve(bindingInfo.size());
 				poolSizes.reserve(bindingInfo.size());
 
-				for (uint32_t index = 0; index < bindingInfo.size(); index++)
+				for (const auto& [index, binding] : bindingInfo)
 				{
-					const auto& binding = bindingInfo[index];
-
 					auto& vkBinding = bindings.emplace_back();
 					vkBinding.binding = index;
 					vkBinding.descriptorCount = 1;
@@ -234,7 +230,7 @@ namespace Xenon
 				std::vector<VkDescriptorPoolSize> poolSizes;
 				poolSizes.reserve(bindingInfo.size());
 
-				for (const auto& binding : bindingInfo)
+				for (const auto& [index, binding] : bindingInfo)
 				{
 					auto& vkPoolSize = poolSizes.emplace_back();
 					vkPoolSize.descriptorCount = 1;
@@ -267,7 +263,7 @@ namespace Xenon
 			return std::make_pair(pool, descriptorSet);
 		}
 
-		void VulkanDescriptorSetManager::freeDescriptorSet(VkDescriptorPool pool, VkDescriptorSet descriptorSet, const std::vector<DescriptorBindingInfo>& bindingInfo)
+		void VulkanDescriptorSetManager::freeDescriptorSet(VkDescriptorPool pool, VkDescriptorSet descriptorSet, const std::unordered_map<uint32_t, DescriptorBindingInfo>& bindingInfo)
 		{
 			OPTICK_EVENT();
 
@@ -275,7 +271,7 @@ namespace Xenon
 			if (descriptorSet == m_DummyDescriptorSet)
 				return;
 
-			const auto bindingHash = GenerateHash(ToBytes(bindingInfo.data()), bindingInfo.size() * sizeof(DescriptorBindingInfo));
+			const auto bindingHash = getBindingInfoHash(bindingInfo);
 			auto& storage = m_DescriptorSetStorages[bindingHash];
 
 			XENON_VK_ASSERT(m_pDevice->getDeviceTable().vkFreeDescriptorSets(m_pDevice->getLogicalDevice(), pool, 1, &descriptorSet), "Failed to free the descriptor set!");
@@ -300,6 +296,12 @@ namespace Xenon
 
 				return;
 			}
+		}
+
+		uint64_t VulkanDescriptorSetManager::getBindingInfoHash(const std::unordered_map<uint32_t, DescriptorBindingInfo>& bindingInfo) const
+		{
+			const auto bindingInfoVector = std::vector<std::pair<uint32_t, DescriptorBindingInfo>>(bindingInfo.begin(), bindingInfo.end());
+			return GenerateHash(ToBytes(bindingInfoVector.data()), bindingInfoVector.size() * sizeof(std::pair<uint32_t, DescriptorBindingInfo>));
 		}
 	}
 }

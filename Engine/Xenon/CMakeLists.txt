@@ -1,4 +1,4 @@
-# Copyright 2022 Dhiraj Wishal
+# Copyright 2022-2023 Dhiraj Wishal
 # SPDX-License-Identifier: Apache-2.0
 
 # Set the basic project information.
@@ -16,8 +16,8 @@ set(
 	"Instance.hpp"
 	"Renderer.cpp"
 	"Renderer.hpp"
-	"MeshStorage.cpp"
-	"MeshStorage.hpp"
+	"Geometry.cpp"
+	"Geometry.hpp"
 	"StaticModel.hpp"
 	"MonoCamera.cpp"
 	"MonoCamera.hpp"
@@ -27,7 +27,6 @@ set(
 	"RasterizingLayer.hpp"
 	"FrameTimer.cpp"
 	"FrameTimer.hpp"
-	"MaterialBlob.hpp"
 	"MaterialDatabase.hpp"
 	"AssetManager.cpp"
 	"AssetManager.hpp"
@@ -35,6 +34,14 @@ set(
 	"Package.hpp"
 	"RayTracingLayer.cpp"
 	"RayTracingLayer.hpp"
+	"Components.cpp"
+	"Components.hpp"
+	"Scene.cpp"
+	"Scene.hpp"
+	"Material.cpp"
+	"Material.hpp"
+	"DefaultCacheHandler.cpp"
+	"DefaultCacheHandler.hpp"
 
 	"Layers/ClearScreenLayer.cpp"
 	"Layers/ClearScreenLayer.hpp"
@@ -42,11 +49,8 @@ set(
 	"Layers/DefaultRasterizingLayer.hpp"
 	"Layers/DefaultRayTracingLayer.cpp"
 	"Layers/DefaultRayTracingLayer.hpp"
-
-	"Materials/DefaultMaterial.cpp"
-	"Materials/DefaultMaterial.hpp"
-	"Materials/PBRMetallicRoughnessMaterial.cpp"
-	"Materials/PBRMetallicRoughnessMaterial.hpp"
+	"Layers/OcclusionLayer.cpp"
+	"Layers/OcclusionLayer.hpp"
 )
 
 # Add the source group.
@@ -75,6 +79,7 @@ target_include_directories(
 
 	PRIVATE ${TINYGLTF_INCLUDE_DIR}
 	PRIVATE ${STB_INCLUDE_DIR}
+	PUBLIC ${ENTT_INCLUDE_DIR}
 )
 
 # If we are on MSVC, we can use the Multi Processor Compilation option.

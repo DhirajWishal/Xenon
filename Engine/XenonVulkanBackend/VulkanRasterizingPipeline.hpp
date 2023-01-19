@@ -1,4 +1,4 @@
-// Copyright 2022 Dhiraj Wishal
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -83,7 +83,7 @@ namespace Xenon
 			 * @param layouts The descriptor set layouts.
 			 * @param pushConstantRanges The push constant ranges.
 			 */
-			void createPipelineLayout(std::vector<VkDescriptorSetLayout>&& layouts, std::vector<VkPushConstantRange>&& pushConstantRanges);
+			void createPipelineLayout(const std::array<VkDescriptorSetLayout, 4>& layouts, std::vector<VkPushConstantRange>&& pushConstantRanges);
 
 			/**
 			 * Load the pipeline cache.
@@ -127,7 +127,7 @@ namespace Xenon
 
 			std::mutex m_Mutex;
 
-			std::unordered_map<DescriptorType, std::vector<DescriptorBindingInfo>> m_BindingMap;
+			std::unordered_map<DescriptorType, std::unordered_map<uint32_t, DescriptorBindingInfo>> m_BindingMap;
 			std::unordered_map<uint64_t, PipelineStorage> m_Pipelines;
 
 			std::vector<VkVertexInputBindingDescription> m_VertexInputBindings;

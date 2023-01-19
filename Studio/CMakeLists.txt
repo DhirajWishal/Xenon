@@ -1,4 +1,4 @@
-# Copyright 2022 Dhiraj Wishal
+# Copyright 2022-2023 Dhiraj Wishal
 # SPDX-License-Identifier: Apache-2.0
 
 # Set the basic project information.
@@ -22,16 +22,11 @@ set(
 	"Main.cpp"
 	"Studio.cpp"
 	"Studio.hpp"
-	"CacheHandler.cpp"
-	"CacheHandler.hpp"
 	"UIComponent.hpp"
 	"Globals.hpp"
 
 	"Layers/ImGuiLayer.cpp"
 	"Layers/ImGuiLayer.hpp"
-
-	"Materials/ImGuiMaterial.cpp"
-	"Materials/ImGuiMaterial.hpp"
 
 	"UIComponents/PerformanceMetrics.cpp"
 	"UIComponents/PerformanceMetrics.hpp"
@@ -64,10 +59,11 @@ target_include_directories(
 	PRIVATE ${CMAKE_SOURCE_DIR}/Engine
 	PRIVATE ${IMGUI_INCLUDE_DIR}
 	PRIVATE ${IMNODES_INCLUDE_DIR}
+	PRIVATE ${IMGUIZMO_INCLUDE_DIR}
 )
 
 # Add the target links.
-target_link_libraries(XenonStudio XenonEngine XenonThirdParty_ImGui XenonThirdParty_imnodes)
+target_link_libraries(XenonStudio XenonEngine XenonThirdParty_ImGui XenonThirdParty_imnodes XenonThirdParty_ImGuizmo)
 
 # Make sure to specify the C++ standard to C++20.
 set_property(TARGET XenonStudio PROPERTY CXX_STANDARD 20)

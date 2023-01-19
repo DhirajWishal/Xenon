@@ -1,4 +1,4 @@
-// Copyright 2022 Dhiraj Wishal
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -118,7 +118,7 @@ namespace Xenon
 	 * @return The 64-bit hash value.
 	 */
 	template<class Type>
-	[[nodiscard]] uint64_t GenerateHashFor(const Type& data, uint64_t seed = 0) noexcept { return GenerateHash(std::bit_cast<const std::byte*>(&data), sizeof(Type), seed); }
+	[[nodiscard]] inline uint64_t GenerateHashFor(const Type& data, uint64_t seed = 0) noexcept { return GenerateHash(std::bit_cast<const std::byte*>(&data), sizeof(Type), seed); }
 }
 
 #define XENON_DEFINE_ENUM_AND(name)															\

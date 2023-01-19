@@ -1,4 +1,4 @@
-// Copyright 2022 Dhiraj Wishal
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "DX12ImageView.hpp"
@@ -72,9 +72,9 @@ namespace Xenon
 			, DX12DeviceBoundObject(pDevice)
 		{
 			m_ShaderResouceView.Shader4ComponentMapping = GetShader4ComponentMapping(specification.m_ComponentR, specification.m_ComponentG, specification.m_ComponentB, specification.m_ComponentA);
-			m_ShaderResouceView.Format = pDevice->ConvertFormat(pImage->getDataFormat());
+			m_ShaderResouceView.Format = DX12Device::ConvertFormat(pImage->getDataFormat());
 
-			m_UnorderedAccessView.Format = pDevice->ConvertFormat(pImage->getDataFormat());
+			m_UnorderedAccessView.Format = DX12Device::ConvertFormat(pImage->getDataFormat());
 
 			switch (pImage->getSpecification().m_Type)
 			{

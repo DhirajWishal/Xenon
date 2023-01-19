@@ -1,4 +1,4 @@
-// Copyright 2022 Dhiraj Wishal
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -39,6 +39,7 @@ namespace Xenon
 
 		/**
 		 * Create a new layer and attach it to the renderer.
+		 * These layers are ordered from the highest (lowest priority value) to the lowest (highest priority value).
 		 *
 		 * @tparam LayerType The layer type to create.
 		 * @tparam Arguments The layer's constructor argument types.
@@ -51,16 +52,8 @@ namespace Xenon
 			auto pLayer = std::make_unique<LayerType>(*this, std::forward<Arguments>(arguments)...);
 			auto pRawPointer = pLayer.get();
 
-			m_pLayers.emplace_back(std::move(pLayer));
-
-			// Reset the command recorders.
-			m_pSubmitCommandRecorders.clear();
-			m_pSubmitCommandRecorders.reserve(m_pLayers.size() + 1);
-
-			for (const auto& pRegisteredLayer : m_pLayers)
-				m_pSubmitCommandRecorders.emplace_back(pRegisteredLayer->getCommandRecorder());
-
-			m_pSubmitCommandRecorders.emplace_back(m_pCommandRecorder.get());
+			// Insert the layer.
+			insertLayer(std::move(pLayer));
 
 			return pRawPointer;
 		}
@@ -142,6 +135,18 @@ namespace Xenon
 
 	private:
 		/**
+		 * Insert a layer to the internal vector.
+		 *
+		 * @param player the layer to insert.
+		 */
+		void insertLayer(std::unique_ptr<Layer>&& pLayer);
+
+		/**
+		 * Update the submit command recorders.
+		 */
+		void updateSubmitCommandRecorders();
+
+		/**
 		 * Update a layer on a separate job.
 		 *
 		 * @param pLayer The layer pointer to update.
@@ -163,7 +168,7 @@ namespace Xenon
 
 		std::vector<std::unique_ptr<Layer>> m_pLayers;
 		std::vector<std::unique_ptr<Backend::CommandSubmitter>> m_pCommandSubmitters;
-		std::vector<Backend::CommandRecorder*> m_pSubmitCommandRecorders;
+		std::vector<std::vector<Backend::CommandRecorder*>> m_pSubmitCommandRecorders;
 
 		std::unique_ptr<Backend::Swapchain> m_pSwapChain = nullptr;
 		std::unique_ptr<Backend::CommandRecorder> m_pCommandRecorder = nullptr;

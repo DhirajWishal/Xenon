@@ -1,4 +1,4 @@
-// Copyright 2022 Dhiraj Wishal
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -99,5 +99,18 @@ namespace Xenon
 			BinaryType m_Binary;
 			std::string m_EntryPoint;
 		};
+	}
+
+	/**
+	 * Utility function to easily generate the hash for the shader object.
+	 *
+	 * @param source The shader source to generate the hash for.
+	 * @param seed The hash seed. Default is 0.
+	 * @return The 64-bit hash value.
+	 */
+	template<>
+	[[nodiscard]] inline uint64_t GenerateHashFor<Backend::ShaderSource>(const Backend::ShaderSource& source, uint64_t seed) noexcept
+	{
+		return GenerateHash(ToBytes(source.getBinaryData()), source.getBinarySizeInBytes(), seed);
 	}
 }

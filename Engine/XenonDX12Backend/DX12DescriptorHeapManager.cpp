@@ -1,4 +1,4 @@
-// Copyright 2022 Dhiraj Wishal
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "DX12DescriptorHeapManager.hpp"
@@ -70,31 +70,13 @@ namespace Xenon
 			m_SamplerHeapIncrementSize = m_pDevice->getDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
 		}
 
-		void DX12DescriptorHeapManager::setupDescriptorHeapManager(std::unordered_map<DescriptorType, std::vector<DescriptorBindingInfo>>&& bindingMap)
+		void DX12DescriptorHeapManager::setupDescriptorHeapManager(std::unordered_map<DescriptorType, std::unordered_map<uint32_t, DescriptorBindingInfo>>&& bindingMap)
 		{
 			m_BindingMap = std::move(bindingMap);
-
-			// Sort the bindings.
-			auto sortedBindings = std::vector<std::pair<DescriptorType, std::vector<DescriptorBindingInfo>>>(m_BindingMap.begin(), m_BindingMap.end());
-			std::ranges::sort(sortedBindings, [](const auto& lhs, const auto& rhs) { return EnumToInt(lhs.first) < EnumToInt(rhs.first); });
-
-			for (const auto& [type, bindingInfos] : sortedBindings)
-			{
-				for (const auto& info : bindingInfos)
-				{
-					m_CbvSrvUavCount++;
-					m_GroupSizes[type].first++;
-					m_SamplerIndex.emplace_back(m_SamplerCount);
-
-					if (info.m_Type == ResourceType::Sampler || info.m_Type == ResourceType::CombinedImageSampler)
-					{
-						m_SamplerCount++;
-						m_GroupSizes[type].second++;
-					}
-
-					m_Ranges.emplace_back().Init(GetDescriptorRangeType(info.m_Type), 1, 0);
-				}
-			}
+			setupRange(m_BindingMap[DescriptorType::UserDefined], DescriptorType::UserDefined);
+			setupRange(m_BindingMap[DescriptorType::Material], DescriptorType::Material);
+			setupRange(m_BindingMap[DescriptorType::PerGeometry], DescriptorType::PerGeometry);
+			setupRange(m_BindingMap[DescriptorType::Scene], DescriptorType::Scene);
 
 			// Setup and increment the heaps.
 			incrementHeaps();
@@ -260,6 +242,24 @@ namespace Xenon
 				}
 
 				m_SamplerDescriptorHeap = std::move(newHeap);
+			}
+		}
+
+		void DX12DescriptorHeapManager::setupRange(const std::unordered_map<uint32_t, DescriptorBindingInfo>& bindingInfo, DescriptorType type)
+		{
+			for (const auto& [binding, info] : bindingInfo)
+			{
+				m_CbvSrvUavCount++;
+				m_GroupSizes[type].first++;
+				m_SamplerIndex.emplace_back(m_SamplerCount);
+
+				if (info.m_Type == ResourceType::Sampler || info.m_Type == ResourceType::CombinedImageSampler)
+				{
+					m_SamplerCount++;
+					m_GroupSizes[type].second++;
+				}
+
+				m_Ranges.emplace_back().Init(GetDescriptorRangeType(info.m_Type), 1, 0);
 			}
 		}
 	}

@@ -1,4 +1,4 @@
-// Copyright 2022 Dhiraj Wishal
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -108,7 +108,14 @@ namespace Xenon
 			 *
 			 * @return The allocator.
 			 */
-			[[nodiscard]] VmaAllocator getAllocator() const { return m_Allocator; }
+			[[nodiscard]] Mutex<VmaAllocator>& getAllocator() { return m_Allocator; }
+
+			/**
+			 * Get the VMA allocator.
+			 *
+			 * @return The allocator.
+			 */
+			[[nodiscard]] const Mutex<VmaAllocator>& getAllocator() const { return m_Allocator; }
 
 			/**
 			 * Get the device table.
@@ -226,7 +233,7 @@ namespace Xenon
 			VkDevice m_LogicalDevice = VK_NULL_HANDLE;
 			VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;
 
-			VmaAllocator m_Allocator = nullptr;
+			Mutex<VmaAllocator> m_Allocator = nullptr;
 
 			VulkanDescriptorSetManager* m_pDescriptorSetManager = nullptr;
 

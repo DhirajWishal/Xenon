@@ -1,4 +1,4 @@
-// Copyright 2022 Dhiraj Wishal
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -150,9 +150,10 @@ namespace Xenon
 			 * @param pPipeline The pipeline to which the descriptors are bound to.
 			 * @param pUserDefinedDescrptor The user defined descriptor.
 			 * @param pMaterialDescriptor The material descriptor.
+			 * @param pPerGeometryDescriptor The per-geometry descriptor.
 			 * @param pSceneDescriptor The scene descriptor. Default is nullptr.
 			 */
-			void bind(RasterizingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pSceneDescriptor) override;
+			void bind(RasterizingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pPerGeometryDescriptor, Descriptor* pSceneDescriptor) override;
 
 			/**
 			 * Bind descriptors to the command recorder.
@@ -161,9 +162,10 @@ namespace Xenon
 			 * @param pPipeline The pipeline to which the descriptors are bound to.
 			 * @param pUserDefinedDescrptor The user defined descriptor.
 			 * @param pMaterialDescriptor The material descriptor.
+			 * @param pPerGeometryDescriptor The per-geometry descriptor.
 			 * @param pSceneDescriptor The scene descriptor. Default is nullptr.
 			 */
-			void bind(RayTracingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pSceneDescriptor) override;
+			void bind(RayTracingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pPerGeometryDescriptor, Descriptor* pSceneDescriptor) override;
 
 			/**
 			 * Set the viewport.
@@ -237,9 +239,20 @@ namespace Xenon
 			void endQuery(OcclusionQuery* pOcclusionQuery, uint32_t index) override;
 
 			/**
-			 * Execute all the child command recorders.
+			 * Execute a child (secondary) command recorder.
+			 *
+			 * @param pChildRecorder The child command recorder.
+			 * @param pActivePipeline The active pipeline of the child recorder.
 			 */
-			void executeChildren() override;
+			void executeChild(CommandRecorder* pChildRecorder, RasterizingPipeline* pActivePipeline) override;
+
+			/**
+			 * Execute a child (secondary) command recorder.
+			 *
+			 * @param pChildRecorder The child command recorder.
+			 * @param pActivePipeline The active pipeline of the child recorder.
+			 */
+			void executeChild(CommandRecorder* pChildRecorder, RayTracingPipeline* pActivePipeline) override;
 
 			/**
 			 * Get the query results from the command recorder.
@@ -296,22 +309,14 @@ namespace Xenon
 			[[nodiscard]] const VulkanCommandBuffer* getCurrentCommandBuffer() const noexcept { return m_pCurrentBuffer; }
 
 		private:
-			/**
-			 * Add a child to the command recorder to be executed.
-			 *
-			 * @param commandBuffer The child command buffer.
-			 */
-			void addChild(VkCommandBuffer commandBuffer);
+			std::mutex m_Mutex;
 
-		private:
-			std::mutex m_ChildCommandMutex;
 			VkCommandBufferInheritanceInfo m_InheritanceInfo = {};
 
 			VkCommandPool m_CommandPool = VK_NULL_HANDLE;
 
 			Mutex<VkCommandPool> m_SecondaryPool = VK_NULL_HANDLE;
 			std::vector<VulkanCommandBuffer> m_CommandBuffers;
-			std::vector<VkCommandBuffer> m_ChildCommandBuffers;
 			VulkanCommandBuffer* m_pCurrentBuffer = nullptr;
 		};
 	}

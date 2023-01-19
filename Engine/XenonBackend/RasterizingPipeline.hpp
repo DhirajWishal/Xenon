@@ -1,4 +1,4 @@
-// Copyright 2022 Dhiraj Wishal
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -291,8 +291,33 @@ namespace Xenon
 			explicit RasterizingPipeline(const Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, [[maybe_unused]] const Rasterizer* pRasterizer, const RasterizingPipelineSpecification& specification)
 				: Pipeline(pDevice, std::move(pCacheHandler)), m_Specification(specification) {}
 
+			/**
+			 * Get the pipeline specification.
+			 *
+			 * @return The specification.
+			 */
+			[[nodiscard]] const RasterizingPipelineSpecification& getSpecification() const noexcept { return m_Specification; }
+
 		protected:
 			RasterizingPipelineSpecification m_Specification;
 		};
+	}
+
+	/**
+	 * Utility function to easily generate the hash for the rasterizing pipeline specification object.
+	 *
+	 * @param specification The rasterizing pipeline to generate the hash for.
+	 * @param seed The hash seed. Default is 0.
+	 * @return The 64-bit hash value.
+	 */
+	template<>
+	[[nodiscard]] inline uint64_t GenerateHashFor<Backend::RasterizingPipelineSpecification>(const Backend::RasterizingPipelineSpecification& specification, uint64_t seed) noexcept
+	{
+		constexpr auto structSize = sizeof(Backend::RasterizingPipelineSpecification) - offsetof(Backend::RasterizingPipelineSpecification, m_ColorBlendConstants);
+
+		const auto vsHash = GenerateHashFor(specification.m_VertexShader, seed);
+		const auto fsHash = GenerateHashFor(specification.m_FragmentShader, vsHash);
+		const auto cbaHash = GenerateHash(ToBytes(specification.m_ColorBlendAttachments.data()), specification.m_ColorBlendAttachments.size(), fsHash);
+		return GenerateHash(ToBytes(&specification) + structSize, structSize, cbaHash);
 	}
 }

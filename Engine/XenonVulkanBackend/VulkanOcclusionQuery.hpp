@@ -1,4 +1,4 @@
-// Copyright 2022 Dhiraj Wishal
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -29,6 +29,14 @@ namespace Xenon
 			 * Destructor.
 			 */
 			~VulkanOcclusionQuery() override;
+
+			/**
+			 * Get the samples.
+			 * This will query the samples from the backend.
+			 *
+			 * @return The samples.
+			 */
+			[[nodiscard]] std::vector<uint64_t> getSamples() override;
 
 			/**
 			 * Get the query pool.

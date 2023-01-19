@@ -1,16 +1,23 @@
-// Copyright 2022 Dhiraj Wishal
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "ImGuiLayer.hpp"
 
 #include "../Globals.hpp"
-#include "../CacheHandler.hpp"
-#include "../Materials/ImGuiMaterial.hpp"
 
+#include "../Shaders/ImGuiLayer/ImGuiLayer.vert.hpp"
+#include "../Shaders/ImGuiLayer/ImGuiLayer.frag.hpp"
+
+#include "Xenon/DefaultCacheHandler.hpp"
 #include "Xenon/Renderer.hpp"
+#include "Xenon/MonoCamera.hpp"
 
 #include <imgui.h>
 #include <imnodes.h>
+#include <ImGuizmo.h>
+
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 
 constexpr auto g_DefaultMaterialHash = 0;
 
@@ -26,7 +33,7 @@ namespace /* anonymous */
 }
 
 ImGuiLayer::ImGuiLayer(Xenon::Renderer& renderer, Xenon::Backend::Camera* pCamera)
-	: RasterizingLayer(renderer, pCamera, Xenon::Backend::AttachmentType::Color)
+	: RasterizingLayer(renderer, 100, pCamera, Xenon::Backend::AttachmentType::Color)
 	, m_UIStorage(this)
 	, m_pVertexBuffers(renderer.getCommandRecorder()->getBufferCount())
 	, m_pIndexBuffers(renderer.getCommandRecorder()->getBufferCount())
@@ -36,6 +43,7 @@ ImGuiLayer::ImGuiLayer(Xenon::Renderer& renderer, Xenon::Backend::Camera* pCamer
 	ImNodes::CreateContext();
 
 	configureImGui();
+	setupPipeline();
 	setupDefaultMaterial();
 
 	// Setup the ImGui logger.
@@ -56,6 +64,7 @@ ImGuiLayer::~ImGuiLayer()
 bool ImGuiLayer::beginFrame(std::chrono::nanoseconds delta)
 {
 	ImGui::NewFrame();
+	ImGuizmo::BeginFrame();
 
 	// Process the ImGui events.
 	auto& io = ImGui::GetIO();
@@ -215,15 +224,63 @@ bool ImGuiLayer::beginFrame(std::chrono::nanoseconds delta)
 	// Show all the UI components.
 	showUIs(delta);
 
-	return !(io.WantCaptureMouse ||
-		io.WantCaptureKeyboard ||
-		io.WantTextInput ||
-		io.WantSetMousePos ||
-		io.WantSaveIniSettings) || m_UIStorage.m_LayerViewUI.isInFocus();
+	return !(io.WantCaptureMouse || io.WantCaptureKeyboard) || m_UIStorage.m_LayerViewUI.isInFocus();
 }
 
 void ImGuiLayer::endFrame() const
 {
+	// Finally show the ImGuizmo stuff. Probably we need to move this to it's own UI component.
+	if (m_UIStorage.m_LayerViewUI.isVisible())
+	{
+		auto [view, projection] = m_pScene->getCamera()->as<Xenon::MonoCamera>()->getCameraBuffer();
+
+		view[0][1] = -view[0][1];
+		view[1][1] = -view[1][1];
+		view[2][1] = -view[2][1];
+
+#ifdef XENON_PLATFORM_WINDOWS
+		// Flip if we're using Vulkan (because of the inverted y-axis in DirectX.
+		view[3][1] = g_Globals.m_CurrentBackendType == Xenon::BackendType::Vulkan ? -view[3][1] : view[3][1];
+
+#else
+		view[3][1] = -view[3][1];
+
+#endif // XENON_PLATFORM_WINDOWS
+
+		constexpr auto currentGizmoMode = ImGuizmo::LOCAL;
+		constexpr auto currentGizmoOperation = ImGuizmo::UNIVERSAL;
+
+		auto lock = std::scoped_lock(m_pScene->getMutex());
+		for (const auto group : m_pScene->getRegistry().view<Xenon::Components::Transform>())
+		{
+			// Get the transform and compute the model matrix.
+			auto modelMatrix = m_pScene->getRegistry().get<Xenon::Components::Transform>(group).computeModelMatrix();
+
+			// Setup and show ImGuizmo.
+			const auto position = m_UIStorage.m_LayerViewUI.getPosition();
+			const auto size = m_UIStorage.m_LayerViewUI.getSize();
+			ImGuizmo::SetRect(position.x, position.y, size.x, size.y);
+			ImGuizmo::Manipulate(glm::value_ptr(view), glm::value_ptr(projection), currentGizmoOperation, currentGizmoMode, glm::value_ptr(modelMatrix), nullptr, nullptr, nullptr, nullptr);
+
+			// Decompose the matrix and update the component.
+			glm::vec3 scale;
+			glm::quat rotation;
+			glm::vec3 translation;
+			glm::vec3 skew;
+			glm::vec4 perspective;
+			glm::decompose(modelMatrix, scale, rotation, translation, skew, perspective);
+
+			const auto patchFunction = [translation, scale, rotation](auto& object)
+			{
+				object.m_Position = translation;
+				object.m_Rotation = glm::eulerAngles(rotation);
+				object.m_Scale = scale;
+			};
+
+			m_pScene->getRegistry().patch<Xenon::Components::Transform>(group, patchFunction);
+		}
+	}
+
 	ImGui::End();
 	ImGui::Render();
 }
@@ -276,7 +333,7 @@ void ImGuiLayer::onUpdate(Layer* pPreviousLayer, uint32_t imageIndex, uint32_t f
 				static_cast<uint32_t>(maxClip.y)
 			);
 
-			m_pCommandRecorder->bind(m_pPipeline.get(), m_pUserDescriptor.get(), m_pDescriptorSetMap[std::bit_cast<uint64_t>(pCommandBuffer->TextureId)].get(), nullptr);
+			m_pCommandRecorder->bind(m_pPipeline.get(), m_pUserDescriptor.get(), m_pMaterialDescriptors[std::bit_cast<uintptr_t>(pCommandBuffer->TextureId)].get(), nullptr, nullptr);
 			m_pCommandRecorder->drawIndexed(pCommandBuffer->VtxOffset + vertexOffset, pCommandBuffer->IdxOffset + indexOffset, pCommandBuffer->ElemCount);
 		}
 
@@ -287,11 +344,6 @@ void ImGuiLayer::onUpdate(Layer* pPreviousLayer, uint32_t imageIndex, uint32_t f
 	m_pCommandRecorder->end();
 }
 
-void ImGuiLayer::registerMaterial(uint64_t hash, Xenon::MaterialIdentifier identifier)
-{
-	m_pDescriptorSetMap[hash] = identifier.m_pMaterial->createDescriptor(m_pPipeline.get());
-}
-
 void ImGuiLayer::showLayer(Xenon::Layer* pLayer)
 {
 	m_UIStorage.m_LayerViewUI.setLayer(pLayer);
@@ -300,6 +352,19 @@ void ImGuiLayer::showLayer(Xenon::Layer* pLayer)
 void ImGuiLayer::setDrawCallCount(uint64_t totalCount, uint64_t actualCount)
 {
 	m_UIStorage.m_PerformanceMetricsUI.setDrawCallCount(totalCount, actualCount);
+}
+
+uintptr_t ImGuiLayer::getImageID(Xenon::Backend::Image* pImage, Xenon::Backend::ImageView* pImageView, Xenon::Backend::ImageSampler* pImageSampler)
+{
+	const std::array<uintptr_t, 3> pointers = { std::bit_cast<uintptr_t>(pImage), std::bit_cast<uintptr_t>(pImageView), std::bit_cast<uintptr_t>(pImageSampler) };
+	const auto ID = Xenon::GenerateHash(Xenon::ToBytes(pointers.data()), pointers.size() * sizeof(uintptr_t));
+	if (!m_pMaterialDescriptors.contains(ID))
+	{
+		const auto& pDescriptor = m_pMaterialDescriptors[ID] = m_pPipeline->createDescriptor(Xenon::Backend::DescriptorType::Material);
+		pDescriptor->attach(0, pImage, pImageView, pImageSampler, Xenon::Backend::ImageUsage::Graphics);
+	}
+
+	return ID;
 }
 
 void ImGuiLayer::configureImGui() const
@@ -350,18 +415,75 @@ void ImGuiLayer::configureImGui() const
 void ImGuiLayer::setupDefaultMaterial()
 {
 	// Create the default material.
-	m_DefaultMaterialIdentifier = m_Renderer.getInstance().getMaterialDatabase().create<ImGuiMaterial>(g_DefaultMaterialHash, m_Renderer.getInstance());
+	auto& io = ImGui::GetIO();
+
+	// Get the pixel data.
+	unsigned char* pPixelData = nullptr;
+	int32_t width = 0;
+	int32_t height = 0;
+	io.Fonts->GetTexDataAsRGBA32(&pPixelData, &width, &height);
+
+	// Create the staging buffer.
+	const auto imageSize = static_cast<uint64_t>(width) * height * sizeof(unsigned char[4]);
+	auto pBuffer = m_Renderer.getInstance().getFactory()->createBuffer(m_Renderer.getInstance().getBackendDevice(), imageSize, Xenon::Backend::BufferType::Staging);
+
+	// Copy the data to it.
+	pBuffer->write(Xenon::ToBytes(pPixelData), imageSize);
+
+	// Create the image.
+	Xenon::Backend::ImageSpecification imageSpecification = {};
+	imageSpecification.m_Width = width;
+	imageSpecification.m_Height = height;
+	imageSpecification.m_Format = Xenon::Backend::DataFormat::R8G8B8A8_UNORMAL;
+	m_pImage = m_Renderer.getInstance().getFactory()->createImage(m_Renderer.getInstance().getBackendDevice(), imageSpecification);
+
+	// Copy the image data from the buffer to the image.
+	m_pImage->copyFrom(pBuffer.get());
+
+	// Create the image view.
+	m_pImageView = m_Renderer.getInstance().getFactory()->createImageView(m_Renderer.getInstance().getBackendDevice(), m_pImage.get(), {});
+
+	// Create the image sampler.
+	Xenon::Backend::ImageSamplerSpecification imageSamplerSpecification = {};
+	imageSamplerSpecification.m_AddressModeU = Xenon::Backend::AddressMode::ClampToEdge;
+	imageSamplerSpecification.m_AddressModeV = Xenon::Backend::AddressMode::ClampToEdge;
+	imageSamplerSpecification.m_AddressModeW = Xenon::Backend::AddressMode::ClampToEdge;
+	imageSamplerSpecification.m_BorderColor = Xenon::Backend::BorderColor::OpaqueWhiteFLOAT;
+	imageSamplerSpecification.m_MaxLevelOfDetail = 1.0f;
+	m_pSampler = m_Renderer.getInstance().getFactory()->createImageSampler(m_Renderer.getInstance().getBackendDevice(), imageSamplerSpecification);
+
+	// Create the descriptor.
+	const auto& pDescriptor = m_pMaterialDescriptors[g_DefaultMaterialHash] = m_pPipeline->createDescriptor(Xenon::Backend::DescriptorType::Material);
+	pDescriptor->attach(0, m_pImage.get(), m_pImageView.get(), m_pSampler.get(), Xenon::Backend::ImageUsage::Graphics);
+}
+
+void ImGuiLayer::setupPipeline()
+{
+	Xenon::Backend::ColorBlendAttachment attachment = {};
+	attachment.m_EnableBlend = true;
+	attachment.m_SrcBlendFactor = Xenon::Backend::ColorBlendFactor::SourceAlpha;
+	attachment.m_DstBlendFactor = Xenon::Backend::ColorBlendFactor::OneMinusSourceAlpha;
+	attachment.m_BlendOperator = Xenon::Backend::ColorBlendOperator::Add;
+	attachment.m_SrcAlphaBlendFactor = Xenon::Backend::ColorBlendFactor::OneMinusSourceAlpha;
+	attachment.m_DstAlphaBlendFactor = Xenon::Backend::ColorBlendFactor::Zero;
+	attachment.m_AlphaBlendOperator = Xenon::Backend::ColorBlendOperator::Add;
+
+	Xenon::Backend::RasterizingPipelineSpecification specification = {};
+	specification.m_VertexShader = Xenon::Generated::CreateShaderImGuiLayer_vert();
+	specification.m_FragmentShader = Xenon::Generated::CreateShaderImGuiLayer_frag();
+	specification.m_CullMode = Xenon::Backend::CullMode::None;
+	specification.m_ColorBlendAttachments = { attachment };
+	specification.m_DepthCompareLogic = Xenon::Backend::DepthCompareLogic::Always;
+	specification.m_EnableDepthTest = false;
+	specification.m_EnableDepthWrite = false;
 
 	// Create the pipeline.
 	m_pPipeline = m_Renderer.getInstance().getFactory()->createRasterizingPipeline(
 		m_Renderer.getInstance().getBackendDevice(),
-		std::make_unique<CacheHandler>(),
+		std::make_unique<Xenon::DefaultCacheHandler>(),
 		m_pRasterizer.get(),
-		m_DefaultMaterialIdentifier.m_pMaterial->getRasterizingSpecification()
+		specification
 	);
-
-	// Create the default descriptor set.
-	m_pDescriptorSetMap[0] = m_DefaultMaterialIdentifier.m_pMaterial->createDescriptor(m_pPipeline.get());
 
 	// Create the user descriptor.
 	m_pUserDescriptor = m_pPipeline->createDescriptor(Xenon::Backend::DescriptorType::UserDefined);

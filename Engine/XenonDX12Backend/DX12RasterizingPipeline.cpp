@@ -1,4 +1,4 @@
-// Copyright 2022 Dhiraj Wishal
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "DX12RasterizingPipeline.hpp"
@@ -23,8 +23,8 @@ namespace /* anonymous */
 	 */
 	void SetupShaderData(
 		const Xenon::Backend::Shader& shader,
-		std::unordered_map<Xenon::Backend::DescriptorType, std::vector<Xenon::Backend::DescriptorBindingInfo>>& bindingMap,
-		std::unordered_map<uint32_t, std::unordered_map<uint32_t, size_t>>& indexToBindingMap,
+		std::unordered_map<Xenon::Backend::DescriptorType, std::unordered_map<uint32_t, Xenon::Backend::DescriptorBindingInfo>>& bindingMap,
+		std::unordered_map<Xenon::Backend::DescriptorType, std::unordered_map<uint32_t, UINT>>& bindingOffsets,
 		std::unordered_map<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>& rangeMap,
 		std::vector<D3D12_INPUT_ELEMENT_DESC>& inputs,
 		Xenon::Backend::ShaderType type)
@@ -32,18 +32,21 @@ namespace /* anonymous */
 		// Setup resources.
 		for (const auto& resource : shader.getResources())
 		{
-			// Fill up the binding info structure.
-			auto& bindings = bindingMap[static_cast<Xenon::Backend::DescriptorType>(Xenon::EnumToInt(resource.m_Set))];
-			auto& indexToBinding = indexToBindingMap[Xenon::EnumToInt(resource.m_Set)];
+			const auto set = static_cast<Xenon::Backend::DescriptorType>(Xenon::EnumToInt(resource.m_Set));
 
-			if (indexToBinding.contains(resource.m_Binding))
+			// Fill up the binding info structure.
+			auto& bindings = bindingMap[set];
+			auto& offsets = bindingOffsets[set];
+
+			if (bindings.contains(resource.m_Binding))
 			{
-				bindings[indexToBinding[resource.m_Binding]].m_ApplicableShaders |= type;
+				bindings[resource.m_Binding].m_ApplicableShaders |= type;
 			}
 			else
 			{
-				indexToBinding[resource.m_Binding] = bindings.size();
-				auto& binding = bindings.emplace_back();
+				offsets[resource.m_Binding] = static_cast<UINT>(bindings.size());
+
+				auto& binding = bindings[resource.m_Binding];
 				binding.m_Type = resource.m_Type;
 				binding.m_ApplicableShaders = type;
 
@@ -623,16 +626,15 @@ namespace Xenon
 			, DX12DescriptorHeapManager(pDevice)
 			, m_pRasterizer(pRasterizer)
 		{
-			std::unordered_map<DescriptorType, std::vector<DescriptorBindingInfo>> bindingMap;
-			std::unordered_map<uint32_t, std::unordered_map<uint32_t, size_t>> indexToBindingMap;
+			std::unordered_map<DescriptorType, std::unordered_map<uint32_t, DescriptorBindingInfo>> bindingMap;
 
 			// Resolve shader-specific data.
 			std::unordered_map<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>> rangeMap;
 			if (specification.m_VertexShader.getDXIL().isValid())
-				SetupShaderData(specification.m_VertexShader, bindingMap, indexToBindingMap, rangeMap, m_Inputs, ShaderType::Vertex);
+				SetupShaderData(specification.m_VertexShader, bindingMap, m_BindingOffsets, rangeMap, m_Inputs, ShaderType::Vertex);
 
 			if (specification.m_FragmentShader.getDXIL().isValid())
-				SetupShaderData(specification.m_FragmentShader, bindingMap, indexToBindingMap, rangeMap, m_Inputs, ShaderType::Fragment);
+				SetupShaderData(specification.m_FragmentShader, bindingMap, m_BindingOffsets, rangeMap, m_Inputs, ShaderType::Fragment);
 
 			// Sort the ranges to the correct binding order.
 			auto sortedranges = std::vector<std::pair<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>>(rangeMap.begin(), rangeMap.end());
@@ -657,7 +659,7 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
-			return std::make_unique<DX12Descriptor>(m_pDevice, getBindingInfo(type), type, this);
+			return std::make_unique<DX12Descriptor>(m_pDevice, m_BindingMap[type], type, m_BindingOffsets[type], this);
 		}
 
 		const Xenon::Backend::DX12RasterizingPipeline::PipelineStorage& DX12RasterizingPipeline::getPipeline(const VertexSpecification& vertexSpecification)
@@ -778,20 +780,23 @@ namespace Xenon
 			m_PipelineStateDescriptor.BlendState.AlphaToCoverageEnable = FALSE;
 			m_PipelineStateDescriptor.BlendState.IndependentBlendEnable = FALSE;
 
-			for (uint8_t i = 0; i < m_Specification.m_ColorBlendAttachments.size(); i++)
+			if (m_pRasterizer->getAttachmentTypes() & AttachmentType::Color)
 			{
-				const auto& attachment = m_Specification.m_ColorBlendAttachments[i];
+				for (uint8_t i = 0; i < m_Specification.m_ColorBlendAttachments.size(); i++)
+				{
+					const auto& attachment = m_Specification.m_ColorBlendAttachments[i];
 
-				m_PipelineStateDescriptor.BlendState.RenderTarget[i].BlendEnable = attachment.m_EnableBlend;
-				m_PipelineStateDescriptor.BlendState.RenderTarget[i].LogicOpEnable = FALSE;
-				m_PipelineStateDescriptor.BlendState.RenderTarget[i].SrcBlend = GetBlend(attachment.m_SrcBlendFactor);
-				m_PipelineStateDescriptor.BlendState.RenderTarget[i].DestBlend = GetBlend(attachment.m_DstBlendFactor);
-				m_PipelineStateDescriptor.BlendState.RenderTarget[i].BlendOp = GetBlendOperator(attachment.m_BlendOperator);
-				m_PipelineStateDescriptor.BlendState.RenderTarget[i].SrcBlendAlpha = GetBlend(attachment.m_SrcAlphaBlendFactor);
-				m_PipelineStateDescriptor.BlendState.RenderTarget[i].DestBlendAlpha = GetBlend(attachment.m_DstAlphaBlendFactor);
-				m_PipelineStateDescriptor.BlendState.RenderTarget[i].BlendOpAlpha = GetBlendOperator(attachment.m_AlphaBlendOperator);
-				m_PipelineStateDescriptor.BlendState.RenderTarget[i].LogicOp = GetColorBlendLogic(m_Specification.m_ColorBlendLogic);
-				m_PipelineStateDescriptor.BlendState.RenderTarget[i].RenderTargetWriteMask = GetWriteEnable(attachment.m_ColorWriteMask);
+					m_PipelineStateDescriptor.BlendState.RenderTarget[i].BlendEnable = attachment.m_EnableBlend;
+					m_PipelineStateDescriptor.BlendState.RenderTarget[i].LogicOpEnable = FALSE;
+					m_PipelineStateDescriptor.BlendState.RenderTarget[i].SrcBlend = GetBlend(attachment.m_SrcBlendFactor);
+					m_PipelineStateDescriptor.BlendState.RenderTarget[i].DestBlend = GetBlend(attachment.m_DstBlendFactor);
+					m_PipelineStateDescriptor.BlendState.RenderTarget[i].BlendOp = GetBlendOperator(attachment.m_BlendOperator);
+					m_PipelineStateDescriptor.BlendState.RenderTarget[i].SrcBlendAlpha = GetBlend(attachment.m_SrcAlphaBlendFactor);
+					m_PipelineStateDescriptor.BlendState.RenderTarget[i].DestBlendAlpha = GetBlend(attachment.m_DstAlphaBlendFactor);
+					m_PipelineStateDescriptor.BlendState.RenderTarget[i].BlendOpAlpha = GetBlendOperator(attachment.m_AlphaBlendOperator);
+					m_PipelineStateDescriptor.BlendState.RenderTarget[i].LogicOp = GetColorBlendLogic(m_Specification.m_ColorBlendLogic);
+					m_PipelineStateDescriptor.BlendState.RenderTarget[i].RenderTargetWriteMask = GetWriteEnable(attachment.m_ColorWriteMask);
+				}
 			}
 
 			m_PipelineStateDescriptor.DepthStencilState.DepthEnable = m_Specification.m_EnableDepthTest;
@@ -816,20 +821,14 @@ namespace Xenon
 			const auto& renderTargets = m_pRasterizer->getRenderTargets();
 
 			for (uint8_t i = 0; i < m_PipelineStateDescriptor.NumRenderTargets; i++)
-			{
-				const auto& image = renderTargets[i];
-				m_PipelineStateDescriptor.RTVFormats[i] = m_pDevice->ConvertFormat(image.getDataFormat());
-
-				// Get the color image's sample count and quality.
-				if (i == 0)
-				{
-					m_PipelineStateDescriptor.SampleDesc.Count = EnumToInt(image.getSpecification().m_MultiSamplingCount);
-					m_PipelineStateDescriptor.SampleDesc.Quality = image.getQualityLevel();
-				}
-			}
+				m_PipelineStateDescriptor.RTVFormats[i] = DX12Device::ConvertFormat(renderTargets[i].getDataFormat());
 
 			if (m_pRasterizer->hasTarget(AttachmentType::Depth | AttachmentType::Stencil))
-				m_PipelineStateDescriptor.DSVFormat = m_pDevice->ConvertFormat(renderTargets.back().getDataFormat());
+				m_PipelineStateDescriptor.DSVFormat = DX12Device::ConvertFormat(renderTargets.back().getDataFormat());
+
+			// Use the last render target's sample description.
+			if (!renderTargets.empty())
+				m_PipelineStateDescriptor.SampleDesc = renderTargets.back().getSampleDesc();
 		}
 
 		std::vector<std::byte> DX12RasterizingPipeline::loadPipelineStateCache(uint64_t hash) const

@@ -1,4 +1,4 @@
-// Copyright 2022 Dhiraj Wishal
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "Shader.hpp"
@@ -53,19 +53,45 @@ namespace /* anonymous */
 	{
 		switch (type)
 		{
-		case SPV_REFLECT_DESCRIPTOR_TYPE_SAMPLER:								return Xenon::Backend::ResourceType::Sampler;
-		case SPV_REFLECT_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:				return Xenon::Backend::ResourceType::CombinedImageSampler;
-		case SPV_REFLECT_DESCRIPTOR_TYPE_SAMPLED_IMAGE:							return Xenon::Backend::ResourceType::SampledImage;
-		case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_IMAGE:							return Xenon::Backend::ResourceType::StorageImage;
-		case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER:					return Xenon::Backend::ResourceType::UniformTexelBuffer;
-		case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER:					return Xenon::Backend::ResourceType::StorageTexelBuffer;
-		case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER:						return Xenon::Backend::ResourceType::UniformBuffer;
-		case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER:						return Xenon::Backend::ResourceType::StorageBuffer;
-		case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC:				return Xenon::Backend::ResourceType::DynamicUniformBuffer;
-		case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC:				return Xenon::Backend::ResourceType::DynamicStorageBuffer;
-		case SPV_REFLECT_DESCRIPTOR_TYPE_INPUT_ATTACHMENT:						return Xenon::Backend::ResourceType::InputAttachment;
-		case SPV_REFLECT_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR:			return Xenon::Backend::ResourceType::AccelerationStructure;
-		default:																XENON_LOG_ERROR("Invalid resource type!"); return Xenon::Backend::ResourceType::UniformBuffer;
+		case SPV_REFLECT_DESCRIPTOR_TYPE_SAMPLER:
+			return Xenon::Backend::ResourceType::Sampler;
+
+		case SPV_REFLECT_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:
+			return Xenon::Backend::ResourceType::CombinedImageSampler;
+
+		case SPV_REFLECT_DESCRIPTOR_TYPE_SAMPLED_IMAGE:
+			return Xenon::Backend::ResourceType::SampledImage;
+
+		case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_IMAGE:
+			return Xenon::Backend::ResourceType::StorageImage;
+
+		case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER:
+			return Xenon::Backend::ResourceType::UniformTexelBuffer;
+
+		case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER:
+			return Xenon::Backend::ResourceType::StorageTexelBuffer;
+
+		case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER:
+			return Xenon::Backend::ResourceType::UniformBuffer;
+
+		case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER:
+			return Xenon::Backend::ResourceType::StorageBuffer;
+
+		case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC:
+			return Xenon::Backend::ResourceType::DynamicUniformBuffer;
+
+		case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC:
+			return Xenon::Backend::ResourceType::DynamicStorageBuffer;
+
+		case SPV_REFLECT_DESCRIPTOR_TYPE_INPUT_ATTACHMENT:
+			return Xenon::Backend::ResourceType::InputAttachment;
+
+		case SPV_REFLECT_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR:
+			return Xenon::Backend::ResourceType::AccelerationStructure;
+
+		default:
+			XENON_LOG_ERROR("Invalid resource type!");
+			return Xenon::Backend::ResourceType::UniformBuffer;
 		}
 	}
 

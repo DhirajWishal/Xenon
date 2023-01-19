@@ -1,4 +1,4 @@
-// Copyright 2022 Dhiraj Wishal
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -107,6 +107,7 @@ namespace Xenon
 
 			std::mutex m_Mutex;
 
+			std::unordered_map<DescriptorType, std::unordered_map<uint32_t, UINT>> m_BindingOffsets;
 			std::unordered_map<uint64_t, PipelineStorage> m_Pipelines;
 			std::vector<D3D12_INPUT_ELEMENT_DESC> m_Inputs;
 

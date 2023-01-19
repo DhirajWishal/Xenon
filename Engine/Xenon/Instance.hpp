@@ -1,4 +1,4 @@
-// Copyright 2022 Dhiraj Wishal
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -123,6 +123,48 @@ namespace Xenon
 		[[nodiscard]] const Backend::Device* getBackendDevice() const noexcept { return m_pDevice.get(); }
 
 		/**
+		 * Get the default image pointer.
+		 *
+		 * @return The image pointer.
+		 */
+		[[nodiscard]] Backend::Image* getDefaultImage() noexcept { return m_pDefaultImage.get(); }
+
+		/**
+		 * Get the default image pointer.
+		 *
+		 * @return The image pointer.
+		 */
+		[[nodiscard]] const Backend::Image* getDefaultImage() const noexcept { return m_pDefaultImage.get(); }
+
+		/**
+		 * Get the default image view pointer.
+		 *
+		 * @return The image view pointer.
+		 */
+		[[nodiscard]] Backend::ImageView* getDefaultImageView() noexcept { return m_pDefaultImageView.get(); }
+
+		/**
+		 * Get the default image view pointer.
+		 *
+		 * @return The image view pointer.
+		 */
+		[[nodiscard]] const Backend::ImageView* getDefaultImageView() const noexcept { return m_pDefaultImageView.get(); }
+
+		/**
+		 * Get the default image sampler pointer.
+		 *
+		 * @return The image sampler pointer.
+		 */
+		[[nodiscard]] Backend::ImageSampler* getDefaultImageSampler() noexcept { return m_pDefaultImageSampler.get(); }
+
+		/**
+		 * Get the default image sampler pointer.
+		 *
+		 * @return The image sampler pointer.
+		 */
+		[[nodiscard]] const Backend::ImageSampler* getDefaultImageSampler() const noexcept { return m_pDefaultImageSampler.get(); }
+
+		/**
 		 * Get the material database.
 		 *
 		 * @return The database reference.
@@ -136,13 +178,6 @@ namespace Xenon
 		 */
 		[[nodiscard]] const MaterialDatabase& getMaterialDatabase() const { return m_MaterialDatabase; }
 
-		/**
-		 * Get the default material identifier.
-		 *
-		 * @return The default material identifier.
-		 */
-		[[nodiscard]] MaterialIdentifier getDefaultMaterial() const { return m_DefaultMaterialIdentifier; }
-
 	private:
 		std::string m_ApplicationName;
 		uint32_t m_ApplicationVersion;
@@ -151,8 +186,11 @@ namespace Xenon
 		std::unique_ptr<Backend::Instance> m_pInstance = nullptr;
 		std::unique_ptr<Backend::Device> m_pDevice = nullptr;
 
+		std::unique_ptr<Backend::Image> m_pDefaultImage = nullptr;
+		std::unique_ptr<Backend::ImageView> m_pDefaultImageView = nullptr;
+		std::unique_ptr<Backend::ImageSampler> m_pDefaultImageSampler = nullptr;
+
 		MaterialDatabase m_MaterialDatabase;
-		MaterialIdentifier m_DefaultMaterialIdentifier;
 
 		BackendType m_BackendType = BackendType::Any;
 	};

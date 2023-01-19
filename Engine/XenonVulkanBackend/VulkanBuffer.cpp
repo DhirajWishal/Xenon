@@ -1,4 +1,4 @@
-// Copyright 2022 Dhiraj Wishal
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "VulkanBuffer.hpp"
@@ -80,7 +80,11 @@ namespace Xenon
 			allocationCreateInfo.flags = vmaFlags;
 			allocationCreateInfo.usage = memoryUsage;
 
-			XENON_VK_ASSERT(vmaCreateBuffer(m_pDevice->getAllocator(), &createInfo, &allocationCreateInfo, &m_Buffer, &m_Allocation, nullptr), "Failed to create the buffer!");
+			m_pDevice->getAllocator().access([this, createInfo, allocationCreateInfo](VmaAllocator allocator)
+				{
+					XENON_VK_ASSERT(vmaCreateBuffer(allocator, &createInfo, &allocationCreateInfo, &m_Buffer, &m_Allocation, nullptr), "Failed to create the buffer!");
+				}
+			);
 
 			// Set the descriptor buffer info.
 			m_BufferInfo.buffer = m_Buffer;
@@ -107,7 +111,11 @@ namespace Xenon
 			allocationCreateInfo.flags = allocationCreateFlags;
 			allocationCreateInfo.usage = memoryUsage;
 
-			XENON_VK_ASSERT(vmaCreateBuffer(m_pDevice->getAllocator(), &createInfo, &allocationCreateInfo, &m_Buffer, &m_Allocation, nullptr), "Failed to create the buffer!");
+			m_pDevice->getAllocator().access([this, createInfo, allocationCreateInfo](VmaAllocator allocator)
+				{
+					XENON_VK_ASSERT(vmaCreateBuffer(allocator, &createInfo, &allocationCreateInfo, &m_Buffer, &m_Allocation, nullptr), "Failed to create the buffer!");
+				}
+			);
 
 			// Set the descriptor buffer info.
 			m_BufferInfo.buffer = m_Buffer;
@@ -121,7 +129,7 @@ namespace Xenon
 			if (m_IsMapped)
 				unmap();
 
-			vmaDestroyBuffer(m_pDevice->getAllocator(), m_Buffer, m_Allocation);
+			m_pDevice->getAllocator().access([this](VmaAllocator allocator) { vmaDestroyBuffer(allocator, m_Buffer, m_Allocation); });
 		}
 
 		void VulkanBuffer::copy(Buffer* pBuffer, uint64_t size, uint64_t srcOffset /*= 0*/, uint64_t dstOffset /*= 0*/)
@@ -208,7 +216,7 @@ namespace Xenon
 				return m_MappedMemory;
 
 			void* pMemory = nullptr;
-			XENON_VK_ASSERT(vmaMapMemory(m_pDevice->getAllocator(), m_Allocation, &pMemory), "Failed to map the staging buffer memory!");
+			m_pDevice->getAllocator().access([this, &pMemory](VmaAllocator allocator) { XENON_VK_ASSERT(vmaMapMemory(allocator, m_Allocation, &pMemory), "Failed to map the staging buffer memory!"); });
 			m_MappedMemory = ToBytes(pMemory);
 
 			m_IsMapped = true;
@@ -223,7 +231,7 @@ namespace Xenon
 			if (!m_IsMapped)
 				return;
 
-			vmaUnmapMemory(m_pDevice->getAllocator(), m_Allocation);
+			m_pDevice->getAllocator().access([this](VmaAllocator allocator) { vmaUnmapMemory(allocator, m_Allocation); });
 
 			m_MappedMemory = nullptr;
 			m_IsMapped = false;

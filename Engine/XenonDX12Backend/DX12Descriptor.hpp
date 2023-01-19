@@ -1,4 +1,4 @@
-// Copyright 2022 Dhiraj Wishal
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -23,9 +23,10 @@ namespace Xenon
 			 * @param pDevice The device pointer.
 			 * @param bindingInfo The descriptor's binding information. Make sure that the binding information are in the binding order (the first one is binging 0, second is 1 and so on).
 			 * @param type The descriptor type.
+			 * @param bindingOffsets The binding offsets describing the heap offsets.
 			 * @param pManager The descriptor manager pointer.
 			 */
-			explicit DX12Descriptor(DX12Device* pDevice, const std::vector<DescriptorBindingInfo>& bindingInfo, DescriptorType type, DX12DescriptorHeapManager* pManager);
+			explicit DX12Descriptor(DX12Device* pDevice, const std::unordered_map<uint32_t, DescriptorBindingInfo>& bindingInfo, DescriptorType type, const std::unordered_map<uint32_t, UINT>& bindingOffsets, DX12DescriptorHeapManager* pManager);
 
 			/**
 			 * Destructor.
@@ -96,6 +97,8 @@ namespace Xenon
 			[[nodiscard]] bool hasSampler() const { return m_pManager->getGroupSize(m_Type).second > 0; }
 
 		public:
+			std::unordered_map<uint32_t, UINT> m_BindingOffsets;
+
 			DX12DescriptorHeapManager* m_pManager = nullptr;
 
 			UINT m_CbvSrvUavDescriptorHeapStart = 0;

@@ -1,4 +1,4 @@
-// Copyright 2022 Dhiraj Wishal
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -21,8 +21,9 @@ namespace Xenon
 	 * which sparse array entries are valid, and can be used to delete unwanted memory.
 	 *
 	 * @tparam Type The value type.
+	 * @tparam IndexType The index type.
 	 */
-	template<class Type>
+	template<class Type, class IndexType = uint64_t>
 	class SparseArray final
 	{
 	public:
@@ -213,7 +214,7 @@ namespace Xenon
 		 * @return The index and the value pointer pair.
 		 */
 		template<class...Arguments>
-		[[nodiscard]] std::pair<uint64_t, Type*> insert(Arguments&&... arguments)
+		[[nodiscard]] std::pair<IndexType, Type*> insert(Arguments&&... arguments)
 		{
 			const auto index = m_SparseArray.size();
 			m_SparseArray.emplace_back(m_DenseArray.size());
@@ -282,7 +283,7 @@ namespace Xenon
 
 	private:
 		std::vector<Type> m_DenseArray;
-		std::vector<uint64_t> m_SparseArray;
+		std::vector<IndexType> m_SparseArray;
 		std::vector<bool> m_AvailabilityMap;
 	};
 }

@@ -1,4 +1,4 @@
-// Copyright 2022 Dhiraj Wishal
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -102,41 +102,20 @@ namespace Xenon
 			[[nodiscard]] const VkCommandBuffer* getCommandBufferAddress() const noexcept { return &m_CommandBuffer; }
 
 			/**
-			 * Get the submit info structure.
+			 * Get the signal semaphore.
+			 *
+			 * @return The semaphore.
 			 */
-			[[nodiscard]] VkSubmitInfo getSubmitInfo() const { return m_SubmitInfo; }
+			[[nodiscard]] VkSemaphore getSignalSemaphore() const noexcept { return m_SignalSemaphore; }
 
 			/**
-			 * Get the signal semaphore pointer.
+			 * Get the stage flags.
 			 *
-			 * @return The pointer.
+			 * @return The pipeline stage flags.
 			 */
-			[[nodiscard]] VkSemaphore* getSignalSemaphoreAddress() noexcept { return &m_SignalSemaphore; }
-
-			/**
-			 * Get the signal semaphore pointer.
-			 *
-			 * @return The pointer.
-			 */
-			[[nodiscard]] const VkSemaphore* getSignalSemaphoreAddress() const noexcept { return &m_SignalSemaphore; }
-
-			/**
-			 * Get the stage flags pointer.
-			 *
-			 * @return The pipeline stage flags pointer.
-			 */
-			[[nodiscard]] VkPipelineStageFlags* getStageFlagsAddress() noexcept { return &m_StageFlags; }
-
-			/**
-			 * Get the stage flags pointer.
-			 *
-			 * @return The pipeline stage flags pointer.
-			 */
-			[[nodiscard]] const VkPipelineStageFlags* getStageFlagsAddress() const noexcept { return &m_StageFlags; }
+			[[nodiscard]] VkPipelineStageFlags getStageFlags() const noexcept { return m_StageFlags; }
 
 		private:
-			VkSubmitInfo m_SubmitInfo = {};
-
 			VkCommandBuffer m_CommandBuffer = VK_NULL_HANDLE;
 			VkCommandPool m_CommandPool = VK_NULL_HANDLE;
 
@@ -145,7 +124,7 @@ namespace Xenon
 			VkFence m_Fence = VK_NULL_HANDLE;
 
 			VkPipelineStageFlags m_StageFlags = 0;
-			
+
 			bool m_IsFenceFree = true;
 		};
 	}

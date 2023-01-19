@@ -1,4 +1,4 @@
-// Copyright 2022 Dhiraj Wishal
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -22,10 +22,10 @@ namespace Xenon
 			 * Explicit constructor.
 			 *
 			 * @param pDevice The device pointer.
-			 * @param bindingInfo The descriptor's binding information. Make sure that the binding information are in the binding order (the first one is binging 0, second is 1 and so on).
+			 * @param bindingInfo The descriptor's binding information.
 			 * @param type The descriptor type.
 			 */
-			explicit Descriptor([[maybe_unused]] const Device* pDevice, const std::vector<DescriptorBindingInfo>& bindingInfo, DescriptorType type) : m_BindingInformation(bindingInfo), m_Type(type) {}
+			explicit Descriptor([[maybe_unused]] const Device* pDevice, const std::unordered_map<uint32_t, DescriptorBindingInfo>& bindingInfo, DescriptorType type) : m_BindingInformation(bindingInfo), m_Type(type) {}
 
 			/**
 			 * Attach a buffer to the descriptor.
@@ -51,7 +51,7 @@ namespace Xenon
 			 *
 			 * @return The binding information vector.
 			 */
-			[[nodiscard]] const std::vector<DescriptorBindingInfo>& getBindingInfo() const { return m_BindingInformation; }
+			[[nodiscard]] const std::unordered_map<uint32_t, DescriptorBindingInfo>& getBindingInfo() const { return m_BindingInformation; }
 
 			/**
 			 * Get the descriptor set type.
@@ -61,7 +61,7 @@ namespace Xenon
 			[[nodiscard]] DescriptorType getType() const { return m_Type; }
 
 		protected:
-			std::vector<DescriptorBindingInfo> m_BindingInformation;
+			std::unordered_map<uint32_t, DescriptorBindingInfo> m_BindingInformation;
 			DescriptorType m_Type = DescriptorType::UserDefined;
 		};
 	}

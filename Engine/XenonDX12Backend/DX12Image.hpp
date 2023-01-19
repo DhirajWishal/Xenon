@@ -1,4 +1,4 @@
-// Copyright 2022 Dhiraj Wishal
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -78,23 +78,23 @@ namespace Xenon
 			[[nodiscard]] const ID3D12Resource* getResource() const { return m_pAllocation->GetResource(); }
 
 			/**
-			 * Get the image's quality levels.
-			 *
-			 * @return The quality levels.
-			 */
-			[[nodiscard]] UINT getQualityLevel() const { return m_QualityLevel; }
-
-			/**
 			 * Get the current resource state.
 			 *
 			 * @return The current resource state.
 			 */
-			[[nodiscard]] D3D12_RESOURCE_STATES getCurrentState() const { return m_CurrentState; }
+			[[nodiscard]] D3D12_RESOURCE_STATES getCurrentState() const noexcept { return m_CurrentState; }
+
+			/**
+			 * Get the sample description of the image.
+			 *
+			 * @return The sample description used in the image.
+			 */
+			[[nodiscard]] DXGI_SAMPLE_DESC getSampleDesc() const noexcept { return m_SampleDesc; }
 
 			/**
 			 * Set the current image state.
 			 * This must be set after updating the resource state externally or internally.
-			 * 
+			 *
 			 * @param state The state to set.
 			 */
 			void setCurrentState(D3D12_RESOURCE_STATES state) { m_CurrentState = state; }
@@ -114,8 +114,9 @@ namespace Xenon
 			ComPtr<ID3D12CommandAllocator> m_CommandAllocator;
 			ComPtr<ID3D12GraphicsCommandList> m_CommandList;
 
+			DXGI_SAMPLE_DESC m_SampleDesc = {};
+
 			D3D12_RESOURCE_STATES m_CurrentState;
-			UINT m_QualityLevel = 0;
 		};
 	}
 }

@@ -1,4 +1,4 @@
-// Copyright 2022 Dhiraj Wishal
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -22,8 +22,9 @@ namespace Xenon
 		 * @param renderer The renderer reference.
 		 * @param pCamera The camera pointer used by the renderer.
 		 * @param color The color to set.
+		 * @param priority The priority of the layer.
 		 */
-		explicit ClearScreenLayer(Renderer& renderer, Backend::Camera* pCamera, const glm::vec4& color);
+		explicit ClearScreenLayer(Renderer& renderer, Backend::Camera* pCamera, const glm::vec4& color, uint32_t priority);
 
 		/**
 		 * Update the layer.

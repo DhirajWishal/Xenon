@@ -1,4 +1,4 @@
-// Copyright 2022 Dhiraj Wishal
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "ClearScreenLayer.hpp"
@@ -8,8 +8,8 @@
 
 namespace Xenon
 {
-	ClearScreenLayer::ClearScreenLayer(Renderer& renderer, Backend::Camera* pCamera, const glm::vec4& color)
-		: RasterizingLayer(renderer, pCamera, Backend::AttachmentType::Color)
+	ClearScreenLayer::ClearScreenLayer(Renderer& renderer, Backend::Camera* pCamera, const glm::vec4& color, uint32_t priority)
+		: RasterizingLayer(renderer, priority, pCamera, Backend::AttachmentType::Color)
 		, m_ClearColor(color)
 	{
 	}

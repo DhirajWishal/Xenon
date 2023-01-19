@@ -1,4 +1,4 @@
-// Copyright 2022 Dhiraj Wishal
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "Studio.hpp"
@@ -14,8 +14,8 @@ void run(Xenon::BackendType backend)
 
 int main()
 {
-	// g_Globals.m_RequiredBackendType = Xenon::BackendType::Vulkan;
-	g_Globals.m_RequiredBackendType = Xenon::BackendType::DirectX_12;
+	g_Globals.m_RequiredBackendType = Xenon::BackendType::Vulkan;
+	// g_Globals.m_RequiredBackendType = Xenon::BackendType::DirectX_12;
 	while (!g_Globals.m_bExitAppliation)
 		run(g_Globals.m_RequiredBackendType);
 

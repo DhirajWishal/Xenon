@@ -1,4 +1,4 @@
-// Copyright 2022 Dhiraj Wishal
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "DefaultRayTracingLayer.hpp"
@@ -8,8 +8,8 @@
 
 namespace Xenon
 {
-	DefaultRayTracingLayer::DefaultRayTracingLayer(Renderer& renderer, Backend::Camera* pCamera)
-		: RayTracingLayer(renderer, pCamera)
+	DefaultRayTracingLayer::DefaultRayTracingLayer(Renderer& renderer, Backend::Camera* pCamera, uint32_t priority/* = 10*/)
+		: RayTracingLayer(renderer, priority, pCamera)
 	{
 	}
 
@@ -23,23 +23,23 @@ namespace Xenon
 		for (const auto& drawData : m_DrawData)
 		{
 			m_pCommandRecorder->bind(drawData.m_pPipeline);
-			m_pCommandRecorder->bind(drawData.m_pPipeline, nullptr, nullptr, nullptr);
+			m_pCommandRecorder->bind(drawData.m_pPipeline, nullptr, nullptr, nullptr, nullptr);
 			m_pCommandRecorder->drawRayTraced(m_pRayTracer.get(), drawData.m_pShaderBindingTable.get());
 		}
 
 		m_pCommandRecorder->end();
 	}
 
-	void DefaultRayTracingLayer::addDrawData(MeshStorage&& storage, Backend::RayTracingPipeline* pPipeline)
+	void DefaultRayTracingLayer::addDrawData(Geometry&& geometry, Backend::RayTracingPipeline* pPipeline)
 	{
 		OPTICK_EVENT();
 
 		// Setup the acceleration structure geometry.
-		Backend::AccelerationStructureGeometry geometry;
-		geometry.m_VertexSpecification = storage.getVertexSpecification();
-		geometry.m_pVertexBuffer = storage.getVertexBuffer();
-		geometry.m_pIndexBuffer = storage.getIndexBuffer();
-		geometry.m_IndexBufferStride = Backend::IndexBufferStride::Uint16;
+		Backend::AccelerationStructureGeometry ASGeometry;
+		ASGeometry.m_VertexSpecification = geometry.getVertexSpecification();
+		ASGeometry.m_pVertexBuffer = geometry.getVertexBuffer();
+		ASGeometry.m_pIndexBuffer = geometry.getIndexBuffer();
+		ASGeometry.m_IndexBufferStride = Backend::IndexBufferStride::Uint16;
 
 		// Setup the shader binding table.
 		Backend::ShaderBindingTableBuilder sbtBuilder = {};
@@ -47,8 +47,8 @@ namespace Xenon
 		const auto lock = std::scoped_lock(m_Mutex);
 
 		// TODO: The acceleration structures should be optimized.
-		auto& drawData = m_DrawData.emplace_back(std::move(storage));
-		drawData.m_pBottomLevelAccelerationStructure = m_Renderer.getInstance().getFactory()->createBottomLevelAccelerationStructure(m_Renderer.getInstance().getBackendDevice(), { geometry });
+		auto& drawData = m_DrawData.emplace_back(std::move(geometry));
+		drawData.m_pBottomLevelAccelerationStructure = m_Renderer.getInstance().getFactory()->createBottomLevelAccelerationStructure(m_Renderer.getInstance().getBackendDevice(), { ASGeometry });
 		drawData.m_pTopLevelAccelerationStructure = m_Renderer.getInstance().getFactory()->createTopLevelAccelerationStructure(m_Renderer.getInstance().getBackendDevice(), { drawData.m_pBottomLevelAccelerationStructure.get() });
 		drawData.m_pPipeline = pPipeline;
 		drawData.m_pShaderBindingTable = pPipeline->createShaderBindingTable(sbtBuilder.getBindingGroups());

@@ -1,4 +1,4 @@
-// Copyright 2022 Dhiraj Wishal
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "Layer.hpp"
@@ -6,9 +6,10 @@
 
 namespace Xenon
 {
-	Layer::Layer(Renderer& renderer)
+	Layer::Layer(Renderer& renderer, uint32_t priority)
 		: m_Renderer(renderer)
 		, m_pCommandRecorder(renderer.getInstance().getFactory()->createCommandRecorder(renderer.getInstance().getBackendDevice(), Backend::CommandRecorderUsage::Graphics, renderer.getCommandRecorder()->getBufferCount()))
+		, m_Priority(priority)
 	{
 	}
 }

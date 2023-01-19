@@ -1,17 +1,28 @@
-// Copyright 2022 Dhiraj Wishal
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
 
 #include "Xenon/Instance.hpp"
-#include "Xenon/MonoCamera.hpp"
 #include "Xenon/Renderer.hpp"
+#include "Xenon/Scene.hpp"
 
 /**
  * Studio class.
  */
 class Studio final
 {
+	/**
+	 * Light bulb structure.
+	 * This contains all the necessary information about a single light source.
+	 */
+	struct LightBulb final
+	{
+		std::unique_ptr<Xenon::Backend::Image> m_pImage = nullptr;
+		std::unique_ptr<Xenon::Backend::ImageView> m_pImageView = nullptr;
+		std::unique_ptr<Xenon::Backend::ImageSampler> m_pImageSampler = nullptr;
+	};
+
 public:
 	/**
 	 * Explicit constructor.
@@ -33,10 +44,24 @@ private:
 	 */
 	void updateCamera(std::chrono::nanoseconds delta);
 
+	/**
+	 * Create a new light source.
+	 *
+	 * @return The light source group.
+	 */
+	[[nodiscard]] Xenon::Group createLightSource();
+
+	/**
+	 * Update the light sources.
+	 */
+	void updateLightSources();
+
 private:
 	Xenon::Instance m_Instance;
-	Xenon::MonoCamera m_Camera;
+	Xenon::Scene m_Scene;
 	Xenon::Renderer m_Renderer;
+
+	std::vector<Xenon::Group> m_LightGroups;
 
 	float m_LastX = 0.0f;
 	float m_LastY = 0.0f;

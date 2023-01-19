@@ -1,9 +1,7 @@
-// Copyright 2022 Dhiraj Wishal
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "Instance.hpp"
-
-#include "Materials/DefaultMaterial.hpp"
 
 #include "../XenonVulkanBackend/VulkanFactory.hpp"
 
@@ -45,13 +43,25 @@ namespace Xenon
 		// Create the device.
 		m_pDevice = m_pFactory->createDevice(m_pInstance.get(), renderTargets);
 
-		// Setup the default material.
-		m_DefaultMaterialIdentifier = m_MaterialDatabase.create<DefaultMaterial>(0, *this);
+		// Setup the default image, image view and image sampler.
+		Backend::ImageSpecification imageSpecification = {};
+		imageSpecification.m_Width = 1;
+		imageSpecification.m_Height = 1;
+		imageSpecification.m_Format = Xenon::Backend::DataFormat::R8G8B8A8_SRGB;
+		m_pDefaultImage = m_pFactory->createImage(m_pDevice.get(), imageSpecification);
+
+		m_pDefaultImageView = m_pFactory->createImageView(m_pDevice.get(), m_pDefaultImage.get(), {});
+		m_pDefaultImageSampler = m_pFactory->createImageSampler(m_pDevice.get(), {});
 	}
 
 	Instance::~Instance()
 	{
 		m_MaterialDatabase.clear();
+
+		m_pDefaultImage.reset();
+		m_pDefaultImageView.reset();
+		m_pDefaultImageSampler.reset();
+
 		m_pDevice.reset();
 		m_pInstance.reset();
 	}

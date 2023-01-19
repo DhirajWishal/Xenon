@@ -5,7 +5,7 @@ Cross-platform graphics engine.
 ## Why Xenon?
 
 This engine is almost entirely a learning experience for me. It's meant to be a testing ground to make graphics engines and all the other support systems. I don't think anyone would want to use this engine
-other than to see what it's like to have support for multiple backends with multithreading and to have support for multiple backends. I'm planning on adding support for Android as well but I'll get to it when
+other than to see what it's like to have support for multiple backends with multithreading and to have support for multiple platforms. I'm planning on adding support for Android as well but I'll get to it when
 we can actually render a proper scene with post-processing. Right now it only support Windows and has a Vulkan and DirectX 12 backend (which can be selected at runtime).
 
 ## How to build?
