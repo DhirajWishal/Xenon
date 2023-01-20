@@ -9,7 +9,6 @@
 #include "../../XenonCore/Logging.hpp"
 
 #include "../../XenonShaderBank/Occlusion/Occlusion.vert.hpp"
-#include "../../XenonShaderBank/Occlusion/Occlusion.frag.hpp"
 
 #include <optick.h>
 
@@ -21,7 +20,6 @@ namespace Xenon
 		// Create the pipeline.
 		Backend::RasterizingPipelineSpecification specification = {};
 		specification.m_VertexShader = Generated::CreateShaderOcclusion_vert();
-		// specification.m_FragmentShader = Generated::CreateShaderOcclusion_frag();
 
 		m_pOcclusionPipeline = m_Renderer.getInstance().getFactory()->createRasterizingPipeline(m_Renderer.getInstance().getBackendDevice(), std::make_unique<DefaultCacheHandler>(), m_pRasterizer.get(), specification);
 

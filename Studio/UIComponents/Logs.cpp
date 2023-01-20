@@ -7,7 +7,6 @@
 
 void Logs::begin(std::chrono::nanoseconds delta)
 {
-
 	if (m_bIsOpen)
 	{
 		if (ImGui::Begin("Logs", &m_bIsOpen))
