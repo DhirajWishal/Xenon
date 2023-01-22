@@ -27,6 +27,7 @@ set(
 	"TaskGraph.hpp"
 	"CountingFence.cpp"
 	"CountingFence.hpp"
+	"GlobalConfiguration.hpp"
 )
 
 # Add the source group.
@@ -47,6 +48,7 @@ target_include_directories(
 	PUBLIC ${SPDLOG_INCLUDE_DIR}
 	PRIVATE ${XXHASH_INCLUDE_DIR}
 	PUBLIC ${OPTICK_INCLUDE_DIR}
+	PUBLIC ${JSON_INCLUDE_DIR}
 )
 
 # Set the target links.
