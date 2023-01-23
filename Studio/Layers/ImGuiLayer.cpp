@@ -4,6 +4,7 @@
 #include "ImGuiLayer.hpp"
 
 #include "../Globals.hpp"
+#include "../StudioConfiguration.hpp"
 
 #include "../Shaders/ImGuiLayer/ImGuiLayer.vert.hpp"
 #include "../Shaders/ImGuiLayer/ImGuiLayer.frag.hpp"
@@ -240,7 +241,7 @@ void ImGuiLayer::endFrame() const
 
 #ifdef XENON_PLATFORM_WINDOWS
 		// Flip if we're using Vulkan (because of the inverted y-axis in DirectX.
-		view[3][1] = g_Globals.m_CurrentBackendType == Xenon::BackendType::Vulkan ? -view[3][1] : view[3][1];
+		view[3][1] = StudioConfiguration::GetInstance().getCurrentBackendType() == Xenon::BackendType::Vulkan ? -view[3][1] : view[3][1];
 
 #else
 		view[3][1] = -view[3][1];
@@ -577,18 +578,20 @@ void ImGuiLayer::showFileMenu()
 			g_Globals.m_bExitAppliation = true;
 		}
 
+		const auto currentBackendType = StudioConfiguration::GetInstance().getCurrentBackendType();
+
 		ImGui::Separator();
 		if (ImGui::BeginMenu("Settings"))
 		{
-			if (ImGui::Selectable("Vulkan Backend", g_Globals.m_CurrentBackendType == Xenon::BackendType::Vulkan) && g_Globals.m_CurrentBackendType != Xenon::BackendType::Vulkan)
+			if (ImGui::Selectable("Vulkan Backend", currentBackendType == Xenon::BackendType::Vulkan) && currentBackendType != Xenon::BackendType::Vulkan)
 			{
-				g_Globals.m_RequiredBackendType = Xenon::BackendType::Vulkan;
+				StudioConfiguration::GetInstance().setCurrentBackendType(Xenon::BackendType::Vulkan);
 				m_Renderer.close();
 			}
 
-			if (ImGui::Selectable("DirectX 12 Backend", g_Globals.m_CurrentBackendType == Xenon::BackendType::DirectX_12) && g_Globals.m_CurrentBackendType != Xenon::BackendType::DirectX_12)
+			if (ImGui::Selectable("DirectX 12 Backend", currentBackendType == Xenon::BackendType::DirectX_12) && currentBackendType != Xenon::BackendType::DirectX_12)
 			{
-				g_Globals.m_RequiredBackendType = Xenon::BackendType::DirectX_12;
+				StudioConfiguration::GetInstance().setCurrentBackendType(Xenon::BackendType::DirectX_12);
 				m_Renderer.close();
 			}
 

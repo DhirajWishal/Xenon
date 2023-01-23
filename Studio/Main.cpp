@@ -3,21 +3,22 @@
 
 #include "Studio.hpp"
 #include "Globals.hpp"
+#include "StudioConfiguration.hpp"
 
-void run(Xenon::BackendType backend)
+void run()
 {
-	g_Globals.m_CurrentBackendType = backend;
-
-	auto studio = Studio(backend);
+	auto studio = Studio(StudioConfiguration::GetInstance().getCurrentBackendType());
 	studio.run();
 }
 
 int main()
 {
-	g_Globals.m_RequiredBackendType = Xenon::BackendType::Vulkan;
-	// g_Globals.m_RequiredBackendType = Xenon::BackendType::DirectX_12;
+	StudioConfiguration::GetInstance().load("StudioConfig.bin");
+
 	while (!g_Globals.m_bExitAppliation)
-		run(g_Globals.m_RequiredBackendType);
+		run();
+
+	StudioConfiguration::GetInstance().save("StudioConfig.bin");
 
 	return 0;
 }

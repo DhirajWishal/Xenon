@@ -7,6 +7,15 @@
 #include <glm/vec4.hpp>
 #include <glm/mat4x4.hpp>
 
+/**
+ * We have to separately and explicitly define the alignment of the glm::vec3 structure when building a shader-visible buffer.
+ * This is because in C++ the glm::vec3 alignment is not equal to the HLSL float3 alignment. It actually requires the alignment to be
+ * the same as glm::vec4.
+ * 
+ * So when defining a 3 component shader-visible vector (stand-along or in a struct) make sure to add this to avoid any unwanted errors.
+ * Usage:
+ *	XENON_HLSL_VEC3_ALIGNMENT glm::vec3 variable = ...;
+ */
 #define XENON_HLSL_VEC3_ALIGNMENT alignas(sizeof(glm::vec4))
 
 namespace Xenon

@@ -3,16 +3,12 @@
 
 #pragma once
 
-#include "Xenon/Instance.hpp"
-
 /**
  * Globals structure.
  * This contains all the global information used by the studio.
  */
 struct Globals
 {
-	Xenon::BackendType m_CurrentBackendType = Xenon::BackendType::Any;
-	Xenon::BackendType m_RequiredBackendType = Xenon::BackendType::Any;
 	bool m_bExitAppliation = false;
 };
 

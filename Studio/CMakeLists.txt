@@ -24,6 +24,8 @@ set(
 	"Studio.hpp"
 	"UIComponent.hpp"
 	"Globals.hpp"
+	"StudioConfiguration.cpp"
+	"StudioConfiguration.hpp"
 
 	"Layers/ImGuiLayer.cpp"
 	"Layers/ImGuiLayer.hpp"
