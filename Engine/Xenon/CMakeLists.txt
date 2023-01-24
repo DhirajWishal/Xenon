@@ -55,6 +55,8 @@ set(
 	"Layers/OcclusionLayer.hpp"
 	"Layers/ShadowMapLayer.cpp"
 	"Layers/ShadowMapLayer.hpp"
+	"Layers/DiffusionLayer.cpp"
+	"Layers/DiffusionLayer.hpp"
 )
 
 # Add the source group.

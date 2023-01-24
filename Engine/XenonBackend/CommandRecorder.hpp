@@ -10,6 +10,7 @@
 #include "OcclusionQuery.hpp"
 #include "RayTracer.hpp"
 #include "RayTracingPipeline.hpp"
+#include "ComputePipeline.hpp"
 
 namespace Xenon
 {
@@ -130,6 +131,13 @@ namespace Xenon
 			virtual void bind(RayTracingPipeline* pPipeline) = 0;
 
 			/**
+			 * Bind a compute pipeline.
+			 *
+			 * @param pPipeline The pipeline to bind.
+			 */
+			virtual void bind(ComputePipeline* pPipeline) = 0;
+
+			/**
 			 * Bind a vertex buffer to the command recorder.
 			 *
 			 * @param pVertexBuffer The vertex buffer pointer.
@@ -168,6 +176,15 @@ namespace Xenon
 			 * @param pSceneDescriptor The scene descriptor. Default is nullptr.
 			 */
 			virtual void bind(RayTracingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pPerGeometryDescriptor, Descriptor* pSceneDescriptor) = 0;
+
+			/**
+			 * Bind descriptors to the command recorder.
+			 * Note that the descriptor can be null in which case this call will be disregarded.
+			 *
+			 * @param pPipeline The pipeline to bind.
+			 * @param pUserDefinedDescriptor The user defined descriptor to bind.
+			 */
+			virtual void bind(ComputePipeline* pPipeline, Descriptor* pUserDefinedDescriptor) = 0;
 
 			/**
 			 * Set the viewport.
@@ -231,6 +248,15 @@ namespace Xenon
 			 * @param pShaderBindingTable The shader binding table.
 			 */
 			virtual void drawRayTraced(RayTracer* pRayTracer, ShaderBindingTable* pShaderBindingTable) = 0;
+
+			/**
+			 * Perform compute operations.
+			 * 
+			 * @param width The cluster width.
+			 * @param height The cluster height.
+			 * @param depth The cluster depth.
+			 */
+			virtual void compute(uint32_t width, uint32_t height, uint32_t depth) = 0;
 
 			/**
 			 * End the occlusion query.

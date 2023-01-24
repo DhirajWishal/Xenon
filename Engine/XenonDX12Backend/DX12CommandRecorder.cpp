@@ -11,6 +11,7 @@
 #include "DX12RayTracer.hpp"
 #include "DX12RayTracingPipeline.hpp"
 #include "DX12ShaderBindingTable.hpp"
+#include "DX12ComputePipeline.hpp"
 
 #include <optick.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -734,6 +735,37 @@ namespace Xenon
 			}
 		}
 
+		void DX12CommandRecorder::bind(ComputePipeline* pPipeline)
+		{
+			OPTICK_EVENT();
+
+			const auto pDxPipeline = pPipeline->as<DX12ComputePipeline>();
+			m_pCurrentCommandList->SetComputeRootSignature(pDxPipeline->getRootSignature());
+			m_pCurrentCommandList->SetPipelineState(pDxPipeline->getPipelineState());
+
+			const auto& heaps = pDxPipeline->getDescriptorHeapStorage();
+			m_pCurrentCommandList->SetDescriptorHeaps(static_cast<UINT>(heaps.size()), heaps.data());
+		}
+
+		void DX12CommandRecorder::bind(ComputePipeline* pPipeline, Descriptor* pUserDefinedDescriptor)
+		{
+			OPTICK_EVENT();
+			const auto& heaps = pPipeline->as<DX12ComputePipeline>()->getDescriptorHeapStorage();
+
+			if (pUserDefinedDescriptor)
+			{
+				auto pDx12UserDefinedDescriptor = pUserDefinedDescriptor->as<DX12Descriptor>();
+				const auto cbvSrvUavStart = pDx12UserDefinedDescriptor->getCbvSrvUavDescriptorHeapStart();
+				const auto samplerStart = pDx12UserDefinedDescriptor->getSamplerDescriptorHeapStart();
+
+				if (pDx12UserDefinedDescriptor->hasBuffers())
+					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(0, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[0]->GetGPUDescriptorHandleForHeapStart(), cbvSrvUavStart, pDx12UserDefinedDescriptor->getCbvSrvUavDescriptorHeapIncrementSize()));
+
+				if (pDx12UserDefinedDescriptor->hasSampler())
+					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(1, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[1]->GetGPUDescriptorHandleForHeapStart(), samplerStart, pDx12UserDefinedDescriptor->getSamplerDescriptorHeapIncrementSize()));
+			}
+		}
+
 		void DX12CommandRecorder::setViewport(float x, float y, float width, float height, float minDepth, float maxDepth)
 		{
 			OPTICK_EVENT();
@@ -800,6 +832,12 @@ namespace Xenon
 			desc.Depth = 1;
 
 			m_pCurrentCommandList->DispatchRays(&desc);
+		}
+
+		void DX12CommandRecorder::compute(uint32_t width, uint32_t height, uint32_t depth)
+		{
+			OPTICK_EVENT();
+			m_pCurrentCommandList->Dispatch(width, height, depth);
 		}
 
 		void DX12CommandRecorder::endQuery(OcclusionQuery* pOcclusionQuery, uint32_t index)

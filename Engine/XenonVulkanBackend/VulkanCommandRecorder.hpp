@@ -128,6 +128,13 @@ namespace Xenon
 			void bind(RayTracingPipeline* pPipeline) override;
 
 			/**
+			 * Bind a compute pipeline.
+			 *
+			 * @param pPipeline The pipeline to bind.
+			 */
+			void bind(ComputePipeline* pPipeline) override;
+
+			/**
 			 * Bind a vertex buffer to the command recorder.
 			 *
 			 * @param pVertexBuffer The vertex buffer pointer.
@@ -166,6 +173,15 @@ namespace Xenon
 			 * @param pSceneDescriptor The scene descriptor. Default is nullptr.
 			 */
 			void bind(RayTracingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pPerGeometryDescriptor, Descriptor* pSceneDescriptor) override;
+
+			/**
+			 * Bind descriptors to the command recorder.
+			 * Note that the descriptor can be null in which case this call will be disregarded.
+			 *
+			 * @param pPipeline The pipeline to bind.
+			 * @param pUserDefinedDescriptor The user defined descriptor to bind.
+			 */
+			void bind(ComputePipeline* pPipeline, Descriptor* pUserDefinedDescriptor) override;
 
 			/**
 			 * Set the viewport.
@@ -229,6 +245,15 @@ namespace Xenon
 			 * @param pShaderBindingTable The shader binding table.
 			 */
 			void drawRayTraced(RayTracer* pRayTracer, ShaderBindingTable* pShaderBindingTable) override;
+
+			/**
+			 * Perform compute operations.
+			 *
+			 * @param width The cluster width.
+			 * @param height The cluster height.
+			 * @param depth The cluster depth.
+			 */
+			void compute(uint32_t width, uint32_t height, uint32_t depth) override;
 
 			/**
 			 * End the occlusion query.

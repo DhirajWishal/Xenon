@@ -11,6 +11,7 @@
 #include "VulkanOcclusionQuery.hpp"
 #include "VulkanRayTracingPipeline.hpp"
 #include "VulkanShaderBindingTable.hpp"
+#include "VulkanComputePipeline.hpp"
 
 #include <optick.h>
 
@@ -904,6 +905,34 @@ namespace Xenon
 			}
 		}
 
+		void VulkanCommandRecorder::bind(ComputePipeline* pPipeline)
+		{
+			OPTICK_EVENT();
+
+			m_pDevice->getDeviceTable().vkCmdBindPipeline(*m_pCurrentBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pPipeline->as<VulkanComputePipeline>()->getPipeline());
+		}
+
+		void VulkanCommandRecorder::bind(ComputePipeline* pPipeline, Descriptor* pUserDefinedDescriptor)
+		{
+			OPTICK_EVENT();
+
+			auto pVkPipeline = pPipeline->as<VulkanComputePipeline>();
+			if (pUserDefinedDescriptor)
+			{
+				auto descriptorSet = pUserDefinedDescriptor->as<VulkanDescriptor>()->getDescriptorSet();
+				m_pDevice->getDeviceTable().vkCmdBindDescriptorSets(
+					*m_pCurrentBuffer,
+					VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR,
+					pVkPipeline->getPipelineLayout(),
+					EnumToInt(DescriptorType::UserDefined),
+					1,
+					&descriptorSet,
+					0,
+					nullptr
+				);
+			}
+		}
+
 		void VulkanCommandRecorder::setViewport(float x, float y, float width, float height, float minDepth, float maxDepth)
 		{
 			OPTICK_EVENT();
@@ -963,6 +992,13 @@ namespace Xenon
 			const auto callableEntry = pVkBindngTable->getCallableAddressRegion();
 
 			m_pDevice->getDeviceTable().vkCmdTraceRaysKHR(*m_pCurrentBuffer, &raygenEntry, &missEntry, &hitEntry, &callableEntry, pRayTracer->getCamera()->getWidth(), pRayTracer->getCamera()->getHeight(), 1);
+		}
+
+		void VulkanCommandRecorder::compute(uint32_t width, uint32_t height, uint32_t depth)
+		{
+			OPTICK_EVENT();
+
+			m_pDevice->getDeviceTable().vkCmdDispatch(*m_pCurrentBuffer, width, height, depth);
 		}
 
 		void VulkanCommandRecorder::endQuery(OcclusionQuery* pOcclusionQuery, uint32_t index)
