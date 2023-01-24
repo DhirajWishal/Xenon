@@ -6,6 +6,8 @@
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+constexpr auto g_MaximumLightSourceCount = 1000;
+
 namespace Xenon
 {
 	Scene::Scene(Instance& instance, std::unique_ptr<Backend::Camera>&& pCamera)
@@ -23,7 +25,7 @@ namespace Xenon
 
 		// Setup the buffers.
 		m_pSceneInformationUniform = m_Instance.getFactory()->createBuffer(m_Instance.getBackendDevice(), sizeof(SceneInformation), Backend::BufferType::Uniform);
-		m_pLightSourceUniform = m_Instance.getFactory()->createBuffer(m_Instance.getBackendDevice(), sizeof(Components::LightSource), Backend::BufferType::Uniform);
+		m_pLightSourceUniform = m_Instance.getFactory()->createBuffer(m_Instance.getBackendDevice(), sizeof(Components::LightSource) * g_MaximumLightSourceCount, Backend::BufferType::Uniform);
 
 		// Unlock the lock so the user can do whatever they want.
 		m_UniqueLock.unlock();
@@ -152,12 +154,8 @@ namespace Xenon
 		for (const auto group : m_Registry.view<Components::LightSource>())
 			lightSources.emplace_back(m_Registry.get<Components::LightSource>(group));
 
-		const auto requiredSize = lightSources.size() * sizeof(Components::LightSource);
-		const auto currentSize = m_pLightSourceUniform->getSize();
-
-		if (requiredSize > currentSize)
-			m_pLightSourceUniform = m_Instance.getFactory()->createBuffer(m_Instance.getBackendDevice(), requiredSize, Backend::BufferType::Uniform);
-
-		m_pLightSourceUniform->write(ToBytes(lightSources.data()), requiredSize);
+		const auto copySize = lightSources.size() * sizeof(Components::LightSource);
+		m_pLightSourceUniform->write(ToBytes(lightSources.data()), copySize);
+		m_SceneInformation.m_LightSourceCount = static_cast<uint32_t>(lightSources.size());
 	}
 }

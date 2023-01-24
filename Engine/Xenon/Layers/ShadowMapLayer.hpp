@@ -61,6 +61,27 @@ namespace Xenon
 			 */
 			void onUpdate(Layer* pPreviousLayer, uint32_t imageIndex, uint32_t frameIndex) override;
 
+			/**
+			 * Get the shadow image from the rasterizer.
+			 *
+			 * @return The shadow image pointer.
+			 */
+			[[nodiscard]] Backend::Image* getShadowImage() { return m_pRasterizer->getImageAttachment(Backend::AttachmentType::Depth); }
+
+			/**
+			 * Get the shadow camera's buffer.
+			 *
+			 * @return The buffer pointer.
+			 */
+			[[nodiscard]] Backend::Buffer* getShadowCameraBuffer() noexcept { return m_LightCamera.m_pBuffer.get(); }
+
+			/**
+			 * Get the shadow texture from the layer.
+			 *
+			 * @return The texture.
+			 */
+			[[nodiscard]] Texture getShadowTexture();
+
 		private:
 			/**
 			 * Issue all the required draw calls.
@@ -76,8 +97,14 @@ namespace Xenon
 			[[nodiscard]] ShadowCamera calculateShadowCamera(const Components::LightSource& lightSource) const;
 
 		private:
+			CameraInformation m_LightCamera;
+
+			std::unique_ptr<Backend::ImageView> m_pImageView = nullptr;
+			std::unique_ptr<Backend::ImageSampler> m_pImageSampler = nullptr;
+
 			std::unique_ptr<Backend::RasterizingPipeline> m_pPipeline = nullptr;
-			std::unordered_map<Group, CameraInformation> m_pLightCameras;
+
+			Group m_LightGroup;
 		};
 	}
 }

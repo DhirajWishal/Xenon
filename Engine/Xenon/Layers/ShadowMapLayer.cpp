@@ -25,6 +25,16 @@ namespace Xenon
 			// specification.m_DepthSlopeFactor = 1.75f;
 
 			m_pPipeline = m_Renderer.getInstance().getFactory()->createRasterizingPipeline(m_Renderer.getInstance().getBackendDevice(), std::make_unique<DefaultCacheHandler>(), m_pRasterizer.get(), specification);
+
+			// Setup the other texture information.
+			m_pImageView = m_Renderer.getInstance().getFactory()->createImageView(m_Renderer.getInstance().getBackendDevice(), getShadowImage(), {});
+			m_pImageSampler = m_Renderer.getInstance().getFactory()->createImageSampler(m_Renderer.getInstance().getBackendDevice(), {});
+
+			// Setup the light buffers and descriptors.
+			m_LightCamera.m_pBuffer = m_Renderer.getInstance().getFactory()->createBuffer(m_Renderer.getInstance().getBackendDevice(), sizeof(ShadowCamera), Backend::BufferType::Uniform);
+			m_LightCamera.m_pDescriptor = m_pPipeline->createDescriptor(Backend::DescriptorType::Scene);
+
+			m_LightCamera.m_pDescriptor->attach(EnumToInt(Backend::SceneBindings::Camera), m_LightCamera.m_pBuffer.get());
 		}
 
 		void ShadowMapLayer::onUpdate(Layer* pPreviousLayer, uint32_t imageIndex, uint32_t frameIndex)
@@ -48,6 +58,16 @@ namespace Xenon
 			m_pCommandRecorder->end();
 		}
 
+		Xenon::Texture ShadowMapLayer::getShadowTexture()
+		{
+			Texture texture;
+			texture.m_pImage = getShadowImage();
+			texture.m_pImageView = m_pImageView.get();
+			texture.m_pImageSampler = m_pImageSampler.get();
+
+			return texture;
+		}
+
 		void ShadowMapLayer::issueDrawCalls()
 		{
 			OPTICK_EVENT();
@@ -60,21 +80,13 @@ namespace Xenon
 			auto& registry = m_pScene->getRegistry();
 
 			// Setup the light sources.
-			for (const auto& group : registry.view<Components::LightSource, Components::Transform>())
+			for (const auto& group : registry.view<Components::LightSource>())
 			{
-				if (!m_pLightCameras.contains(group))
-				{
-					auto& camera = m_pLightCameras[group];
-					camera.m_pBuffer = m_Renderer.getInstance().getFactory()->createBuffer(m_Renderer.getInstance().getBackendDevice(), sizeof(ShadowCamera), Backend::BufferType::Uniform);
-					camera.m_pDescriptor = m_pPipeline->createDescriptor(Backend::DescriptorType::Scene);
+				m_LightCamera.m_Camera = calculateShadowCamera(registry.get<Components::LightSource>(group));
+				m_LightCamera.m_pBuffer->write(ToBytes(&m_LightCamera.m_Camera), sizeof(ShadowCamera));
 
-					camera.m_pDescriptor->attach(EnumToInt(Backend::SceneBindings::Camera), camera.m_pBuffer.get());
-				}
-
-				// Copy the light data.
-				auto& camera = m_pLightCameras[group];
-				camera.m_Camera = calculateShadowCamera(registry.get<Components::LightSource>(group));
-				camera.m_pBuffer->write(ToBytes(&camera.m_Camera), sizeof(ShadowCamera));
+				// Break from the loop since we only need one.
+				break;
 			}
 
 			// Registry any new materials.
@@ -107,12 +119,9 @@ namespace Xenon
 						OPTICK_EVENT_DYNAMIC("Issuing Draw Calls");
 
 						m_pCommandRecorder->bind(geometry.getIndexBuffer(), static_cast<Backend::IndexBufferStride>(subMesh.m_IndexSize));
+						m_pCommandRecorder->bind(m_pPipeline.get(), nullptr, nullptr, nullptr, m_LightCamera.m_pDescriptor.get());
 
-						for (const auto& [group, info] : m_pLightCameras)
-						{
-							m_pCommandRecorder->bind(m_pPipeline.get(), nullptr, nullptr, nullptr, info.m_pDescriptor.get());
-							m_pCommandRecorder->drawIndexed(subMesh.m_VertexOffset, subMesh.m_IndexOffset, subMesh.m_IndexCount);
-						}
+						m_pCommandRecorder->drawIndexed(subMesh.m_VertexOffset, subMesh.m_IndexOffset, subMesh.m_IndexCount);
 					}
 				}
 			}

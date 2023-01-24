@@ -42,6 +42,8 @@ set(
 	"Material.hpp"
 	"DefaultCacheHandler.cpp"
 	"DefaultCacheHandler.hpp"
+	"UserDataContainer.cpp"
+	"UserDataContainer.hpp"
 
 	"Layers/ClearScreenLayer.cpp"
 	"Layers/ClearScreenLayer.hpp"

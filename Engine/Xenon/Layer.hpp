@@ -59,6 +59,20 @@ namespace Xenon
 		void setScene(Scene& scene) { m_pScene = &scene; }
 
 		/**
+		 * Get the scene pointer.
+		 *
+		 * @return The scene pointer.
+		 */
+		[[nodiscard]] Scene* getScene() noexcept { return m_pScene; }
+
+		/**
+		 * Get the scene pointer.
+		 *
+		 * @return The scene pointer.
+		 */
+		[[nodiscard]] const Scene* getScene() const noexcept { return m_pScene; }
+
+		/**
 		 * Notify the renderer to render this layer.
 		 */
 		void activate() noexcept { m_IsActive = true; }

@@ -620,7 +620,6 @@ namespace Xenon
 
 			// Used for ray tracing.
 			RenderTarget
-
 		};
 
 		/**

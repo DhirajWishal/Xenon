@@ -20,6 +20,8 @@
 #include "XenonShaderBank/Debugging/Shader.frag.hpp"
 #include "XenonShaderBank/Billboard/Billboard.vert.hpp"
 #include "XenonShaderBank/Billboard/Billboard.frag.hpp"
+#include "XenonShaderBank/ShadowMap/Scene.vert.hpp"
+#include "XenonShaderBank/ShadowMap/Scene.frag.hpp"
 
 #include "XenonShaderBank/Testing/RayTracing/ClosestHit.rchit.hpp"
 #include "XenonShaderBank/Testing/RayTracing/Miss.rmiss.hpp"
@@ -138,7 +140,7 @@ void Studio::run()
 		const auto grouping = m_Scene.createGroup();
 		[[maybe_unused]] const auto& geometry = m_Scene.create<Xenon::Geometry>(grouping, Xenon::Geometry::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"));
 		[[maybe_unused]] const auto& material = m_Scene.create<Xenon::Material>(grouping, materialBuidler);
-};
+	};
 
 #else 
 	auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRasterizingLayer>(m_Scene.getCamera(), g_DefaultRenderingPriority);
@@ -146,9 +148,14 @@ void Studio::run()
 	pRenderTarget->setOcclusionLayer(pOcclusionLayer);
 
 	Xenon::Backend::RasterizingPipelineSpecification specification;
-	specification.m_VertexShader = Xenon::Generated::CreateShaderShader_vert();
-	specification.m_FragmentShader = Xenon::Generated::CreateShaderShader_frag();
+	// specification.m_VertexShader = Xenon::Generated::CreateShaderShader_vert();
+	// specification.m_FragmentShader = Xenon::Generated::CreateShaderShader_frag();
+	specification.m_VertexShader = Xenon::Generated::CreateShaderScene_vert();
+	specification.m_FragmentShader = Xenon::Generated::CreateShaderScene_frag();
 	materialBuidler.setRasterizingPipelineSpecification(specification);
+
+	materialBuidler.addShadowMap(pShadowMapLayer->getShadowTexture());
+	materialBuidler.addCustomProperty(pShadowMapLayer->getShadowCameraBuffer());
 
 	const auto loaderFunction = [this, &materialBuidler]
 	{
@@ -266,9 +273,11 @@ Xenon::Group Studio::createLightSource()
 {
 	// Setup the group and add the light source and the quad.
 	const auto lighting = m_Scene.createGroup();
+	[[maybe_unused]] const auto& lightSource = m_Scene.create<Xenon::Components::LightSource>(lighting, glm::vec4(1.0f), glm::vec3(2.0f), glm::vec3(0.0f), 1.0f, 45.0f);
+
+#ifdef XENON_DEBUG_G
 	[[maybe_unused]] const auto& quad = m_Scene.create<Xenon::Geometry>(lighting, Xenon::Geometry::CreateQuad(m_Scene.getInstance()));
 	[[maybe_unused]] const auto& transform = m_Scene.create<Xenon::Components::Transform>(lighting, glm::vec3(0), glm::vec3(0), glm::vec3(0.5f));
-	[[maybe_unused]] const auto& lightSource = m_Scene.create<Xenon::Components::LightSource>(lighting, glm::vec4(1.0f), glm::vec3(2.0f), glm::vec3(0.0f), 1.0f, 45.0f);
 
 	// Setup the light bulb image and it's view and sampler.
 	auto& bulb = m_Scene.create<LightBulb>(lighting);
@@ -291,6 +300,8 @@ Xenon::Group Studio::createLightSource()
 	// Create the material.
 	[[maybe_unused]] const auto& material = m_Scene.create<Xenon::Material>(lighting, materialBuidler);
 
+#endif // XENON_DEBUG
+
 	return lighting;
 }
 
@@ -299,24 +310,16 @@ void Studio::updateLightSources()
 	ImGui::Begin("Light Sources");
 	for (const auto& group : m_LightGroups)
 	{
-		auto& transform = m_Scene.getRegistry().get<Xenon::Components::Transform>(group);
+		Xenon::Components::LightSource light = m_Scene.getRegistry().get<Xenon::Components::LightSource>(group);
 
 		ImGui::Text("Light ID: %i", Xenon::EnumToInt(group));
 		ImGui::NewLine();
-		ImGui::InputFloat3("Position", glm::value_ptr(transform.m_Position));
-		ImGui::InputFloat3("Rotation", glm::value_ptr(transform.m_Rotation));
-		ImGui::InputFloat3("Scale", glm::value_ptr(transform.m_Scale));
+		ImGui::InputFloat3("Position", glm::value_ptr(light.m_Position));
 		ImGui::Separator();
 
 		// VS please fix your formatting...
-		const auto updateFunction = [transform](auto& object)
-		{
-			object.m_Position = transform.m_Position;
-			object.m_Rotation = transform.m_Rotation;
-			object.m_Scale = transform.m_Scale;
-		};
-
-		m_Scene.getRegistry().patch<Xenon::Components::Transform>(group, updateFunction);
+		const auto updateFunction = [light](auto& object) { object = light; };
+		m_Scene.getRegistry().patch<Xenon::Components::LightSource>(group, updateFunction);
 	}
 
 	ImGui::End();
