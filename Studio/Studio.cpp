@@ -15,6 +15,7 @@
 #include "Xenon/Layers/DefaultRasterizingLayer.hpp"
 #include "Xenon/Layers/DefaultRayTracingLayer.hpp"
 #include "Xenon/Layers/ShadowMapLayer.hpp"
+#include "Xenon/Layers/DiffusionLayer.hpp"
 
 #include "XenonShaderBank/Debugging/Shader.vert.hpp"
 #include "XenonShaderBank/Debugging/Shader.frag.hpp"
@@ -166,12 +167,17 @@ void Studio::run()
 
 #endif // XENON_DEV_ENABLE_RAY_TRACING
 
+	// Create the diffusion layer.
+	auto pDiffusionLayer = m_Renderer.createLayer<Xenon::Experimental::DiffusionLayer>(m_Scene.getCamera()->getWidth(), m_Scene.getCamera()->getHeight(), pRenderTarget->getPriority());
+	pDiffusionLayer->setSourceImage(pRenderTarget->getColorAttachment());
+
 	// Create the layers.
 	auto pImGui = m_Renderer.createLayer<ImGuiLayer>(m_Scene.getCamera());
 	pImGui->setScene(m_Scene);
 
 	// Set the layer to be shown.
-	pImGui->showLayer(pRenderTarget);
+	// pImGui->showLayer(pRenderTarget);
+	pImGui->showLayer(pDiffusionLayer);
 
 	// Create the light source.
 	m_LightGroups.emplace_back(createLightSource());

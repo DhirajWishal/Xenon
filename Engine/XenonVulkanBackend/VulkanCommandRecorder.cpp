@@ -922,7 +922,7 @@ namespace Xenon
 				auto descriptorSet = pUserDefinedDescriptor->as<VulkanDescriptor>()->getDescriptorSet();
 				m_pDevice->getDeviceTable().vkCmdBindDescriptorSets(
 					*m_pCurrentBuffer,
-					VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR,
+					VK_PIPELINE_BIND_POINT_COMPUTE,
 					pVkPipeline->getPipelineLayout(),
 					EnumToInt(DescriptorType::UserDefined),
 					1,

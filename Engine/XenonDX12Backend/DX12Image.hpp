@@ -64,6 +64,13 @@ namespace Xenon
 			void copyFrom(Image* pSrcImage, CommandRecorder* pCommandRecorder = nullptr) override;
 
 			/**
+			 * Generate mip maps for the currently stored image.
+			 *
+			 * @param pCommandRecorder The command recorder pointer to record the commands to. Default is nullptr (in which case the backend will create one for this purpose).
+			 */
+			void generateMipMaps(CommandRecorder* pCommandRecorder = nullptr) override;
+
+			/**
 			 * Get the backend resource.
 			 *
 			 * @return The resource pointer.

@@ -19,17 +19,33 @@ namespace Xenon
 		 * over the same source image to calculate light variations. This gives rise to bloom and maybe anti-aliasing.
 		 *
 		 * The primary goal of this layer is to compute bloom and to use the output as a cheap way of approximating indirect lighting over a scene.
+		 *
+		 * Names:
+		 * 1. Screen Space Lighting (SSL)
+		 * 2. Screen Space Global Illumination (SSGI)
+		 * 3. Screen Space Light Diffusion (SSLD)
+		 * 4. Differed Light Diffusion (DLD)
 		 */
 		class DiffusionLayer final : public Layer
 		{
+			/**
+			 * Control block structure.
+			 */
+			struct ControlBlock final
+			{
+				XENON_HLSL_VEC3_ALIGNMENT uint32_t m_LOD = 0;
+			};
+
 		public:
 			/**
 			 * Explicit constructor.
 			 *
 			 * @param renderer The renderer reference.
+			 * @param width The width of the layer's output image.
+			 * @param height The height of the layer's output image.
 			 * @param priority The priority of the layer.
 			 */
-			explicit DiffusionLayer(Renderer& renderer, uint32_t priority);
+			explicit DiffusionLayer(Renderer& renderer, uint32_t width, uint32_t height, uint32_t priority);
 
 			/**
 			 * Update the layer.
@@ -48,6 +64,13 @@ namespace Xenon
 			 */
 			[[nodiscard]] Backend::Image* getColorAttachment() override { return m_pOutputImage.get(); }
 
+			/**
+			 * Set the source image pointer to perform diffusion.
+			 *
+			 * @param pImage The image pointer.
+			 */
+			void setSourceImage(Backend::Image* pImage);
+
 		private:
 			std::unique_ptr<Backend::ComputePipeline> m_pMipMapGenerationPipeline = nullptr;
 			std::unique_ptr<Backend::ComputePipeline> m_pDiffusionPipeline = nullptr;
@@ -58,7 +81,18 @@ namespace Xenon
 			std::unique_ptr<Backend::Image> m_pScalingImage = nullptr;
 			std::unique_ptr<Backend::Image> m_pOutputImage = nullptr;
 
+			std::unique_ptr<Backend::ImageView> m_pSourceImageView = nullptr;
+			std::unique_ptr<Backend::ImageView> m_pScalingImageView = nullptr;
+			std::unique_ptr<Backend::ImageView> m_pOutputImageView = nullptr;
+
+			std::unique_ptr<Backend::ImageSampler> m_pImageSampler = nullptr;
+
+			ControlBlock m_ControlBlock = {};
+			std::unique_ptr<Backend::Buffer> m_pControlBlockBuffer = nullptr;
+
 			Backend::Image* m_pSourceImage = nullptr;
+
+			uint32_t m_ImageLayers = 0;
 		};
 	}
 }
