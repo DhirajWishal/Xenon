@@ -14,6 +14,7 @@
 
 #include "Xenon/Layers/DefaultRasterizingLayer.hpp"
 #include "Xenon/Layers/DefaultRayTracingLayer.hpp"
+#include "Xenon/Layers/ShadowMapLayer.hpp"
 
 #include "XenonShaderBank/Debugging/Shader.vert.hpp"
 #include "XenonShaderBank/Debugging/Shader.frag.hpp"
@@ -120,6 +121,10 @@ void Studio::run()
 	auto pOcclusionLayer = m_Renderer.createLayer<Xenon::OcclusionLayer>(m_Scene.getCamera(), g_DefaultRenderingPriority);
 	pOcclusionLayer->setScene(m_Scene);
 
+	// Create the shadow map layer.
+	auto pShadowMapLayer = m_Renderer.createLayer<Xenon::Experimental::ShadowMapLayer>(m_Scene.getCamera());
+	pShadowMapLayer->setScene(m_Scene);
+
 	// Setup the pipeline.
 #ifdef XENON_DEV_ENABLE_RAY_TRACING
 	auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRayTracingLayer>(m_Scene.getCamera());
@@ -133,7 +138,7 @@ void Studio::run()
 		const auto grouping = m_Scene.createGroup();
 		[[maybe_unused]] const auto& geometry = m_Scene.create<Xenon::Geometry>(grouping, Xenon::Geometry::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"));
 		[[maybe_unused]] const auto& material = m_Scene.create<Xenon::Material>(grouping, materialBuidler);
-	};
+};
 
 #else 
 	auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRasterizingLayer>(m_Scene.getCamera(), g_DefaultRenderingPriority);
@@ -263,7 +268,7 @@ Xenon::Group Studio::createLightSource()
 	const auto lighting = m_Scene.createGroup();
 	[[maybe_unused]] const auto& quad = m_Scene.create<Xenon::Geometry>(lighting, Xenon::Geometry::CreateQuad(m_Scene.getInstance()));
 	[[maybe_unused]] const auto& transform = m_Scene.create<Xenon::Components::Transform>(lighting, glm::vec3(0), glm::vec3(0), glm::vec3(0.5f));
-	[[maybe_unused]] const auto& lightSource = m_Scene.create<Xenon::Components::LightSource>(lighting, glm::vec4(1.0f), glm::vec3(0.0f), glm::vec3(0.0f), 1.0f, 360.0f);
+	[[maybe_unused]] const auto& lightSource = m_Scene.create<Xenon::Components::LightSource>(lighting, glm::vec4(1.0f), glm::vec3(2.0f), glm::vec3(0.0f), 1.0f, 45.0f);
 
 	// Setup the light bulb image and it's view and sampler.
 	auto& bulb = m_Scene.create<LightBulb>(lighting);

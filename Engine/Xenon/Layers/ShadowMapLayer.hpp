@@ -1,0 +1,83 @@
+// Copyright 2022-2023 Dhiraj Wishal
+// SPDX-License-Identifier: Apache-2.0
+
+#pragma once
+
+#include "../RasterizingLayer.hpp"
+#include "../Geometry.hpp"
+
+#include "../../XenonBackend/RasterizingPipeline.hpp"
+
+namespace Xenon
+{
+	namespace Experimental
+	{
+		/**
+		 * Shadow map layer.
+		 * This layer contains the logic to generate a shadow map using the light(s) attached to the scene.
+		 * If not scene or light is attached, this will just be a blank depth map.
+		 *
+		 * Currently it only supports one light.
+		 */
+		class ShadowMapLayer final : public RasterizingLayer
+		{
+			/**
+			 * Shadow camera structure.
+			 */
+			struct ShadowCamera final
+			{
+				glm::mat4 m_View;
+				glm::mat4 m_Projection;
+			};
+
+			/**
+			 * Camera information structure.
+			 */
+			struct CameraInformation final
+			{
+				ShadowCamera m_Camera;
+
+				std::unique_ptr<Backend::Descriptor> m_pDescriptor = nullptr;
+				std::unique_ptr<Backend::Buffer> m_pBuffer = nullptr;
+			};
+
+		public:
+			/**
+			 * Explicit constructor.
+			 *
+			 * @param renderer The renderer reference.
+			 * @param pCamera The camera pointer used by the renderer.
+			 * @param priority The priority of the layer. Default is 4.
+			 */
+			explicit ShadowMapLayer(Renderer& renderer, Backend::Camera* pCamera, uint32_t priority = 4);
+
+			/**
+			 * Update the layer.
+			 * This is called by the renderer and all the required commands must be updated (if required) in this call.
+			 *
+			 * @param pPreviousLayer The previous layer pointer. This will be nullptr if this layer is the first.
+			 * @param imageIndex The image's index.
+			 * @param frameIndex The frame's index.
+			 */
+			void onUpdate(Layer* pPreviousLayer, uint32_t imageIndex, uint32_t frameIndex) override;
+
+		private:
+			/**
+			 * Issue all the required draw calls.
+			 */
+			void issueDrawCalls();
+
+			/**
+			 * Calculate the shadow camera using the light source.
+			 *
+			 * @param lightSource The light source.
+			 * @return The shadow camera.
+			 */
+			[[nodiscard]] ShadowCamera calculateShadowCamera(const Components::LightSource& lightSource) const;
+
+		private:
+			std::unique_ptr<Backend::RasterizingPipeline> m_pPipeline = nullptr;
+			std::unordered_map<Group, CameraInformation> m_pLightCameras;
+		};
+	}
+}

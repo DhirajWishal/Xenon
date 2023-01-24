@@ -38,4 +38,20 @@ public:
 	 * @param type The backend type to set.
 	 */
 	void setCurrentBackendType(Xenon::BackendType type);
+
+	/**
+	 * Check if the application should exit.
+	 *
+	 * @return True if the application should exit.
+	 * @return False if the application should not exit.
+	 */
+	[[nodiscard]] bool shouldExitApplication() const noexcept { return m_bExitAppliation; }
+
+	/**
+	 * Toggle the internal variable to true and indicate that the application should exit.
+	 */
+	void toggleExitApplication() noexcept { m_bExitAppliation = true; }
+
+private:
+	bool m_bExitAppliation = false;
 };

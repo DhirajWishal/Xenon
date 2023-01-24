@@ -155,7 +155,7 @@ namespace Xenon
 			// Create and add the depth attachment if required.
 			else if (m_AttachmentTypes & AttachmentType::Depth)
 			{
-				specification.m_Usage = ImageUsage::DepthAttachment | ImageUsage::Storage;
+				specification.m_Usage = ImageUsage::DepthAttachment;
 				specification.m_Format = DataFormat::D32_SFLOAT | DataFormat::D16_SINT;
 
 				const auto& image = m_ImageAttachments.emplace_back(m_pDevice, specification);

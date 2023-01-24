@@ -51,6 +51,8 @@ set(
 	"Layers/DefaultRayTracingLayer.hpp"
 	"Layers/OcclusionLayer.cpp"
 	"Layers/OcclusionLayer.hpp"
+	"Layers/ShadowMapLayer.cpp"
+	"Layers/ShadowMapLayer.hpp"
 )
 
 # Add the source group.

@@ -3,7 +3,6 @@
 
 #include "ImGuiLayer.hpp"
 
-#include "../Globals.hpp"
 #include "../StudioConfiguration.hpp"
 
 #include "../Shaders/ImGuiLayer/ImGuiLayer.vert.hpp"
@@ -575,7 +574,7 @@ void ImGuiLayer::showFileMenu()
 		if (ImGui::MenuItem("Close"))
 		{
 			m_Renderer.close();
-			g_Globals.m_bExitAppliation = true;
+			StudioConfiguration::GetInstance().toggleExitApplication();
 		}
 
 		const auto currentBackendType = StudioConfiguration::GetInstance().getCurrentBackendType();
