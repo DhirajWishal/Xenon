@@ -56,11 +56,11 @@ namespace Xenon
 
 			if (m_pSourceImage)
 			{
-				// Copy the source image to the scaling image.
-				m_pScalingImage->copyFrom(m_pSourceImage, m_pCommandRecorder.get());
-				
-				// Now we can generate mip-maps.
-				m_pScalingImage->generateMipMaps(m_pCommandRecorder.get());
+				// // Copy the source image to the scaling image.
+				// m_pScalingImage->copyFrom(m_pSourceImage, m_pCommandRecorder.get());
+				// 
+				// // Now we can generate mip-maps.
+				// m_pScalingImage->generateMipMaps(m_pCommandRecorder.get());
 
 				// // Generate the mip-maps using the source image.
 				// m_pCommandRecorder->bind(m_pMipMapGenerationPipeline.get());

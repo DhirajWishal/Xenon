@@ -78,5 +78,5 @@ void main(uint2 ThreadID : SV_DispatchThreadID)
 		contribution += mipMapImage.mips[i - 2][int2(coordinate.x, coordinate.y)] / factor;
 	}
 
-	resultImage[coordinate] = contribution;
+	resultImage[coordinate] = originalImage[coordinate];
 }

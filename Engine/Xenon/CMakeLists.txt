@@ -57,6 +57,11 @@ set(
 	"Layers/ShadowMapLayer.hpp"
 	"Layers/DiffusionLayer.cpp"
 	"Layers/DiffusionLayer.hpp"
+	"Layers/GBufferLayer.cpp"
+	"Layers/GBufferLayer.hpp"
+
+	"Renderers/DefaultRenderer.cpp"
+	"Renderers/DefaultRenderer.hpp"
 )
 
 # Add the source group.
