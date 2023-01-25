@@ -74,7 +74,7 @@ namespace Xenon
 			case Xenon::Backend::ImageType::CubeMap:
 				break;
 
-			case Xenon::Backend::ImageType::ThreeDImentional:
+			case Xenon::Backend::ImageType::ThreeDimensional:
 				type = VK_IMAGE_TYPE_3D;
 				break;
 
@@ -275,6 +275,7 @@ namespace Xenon
 			barrier.subresourceRange.baseArrayLayer = 0;
 			barrier.subresourceRange.layerCount = 1;
 			barrier.subresourceRange.levelCount = 1;
+			barrier.oldLayout = m_CurrentLayout;
 
 			int32_t mipWidth = getWidth();
 			int32_t mipHeight = getHeight();
@@ -284,7 +285,6 @@ namespace Xenon
 			for (uint32_t i = 1; i < mipLevels; i++)
 			{
 				barrier.subresourceRange.baseMipLevel = i - 1;
-				barrier.oldLayout = m_CurrentLayout;
 				barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 				barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 				barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
@@ -328,18 +328,21 @@ namespace Xenon
 
 				if (mipWidth > 1) mipWidth /= 2;
 				if (mipHeight > 1) mipHeight /= 2;
+
+				barrier.oldLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 			}
 
-			// barrier.subresourceRange.baseMipLevel = mipLevels - 1;
-			// barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-			// barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-			// barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-			// 
-			// m_pDevice->getDeviceTable().vkCmdPipelineBarrier(commandBuffer,
-			// 	VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
-			// 	0, nullptr,
-			// 	0, nullptr,
-			// 	1, &barrier);
+			barrier.subresourceRange.baseMipLevel = mipLevels - 1;
+			barrier.oldLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+			barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+			m_pDevice->getDeviceTable().vkCmdPipelineBarrier(commandBuffer,
+				VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+				0, nullptr,
+				0, nullptr,
+				1, &barrier);
 
 			m_CurrentLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		}

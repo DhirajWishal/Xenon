@@ -35,14 +35,16 @@ namespace Xenon
 
 			specification.m_Usage = Backend::ImageUsage::Graphics;
 			m_pScalingImage = renderer.getInstance().getFactory()->createImage(renderer.getInstance().getBackendDevice(), specification);
-			m_pScalingImageView = m_Renderer.getInstance().getFactory()->createImageView(m_Renderer.getInstance().getBackendDevice(), m_pScalingImage.get(), { .m_LevelCount = m_ImageLayers });
+			m_pScalingImageView = m_Renderer.getInstance().getFactory()->createImageView(m_Renderer.getInstance().getBackendDevice(), m_pScalingImage.get(), {});
 
-			m_pImageSampler = m_Renderer.getInstance().getFactory()->createImageSampler(m_Renderer.getInstance().getBackendDevice(), { .m_MaxLevelOfDetail = static_cast<float>(m_ImageLayers) });
+			m_pImageSampler = m_Renderer.getInstance().getFactory()->createImageSampler(m_Renderer.getInstance().getBackendDevice(), {});
 
 			// Bind the images to the required descriptors.
 			m_pDiffusionDescriptor->attach(1, m_pScalingImage.get(), m_pScalingImageView.get(), m_pImageSampler.get(), Backend::ImageUsage::Graphics);
 			m_pDiffusionDescriptor->attach(2, m_pOutputImage.get(), m_pOutputImageView.get(), m_pImageSampler.get(), Backend::ImageUsage::Storage);
 			m_pDiffusionDescriptor->attach(3, m_pControlBlockBuffer.get());
+
+			m_pMipMapGenerationDescriptor->attach(1, m_pScalingImage.get(), m_pScalingImageView.get(), m_pImageSampler.get(), Backend::ImageUsage::Storage);
 		}
 
 		void DiffusionLayer::onUpdate(Layer* pPreviousLayer, uint32_t imageIndex, uint32_t frameIndex)
@@ -56,19 +58,19 @@ namespace Xenon
 			{
 				// Copy the source image to the scaling image.
 				m_pScalingImage->copyFrom(m_pSourceImage, m_pCommandRecorder.get());
-
+				
 				// Now we can generate mip-maps.
 				m_pScalingImage->generateMipMaps(m_pCommandRecorder.get());
 
-				// Generate the mip-maps using the source image.
+				// // Generate the mip-maps using the source image.
 				// m_pCommandRecorder->bind(m_pMipMapGenerationPipeline.get());
 				// m_pCommandRecorder->bind(m_pMipMapGenerationPipeline.get(), m_pMipMapGenerationDescriptor.get());
-				// m_pCommandRecorder->compute(m_pSourceImage->getWidth(), m_pSourceImage->getHeight(), m_pSourceImage->getDepth());
+				// m_pCommandRecorder->compute(m_pSourceImage->getWidth() / 8, m_pSourceImage->getHeight() / 8, m_pSourceImage->getDepth());
 
 				// Use the mip-maps to perform diffusion.
 				m_pCommandRecorder->bind(m_pDiffusionPipeline.get());
 				m_pCommandRecorder->bind(m_pDiffusionPipeline.get(), m_pDiffusionDescriptor.get());
-				m_pCommandRecorder->compute(m_pSourceImage->getWidth(), m_pSourceImage->getHeight(), m_pSourceImage->getDepth());
+				m_pCommandRecorder->compute(m_pSourceImage->getWidth() / 8, m_pSourceImage->getHeight() / 8, m_pSourceImage->getDepth());
 			}
 
 			m_pCommandRecorder->end();
@@ -81,6 +83,7 @@ namespace Xenon
 			m_pSourceImageView = m_Renderer.getInstance().getFactory()->createImageView(m_Renderer.getInstance().getBackendDevice(), pImage, {});
 
 			m_pDiffusionDescriptor->attach(0, m_pSourceImage, m_pSourceImageView.get(), m_pImageSampler.get(), Backend::ImageUsage::Graphics);
+			m_pMipMapGenerationDescriptor->attach(0, m_pSourceImage, m_pSourceImageView.get(), m_pImageSampler.get(), Backend::ImageUsage::Graphics);
 		}
 	}
 }

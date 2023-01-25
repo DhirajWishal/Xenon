@@ -44,19 +44,39 @@ float4 getSumOfPixels(uint width, uint height, int2 coordinate, uint distanceX, 
 	return color;
 }
 
-[numthreads(16, 16, 1)]
-void main(uint3 GlobalInvocationID : SV_DispatchThreadID)
+float4 downsample(int2 coordinate, uint factor)
 {
-	int2 coordinate = int2(GlobalInvocationID.xy);
+	float4 gatherValue = float4(0.0f, 0.0f, 0.0f, 0.0f);
+	uint counter = 0;
+	for(int y = coordinate.y - factor; y < coordinate.y + factor; y += factor)
+	{
+		for(int x = coordinate.x - factor; x < coordinate.x + factor; x += factor)
+		{
+			gatherValue += originalImage[int2(x, y)];
+			counter++;
+		}
+	}
+
+	return gatherValue / counter;
+}
+
+[numthreads(8, 8, 1)]
+void main(uint2 ThreadID : SV_DispatchThreadID)
+{
+	int2 coordinate = int2(ThreadID.xy);
 
 	uint width;
 	uint height;
 	originalImage.GetDimensions(width, height);
+	float ratio = float(width) / height;
 
-	uint levels = floor(log2(max(width, height)));
-	float4 contribution = float4(0.0f, 0.0f, 0.0f, 0.0f);
-	for(uint i = 0; i < levels; i++)
-		contribution += mipMapImage.mips[i][coordinate] / int(1 << i);
+	uint levels = floor(log2(max(width, height))) + 1;
+	float4 contribution = originalImage[coordinate] / 2;
+	for(uint i = 2; i <= levels; i++)
+	{
+		uint factor = 1 << i;
+		contribution += mipMapImage.mips[i - 2][int2(coordinate.x, coordinate.y)] / factor;
+	}
 
-	resultImage[coordinate] = originalImage[coordinate] + contribution;
+	resultImage[coordinate] = contribution;
 }

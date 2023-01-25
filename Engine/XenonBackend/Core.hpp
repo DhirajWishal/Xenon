@@ -139,7 +139,7 @@ namespace Xenon
 		{
 			OneDimensional,
 			TwoDimensional,
-			ThreeDImentional,
+			ThreeDimensional,
 			CubeMap
 		};
 
