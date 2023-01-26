@@ -17,6 +17,7 @@
 #include "Xenon/Layers/ShadowMapLayer.hpp"
 #include "Xenon/Layers/DiffusionLayer.hpp"
 #include "Xenon/Layers/GBufferLayer.hpp"
+#include "Xenon/Layers/DirectLightingLayer.hpp"
 
 #include "XenonShaderBank/Debugging/Shader.vert.hpp"
 #include "XenonShaderBank/Debugging/Shader.frag.hpp"
@@ -185,6 +186,7 @@ void Studio::run()
 	pImGui->getLayerView().addLayerOption("GBuffer Negative Y Color", m_Renderer.getNegativeYLayer());
 	pImGui->getLayerView().addLayerOption("GBuffer Positive Z Color", m_Renderer.getPositiveZLayer());
 	pImGui->getLayerView().addLayerOption("GBuffer Negative Z Color", m_Renderer.getNegativeZLayer());
+	pImGui->getLayerView().addLayerOption("Direct Lighting Layer", m_Renderer.getDirectLightingLayer());
 
 	// Create the light source.
 	m_LightGroups.emplace_back(createLightSource());

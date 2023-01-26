@@ -59,6 +59,8 @@ set(
 	"Layers/DiffusionLayer.hpp"
 	"Layers/GBufferLayer.cpp"
 	"Layers/GBufferLayer.hpp"
+	"Layers/DirectLightingLayer.cpp"
+	"Layers/DirectLightingLayer.hpp"
 
 	"Renderers/DefaultRenderer.cpp"
 	"Renderers/DefaultRenderer.hpp"

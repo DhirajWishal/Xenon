@@ -74,6 +74,18 @@ namespace Xenon
 			void copy(Image* pSource, const glm::vec3& sourceOffset, Image* pDestination, const glm::vec3& destinationOffset) override;
 
 			/**
+			 * Copy a source image to the destination image.
+			 *
+			 * @param pSource The source image pointer.
+			 * @param sourceLayer The source image's layer to copy.
+			 * @param sourceOffset The source image's offset.
+			 * @param pDestination The destination image pointer.
+			 * @param destinationLayer The destination image's layer to copy to.
+			 * @param destinationOffset The destination image's offset.
+			 */
+			void copyImageLayer(Image* pSource, uint32_t sourceLayer, const glm::vec3& sourceOffset, Image* pDestination, uint32_t destinationLayer, const glm::vec3& destinationOffset) override;
+
+			/**
 			 * Copy image data from a buffer to an image.
 			 *
 			 * @param pSource The source buffer pointer.

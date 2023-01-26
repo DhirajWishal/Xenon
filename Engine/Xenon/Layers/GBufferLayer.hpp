@@ -72,6 +72,20 @@ namespace Xenon
 			 */
 			void setScene(Scene& scene) override;
 
+			/**
+			 * Get the normal attachment.
+			 *
+			 * @return The normal attachment
+			 */
+			[[nodiscard]] Backend::Image* getNormalAttachment() { return m_pRasterizer->getImageAttachment(Backend::AttachmentType::Normal); }
+
+			/**
+			 * Get the GBuffer face.
+			 *
+			 * @return The face.
+			 */
+			[[nodiscard]] GBufferFace getFace() const noexcept { return m_Face; }
+
 		private:
 			/**
 			 * Issue the required draw calls.

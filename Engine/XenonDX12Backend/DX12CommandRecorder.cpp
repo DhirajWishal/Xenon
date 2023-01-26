@@ -528,6 +528,64 @@ namespace Xenon
 			}
 		}
 
+		void DX12CommandRecorder::copyImageLayer(Image* pSource, uint32_t sourceLayer, const glm::vec3& sourceOffset, Image* pDestination, uint32_t destinationLayer, const glm::vec3& destinationOffset)
+		{
+			OPTICK_EVENT();
+			XENON_TODO_NOW("Make sure DX12 is cool with cubemaps");
+
+			const auto pDxSourceImage = pSource->as<DX12Image>();
+			const auto pDxDestinationImage = pDestination->as<DX12Image>();
+
+			// Change the source image state.
+			if (pDxSourceImage->getCurrentState() != D3D12_RESOURCE_STATE_GENERIC_READ)
+			{
+				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pDxSourceImage->getResource(), pDxSourceImage->getCurrentState(), D3D12_RESOURCE_STATE_COPY_SOURCE);
+				m_pCurrentCommandList->ResourceBarrier(1, &barrier);
+			}
+
+			// Change the destination image state.
+			{
+				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pDxDestinationImage->getResource(), pDxDestinationImage->getCurrentState(), D3D12_RESOURCE_STATE_COPY_DEST);
+				m_pCurrentCommandList->ResourceBarrier(1, &barrier);
+			}
+
+			// Copy the texture region.
+			D3D12_TEXTURE_COPY_LOCATION destinationLocation = {};
+			destinationLocation.pResource = pDxDestinationImage->getResource();
+			destinationLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+			destinationLocation.PlacedFootprint.Offset = 0;
+			destinationLocation.PlacedFootprint.Footprint.Format = DX12Device::ConvertFormat(pDxDestinationImage->getDataFormat());
+			destinationLocation.PlacedFootprint.Footprint.Depth = 1;
+			destinationLocation.PlacedFootprint.Footprint.Width = pDxDestinationImage->getWidth();
+			destinationLocation.PlacedFootprint.Footprint.Height = pDxDestinationImage->getHeight();
+			destinationLocation.PlacedFootprint.Footprint.RowPitch = pDxDestinationImage->getWidth() * GetFormatSize(destinationLocation.PlacedFootprint.Footprint.Format);
+
+			D3D12_TEXTURE_COPY_LOCATION sourceLocation = {};
+			sourceLocation.pResource = pDxSourceImage->getResource();
+			sourceLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+			sourceLocation.PlacedFootprint.Offset = 0;
+			sourceLocation.PlacedFootprint.Footprint.Format = DX12Device::ConvertFormat(pDxSourceImage->getDataFormat());
+			sourceLocation.PlacedFootprint.Footprint.Depth = 1;
+			sourceLocation.PlacedFootprint.Footprint.Width = pDxSourceImage->getWidth();
+			sourceLocation.PlacedFootprint.Footprint.Height = pDxSourceImage->getHeight();
+			sourceLocation.PlacedFootprint.Footprint.RowPitch = pDxSourceImage->getWidth() * GetFormatSize(sourceLocation.PlacedFootprint.Footprint.Format);
+
+			m_pCurrentCommandList->CopyTextureRegion(&destinationLocation, static_cast<UINT>(destinationOffset.x), static_cast<UINT>(destinationOffset.y), static_cast<UINT>(destinationOffset.z), &sourceLocation, nullptr);
+
+			// Change the source image state.
+			if (pDxSourceImage->getCurrentState() != D3D12_RESOURCE_STATE_GENERIC_READ)
+			{
+				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pDxSourceImage->getResource(), D3D12_RESOURCE_STATE_COPY_SOURCE, pDxSourceImage->getCurrentState());
+				m_pCurrentCommandList->ResourceBarrier(1, &barrier);
+			}
+
+			// Change the destination image state.
+			{
+				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pDxDestinationImage->getResource(), D3D12_RESOURCE_STATE_COPY_DEST, pDxDestinationImage->getCurrentState());
+				m_pCurrentCommandList->ResourceBarrier(1, &barrier);
+			}
+		}
+
 		void DX12CommandRecorder::resetQuery(OcclusionQuery* pOcclusionQuery)
 		{
 			OPTICK_EVENT();

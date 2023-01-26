@@ -52,9 +52,9 @@ namespace Xenon
 			 * @param newLayout The new layout to change to.
 			 * @param aspectFlags The image aspect flags.
 			 * @param mipLevels The image mip levels. Default is 1.
-			 * @param layers The image layers. Default is 1.
+			 * @param layer The image layer. Default is 0.
 			 */
-			void changeImageLayout(VkImage image, VkImageLayout currentLayout, VkImageLayout newLayout, VkImageAspectFlags aspectFlags, uint32_t mipLevels = 1, uint32_t layers = 1);
+			void changeImageLayout(VkImage image, VkImageLayout currentLayout, VkImageLayout newLayout, VkImageAspectFlags aspectFlags, uint32_t mipLevels = 1, uint32_t layer = 0);
 
 			/**
 			 * Copy data from one buffer to another.
@@ -84,6 +84,18 @@ namespace Xenon
 			 * @param destinationOffset The destination image's offset.
 			 */
 			void copy(Image* pSource, const glm::vec3& sourceOffset, Image* pDestination, const glm::vec3& destinationOffset) override;
+
+			/**
+			 * Copy a source image to the destination image.
+			 *
+			 * @param pSource The source image pointer.
+			 * @param sourceLayer The source image's layer to copy.
+			 * @param sourceOffset The source image's offset.
+			 * @param pDestination The destination image pointer.
+			 * @param destinationLayer The destination image's layer to copy to.
+			 * @param destinationOffset The destination image's offset.
+			 */
+			void copyImageLayer(Image* pSource, uint32_t sourceLayer, const glm::vec3& sourceOffset, Image* pDestination, uint32_t destinationLayer, const glm::vec3& destinationOffset) override;
 
 			/**
 			 * Copy image data from a buffer to an image.

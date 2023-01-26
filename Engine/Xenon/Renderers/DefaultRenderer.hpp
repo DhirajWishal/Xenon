@@ -10,6 +10,7 @@ namespace Xenon
 	namespace Experimental
 	{
 		class GBufferLayer;
+		class DirectLightingLayer;
 
 		/**
 		 * Default renderer class.
@@ -77,6 +78,13 @@ namespace Xenon
 			 */
 			[[nodiscard]] GBufferLayer* getNegativeZLayer() noexcept { return m_pNegativeZLayer; }
 
+			/**
+			 * Get the direct lighting layer.
+			 *
+			 * @return The layer pointer.
+			 */
+			[[nodiscard]] DirectLightingLayer* getDirectLightingLayer() noexcept { return m_pDirectLightingLayer; }
+
 		private:
 			GBufferLayer* m_pPositiveXLayer = nullptr;
 			GBufferLayer* m_pNegativeXLayer = nullptr;
@@ -84,6 +92,8 @@ namespace Xenon
 			GBufferLayer* m_pNegativeYLayer = nullptr;
 			GBufferLayer* m_pPositiveZLayer = nullptr;
 			GBufferLayer* m_pNegativeZLayer = nullptr;
+
+			DirectLightingLayer* m_pDirectLightingLayer = nullptr;
 		};
 	}
 }

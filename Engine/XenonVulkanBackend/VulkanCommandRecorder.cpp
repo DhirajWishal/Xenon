@@ -371,7 +371,7 @@ namespace Xenon
 			m_pDevice->getDeviceTable().vkBeginCommandBuffer(*m_pCurrentBuffer, &beginInfo);
 		}
 
-		void VulkanCommandRecorder::changeImageLayout(VkImage image, VkImageLayout currentLayout, VkImageLayout newLayout, VkImageAspectFlags aspectFlags, uint32_t mipLevels /*= 1*/, uint32_t layers /*= 1*/)
+		void VulkanCommandRecorder::changeImageLayout(VkImage image, VkImageLayout currentLayout, VkImageLayout newLayout, VkImageAspectFlags aspectFlags, uint32_t mipLevels /*= 1*/, uint32_t layer /*= 1*/)
 		{
 			OPTICK_EVENT();
 
@@ -395,8 +395,8 @@ namespace Xenon
 			memorybarrier.subresourceRange.aspectMask = aspectFlags;
 			memorybarrier.subresourceRange.baseMipLevel = 0;
 			memorybarrier.subresourceRange.levelCount = mipLevels;
-			memorybarrier.subresourceRange.baseArrayLayer = 0;
-			memorybarrier.subresourceRange.layerCount = layers;
+			memorybarrier.subresourceRange.baseArrayLayer = layer;
+			memorybarrier.subresourceRange.layerCount = 1;
 
 			// Resolve the source access masks.
 			switch (currentLayout)
@@ -689,6 +689,101 @@ namespace Xenon
 				1,
 				&imageCopy
 			);
+		}
+
+		void VulkanCommandRecorder::copyImageLayer(Image* pSource, uint32_t sourceLayer, const glm::vec3& sourceOffset, Image* pDestination, uint32_t destinationLayer, const glm::vec3& destinationOffset)
+		{
+			OPTICK_EVENT();
+
+			auto pVkSourceImage = pSource->as<VulkanImage>();
+			auto pVkDestinationImage = pDestination->as<VulkanImage>();
+
+			VkImageBlit blit = {};
+			blit.srcSubresource.aspectMask = pVkSourceImage->getAspectFlags();
+			blit.srcSubresource.baseArrayLayer = sourceLayer;
+			blit.srcSubresource.layerCount = 1;
+			blit.srcSubresource.mipLevel = 0;
+			blit.srcOffsets[0].x = static_cast<int32_t>(sourceOffset.x);
+			blit.srcOffsets[0].y = static_cast<int32_t>(sourceOffset.y);
+			blit.srcOffsets[0].z = static_cast<int32_t>(sourceOffset.z);
+			blit.srcOffsets[1].x = static_cast<int32_t>(pVkSourceImage->getWidth()) - blit.srcOffsets[0].x;
+			blit.srcOffsets[1].y = static_cast<int32_t>(pVkSourceImage->getHeight()) - blit.srcOffsets[0].y;
+			blit.srcOffsets[1].z = static_cast<int32_t>(pVkSourceImage->getDepth()) - blit.srcOffsets[0].z;
+			blit.dstSubresource.aspectMask = pVkDestinationImage->getAspectFlags();
+			blit.dstSubresource.baseArrayLayer = destinationLayer;
+			blit.dstSubresource.layerCount = 1;
+			blit.dstSubresource.mipLevel = 0;
+			blit.dstOffsets[0].x = static_cast<int32_t>(destinationOffset.x);
+			blit.dstOffsets[0].y = static_cast<int32_t>(destinationOffset.y);
+			blit.dstOffsets[0].z = static_cast<int32_t>(destinationOffset.z);
+			blit.dstOffsets[1].x = static_cast<int32_t>(pVkDestinationImage->getWidth()) - blit.dstOffsets[0].x;
+			blit.dstOffsets[1].y = static_cast<int32_t>(pVkDestinationImage->getHeight()) - blit.dstOffsets[0].y;
+			blit.dstOffsets[1].z = static_cast<int32_t>(pVkDestinationImage->getDepth()) - blit.dstOffsets[0].z;
+
+			// Prepare to transfer.
+			changeImageLayout(pVkSourceImage->getImage(), pVkSourceImage->getImageLayout(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, blit.srcSubresource.aspectMask, sourceLayer);
+			changeImageLayout(pVkDestinationImage->getImage(), pVkDestinationImage->getImageLayout(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, blit.dstSubresource.aspectMask, destinationLayer);
+
+			// Copy the image.
+			m_pDevice->getDeviceTable().vkCmdBlitImage(
+				*m_pCurrentBuffer,
+				pVkSourceImage->getImage(),
+				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+				pVkDestinationImage->getImage(),
+				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+				1,
+				&blit,
+				VK_FILTER_LINEAR
+			);
+
+			// Change back to previous.
+			if (pVkSourceImage->getImageLayout() == VK_IMAGE_LAYOUT_UNDEFINED)
+			{
+				auto newLayout = VK_IMAGE_LAYOUT_GENERAL;
+				const auto usage = pVkSourceImage->getUsage();
+				if (usage & ImageUsage::Graphics)
+					newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+				else if (usage & ImageUsage::Storage)
+					newLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+				else if (usage & ImageUsage::ColorAttachment)
+					newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+				else if (usage & ImageUsage::DepthAttachment)
+					newLayout = VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL;
+
+				changeImageLayout(pVkSourceImage->getImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, newLayout, blit.srcSubresource.aspectMask);
+				pVkSourceImage->setImageLayout(newLayout);
+			}
+			else
+			{
+				changeImageLayout(pVkSourceImage->getImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, pVkSourceImage->getImageLayout(), blit.srcSubresource.aspectMask, sourceLayer);
+			}
+
+			if (pVkDestinationImage->getImageLayout() == VK_IMAGE_LAYOUT_UNDEFINED)
+			{
+				auto newLayout = VK_IMAGE_LAYOUT_GENERAL;
+				const auto usage = pVkDestinationImage->getUsage();
+				if (usage & ImageUsage::Graphics)
+					newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+				else if (usage & ImageUsage::Storage)
+					newLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+				else if (usage & ImageUsage::ColorAttachment)
+					newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+				else if (usage & ImageUsage::DepthAttachment)
+					newLayout = VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL;
+
+				changeImageLayout(pVkDestinationImage->getImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, newLayout, blit.dstSubresource.aspectMask, destinationLayer);
+				pVkDestinationImage->setImageLayout(newLayout);
+			}
+			else
+			{
+				changeImageLayout(pVkDestinationImage->getImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, pVkDestinationImage->getImageLayout(), blit.dstSubresource.aspectMask, destinationLayer);
+			}
 		}
 
 		void VulkanCommandRecorder::resetQuery(OcclusionQuery* pOcclusionQuery)
