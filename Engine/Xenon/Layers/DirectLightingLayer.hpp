@@ -20,12 +20,11 @@ namespace Xenon
 		class DirectLightingLayer final : public Layer
 		{
 			/**
-			 * Input image structure.
+			 * Control structure.
 			 */
-			struct InputImage final
+			struct ControlStructure final
 			{
-				Backend::Image* m_pImage = nullptr;
-				std::unique_ptr<Backend::ImageView> m_pImageView = nullptr;
+				XENON_HLSL_VEC3_ALIGNMENT uint32_t m_LightCount = 0;
 			};
 
 		public:
@@ -64,8 +63,17 @@ namespace Xenon
 			void setGBuffer(GBufferLayer* pLayer);
 
 		private:
+			/**
+			 * Setup buffers for the frame.
+			 */
+			void setupBuffers();
+
+		private:
 			std::unique_ptr<Backend::ComputePipeline> m_pPipeline = nullptr;
 			std::unique_ptr<Backend::Descriptor> m_pDescriptor = nullptr;
+
+			std::unique_ptr<Backend::Buffer> m_pControlStructureBuffer = nullptr;
+			std::unique_ptr<Backend::Buffer> m_pLightSourcesBuffer = nullptr;
 
 			std::unique_ptr<Backend::Image> m_pOutputImage = nullptr;
 			std::unique_ptr<Backend::ImageView> m_pOutputImageView = nullptr;
@@ -74,6 +82,9 @@ namespace Xenon
 
 			std::array<std::unique_ptr<Backend::ImageView>, 6> m_pColorImageViews = {};
 			std::array<std::unique_ptr<Backend::ImageView>, 6> m_pNormalImageViews = {};
+			std::array<std::unique_ptr<Backend::ImageView>, 6> m_pPositionImageViews = {};
+
+			ControlStructure m_ControlStructure = {};
 		};
 	}
 }

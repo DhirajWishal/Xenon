@@ -36,6 +36,7 @@ namespace Xenon
 			Color = XENON_BIT_SHIFT(0),					// Used for color output. Shader output: This is a 4 component image.
 			EntityID = XENON_BIT_SHIFT(1),				// Commonly used for mouse picking. This is a 1 component image.
 			Normal = XENON_BIT_SHIFT(2),				// Used for normal output. This is a 4 component image.
+			Position = XENON_BIT_SHIFT(3),				// Used for position output. This is a 4 component image, the last being the depth.
 
 			Depth = XENON_BIT_SHIFT(6),					// Used for depth information.
 			Stencil = XENON_BIT_SHIFT(7),				// Used for stencil information.

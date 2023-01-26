@@ -5,6 +5,14 @@
 
 RWTexture2D<float4> resultImage : register(u0);
 
+struct ControlStructure 
+{
+	uint m_LightCount;
+};
+
+cbuffer controlStructure : register(b1) { ControlStructure controlStructure; };
+cbuffer lights : register(b2) { LightSource lights[XENON_MAX_LIGHT_SOURCE_COUNT]; };
+
 /**
  * Setup an input image and it's sampler.
  *
@@ -17,23 +25,45 @@ RWTexture2D<float4> resultImage : register(u0);
 	[[vk::combinedImageSampler]]															\
 	SamplerState XENON_NAME_CONCAT(name, Sampler) : register(XENON_NAME_CONCAT(s, binding))
 
-SETUP_INPUT_IMAGE(positiveXColor, 1);
-SETUP_INPUT_IMAGE(negativeXColor, 2);
-SETUP_INPUT_IMAGE(positiveYColor, 3);
-SETUP_INPUT_IMAGE(negativeYColor, 4);
-SETUP_INPUT_IMAGE(positiveZColor, 5);
-SETUP_INPUT_IMAGE(negativeZColor, 6);
+SETUP_INPUT_IMAGE(positiveXColor, 3);
+SETUP_INPUT_IMAGE(negativeXColor, 4);
+SETUP_INPUT_IMAGE(positiveYColor, 5);
+SETUP_INPUT_IMAGE(negativeYColor, 6);
+SETUP_INPUT_IMAGE(positiveZColor, 7);
+SETUP_INPUT_IMAGE(negativeZColor, 8);
 
-SETUP_INPUT_IMAGE(positiveXNormal, 7);
-SETUP_INPUT_IMAGE(negativeXNormal, 8);
-SETUP_INPUT_IMAGE(positiveYNormal, 9);
-SETUP_INPUT_IMAGE(negativeYNormal, 10);
-SETUP_INPUT_IMAGE(positiveZNormal, 11);
-SETUP_INPUT_IMAGE(negativeZNormal, 12);
+SETUP_INPUT_IMAGE(positiveXNormal, 9);
+SETUP_INPUT_IMAGE(negativeXNormal, 10);
+SETUP_INPUT_IMAGE(positiveYNormal, 11);
+SETUP_INPUT_IMAGE(negativeYNormal, 12);
+SETUP_INPUT_IMAGE(positiveZNormal, 13);
+SETUP_INPUT_IMAGE(negativeZNormal, 14);
+
+SETUP_INPUT_IMAGE(positiveXPosition, 15);
+SETUP_INPUT_IMAGE(negativeXPosition, 16);
+SETUP_INPUT_IMAGE(positiveYPosition, 17);
+SETUP_INPUT_IMAGE(negativeYPosition, 18);
+SETUP_INPUT_IMAGE(positiveZPosition, 19);
+SETUP_INPUT_IMAGE(negativeZPosition, 20);
 
 [numthreads(8, 8, 1)]
 void main(uint2 ThreadID : SV_DispatchThreadID)
 {
 	int2 coordinate = int2(ThreadID.xy);
-	resultImage[coordinate] = negativeZColorImage[coordinate];
+	float4 litValue = negativeZColorImage[coordinate];
+	float3 normal = normalize(negativeZNormalImage[coordinate].xyz);
+	float3 position = negativeZPositionImage[coordinate].xyz;
+
+	// Iterate over the light sources and check if we're occluded by something.
+	for(uint i = 0; i < controlStructure.m_LightCount; i++)
+	{
+		LightSource source = lights[i];
+		float3 lightDir = normalize(source.m_Position - position);
+		float diff = max(dot(normal, lightDir), 0.0f);
+		float3 diffuse = diff * source.m_Color;
+
+		litValue = float4(diffuse, 1.0f) * litValue;
+	}
+
+	resultImage[coordinate] = litValue;
 }

@@ -92,6 +92,20 @@ namespace /* anonymous */
 			colorDescriptorHandle.Offset(1, colorDescriptorIncrementSize);
 		}
 
+		if (attachmentTypes & Xenon::Backend::AttachmentType::Position)
+		{
+			try
+			{
+				pCommandList->ClearRenderTargetView(colorDescriptorHandle, glm::value_ptr(std::get<glm::vec4>(*(itr++))), 0, nullptr);
+			}
+			catch (const std::exception& e)
+			{
+				XENON_LOG_ERROR("Clear position value error: {}", e.what());
+			}
+
+			colorDescriptorHandle.Offset(1, colorDescriptorIncrementSize);
+		}
+
 		if (attachmentTypes & Xenon::Backend::AttachmentType::Depth && attachmentTypes & Xenon::Backend::AttachmentType::Stencil)
 		{
 			try

@@ -68,6 +68,14 @@ namespace Xenon
 					index++;
 				}
 
+				if (m_AttachmentTypes & AttachmentType::Position)
+				{
+					if (type & AttachmentType::Position)
+						return &m_ImageAttachments[index];
+
+					index++;
+				}
+
 				if (m_AttachmentTypes & AttachmentType::Depth && m_AttachmentTypes & AttachmentType::Stencil)
 				{
 					if (type & AttachmentType::Depth && type & AttachmentType::Stencil)
@@ -135,6 +143,15 @@ namespace Xenon
 
 			// Create and add the normal attachment if required.
 			if (m_AttachmentTypes & AttachmentType::Normal)
+			{
+				specification.m_Format = DataFormat::R32G32B32A32_SFLOAT;
+
+				const auto& image = m_ImageAttachments.emplace_back(m_pDevice, specification);
+				createImageView(image.getImage(), image.getAspectFlags(), VulkanDevice::ConvertFormat(image.getDataFormat()));
+			}
+
+			// Create and add the normal attachment if required.
+			if (m_AttachmentTypes & AttachmentType::Position)
 			{
 				specification.m_Format = DataFormat::R32G32B32A32_SFLOAT;
 

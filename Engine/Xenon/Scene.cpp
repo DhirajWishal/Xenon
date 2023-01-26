@@ -6,8 +6,6 @@
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-constexpr auto g_MaximumLightSourceCount = 1000;
-
 namespace Xenon
 {
 	Scene::Scene(Instance& instance, std::unique_ptr<Backend::Camera>&& pCamera)
@@ -25,7 +23,7 @@ namespace Xenon
 
 		// Setup the buffers.
 		m_pSceneInformationUniform = m_Instance.getFactory()->createBuffer(m_Instance.getBackendDevice(), sizeof(SceneInformation), Backend::BufferType::Uniform);
-		m_pLightSourceUniform = m_Instance.getFactory()->createBuffer(m_Instance.getBackendDevice(), sizeof(Components::LightSource) * g_MaximumLightSourceCount, Backend::BufferType::Uniform);
+		m_pLightSourceUniform = m_Instance.getFactory()->createBuffer(m_Instance.getBackendDevice(), sizeof(Components::LightSource) * XENON_MAX_LIGHT_SOURCE_COUNT, Backend::BufferType::Uniform);
 
 		// Unlock the lock so the user can do whatever they want.
 		m_UniqueLock.unlock();

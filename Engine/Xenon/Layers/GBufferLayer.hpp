@@ -80,6 +80,13 @@ namespace Xenon
 			[[nodiscard]] Backend::Image* getNormalAttachment() { return m_pRasterizer->getImageAttachment(Backend::AttachmentType::Normal); }
 
 			/**
+			 * Get the position attachment.
+			 *
+			 * @return The position attachment
+			 */
+			[[nodiscard]] Backend::Image* getPositionAttachment() { return m_pRasterizer->getImageAttachment(Backend::AttachmentType::Position); }
+
+			/**
 			 * Get the GBuffer face.
 			 *
 			 * @return The face.

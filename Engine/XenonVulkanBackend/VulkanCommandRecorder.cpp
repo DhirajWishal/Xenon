@@ -85,6 +85,24 @@ namespace /* anonymous */
 			}
 		}
 
+		if (attachmentTypes & Xenon::Backend::AttachmentType::Position)
+		{
+			try
+			{
+				const auto clearColor = std::get<glm::vec4>(*(itr++));
+
+				auto& clearValue = vkClearValues.emplace_back();
+				clearValue.color.float32[0] = clearColor.x;
+				clearValue.color.float32[1] = clearColor.y;
+				clearValue.color.float32[2] = clearColor.z;
+				clearValue.color.float32[3] = clearColor.w;
+			}
+			catch (const std::exception& e)
+			{
+				XENON_LOG_ERROR("Clear position value error: {}", e.what());
+			}
+		}
+
 		if (attachmentTypes & Xenon::Backend::AttachmentType::Depth && attachmentTypes & Xenon::Backend::AttachmentType::Stencil)
 		{
 			try

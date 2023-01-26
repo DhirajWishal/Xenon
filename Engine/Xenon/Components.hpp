@@ -18,6 +18,8 @@
  */
 #define XENON_HLSL_VEC3_ALIGNMENT alignas(sizeof(glm::vec4))
 
+#define XENON_MAX_LIGHT_SOURCE_COUNT 1000
+
 namespace Xenon
 {
 	namespace Components
