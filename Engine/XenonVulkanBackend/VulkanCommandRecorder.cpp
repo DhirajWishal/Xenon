@@ -71,13 +71,13 @@ namespace /* anonymous */
 		{
 			try
 			{
-				const auto clearColor = std::get<float>(*(itr++));
+				const auto clearColor = std::get<glm::vec4>(*(itr++));
 
 				auto& clearValue = vkClearValues.emplace_back();
-				clearValue.color.float32[0] = clearColor;
-				clearValue.color.float32[1] = 0.0f;
-				clearValue.color.float32[2] = 0.0f;
-				clearValue.color.float32[3] = 0.0f;
+				clearValue.color.float32[0] = clearColor.x;
+				clearValue.color.float32[1] = clearColor.y;
+				clearValue.color.float32[2] = clearColor.z;
+				clearValue.color.float32[3] = clearColor.w;
 			}
 			catch (const std::exception& e)
 			{

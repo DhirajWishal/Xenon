@@ -16,6 +16,7 @@
 #include "Xenon/Layers/DefaultRayTracingLayer.hpp"
 #include "Xenon/Layers/ShadowMapLayer.hpp"
 #include "Xenon/Layers/DiffusionLayer.hpp"
+#include "Xenon/Layers/GBufferLayer.hpp"
 
 #include "XenonShaderBank/Debugging/Shader.vert.hpp"
 #include "XenonShaderBank/Debugging/Shader.frag.hpp"
@@ -120,13 +121,13 @@ void Studio::run()
 	Xenon::MaterialBuilder materialBuidler;
 	materialBuidler.addBaseColorTexture();	// Use the sub mesh's one.
 
-	// Create the occlusion layer for occlusion culling.
-	auto pOcclusionLayer = m_Renderer.createLayer<Xenon::OcclusionLayer>(m_Scene.getCamera(), g_DefaultRenderingPriority);
-	pOcclusionLayer->setScene(m_Scene);
-
-	// Create the shadow map layer.
-	auto pShadowMapLayer = m_Renderer.createLayer<Xenon::Experimental::ShadowMapLayer>(m_Scene.getCamera());
-	pShadowMapLayer->setScene(m_Scene);
+	// // Create the occlusion layer for occlusion culling.
+	// auto pOcclusionLayer = m_Renderer.createLayer<Xenon::OcclusionLayer>(m_Scene.getCamera(), g_DefaultRenderingPriority);
+	// pOcclusionLayer->setScene(m_Scene);
+	// 
+	// // Create the shadow map layer.
+	// auto pShadowMapLayer = m_Renderer.createLayer<Xenon::Experimental::ShadowMapLayer>(m_Scene.getCamera());
+	// pShadowMapLayer->setScene(m_Scene);
 
 	// Setup the pipeline.
 #ifdef XENON_DEV_ENABLE_RAY_TRACING
@@ -144,9 +145,9 @@ void Studio::run()
 	};
 
 #else 
-	auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRasterizingLayer>(m_Scene.getCamera(), g_DefaultRenderingPriority);
-	pRenderTarget->setScene(m_Scene);
-	pRenderTarget->setOcclusionLayer(pOcclusionLayer);
+	// auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRasterizingLayer>(m_Scene.getCamera(), g_DefaultRenderingPriority);
+	// pRenderTarget->setScene(m_Scene);
+	// pRenderTarget->setOcclusionLayer(pOcclusionLayer);
 
 	Xenon::Backend::RasterizingPipelineSpecification specification;
 	// specification.m_VertexShader = Xenon::Generated::CreateShaderShader_vert();
@@ -155,8 +156,8 @@ void Studio::run()
 	specification.m_FragmentShader = Xenon::Generated::CreateShaderScene_frag();
 	materialBuidler.setRasterizingPipelineSpecification(specification);
 
-	materialBuidler.addShadowMap(pShadowMapLayer->getShadowTexture());
-	materialBuidler.addCustomProperty(pShadowMapLayer->getShadowCameraBuffer());
+	// materialBuidler.addShadowMap(pShadowMapLayer->getShadowTexture());
+	// materialBuidler.addCustomProperty(pShadowMapLayer->getShadowCameraBuffer());
 
 	const auto loaderFunction = [this, &materialBuidler]
 	{
@@ -167,17 +168,23 @@ void Studio::run()
 
 #endif // XENON_DEV_ENABLE_RAY_TRACING
 
-	// Create the diffusion layer.
-	auto pDiffusionLayer = m_Renderer.createLayer<Xenon::Experimental::DiffusionLayer>(m_Scene.getCamera()->getWidth(), m_Scene.getCamera()->getHeight(), pRenderTarget->getPriority());
-	pDiffusionLayer->setSourceImage(pRenderTarget->getColorAttachment());
+	// // Create the diffusion layer.
+	// auto pDiffusionLayer = m_Renderer.createLayer<Xenon::Experimental::DiffusionLayer>(m_Scene.getCamera()->getWidth(), m_Scene.getCamera()->getHeight(), pRenderTarget->getPriority());
+	// pDiffusionLayer->setSourceImage(pRenderTarget->getColorAttachment());
 
 	// Create the layers.
 	auto pImGui = m_Renderer.createLayer<ImGuiLayer>(m_Scene.getCamera());
 	pImGui->setScene(m_Scene);
+	m_Renderer.setScene(m_Scene);
 
 	// Set the layer to be shown.
 	// pImGui->showLayer(pRenderTarget);
-	pImGui->showLayer(pDiffusionLayer);
+	pImGui->getLayerView().addLayerOption("GBuffer Positive X Color", m_Renderer.getPositiveXLayer());
+	pImGui->getLayerView().addLayerOption("GBuffer Negative X Color", m_Renderer.getNegativeXLayer());
+	pImGui->getLayerView().addLayerOption("GBuffer Positive Y Color", m_Renderer.getPositiveYLayer());
+	pImGui->getLayerView().addLayerOption("GBuffer Negative Y Color", m_Renderer.getNegativeYLayer());
+	pImGui->getLayerView().addLayerOption("GBuffer Positive Z Color", m_Renderer.getPositiveZLayer());
+	pImGui->getLayerView().addLayerOption("GBuffer Negative Z Color", m_Renderer.getNegativeZLayer());
 
 	// Create the light source.
 	m_LightGroups.emplace_back(createLightSource());
@@ -194,7 +201,7 @@ void Studio::run()
 			m_Scene.beginUpdate();
 
 			// Set the draw call count.
-			pImGui->setDrawCallCount(m_Scene.getDrawableCount(), pRenderTarget->getDrawCount());
+			// pImGui->setDrawCallCount(m_Scene.getDrawableCount(), pRenderTarget->getDrawCount());
 
 			// Begin the ImGui scene.
 			// Handle the inputs and update the camera only if we need to.

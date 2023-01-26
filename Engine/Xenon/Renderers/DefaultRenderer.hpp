@@ -9,6 +9,8 @@ namespace Xenon
 {
 	namespace Experimental
 	{
+		class GBufferLayer;
+
 		/**
 		 * Default renderer class.
 		 * This class performs global illumination and an additional layer can be added for other processing.
@@ -25,6 +27,63 @@ namespace Xenon
 			 * @param title The title of the renderer window.
 			 */
 			explicit DefaultRenderer(Instance& instance, Backend::Camera* pCamera, const std::string& title);
+
+			/**
+			 * Set the renderable scene to the layers.
+			 *
+			 * @param scene The scene reference.
+			 */
+			void setScene(Scene& scene);
+
+			/**
+			 * Get the positive X layer.
+			 *
+			 * @return The layer pointer.
+			 */
+			[[nodiscard]] GBufferLayer* getPositiveXLayer() noexcept { return m_pPositiveXLayer; }
+
+			/**
+			 * Get the negative X layer.
+			 *
+			 * @return The layer pointer.
+			 */
+			[[nodiscard]] GBufferLayer* getNegativeXLayer() noexcept { return m_pNegativeXLayer; }
+
+			/**
+			 * Get the positive Y layer.
+			 *
+			 * @return The layer pointer.
+			 */
+			[[nodiscard]] GBufferLayer* getPositiveYLayer() noexcept { return m_pPositiveYLayer; }
+
+			/**
+			 * Get the negative Y layer.
+			 *
+			 * @return The layer pointer.
+			 */
+			[[nodiscard]] GBufferLayer* getNegativeYLayer() noexcept { return m_pNegativeYLayer; }
+
+			/**
+			 * Get the positive Z layer.
+			 *
+			 * @return The layer pointer.
+			 */
+			[[nodiscard]] GBufferLayer* getPositiveZLayer() noexcept { return m_pPositiveZLayer; }
+
+			/**
+			 * Get the negative Z layer.
+			 *
+			 * @return The layer pointer.
+			 */
+			[[nodiscard]] GBufferLayer* getNegativeZLayer() noexcept { return m_pNegativeZLayer; }
+
+		private:
+			GBufferLayer* m_pPositiveXLayer = nullptr;
+			GBufferLayer* m_pNegativeXLayer = nullptr;
+			GBufferLayer* m_pPositiveYLayer = nullptr;
+			GBufferLayer* m_pNegativeYLayer = nullptr;
+			GBufferLayer* m_pPositiveZLayer = nullptr;
+			GBufferLayer* m_pNegativeZLayer = nullptr;
 		};
 	}
 }

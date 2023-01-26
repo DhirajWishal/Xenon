@@ -46,7 +46,8 @@ void LayerView::setLayer(Xenon::Layer* pLayer)
 
 void LayerView::copyLayerImage(Xenon::Backend::CommandRecorder* pCommandRecorder)
 {
-	m_pImage->copyFrom(m_pLayerToShow->getColorAttachment(), pCommandRecorder);
+	if (m_pLayerToShow && m_pImage)
+		m_pImage->copyFrom(m_pLayerToShow->getColorAttachment(), pCommandRecorder);
 }
 
 void LayerView::begin(std::chrono::nanoseconds delta)
@@ -55,16 +56,23 @@ void LayerView::begin(std::chrono::nanoseconds delta)
 	{
 		if (ImGui::Begin("Layer View", &m_bIsOpen))
 		{
+			// Show the available options.
+			showOptionsCombo();
+
+			// Setup the region sizes.
 			const auto size = ImGui::GetContentRegionAvail();
 			m_Size.x = size.x;
 			m_Size.y = size.y;
 
-			ImGui::Image(std::bit_cast<void*>(m_ImageHash), size);
-			m_bIsInFocus = ImGui::IsWindowFocused();
-
 			const auto pos = ImGui::GetWindowPos();
 			m_Position.x = pos.x;
 			m_Position.y = pos.y;
+
+			// Check if the window is in focus.
+			m_bIsInFocus = ImGui::IsWindowFocused();
+
+			// Show the image.
+			ImGui::Image(std::bit_cast<void*>(m_ImageHash), size);
 		}
 
 		// Finally show the ImGuizmo stuff.
@@ -119,4 +127,26 @@ void LayerView::begin(std::chrono::nanoseconds delta)
 
 void LayerView::end()
 {
+}
+
+void LayerView::addLayerOption(const std::string& title, Xenon::Layer* pLayer)
+{
+	m_LayerOptions.emplace_back(title, pLayer);
+}
+
+void LayerView::showOptionsCombo()
+{
+	if (ImGui::BeginCombo("Select Layer", m_SelectedOption.first.c_str()))
+	{
+		for (const auto& option : m_LayerOptions)
+		{
+			if (ImGui::Selectable(option.first.c_str(), m_SelectedOption.first == option.first))
+			{
+				m_SelectedOption = option;
+				setLayer(option.second);
+			}
+		}
+
+		ImGui::EndCombo();
+	}
 }

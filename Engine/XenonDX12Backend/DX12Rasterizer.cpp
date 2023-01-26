@@ -246,7 +246,7 @@ namespace Xenon
 			if (m_AttachmentTypes & AttachmentType::Normal)
 			{
 				specification.m_Usage = ImageUsage::ColorAttachment | ImageUsage::Storage;
-				specification.m_Format = getBestFormat({ DataFormat::R32G32B32_SFLOAT }, D3D12_FORMAT_SUPPORT1_RENDER_TARGET);
+				specification.m_Format = getBestFormat({ DataFormat::R32G32B32A32_SFLOAT }, D3D12_FORMAT_SUPPORT1_RENDER_TARGET);
 
 				if (specification.m_Format == DataFormat::Undefined)
 				{

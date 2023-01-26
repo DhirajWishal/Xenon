@@ -113,6 +113,13 @@ public:
 	 */
 	[[nodiscard]] uintptr_t getImageID(Xenon::Backend::Image* pImage, Xenon::Backend::ImageView* pImageView, Xenon::Backend::ImageSampler* pImageSampler);
 
+	/**
+	 * Get the layer view UI.
+	 *
+	 * @return The object reference.
+	 */
+	[[nodiscard]] LayerView& getLayerView() noexcept { return m_UIStorage.m_LayerViewUI; }
+
 private:
 	/**
 	 * Configure ImGui.

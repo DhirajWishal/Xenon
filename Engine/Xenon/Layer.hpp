@@ -56,7 +56,7 @@ namespace Xenon
 		 *
 		 * @param scene The scene to attach.
 		 */
-		void setScene(Scene& scene) { m_pScene = &scene; }
+		virtual void setScene(Scene& scene) { m_pScene = &scene; }
 
 		/**
 		 * Get the scene pointer.

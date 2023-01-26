@@ -5,6 +5,7 @@
 
 #include "Xenon/Instance.hpp"
 #include "Xenon/Renderer.hpp"
+#include "Xenon/Renderers/DefaultRenderer.hpp"
 #include "Xenon/Scene.hpp"
 
 /**
@@ -22,6 +23,8 @@ class Studio final
 		std::unique_ptr<Xenon::Backend::ImageView> m_pImageView = nullptr;
 		std::unique_ptr<Xenon::Backend::ImageSampler> m_pImageSampler = nullptr;
 	};
+
+	using RendererType = Xenon::Experimental::DefaultRenderer;
 
 public:
 	/**
@@ -59,7 +62,7 @@ private:
 private:
 	Xenon::Instance m_Instance;
 	Xenon::Scene m_Scene;
-	Xenon::Renderer m_Renderer;
+	RendererType m_Renderer;
 
 	std::vector<Xenon::Group> m_LightGroups;
 
