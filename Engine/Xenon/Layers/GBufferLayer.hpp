@@ -23,7 +23,7 @@ namespace Xenon
 			PositiveZ,	// +Z
 			NegativeZ,	// -Z
 
-			Front = PositiveZ
+			Front = NegativeZ
 		};
 
 		/**
@@ -84,6 +84,11 @@ namespace Xenon
 			 * @param subMesh The sub-mesh of the material.
 			 */
 			void createMaterial(SubMesh& subMesh);
+
+			/**
+			 * Rotate the camera to the required face.
+			 */
+			void rotateCamera();
 
 		private:
 			glm::mat4 m_RotationMatrix = glm::mat4(1.0f);

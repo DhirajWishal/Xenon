@@ -29,6 +29,10 @@ LayerView::LayerView(ImGuiLayer* pImGuiLayer)
 
 void LayerView::setLayer(Xenon::Layer* pLayer)
 {
+	// Wait idle while the previous commands are done.
+	m_pImGuiLayer->getRenderer().getInstance().getBackendDevice()->waitIdle();
+
+	// Setup the layer info.
 	m_pLayerToShow = pLayer;
 
 	const auto pImage = pLayer->getColorAttachment();

@@ -25,7 +25,7 @@ cbuffer rotation : register(b0) { RotationBuffer rotation; };
 VSOutput main(VSInput input)
 {
 	VSOutput output;
-	output.position = mul(camera.projection, mul(camera.view, mul(rotation.m_Matrix, float4(input.position, 100.0f))));
+	output.position = mul(camera.projection, mul(rotation.m_Matrix, float4(input.position, 100.0f)));
 	output.textureCoordinate = input.textureCoordinate;
 	output.normal = input.normal;
 

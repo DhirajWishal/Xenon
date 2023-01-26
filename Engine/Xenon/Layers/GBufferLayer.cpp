@@ -11,8 +11,16 @@
 
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/rotate_vector.hpp>
 
 #include <optick.h>
+
+constexpr auto g_PositiveXFace = glm::vec3(0.0f, 0.0f, 1.0f);
+constexpr auto g_NegativeXFace = glm::vec3(0.0f, 0.0f, -1.0f);
+// constexpr auto g_PositiveXFace = glm::vec3(0.0f, 0.0f, -1.0f);
+// constexpr auto g_NegativeXFace = glm::vec3(0.0f, 0.0f, 1.0f);
+// constexpr auto g_PositiveXFace = glm::vec3(0.0f, 0.0f, -1.0f);
+// constexpr auto g_NegativeXFace = glm::vec3(0.0f, 0.0f, 1.0f);
 
 namespace Xenon
 {
@@ -27,35 +35,34 @@ namespace Xenon
 			switch (face)
 			{
 			case Xenon::Experimental::GBufferFace::PositiveX:
-				m_RotationMatrix = glm::rotate(m_RotationMatrix, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+				m_RotationMatrix = glm::rotate(m_RotationMatrix, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+				m_RotationMatrix = glm::rotate(m_RotationMatrix, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 				break;
 
 			case Xenon::Experimental::GBufferFace::NegativeX:
-				m_RotationMatrix = glm::rotate(m_RotationMatrix, glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+				m_RotationMatrix = glm::rotate(m_RotationMatrix, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+				m_RotationMatrix = glm::rotate(m_RotationMatrix, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 				break;
 
 			case Xenon::Experimental::GBufferFace::PositiveY:
-				m_RotationMatrix = glm::rotate(m_RotationMatrix, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+				m_RotationMatrix = glm::rotate(m_RotationMatrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 				break;
 
 			case Xenon::Experimental::GBufferFace::NegativeY:
-				m_RotationMatrix = glm::rotate(m_RotationMatrix, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+				m_RotationMatrix = glm::rotate(m_RotationMatrix, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 				break;
 
-				// case Xenon::Experimental::GBufferFace::PositiveZ:
-				// 	m_RotationMatrix = glm::rotate(m_RotationMatrix, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-				// 	break;
+			case Xenon::Experimental::GBufferFace::PositiveZ:
+				m_RotationMatrix = glm::rotate(m_RotationMatrix, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+				break;
 
 			case Xenon::Experimental::GBufferFace::NegativeZ:
-				m_RotationMatrix = glm::rotate(m_RotationMatrix, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+				m_RotationMatrix = glm::rotate(m_RotationMatrix, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 				break;
 
 			default:
 				break;
 			}
-
-			// Copy the rotation matrix.
-			m_pRotationBuffer->write(ToBytes(glm::value_ptr(m_RotationMatrix)), sizeof(glm::mat4));
 
 			// Create the pipeline.
 			Backend::RasterizingPipelineSpecification specification = {};
@@ -95,6 +102,9 @@ namespace Xenon
 		{
 			OPTICK_EVENT();
 
+			// Rotate the camera.
+			rotateCamera();
+
 			// Begin the command recorder.
 			m_pCommandRecorder->begin();
 
@@ -115,6 +125,8 @@ namespace Xenon
 
 		void GBufferLayer::setScene(Scene& scene)
 		{
+			OPTICK_EVENT();
+
 			m_pScene = &scene;
 			scene.setupDescriptor(m_pSceneDescriptor.get(), m_pPipeline.get());
 		}
@@ -162,6 +174,22 @@ namespace Xenon
 			// Setup the new material descriptors.
 			const auto& pDescriptors = m_pMaterialDescriptors[subMesh] = m_pPipeline->createDescriptor(Backend::DescriptorType::Material);
 			pDescriptors->attach(0, subMesh.m_BaseColorTexture.m_pImage, subMesh.m_BaseColorTexture.m_pImageView, subMesh.m_BaseColorTexture.m_pImageSampler, Backend::ImageUsage::Graphics);
+		}
+
+		void GBufferLayer::rotateCamera()
+		{
+			OPTICK_EVENT();
+
+			// Get the camera information.
+			const auto position = m_Renderer.getCamera()->m_Position;
+			const auto cameraUp = m_Renderer.getCamera()->m_Up;
+			const auto front = m_RotationMatrix * glm::vec4(m_Renderer.getCamera()->m_Front, 1.0f);
+
+			// Calculate the view-model matrix.
+			const auto matrix = glm::lookAt(position, position + glm::vec3(front), cameraUp);
+
+			// Copy the rotation matrix.
+			m_pRotationBuffer->write(ToBytes(glm::value_ptr(matrix)), sizeof(glm::mat4));
 		}
 	}
 }
