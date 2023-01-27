@@ -257,7 +257,7 @@ void Studio::updateCamera(std::chrono::nanoseconds delta)
 		m_Scene.getCamera()->moveDown(delta);
 
 	// Rotate the camera.
-	if (m_Renderer.getMouse().m_ButtonLeft == Xenon::MouseButtonEvent::Press)
+	if (m_Renderer.getMouse().m_ButtonMiddle == Xenon::MouseButtonEvent::Press)
 	{
 		const auto positionX = m_Renderer.getMouse().m_MousePosition.m_XAxis * -1.0f;
 		const auto positionY = m_Renderer.getMouse().m_MousePosition.m_YAxis * -1.0f;
