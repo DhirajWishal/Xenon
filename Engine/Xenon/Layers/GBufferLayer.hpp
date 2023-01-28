@@ -114,6 +114,8 @@ namespace Xenon
 		private:
 			glm::mat4 m_RotationMatrix = glm::mat4(1.0f);
 
+			std::unique_ptr<Backend::Image> m_pLightImage = nullptr;
+
 			std::unique_ptr<Backend::Buffer> m_pRotationBuffer = nullptr;
 
 			std::unique_ptr<Backend::RasterizingPipeline> m_pPipeline = nullptr;

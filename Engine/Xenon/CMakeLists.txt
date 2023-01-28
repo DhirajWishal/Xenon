@@ -61,6 +61,8 @@ set(
 	"Layers/GBufferLayer.hpp"
 	"Layers/DirectLightingLayer.cpp"
 	"Layers/DirectLightingLayer.hpp"
+	"Layers/LightLUT.cpp"
+	"Layers/LightLUT.hpp"
 
 	"Renderers/DefaultRenderer.cpp"
 	"Renderers/DefaultRenderer.hpp"

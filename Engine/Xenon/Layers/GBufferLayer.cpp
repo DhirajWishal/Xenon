@@ -22,6 +22,9 @@ constexpr auto g_NegativeXFace = glm::vec3(0.0f, 0.0f, -1.0f);
 // constexpr auto g_PositiveXFace = glm::vec3(0.0f, 0.0f, -1.0f);
 // constexpr auto g_NegativeXFace = glm::vec3(0.0f, 0.0f, 1.0f);
 
+constexpr auto g_Resolution = 1000;
+constexpr auto g_Resolution = 1000;
+
 namespace Xenon
 {
 	namespace Experimental
@@ -77,6 +80,15 @@ namespace Xenon
 			m_pUserDefinedDescriptor->attach(0, m_pRotationBuffer.get());
 
 			m_pSceneDescriptor = m_pPipeline->createDescriptor(Backend::DescriptorType::Scene);
+
+			// Setup the light image.
+			Backend::ImageSpecification lightImageSpecification = {};
+			lightImageSpecification.m_Width = g_Resolution;
+			lightImageSpecification.m_Height = g_Resolution;
+			lightImageSpecification.m_Type = Backend::ImageType::CubeMap; // Not sure about this bud...
+			lightImageSpecification.m_Usage = Backend::ImageUsage::Storage | Backend::ImageUsage::Graphics;
+			lightImageSpecification.m_Format = Backend::DataFormat::R8_UNORMAL;
+			m_pLightImage = renderer.getInstance().getFactory()->createImage(renderer.getInstance().getBackendDevice(), lightImageSpecification);
 		}
 
 		void GBufferLayer::onPreUpdate()
