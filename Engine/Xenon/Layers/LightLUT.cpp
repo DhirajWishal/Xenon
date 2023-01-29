@@ -18,7 +18,7 @@ namespace Xenon
 	{
 		LightLUT::LightLUT(Renderer& renderer, Backend::Camera* pCamera, uint32_t priority)
 			: RasterizingLayer(renderer, priority, pCamera, Backend::AttachmentType::Color)
-			, m_pLookUpTable(renderer.getInstance().getFactory()->createBuffer(renderer.getInstance().getBackendDevice(), sizeof(glm::vec2), Backend::BufferType::Storage))
+			, m_pLookUpTable(renderer.getInstance().getFactory()->createBuffer(renderer.getInstance().getBackendDevice(), sizeof(float), Backend::BufferType::Storage))
 			, m_pControlBlock(renderer.getInstance().getFactory()->createBuffer(renderer.getInstance().getBackendDevice(), sizeof(ControlBlock), Backend::BufferType::Uniform))
 		{
 			// Create the pipeline.
@@ -60,11 +60,11 @@ namespace Xenon
 			}
 
 			// Setup the buffers again if needed.
-			const auto requriedBufferSize = vertexCount * lightCount * sizeof(glm::vec2);
+			const auto requriedBufferSize = vertexCount * lightCount * sizeof(float);
 			if (requriedBufferSize > 0 && requriedBufferSize != m_pLookUpTable->getSize())
 			{
 				m_Renderer.getInstance().getBackendDevice()->waitIdle();
-				m_pLookUpTable = m_Renderer.getInstance().getFactory()->createBuffer(m_Renderer.getInstance().getBackendDevice(), std::max(requriedBufferSize, sizeof(glm::vec2)), Backend::BufferType::Storage);
+				m_pLookUpTable = m_Renderer.getInstance().getFactory()->createBuffer(m_Renderer.getInstance().getBackendDevice(), std::max(requriedBufferSize, sizeof(float)), Backend::BufferType::Storage);
 				m_pUserDefinedDescriptor->attach(1, m_pLookUpTable.get());
 				m_pAttachment->setLightLUT(this);
 

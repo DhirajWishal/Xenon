@@ -11,7 +11,7 @@ struct FSOutput
 };
 
 cbuffer controlBlock : register(b0) { LightLUTControlBlock controlBlock; };
-RWStructuredBuffer<float2> lookUpTable : register(u1);
+RWStructuredBuffer<float> lookUpTable : register(u1);
 
 XENON_SETUP_SCENE_INFORMATION(sceneInformation);
 XENON_SETUP_LIGHT_SOURCES(lightSources);
@@ -29,7 +29,7 @@ float4 main(VSOutput input) : SV_TARGET0
 		const float uniqueID = (pitch * 1000) + yaw;
 		const float dist = distance(lightSource.m_Position, input.transformedPosition.xyz);
 
-		lookUpTable[FindLookUpTableIndex(uniqueID, i * controlBlock.m_Stride, controlBlock.m_Stride)] = float2(uniqueID, dist);
+		lookUpTable[FindLookUpTableIndex(uniqueID, i * controlBlock.m_Stride, controlBlock.m_Stride)] = dist;
 	}
 
 	return float4(1.0f, 1.0f, 1.0f, 1.0f);

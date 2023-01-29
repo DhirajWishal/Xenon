@@ -50,7 +50,7 @@ SETUP_INPUT_IMAGE(positiveZPosition, 19);
 SETUP_INPUT_IMAGE(negativeZPosition, 20);
 
 cbuffer controlBlock : register(b21) { LightLUTControlBlock controlBlock; };
-StructuredBuffer<float2> lookUpTable : register(t22);
+StructuredBuffer<float> lookUpTable : register(t22);
 
 bool isOccluded(float3 position, float3 lightPosition, uint index)
 {
@@ -59,7 +59,7 @@ bool isOccluded(float3 position, float3 lightPosition, uint index)
 	const float yaw = tan(delta.y / delta.x);
 
 	const float uniqueID = (pitch * 1000) + yaw;
-	const float2 foundValue = lookUpTable[FindLookUpTableIndex(uniqueID, index * controlBlock.m_Stride, controlBlock.m_Stride)];
+	const float foundValue = lookUpTable[FindLookUpTableIndex(uniqueID, index * controlBlock.m_Stride, controlBlock.m_Stride)];
 
 	const float lightDist = distance(lightPosition, position);
 	return foundValue > lightDist;
@@ -85,8 +85,8 @@ void main(uint2 ThreadID : SV_DispatchThreadID)
 
 		if(!isOccluded(position, source.m_Position, i))
 		{
-			// litValue = float4(diffuse, 1.0f) * colorValue;
-			litValue = colorValue;
+			litValue = float4(diffuse, 1.0f) * colorValue;
+			// litValue = colorValue;
 		}
 	}
 
