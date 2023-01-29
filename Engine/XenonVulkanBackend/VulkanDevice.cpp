@@ -610,6 +610,8 @@ namespace Xenon
 			features.sampleRateShading = VK_TRUE;
 			features.tessellationShader = VK_TRUE;
 			features.geometryShader = VK_TRUE;
+			features.fragmentStoresAndAtomics = VK_TRUE;
+			features.fillModeNonSolid = VK_TRUE;
 
 			VkPhysicalDeviceBufferDeviceAddressFeatures bufferDeviceAddressFeatures = {};
 			bufferDeviceAddressFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES;

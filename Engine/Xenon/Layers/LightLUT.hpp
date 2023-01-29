@@ -3,14 +3,16 @@
 
 #pragma once
 
-#include "../Layer.hpp"
+#include "../RasterizingLayer.hpp"
 
-#include "../../XenonBackend/ComputePipeline.hpp"
+#include "../../XenonBackend/RasterizingPipeline.hpp"
 
 namespace Xenon
 {
 	namespace Experimental
 	{
+		class DirectLightingLayer;
+
 		/**
 		 * Light look up table class.
 		 * This class cache's light's occlusion data.
@@ -22,18 +24,31 @@ namespace Xenon
 		 *
 		 * This also refresh the image by setting a single value (0) before each run. And each class is intended to be used by one light.
 		 */
-		class LightLUT final : public Layer
+		class LightLUT final : public RasterizingLayer
 		{
+			/**
+			 * Control block structure.
+			 */
+			struct ControlBlock final
+			{
+				XENON_HLSL_VEC3_ALIGNMENT uint32_t m_Stride;
+			};
+
 		public:
 			/**
 			 * Explicit constructor.
 			 *
 			 * @param renderer The renderer reference.
-			 * @param width The width of the layer's output image.
-			 * @param height The height of the layer's output image.
+			 * @param pCamera The camera pointer used by the renderer.
 			 * @param priority The priority of the layer.
 			 */
-			explicit LightLUT(Renderer& renderer, uint32_t width, uint32_t height, uint32_t priority);
+			explicit LightLUT(Renderer& renderer, Backend::Camera* pCamera, uint32_t priority);
+
+			/**
+			 * On pre-update function.
+			 * This object is called by the renderer before issuing it to the job system to be executed.
+			 */
+			void onPreUpdate() override;
 
 			/**
 			 * Update the layer.
@@ -46,11 +61,65 @@ namespace Xenon
 			void onUpdate(Layer* pPreviousLayer, uint32_t imageIndex, uint32_t frameIndex) override;
 
 			/**
-			 * Get the color attachment from the layer.
+			 * Set the renderable scene to the layer.
 			 *
-			 * @return The image pointer.
+			 * @param scene The scene reference.
 			 */
-			[[nodiscard]] Backend::Image* getColorAttachment() override { return nullptr; }
+			void setScene(Scene& scene) override;
+
+			/**
+			 * Set the attachment direct lighting layer.
+			 *
+			 * @param pLayer The layer pointer.
+			 */
+			void setAttachment(DirectLightingLayer* pLayer);
+
+			/**
+			 * Get the control block pointer.
+			 *
+			 * @return The buffer pointer.
+			 */
+			[[nodiscard]] Backend::Buffer* getControlBlock() noexcept { return m_pControlBlock.get(); }
+
+			/**
+			 * Get the control block pointer.
+			 *
+			 * @return The buffer pointer.
+			 */
+			[[nodiscard]] const Backend::Buffer* getControlBlock() const noexcept { return m_pControlBlock.get(); }
+
+			/**
+			 * Get the look up table pointer.
+			 *
+			 * @return The buffer pointer.
+			 */
+			[[nodiscard]] Backend::Buffer* getLookUpTable() noexcept { return m_pLookUpTable.get(); }
+
+			/**
+			 * Get the look up table pointer.
+			 *
+			 * @return The buffer pointer.
+			 */
+			[[nodiscard]] const Backend::Buffer* getLookUpTable() const noexcept { return m_pLookUpTable.get(); }
+
+		private:
+			/**
+			 * Issue all the draw calls.
+			 */
+			void issueDrawCalls();
+
+		private:
+			ControlBlock m_ControlBlock;
+
+			std::unique_ptr<Backend::Buffer> m_pLookUpTable;
+			std::unique_ptr<Backend::Buffer> m_pControlBlock;
+
+			std::unique_ptr<Backend::RasterizingPipeline> m_pPipeline = nullptr;
+
+			std::unique_ptr<Backend::Descriptor> m_pSceneDescriptor = nullptr;
+			std::unique_ptr<Backend::Descriptor> m_pUserDefinedDescriptor = nullptr;
+
+			DirectLightingLayer* m_pAttachment = nullptr;
 		};
 	}
 }

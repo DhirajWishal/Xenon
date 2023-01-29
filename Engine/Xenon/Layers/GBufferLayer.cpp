@@ -23,7 +23,6 @@ constexpr auto g_NegativeXFace = glm::vec3(0.0f, 0.0f, -1.0f);
 // constexpr auto g_NegativeXFace = glm::vec3(0.0f, 0.0f, 1.0f);
 
 constexpr auto g_Resolution = 1000;
-constexpr auto g_Resolution = 1000;
 
 namespace Xenon
 {

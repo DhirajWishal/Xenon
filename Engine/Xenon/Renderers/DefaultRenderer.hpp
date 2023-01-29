@@ -11,6 +11,7 @@ namespace Xenon
 	{
 		class GBufferLayer;
 		class DirectLightingLayer;
+		class LightLUT;
 
 		/**
 		 * Default renderer class.
@@ -94,6 +95,8 @@ namespace Xenon
 			GBufferLayer* m_pNegativeZLayer = nullptr;
 
 			DirectLightingLayer* m_pDirectLightingLayer = nullptr;
+
+			LightLUT* m_pLightLUT = nullptr;
 		};
 	}
 }

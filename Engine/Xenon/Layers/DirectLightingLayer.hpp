@@ -8,6 +8,7 @@
 #include "../../XenonBackend/ComputePipeline.hpp"
 
 #include "GBufferLayer.hpp"
+#include "LightLUT.hpp"
 
 namespace Xenon
 {
@@ -61,6 +62,13 @@ namespace Xenon
 			 * @param pLayer The layer pointer.
 			 */
 			void setGBuffer(GBufferLayer* pLayer);
+
+			/**
+			 * Set the light look up table.
+			 * 
+			 * @param pLayer The layer pointer.
+			 */
+			void setLightLUT(LightLUT* pLayer);
 
 		private:
 			/**

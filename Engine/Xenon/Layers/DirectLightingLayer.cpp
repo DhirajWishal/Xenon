@@ -73,6 +73,13 @@ namespace Xenon
 			m_pDescriptor->attach(offset + imageFace, pLayer->getPositionAttachment(), m_pPositionImageViews[imageFace].get(), m_DefaultSampler.get(), Backend::ImageUsage::Graphics);
 		}
 
+		void DirectLightingLayer::setLightLUT(LightLUT* pLayer)
+		{
+			pLayer->setAttachment(this);
+			m_pDescriptor->attach(21, pLayer->getControlBlock());
+			m_pDescriptor->attach(22, pLayer->getLookUpTable());
+		}
+
 		void DirectLightingLayer::setupBuffers()
 		{
 			OPTICK_EVENT();
