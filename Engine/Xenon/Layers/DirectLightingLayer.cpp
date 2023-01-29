@@ -50,7 +50,7 @@ namespace Xenon
 			// Issue the draw calls.
 			m_pCommandRecorder->bind(m_pPipeline.get());
 			m_pCommandRecorder->bind(m_pPipeline.get(), m_pDescriptor.get());
-			m_pCommandRecorder->compute(m_pOutputImage->getWidth() / 8, m_pOutputImage->getHeight() / 8, m_pOutputImage->getDepth());
+			m_pCommandRecorder->compute(m_pOutputImage->getWidth(), m_pOutputImage->getHeight(), m_pOutputImage->getDepth());
 
 			// End the command recorder.
 			m_pCommandRecorder->end();

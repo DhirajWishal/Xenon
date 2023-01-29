@@ -19,7 +19,7 @@ struct LightLUTControlBlock
 	uint m_Stride;
 };
 
-uint FindLookUpTableIndex(float uniqueID, uint start = 0, uint size = 1000)
+uint FindLookUpTableIndex(float uniqueID, uint start, uint size)
 {
 	const uint hash = asuint(uniqueID);
 	for(uint i = 0; (i < 32) && (size > 0); i++)
@@ -29,6 +29,15 @@ uint FindLookUpTableIndex(float uniqueID, uint start = 0, uint size = 1000)
 	}
 
 	return start;
+}
+
+float GetLookUpTableUniqueID(float3 origin, float3 lightSource)
+{
+	const float3 delta = origin - lightSource;
+	const float pitch = tan(delta.z / delta.x);
+	const float yaw = tan(delta.y / delta.x);
+
+	return (pitch * 1000) + yaw;
 }
 
 #endif // LIGHT_LUT_COMMON_HLSLI

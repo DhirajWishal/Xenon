@@ -54,18 +54,14 @@ StructuredBuffer<float> lookUpTable : register(t22);
 
 bool isOccluded(float3 position, float3 lightPosition, uint index)
 {
-	const float3 delta = position - lightPosition;
-	const float pitch = tan(delta.z / delta.x);
-	const float yaw = tan(delta.y / delta.x);
-
-	const float uniqueID = (pitch * 1000) + yaw;
+	const float uniqueID = GetLookUpTableUniqueID(position, lightPosition);
 	const float foundValue = lookUpTable[FindLookUpTableIndex(uniqueID, index * controlBlock.m_Stride, controlBlock.m_Stride)];
 
 	const float lightDist = distance(lightPosition, position);
 	return foundValue > lightDist;
 }
 
-[numthreads(8, 8, 1)]
+[numthreads(1, 1, 1)]
 void main(uint2 ThreadID : SV_DispatchThreadID)
 {
 	int2 coordinate = int2(ThreadID.xy);
@@ -77,16 +73,16 @@ void main(uint2 ThreadID : SV_DispatchThreadID)
 	const float4 colorValue = negativeZColorImage[coordinate];
 	for(uint i = 0; i < controlStructure.m_LightCount; i++)
 	{
-		LightSource source = lights[i];
+		const LightSource source = lights[i];
 
-		float3 lightDir = normalize(source.m_Position - position);
-		float diff = max(dot(normal, lightDir), 0.0f);
-		float3 diffuse = diff * source.m_Color;
+		const float3 lightDir = normalize(source.m_Position - position);
+		const float diff = max(dot(normal, lightDir), 0.0f);
+		const float3 diffuse = diff * source.m_Color;
 
 		if(!isOccluded(position, source.m_Position, i))
 		{
-			litValue = float4(diffuse, 1.0f) * colorValue;
-			// litValue = colorValue;
+			// litValue = float4(diffuse, 1.0f) * colorValue;
+			litValue = colorValue;
 		}
 	}
 

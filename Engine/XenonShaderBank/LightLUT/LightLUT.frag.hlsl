@@ -22,11 +22,7 @@ float4 main(VSOutput input) : SV_TARGET0
 	{
 		const LightSource lightSource = lightSources[i];
 
-		const float3 delta = input.transformedPosition.xyz - lightSource.m_Position;
-		const float pitch = tan(delta.z / delta.x);
-		const float yaw = tan(delta.y / delta.x);
-
-		const float uniqueID = (pitch * 1000) + yaw;
+		const float uniqueID = GetLookUpTableUniqueID(input.transformedPosition.xyz, lightSource.m_Position);
 		const float dist = distance(lightSource.m_Position, input.transformedPosition.xyz);
 
 		lookUpTable[FindLookUpTableIndex(uniqueID, i * controlBlock.m_Stride, controlBlock.m_Stride)] = dist;
