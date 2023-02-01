@@ -17,6 +17,8 @@ XENON_SETUP_CAMERA(MonoCamera, camera);
 XENON_SETUP_SCENE_INFORMATION(sceneInformation);
 XENON_SETUP_LIGHT_SOURCES(lightSources);
 
+XENON_SETUP_TRANSFORM(transform);
+
 struct ShadowMapCamera
 {
 	float4x4 m_View;
@@ -34,10 +36,8 @@ static const float4x4 biasMat = float4x4(
 
 VSOutput main(VSInput input)
 {
-	const float4x4 identityMatrix = GetIdentityMatrix(); 
-
 	VSOutput output;
-	output.position = mul(camera.projection, mul(camera.view, mul(identityMatrix, float4(input.position, 100.0f))));
+	output.position = mul(camera.projection, mul(camera.view, mul(transform.m_Matrix, float4(input.position, 1.0f))));
 	output.textureCoordinates = input.textureCoordinates;
 	output.normal = input.normal;
 
@@ -45,12 +45,13 @@ VSOutput main(VSInput input)
 	{
 		LightSource lightSource = lightSources[i];
 
-		float4 pos = mul(identityMatrix, float4(input.position, 1.0));
-		output.normal = mul((float3x3)identityMatrix, input.normal);
+		float4 pos = mul(transform.m_Matrix, float4(input.position, 1.0));
+		output.normal = mul((float3x3)transform.m_Matrix, input.normal);
     	output.lightVector = normalize(lightSource.m_Position.xyz - input.position);
     	output.viewVector = -pos.xyz;
+    	output.lightColor = lightSource.m_Color;
 
-		output.shadowCoordinate = mul(biasMat, mul(mul(shadowCamera.m_View, shadowCamera.m_Projection), mul(identityMatrix, float4(input.position, 1.0))));
+		output.shadowCoordinate = mul(biasMat, mul(mul(shadowCamera.m_View, shadowCamera.m_Projection), mul(transform.m_Matrix, float4(input.position, 1.0))));
 	}
 
 	return output;

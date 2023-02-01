@@ -55,7 +55,7 @@ float4 main(VSOutput input) : SV_TARGET
 	float3 L = normalize(input.lightVector);
 	float3 V = normalize(input.viewVector);
 	float3 R = normalize(-reflect(L, N));
-	float3 diffuse = max(dot(N, L), ambient) * baseColorTexture.Sample(baseColorSampler, input.textureCoordinates);
+	float3 diffuse = max(dot(N, L), ambient) * (baseColorTexture.Sample(baseColorSampler, input.textureCoordinates) * input.lightColor);
 
 	return float4(diffuse * shadow, 1.0);
 }

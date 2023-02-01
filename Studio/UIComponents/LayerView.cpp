@@ -14,6 +14,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 
+#include <numbers>
+
 LayerView::LayerView(ImGuiLayer* pImGuiLayer)
 	: m_pImGuiLayer(pImGuiLayer)
 {
@@ -121,7 +123,12 @@ void LayerView::begin(std::chrono::nanoseconds delta)
 			glm::vec4 perspective;
 			glm::decompose(modelMatrix, scale, rotation, translation, skew, perspective);
 
-			const auto patchFunction = [translation](auto& object) { object.m_Position = translation; };
+			const auto patchFunction = [translation, rotation](auto& object) 
+			{
+				object.m_Position = translation; 
+				object.m_Direction = glm::eulerAngles(rotation) * std::numbers::pi_v<float> / 180.f; 
+			};
+
 			m_pImGuiLayer->getScene()->getRegistry().patch<Xenon::Components::LightSource>(group, patchFunction);
 		}
 

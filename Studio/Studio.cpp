@@ -125,10 +125,10 @@ void Studio::run()
 	// // Create the occlusion layer for occlusion culling.
 	// auto pOcclusionLayer = m_Renderer.createLayer<Xenon::OcclusionLayer>(m_Scene.getCamera(), g_DefaultRenderingPriority);
 	// pOcclusionLayer->setScene(m_Scene);
-	// 
-	// // Create the shadow map layer.
-	// auto pShadowMapLayer = m_Renderer.createLayer<Xenon::Experimental::ShadowMapLayer>(m_Scene.getCamera());
-	// pShadowMapLayer->setScene(m_Scene);
+	
+	// Create the shadow map layer.
+	auto pShadowMapLayer = m_Renderer.createLayer<Xenon::Experimental::ShadowMapLayer>(m_Scene.getCamera());
+	pShadowMapLayer->setScene(m_Scene);
 
 	// Setup the pipeline.
 #ifdef XENON_DEV_ENABLE_RAY_TRACING
@@ -146,8 +146,8 @@ void Studio::run()
 	};
 
 #else 
-	// auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRasterizingLayer>(m_Scene.getCamera(), g_DefaultRenderingPriority);
-	// pRenderTarget->setScene(m_Scene);
+	auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRasterizingLayer>(m_Scene.getCamera(), g_DefaultRenderingPriority);
+	pRenderTarget->setScene(m_Scene);
 	// pRenderTarget->setOcclusionLayer(pOcclusionLayer);
 
 	Xenon::Backend::RasterizingPipelineSpecification specification;
@@ -157,36 +157,37 @@ void Studio::run()
 	specification.m_FragmentShader = Xenon::Generated::CreateShaderScene_frag();
 	materialBuidler.setRasterizingPipelineSpecification(specification);
 
-	// materialBuidler.addShadowMap(pShadowMapLayer->getShadowTexture());
-	// materialBuidler.addCustomProperty(pShadowMapLayer->getShadowCameraBuffer());
+	materialBuidler.addShadowMap(pShadowMapLayer->getShadowTexture());
+	materialBuidler.addCustomProperty(pShadowMapLayer->getShadowCameraBuffer());
 
 	const auto loaderFunction = [this, &materialBuidler]
 	{
 		const auto grouping = m_Scene.createGroup();
 		[[maybe_unused]] const auto& geometry = m_Scene.create<Xenon::Geometry>(grouping, Xenon::Geometry::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"));
 		[[maybe_unused]] const auto& material = m_Scene.create<Xenon::Material>(grouping, materialBuidler);
+		[[maybe_unused]] const auto& transform = m_Scene.create<Xenon::Components::Transform>(grouping, glm::vec3(0), glm::vec3(0), glm::vec3(0.05f));
 	};
 
 #endif // XENON_DEV_ENABLE_RAY_TRACING
 
-	// // Create the diffusion layer.
-	// auto pDiffusionLayer = m_Renderer.createLayer<Xenon::Experimental::DiffusionLayer>(m_Scene.getCamera()->getWidth(), m_Scene.getCamera()->getHeight(), pRenderTarget->getPriority());
-	// pDiffusionLayer->setSourceImage(pRenderTarget->getColorAttachment());
+	// Create the diffusion layer.
+	auto pDiffusionLayer = m_Renderer.createLayer<Xenon::Experimental::DiffusionLayer>(m_Scene.getCamera()->getWidth(), m_Scene.getCamera()->getHeight(), pRenderTarget->getPriority());
+	pDiffusionLayer->setSourceImage(pRenderTarget->getColorAttachment());
 
 	// Create the layers.
 	auto pImGui = m_Renderer.createLayer<ImGuiLayer>(m_Scene.getCamera());
 	pImGui->setScene(m_Scene);
-	m_Renderer.setScene(m_Scene);
+	// m_Renderer.setScene(m_Scene);
 
 	// Set the layer to be shown.
-	// pImGui->showLayer(pRenderTarget);
-	pImGui->getLayerView().addLayerOption("GBuffer Positive X Color", m_Renderer.getPositiveXLayer());
-	pImGui->getLayerView().addLayerOption("GBuffer Negative X Color", m_Renderer.getNegativeXLayer());
-	pImGui->getLayerView().addLayerOption("GBuffer Positive Y Color", m_Renderer.getPositiveYLayer());
-	pImGui->getLayerView().addLayerOption("GBuffer Negative Y Color", m_Renderer.getNegativeYLayer());
-	pImGui->getLayerView().addLayerOption("GBuffer Positive Z Color", m_Renderer.getPositiveZLayer());
-	pImGui->getLayerView().addLayerOption("GBuffer Negative Z Color", m_Renderer.getNegativeZLayer());
-	pImGui->getLayerView().addLayerOption("Direct Lighting Layer", m_Renderer.getDirectLightingLayer());
+	pImGui->showLayer(pRenderTarget);
+	// pImGui->getLayerView().addLayerOption("GBuffer Positive X Color", m_Renderer.getPositiveXLayer());
+	// pImGui->getLayerView().addLayerOption("GBuffer Negative X Color", m_Renderer.getNegativeXLayer());
+	// pImGui->getLayerView().addLayerOption("GBuffer Positive Y Color", m_Renderer.getPositiveYLayer());
+	// pImGui->getLayerView().addLayerOption("GBuffer Negative Y Color", m_Renderer.getNegativeYLayer());
+	// pImGui->getLayerView().addLayerOption("GBuffer Positive Z Color", m_Renderer.getPositiveZLayer());
+	// pImGui->getLayerView().addLayerOption("GBuffer Negative Z Color", m_Renderer.getNegativeZLayer());
+	// pImGui->getLayerView().addLayerOption("Direct Lighting Layer", m_Renderer.getDirectLightingLayer());
 
 	// Create the light source.
 	m_LightGroups.emplace_back(createLightSource());
@@ -329,7 +330,16 @@ void Studio::updateLightSources()
 
 		ImGui::Text("Light ID: %i", Xenon::EnumToInt(group));
 		ImGui::NewLine();
+		
+		ImGui::ColorPicker4("Color", glm::value_ptr(light.m_Color));
+		ImGui::NewLine();
+
 		ImGui::InputFloat3("Position", glm::value_ptr(light.m_Position));
+		ImGui::InputFloat3("Direction", glm::value_ptr(light.m_Direction));
+		ImGui::NewLine();
+
+		ImGui::SliderFloat("Field Angle", &light.m_FieldAngle, 0.0f, 360.0f);
+		ImGui::DragFloat("Intensity", &light.m_Intensity, 0.01f, 0.0f, 1.0f);
 		ImGui::Separator();
 
 		// VS please fix your formatting...

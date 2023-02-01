@@ -96,6 +96,14 @@ namespace Xenon
 			 */
 			[[nodiscard]] ShadowCamera calculateShadowCamera(const Components::LightSource& lightSource) const;
 
+			/**
+			 * Create a per-geometry descriptor.
+			 *
+			 * @param group The group.
+			 * @return The descriptor pointer.
+			 */
+			[[nodiscard]] std::unique_ptr<Backend::Descriptor> createPerGeometryDescriptor(Group group);
+
 		private:
 			CameraInformation m_LightCamera;
 
@@ -103,6 +111,10 @@ namespace Xenon
 			std::unique_ptr<Backend::ImageSampler> m_pImageSampler = nullptr;
 
 			std::unique_ptr<Backend::RasterizingPipeline> m_pPipeline = nullptr;
+			std::unordered_map<Group, std::unique_ptr<Backend::Descriptor>> m_pPerGeometryDescriptors;
+
+			Components::Transform m_DefaultTransform;
+			std::unique_ptr<Backend::Buffer> m_pDefaultTransformBuffer;
 
 			Group m_LightGroup;
 		};

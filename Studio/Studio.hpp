@@ -24,7 +24,8 @@ class Studio final
 		std::unique_ptr<Xenon::Backend::ImageSampler> m_pImageSampler = nullptr;
 	};
 
-	using RendererType = Xenon::Experimental::DefaultRenderer;
+	// using RendererType = Xenon::Experimental::DefaultRenderer;
+	using RendererType = Xenon::Renderer;
 
 public:
 	/**

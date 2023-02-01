@@ -34,8 +34,8 @@ uint FindLookUpTableIndex(float uniqueID, uint start, uint size)
 float GetLookUpTableUniqueID(float3 origin, float3 lightSource)
 {
 	const float3 delta = origin - lightSource;
-	const float pitch = tan(delta.z / delta.x);
-	const float yaw = tan(delta.y / delta.x);
+	const float pitch = asin(-delta.y);
+	const float yaw = atan2(delta.x, delta.z);
 
 	return (pitch * 1000) + yaw;
 }

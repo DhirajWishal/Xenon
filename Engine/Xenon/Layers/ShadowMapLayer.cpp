@@ -17,6 +17,7 @@ namespace Xenon
 	{
 		ShadowMapLayer::ShadowMapLayer(Renderer& renderer, Backend::Camera* pCamera, uint32_t priority /*= 4*/)
 			: RasterizingLayer(renderer, priority, pCamera, Backend::AttachmentType::Depth)
+			, m_pDefaultTransformBuffer(renderer.getInstance().getFactory()->createBuffer(renderer.getInstance().getBackendDevice(), sizeof(glm::mat4), Backend::BufferType::Uniform))
 		{
 			// Create the pipeline.
 			Backend::RasterizingPipelineSpecification specification = {};
@@ -35,6 +36,9 @@ namespace Xenon
 			m_LightCamera.m_pDescriptor = m_pPipeline->createDescriptor(Backend::DescriptorType::Scene);
 
 			m_LightCamera.m_pDescriptor->attach(EnumToInt(Backend::SceneBindings::Camera), m_LightCamera.m_pBuffer.get());
+
+			// Setup the default buffers.
+			m_pDefaultTransformBuffer->writeObject(m_DefaultTransform.computeModelMatrix());
 		}
 
 		void ShadowMapLayer::onUpdate(Layer* pPreviousLayer, uint32_t imageIndex, uint32_t frameIndex)
@@ -95,12 +99,12 @@ namespace Xenon
 				// const auto& material = registry.get<Material>(group);
 				// const auto& materialSpecification = m_Renderer.getInstance().getMaterialDatabase().getSpecification(material);
 
-				// // Setup the per-geometry descriptor if we need one for the geometry.
-				// if (!pipeline.m_pPerGeometryDescriptors.contains(group))
-				// 	pipeline.m_pPerGeometryDescriptors[group] = createPerGeometryDescriptor(pipeline, group);
-				// 
-				// // Get the per-geometry descriptor.
-				// auto pPerGeometryDescriptor = pipeline.m_pPerGeometryDescriptors[group].get();
+				// Setup the per-geometry descriptor if we need one for the geometry.
+				if (!m_pPerGeometryDescriptors.contains(group))
+					m_pPerGeometryDescriptors[group] = createPerGeometryDescriptor(group);
+
+				// Get the per-geometry descriptor.
+				auto pPerGeometryDescriptor = m_pPerGeometryDescriptors[group].get();
 
 				// Issue draw calls.
 				auto& geometry = registry.get<Geometry>(group);
@@ -119,7 +123,7 @@ namespace Xenon
 						OPTICK_EVENT_DYNAMIC("Issuing Draw Calls");
 
 						m_pCommandRecorder->bind(geometry.getIndexBuffer(), static_cast<Backend::IndexBufferStride>(subMesh.m_IndexSize));
-						m_pCommandRecorder->bind(m_pPipeline.get(), nullptr, nullptr, nullptr, m_LightCamera.m_pDescriptor.get());
+						m_pCommandRecorder->bind(m_pPipeline.get(), nullptr, nullptr, pPerGeometryDescriptor, m_LightCamera.m_pDescriptor.get());
 
 						m_pCommandRecorder->drawIndexed(subMesh.m_VertexOffset, subMesh.m_IndexOffset, subMesh.m_IndexCount);
 					}
@@ -132,10 +136,24 @@ namespace Xenon
 			OPTICK_EVENT();
 
 			ShadowCamera camera = {};
-			camera.m_View = glm::lookAt(lightSource.m_Position, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-			camera.m_Projection = glm::perspective(glm::radians(lightSource.m_FieldAngle), 1.0f, m_Renderer.getCamera()->m_NearPlane, m_Renderer.getCamera()->m_FarPlane);
+			camera.m_View = glm::lookAt(lightSource.m_Position, lightSource.m_Position + lightSource.m_Direction, m_Renderer.getCamera()->m_WorldUp);
+			camera.m_Projection = glm::perspective(glm::radians(lightSource.m_FieldAngle), m_Renderer.getCamera()->m_AspectRatio, m_Renderer.getCamera()->m_NearPlane, m_Renderer.getCamera()->m_FarPlane);
 
 			return camera;
+		}
+
+		std::unique_ptr<Xenon::Backend::Descriptor> ShadowMapLayer::createPerGeometryDescriptor(Group group)
+		{
+			OPTICK_EVENT();
+
+			std::unique_ptr<Xenon::Backend::Descriptor> pDescriptor = m_pPipeline->createDescriptor(Backend::DescriptorType::PerGeometry);
+			if (m_pScene->getRegistry().any_of<Components::Transform>(group))
+				pDescriptor->attach(EnumToInt(Backend::PerGeometryBindings::Transform), m_pScene->getRegistry().get<Internal::TransformUniformBuffer>(group).m_pUniformBuffer.get());
+
+			else
+				pDescriptor->attach(EnumToInt(Backend::PerGeometryBindings::Transform), m_pDefaultTransformBuffer.get());
+
+			return pDescriptor;
 		}
 	}
 }
