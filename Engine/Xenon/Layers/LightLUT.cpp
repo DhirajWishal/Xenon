@@ -16,8 +16,8 @@ namespace Xenon
 {
 	namespace Experimental
 	{
-		LightLUT::LightLUT(Renderer& renderer, Backend::Camera* pCamera, uint32_t priority)
-			: RasterizingLayer(renderer, priority, pCamera, Backend::AttachmentType::Color)
+		LightLUT::LightLUT(Renderer& renderer, uint32_t width, uint32_t height, uint32_t priority)
+			: RasterizingLayer(renderer, priority, width, height, Backend::AttachmentType::Color)
 			, m_pLookUpTable(renderer.getInstance().getFactory()->createBuffer(renderer.getInstance().getBackendDevice(), sizeof(float), Backend::BufferType::Storage))
 			, m_pControlBlock(renderer.getInstance().getFactory()->createBuffer(renderer.getInstance().getBackendDevice(), sizeof(ControlBlock), Backend::BufferType::Uniform))
 		{
@@ -87,8 +87,8 @@ namespace Xenon
 			if (m_pScene)
 			{
 				// Set the scissor and view port.
-				m_pCommandRecorder->setViewport(0.0f, 0.0f, static_cast<float>(m_Renderer.getCamera()->getWidth()), static_cast<float>(m_Renderer.getCamera()->getHeight()), 0.0f, 1.0f);
-				m_pCommandRecorder->setScissor(0, 0, m_Renderer.getCamera()->getWidth(), m_Renderer.getCamera()->getHeight());
+				m_pCommandRecorder->setViewport(0.0f, 0.0f, static_cast<float>(m_Renderer.getWindow()->getWidth()), static_cast<float>(m_Renderer.getWindow()->getHeight()), 0.0f, 1.0f);
+				m_pCommandRecorder->setScissor(0, 0, m_Renderer.getWindow()->getWidth(), m_Renderer.getWindow()->getHeight());
 
 				// Issue the draw calls.
 				issueDrawCalls();

@@ -61,14 +61,14 @@ namespace Xenon
 		/**
 		 * Get the scene pointer.
 		 *
-		 * @return The scene pointer.
+		 * @return The scene pointer. Note that this could be nullptr!
 		 */
 		[[nodiscard]] Scene* getScene() noexcept { return m_pScene; }
 
 		/**
 		 * Get the scene pointer.
 		 *
-		 * @return The scene pointer.
+		 * @return The scene pointer. Note that this could be nullptr!
 		 */
 		[[nodiscard]] const Scene* getScene() const noexcept { return m_pScene; }
 

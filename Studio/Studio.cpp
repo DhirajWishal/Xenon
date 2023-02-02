@@ -111,7 +111,7 @@ namespace /* anonymous */
 Studio::Studio(Xenon::BackendType type /*= Xenon::BackendType::Any*/)
 	: m_Instance("Xenon Studio", 0, Xenon::RenderTargetType::All, type)
 	, m_Scene(m_Instance, std::make_unique<Xenon::MonoCamera>(m_Instance, 1920, 1080))
-	, m_Renderer(m_Instance, m_Scene.getCamera(), GetRendererTitle(type))
+	, m_Renderer(m_Instance, 1920, 1080, GetRendererTitle(type))
 {
 	XENON_LOG_INFORMATION("Starting the {}", GetRendererTitle(m_Instance.getBackendType()));
 }
@@ -123,16 +123,16 @@ void Studio::run()
 	materialBuidler.addBaseColorTexture();	// Use the sub mesh's one.
 
 	// // Create the occlusion layer for occlusion culling.
-	// auto pOcclusionLayer = m_Renderer.createLayer<Xenon::OcclusionLayer>(m_Scene.getCamera(), g_DefaultRenderingPriority);
+	// auto pOcclusionLayer = m_Renderer.createLayer<Xenon::OcclusionLayer>(m_Scene.getCamera()->getWidth(), m_Scene.getCamera()->getHeight(), g_DefaultRenderingPriority);
 	// pOcclusionLayer->setScene(m_Scene);
 	
 	// Create the shadow map layer.
-	auto pShadowMapLayer = m_Renderer.createLayer<Xenon::Experimental::ShadowMapLayer>(m_Scene.getCamera());
+	auto pShadowMapLayer = m_Renderer.createLayer<Xenon::Experimental::ShadowMapLayer>(m_Scene.getCamera()->getWidth(), m_Scene.getCamera()->getHeight());
 	pShadowMapLayer->setScene(m_Scene);
 
 	// Setup the pipeline.
 #ifdef XENON_DEV_ENABLE_RAY_TRACING
-	auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRayTracingLayer>(m_Scene.getCamera());
+	auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRayTracingLayer>(m_Scene.getCamera()->getWidth(), m_Scene.getCamera()->getHeight());
 	pRenderTarget->setScene(m_Scene);
 
 	materialBuidler.setRayTracingPipelineSpecification(getRayTracingPipelineSpecification());
@@ -146,7 +146,7 @@ void Studio::run()
 	};
 
 #else 
-	auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRasterizingLayer>(m_Scene.getCamera(), g_DefaultRenderingPriority);
+	auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRasterizingLayer>(m_Scene.getCamera()->getWidth(), m_Scene.getCamera()->getHeight(), g_DefaultRenderingPriority);
 	pRenderTarget->setScene(m_Scene);
 	// pRenderTarget->setOcclusionLayer(pOcclusionLayer);
 
@@ -175,7 +175,7 @@ void Studio::run()
 	pDiffusionLayer->setSourceImage(pRenderTarget->getColorAttachment());
 
 	// Create the layers.
-	auto pImGui = m_Renderer.createLayer<ImGuiLayer>(m_Scene.getCamera());
+	auto pImGui = m_Renderer.createLayer<ImGuiLayer>(m_Scene.getCamera()->getWidth(), m_Scene.getCamera()->getHeight());
 	pImGui->setScene(m_Scene);
 	// m_Renderer.setScene(m_Scene);
 

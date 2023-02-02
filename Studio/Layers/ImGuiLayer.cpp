@@ -32,8 +32,8 @@ namespace /* anonymous */
 	[[nodiscard]] constexpr float CreateColor256(float value) noexcept { return value / 256; }
 }
 
-ImGuiLayer::ImGuiLayer(Xenon::Renderer& renderer, Xenon::Backend::Camera* pCamera)
-	: RasterizingLayer(renderer, 100, pCamera, Xenon::Backend::AttachmentType::Color)
+ImGuiLayer::ImGuiLayer(Xenon::Renderer& renderer, uint32_t width, uint32_t height)
+	: RasterizingLayer(renderer, 100, width, height, Xenon::Backend::AttachmentType::Color)
 	, m_UIStorage(this)
 	, m_pVertexBuffers(renderer.getCommandRecorder()->getBufferCount())
 	, m_pIndexBuffers(renderer.getCommandRecorder()->getBufferCount())
@@ -70,8 +70,8 @@ bool ImGuiLayer::beginFrame(std::chrono::nanoseconds delta)
 	auto& io = ImGui::GetIO();
 
 	// Set the display size in case it was resized.
-	io.DisplaySize.x = static_cast<float>(m_Renderer.getCamera()->getWidth());
-	io.DisplaySize.y = static_cast<float>(m_Renderer.getCamera()->getHeight());
+	io.DisplaySize.x = static_cast<float>(m_Renderer.getWindow()->getWidth());
+	io.DisplaySize.y = static_cast<float>(m_Renderer.getWindow()->getHeight());
 
 	// Set the time difference.
 	io.DeltaTime = static_cast<float>(delta.count()) / std::nano::den;
@@ -318,8 +318,8 @@ uintptr_t ImGuiLayer::getImageID(Xenon::Backend::Image* pImage, Xenon::Backend::
 void ImGuiLayer::configureImGui() const
 {
 	auto& io = ImGui::GetIO();
-	io.DisplaySize.x = static_cast<float>(m_Renderer.getCamera()->getWidth());
-	io.DisplaySize.y = static_cast<float>(m_Renderer.getCamera()->getHeight());
+	io.DisplaySize.x = static_cast<float>(m_Renderer.getWindow()->getWidth());
+	io.DisplaySize.y = static_cast<float>(m_Renderer.getWindow()->getHeight());
 
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;

@@ -8,8 +8,8 @@
 
 namespace Xenon
 {
-	ClearScreenLayer::ClearScreenLayer(Renderer& renderer, Backend::Camera* pCamera, const glm::vec4& color, uint32_t priority)
-		: RasterizingLayer(renderer, priority, pCamera, Backend::AttachmentType::Color)
+	ClearScreenLayer::ClearScreenLayer(Renderer& renderer, uint32_t width, uint32_t height, const glm::vec4& color, uint32_t priority)
+		: RasterizingLayer(renderer, priority, width, height, Backend::AttachmentType::Color)
 		, m_ClearColor(color)
 	{
 	}

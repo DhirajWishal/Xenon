@@ -10,19 +10,19 @@ namespace Xenon
 {
 	namespace Experimental
 	{
-		DefaultRenderer::DefaultRenderer(Instance& instance, Backend::Camera* pCamera, const std::string& title)
-			: Renderer(instance, pCamera, title)
+		DefaultRenderer::DefaultRenderer(Instance& instance, uint32_t width, uint32_t height, const std::string& title)
+			: Renderer(instance, width, height, title)
 		{
 			// Setup the GBuffer layers.
-			// m_pPositiveXLayer = createLayer<GBufferLayer>(pCamera, GBufferFace::PositiveX);
-			// m_pNegativeXLayer = createLayer<GBufferLayer>(pCamera, GBufferFace::NegativeX);
-			// m_pPositiveYLayer = createLayer<GBufferLayer>(pCamera, GBufferFace::PositiveY);
-			// m_pNegativeYLayer = createLayer<GBufferLayer>(pCamera, GBufferFace::NegativeY);
-			// m_pPositiveZLayer = createLayer<GBufferLayer>(pCamera, GBufferFace::PositiveZ);
-			m_pNegativeZLayer = createLayer<GBufferLayer>(pCamera, GBufferFace::NegativeZ);
+			// m_pPositiveXLayer = createLayer<GBufferLayer>(width, height, GBufferFace::PositiveX);
+			// m_pNegativeXLayer = createLayer<GBufferLayer>(width, height, GBufferFace::NegativeX);
+			// m_pPositiveYLayer = createLayer<GBufferLayer>(width, height, GBufferFace::PositiveY);
+			// m_pNegativeYLayer = createLayer<GBufferLayer>(width, height, GBufferFace::NegativeY);
+			// m_pPositiveZLayer = createLayer<GBufferLayer>(width, height, GBufferFace::PositiveZ);
+			m_pNegativeZLayer = createLayer<GBufferLayer>(width, height, GBufferFace::NegativeZ);
 
 			// Setup the direct lighting layer.
-			m_pDirectLightingLayer = createLayer<DirectLightingLayer>(pCamera->getWidth(), pCamera->getHeight());
+			m_pDirectLightingLayer = createLayer<DirectLightingLayer>(width, height);
 			// m_pDirectLightingLayer->setGBuffer(m_pPositiveXLayer);
 			// m_pDirectLightingLayer->setGBuffer(m_pNegativeXLayer);
 			// m_pDirectLightingLayer->setGBuffer(m_pPositiveYLayer);
@@ -31,7 +31,7 @@ namespace Xenon
 			m_pDirectLightingLayer->setGBuffer(m_pNegativeZLayer);
 
 			// Create the light LUT.
-			m_pLightLUT = createLayer<LightLUT>(pCamera, 0);
+			m_pLightLUT = createLayer<LightLUT>(width, height, 0);
 			m_pDirectLightingLayer->setLightLUT(m_pLightLUT);
 		}
 
