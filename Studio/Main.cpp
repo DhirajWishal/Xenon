@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "Studio.hpp"
-#include "Globals.hpp"
 #include "StudioConfiguration.hpp"
 
 void run()
@@ -15,7 +14,7 @@ int main()
 {
 	StudioConfiguration::GetInstance().load("StudioConfig.bin");
 
-	while (!g_Globals.m_bExitAppliation)
+	while (!StudioConfiguration::GetInstance().shouldExitApplication())
 		run();
 
 	StudioConfiguration::GetInstance().save("StudioConfig.bin");

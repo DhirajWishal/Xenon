@@ -11,6 +11,7 @@
 #include "DX12RayTracer.hpp"
 #include "DX12RayTracingPipeline.hpp"
 #include "DX12ShaderBindingTable.hpp"
+#include "DX12ComputePipeline.hpp"
 
 #include <optick.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -81,12 +82,25 @@ namespace /* anonymous */
 		{
 			try
 			{
-				auto color = glm::vec4(std::get<float>(*(itr++)), 0.0f, 0.0f, 0.0f);
-				pCommandList->ClearRenderTargetView(colorDescriptorHandle, glm::value_ptr(color), 0, nullptr);
+				pCommandList->ClearRenderTargetView(colorDescriptorHandle, glm::value_ptr(std::get<glm::vec4>(*(itr++))), 0, nullptr);
 			}
 			catch (const std::exception& e)
 			{
 				XENON_LOG_ERROR("Clear normal value error: {}", e.what());
+			}
+
+			colorDescriptorHandle.Offset(1, colorDescriptorIncrementSize);
+		}
+
+		if (attachmentTypes & Xenon::Backend::AttachmentType::Position)
+		{
+			try
+			{
+				pCommandList->ClearRenderTargetView(colorDescriptorHandle, glm::value_ptr(std::get<glm::vec4>(*(itr++))), 0, nullptr);
+			}
+			catch (const std::exception& e)
+			{
+				XENON_LOG_ERROR("Clear position value error: {}", e.what());
 			}
 
 			colorDescriptorHandle.Offset(1, colorDescriptorIncrementSize);
@@ -528,6 +542,64 @@ namespace Xenon
 			}
 		}
 
+		void DX12CommandRecorder::copyImageLayer(Image* pSource, uint32_t sourceLayer, const glm::vec3& sourceOffset, Image* pDestination, uint32_t destinationLayer, const glm::vec3& destinationOffset)
+		{
+			OPTICK_EVENT();
+			XENON_TODO_NOW("Make sure DX12 is cool with cubemaps");
+
+			const auto pDxSourceImage = pSource->as<DX12Image>();
+			const auto pDxDestinationImage = pDestination->as<DX12Image>();
+
+			// Change the source image state.
+			if (pDxSourceImage->getCurrentState() != D3D12_RESOURCE_STATE_GENERIC_READ)
+			{
+				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pDxSourceImage->getResource(), pDxSourceImage->getCurrentState(), D3D12_RESOURCE_STATE_COPY_SOURCE);
+				m_pCurrentCommandList->ResourceBarrier(1, &barrier);
+			}
+
+			// Change the destination image state.
+			{
+				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pDxDestinationImage->getResource(), pDxDestinationImage->getCurrentState(), D3D12_RESOURCE_STATE_COPY_DEST);
+				m_pCurrentCommandList->ResourceBarrier(1, &barrier);
+			}
+
+			// Copy the texture region.
+			D3D12_TEXTURE_COPY_LOCATION destinationLocation = {};
+			destinationLocation.pResource = pDxDestinationImage->getResource();
+			destinationLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+			destinationLocation.PlacedFootprint.Offset = 0;
+			destinationLocation.PlacedFootprint.Footprint.Format = DX12Device::ConvertFormat(pDxDestinationImage->getDataFormat());
+			destinationLocation.PlacedFootprint.Footprint.Depth = 1;
+			destinationLocation.PlacedFootprint.Footprint.Width = pDxDestinationImage->getWidth();
+			destinationLocation.PlacedFootprint.Footprint.Height = pDxDestinationImage->getHeight();
+			destinationLocation.PlacedFootprint.Footprint.RowPitch = pDxDestinationImage->getWidth() * GetFormatSize(destinationLocation.PlacedFootprint.Footprint.Format);
+
+			D3D12_TEXTURE_COPY_LOCATION sourceLocation = {};
+			sourceLocation.pResource = pDxSourceImage->getResource();
+			sourceLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+			sourceLocation.PlacedFootprint.Offset = 0;
+			sourceLocation.PlacedFootprint.Footprint.Format = DX12Device::ConvertFormat(pDxSourceImage->getDataFormat());
+			sourceLocation.PlacedFootprint.Footprint.Depth = 1;
+			sourceLocation.PlacedFootprint.Footprint.Width = pDxSourceImage->getWidth();
+			sourceLocation.PlacedFootprint.Footprint.Height = pDxSourceImage->getHeight();
+			sourceLocation.PlacedFootprint.Footprint.RowPitch = pDxSourceImage->getWidth() * GetFormatSize(sourceLocation.PlacedFootprint.Footprint.Format);
+
+			m_pCurrentCommandList->CopyTextureRegion(&destinationLocation, static_cast<UINT>(destinationOffset.x), static_cast<UINT>(destinationOffset.y), static_cast<UINT>(destinationOffset.z), &sourceLocation, nullptr);
+
+			// Change the source image state.
+			if (pDxSourceImage->getCurrentState() != D3D12_RESOURCE_STATE_GENERIC_READ)
+			{
+				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pDxSourceImage->getResource(), D3D12_RESOURCE_STATE_COPY_SOURCE, pDxSourceImage->getCurrentState());
+				m_pCurrentCommandList->ResourceBarrier(1, &barrier);
+			}
+
+			// Change the destination image state.
+			{
+				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(pDxDestinationImage->getResource(), D3D12_RESOURCE_STATE_COPY_DEST, pDxDestinationImage->getCurrentState());
+				m_pCurrentCommandList->ResourceBarrier(1, &barrier);
+			}
+		}
+
 		void DX12CommandRecorder::resetQuery(OcclusionQuery* pOcclusionQuery)
 		{
 			OPTICK_EVENT();
@@ -734,6 +806,37 @@ namespace Xenon
 			}
 		}
 
+		void DX12CommandRecorder::bind(ComputePipeline* pPipeline)
+		{
+			OPTICK_EVENT();
+
+			const auto pDxPipeline = pPipeline->as<DX12ComputePipeline>();
+			m_pCurrentCommandList->SetComputeRootSignature(pDxPipeline->getRootSignature());
+			m_pCurrentCommandList->SetPipelineState(pDxPipeline->getPipelineState());
+
+			const auto& heaps = pDxPipeline->getDescriptorHeapStorage();
+			m_pCurrentCommandList->SetDescriptorHeaps(static_cast<UINT>(heaps.size()), heaps.data());
+		}
+
+		void DX12CommandRecorder::bind(ComputePipeline* pPipeline, Descriptor* pUserDefinedDescriptor)
+		{
+			OPTICK_EVENT();
+			const auto& heaps = pPipeline->as<DX12ComputePipeline>()->getDescriptorHeapStorage();
+
+			if (pUserDefinedDescriptor)
+			{
+				auto pDx12UserDefinedDescriptor = pUserDefinedDescriptor->as<DX12Descriptor>();
+				const auto cbvSrvUavStart = pDx12UserDefinedDescriptor->getCbvSrvUavDescriptorHeapStart();
+				const auto samplerStart = pDx12UserDefinedDescriptor->getSamplerDescriptorHeapStart();
+
+				if (pDx12UserDefinedDescriptor->hasBuffers())
+					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(0, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[0]->GetGPUDescriptorHandleForHeapStart(), cbvSrvUavStart, pDx12UserDefinedDescriptor->getCbvSrvUavDescriptorHeapIncrementSize()));
+
+				if (pDx12UserDefinedDescriptor->hasSampler())
+					m_pCurrentCommandList->SetGraphicsRootDescriptorTable(1, CD3DX12_GPU_DESCRIPTOR_HANDLE(heaps[1]->GetGPUDescriptorHandleForHeapStart(), samplerStart, pDx12UserDefinedDescriptor->getSamplerDescriptorHeapIncrementSize()));
+			}
+		}
+
 		void DX12CommandRecorder::setViewport(float x, float y, float width, float height, float minDepth, float maxDepth)
 		{
 			OPTICK_EVENT();
@@ -800,6 +903,12 @@ namespace Xenon
 			desc.Depth = 1;
 
 			m_pCurrentCommandList->DispatchRays(&desc);
+		}
+
+		void DX12CommandRecorder::compute(uint32_t width, uint32_t height, uint32_t depth)
+		{
+			OPTICK_EVENT();
+			m_pCurrentCommandList->Dispatch(width, height, depth);
 		}
 
 		void DX12CommandRecorder::endQuery(OcclusionQuery* pOcclusionQuery, uint32_t index)

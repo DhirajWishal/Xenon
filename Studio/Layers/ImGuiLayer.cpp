@@ -3,7 +3,6 @@
 
 #include "ImGuiLayer.hpp"
 
-#include "../Globals.hpp"
 #include "../StudioConfiguration.hpp"
 
 #include "../Shaders/ImGuiLayer/ImGuiLayer.vert.hpp"
@@ -230,58 +229,6 @@ bool ImGuiLayer::beginFrame(std::chrono::nanoseconds delta)
 
 void ImGuiLayer::endFrame() const
 {
-	// Finally show the ImGuizmo stuff. Probably we need to move this to it's own UI component.
-	if (m_UIStorage.m_LayerViewUI.isVisible())
-	{
-		auto [view, projection] = m_pScene->getCamera()->as<Xenon::MonoCamera>()->getCameraBuffer();
-
-		view[0][1] = -view[0][1];
-		view[1][1] = -view[1][1];
-		view[2][1] = -view[2][1];
-
-#ifdef XENON_PLATFORM_WINDOWS
-		// Flip if we're using Vulkan (because of the inverted y-axis in DirectX.
-		view[3][1] = StudioConfiguration::GetInstance().getCurrentBackendType() == Xenon::BackendType::Vulkan ? -view[3][1] : view[3][1];
-
-#else
-		view[3][1] = -view[3][1];
-
-#endif // XENON_PLATFORM_WINDOWS
-
-		constexpr auto currentGizmoMode = ImGuizmo::LOCAL;
-		constexpr auto currentGizmoOperation = ImGuizmo::UNIVERSAL;
-
-		auto lock = std::scoped_lock(m_pScene->getMutex());
-		for (const auto group : m_pScene->getRegistry().view<Xenon::Components::Transform>())
-		{
-			// Get the transform and compute the model matrix.
-			auto modelMatrix = m_pScene->getRegistry().get<Xenon::Components::Transform>(group).computeModelMatrix();
-
-			// Setup and show ImGuizmo.
-			const auto position = m_UIStorage.m_LayerViewUI.getPosition();
-			const auto size = m_UIStorage.m_LayerViewUI.getSize();
-			ImGuizmo::SetRect(position.x, position.y, size.x, size.y);
-			ImGuizmo::Manipulate(glm::value_ptr(view), glm::value_ptr(projection), currentGizmoOperation, currentGizmoMode, glm::value_ptr(modelMatrix), nullptr, nullptr, nullptr, nullptr);
-
-			// Decompose the matrix and update the component.
-			glm::vec3 scale;
-			glm::quat rotation;
-			glm::vec3 translation;
-			glm::vec3 skew;
-			glm::vec4 perspective;
-			glm::decompose(modelMatrix, scale, rotation, translation, skew, perspective);
-
-			const auto patchFunction = [translation, scale, rotation](auto& object)
-			{
-				object.m_Position = translation;
-				object.m_Rotation = glm::eulerAngles(rotation);
-				object.m_Scale = scale;
-			};
-
-			m_pScene->getRegistry().patch<Xenon::Components::Transform>(group, patchFunction);
-		}
-	}
-
 	ImGui::End();
 	ImGui::Render();
 }
@@ -575,7 +522,7 @@ void ImGuiLayer::showFileMenu()
 		if (ImGui::MenuItem("Close"))
 		{
 			m_Renderer.close();
-			g_Globals.m_bExitAppliation = true;
+			StudioConfiguration::GetInstance().toggleExitApplication();
 		}
 
 		const auto currentBackendType = StudioConfiguration::GetInstance().getCurrentBackendType();

@@ -41,6 +41,9 @@ namespace Xenon
 		NormalTexture,
 		OcclusionTexture,
 		EmissiveTexture,
+		ShadowMap,
+
+		Custom
 	};
 
 	/**
@@ -48,7 +51,8 @@ namespace Xenon
 	 * This is a variant with all the possible types a single material property could have.
 	 */
 	using MaterialPayload = std::variant<
-		Texture
+		Texture,
+		Backend::Buffer*
 	>;
 
 	/**
@@ -146,6 +150,30 @@ namespace Xenon
 		 * @return The builder reference used to chain.
 		 */
 		MaterialBuilder& addEmissiveTexture(Texture payload = {});
+
+		/**
+		 * Add a shadow map texture property to the builder.
+		 *
+		 * @param payload The texture payload.
+		 * @return The builder reference used to chain.
+		 */
+		MaterialBuilder& addShadowMap(Texture payload);
+
+		/**
+		 * Add a custom property to the builder.
+		 *
+		 * @param payload The texture payload.
+		 * @return The builder reference used to chain.
+		 */
+		MaterialBuilder& addCustomProperty(Texture payload);
+
+		/**
+		 * Add a custom property to the builder.
+		 *
+		 * @param payload The buffer payload.
+		 * @return The builder reference used to chain.
+		 */
+		MaterialBuilder& addCustomProperty(Backend::Buffer* payload);
 
 		/**
 		 * Get the rasterizing pipeline specification.

@@ -23,7 +23,6 @@ set(
 	"Studio.cpp"
 	"Studio.hpp"
 	"UIComponent.hpp"
-	"Globals.hpp"
 	"StudioConfiguration.cpp"
 	"StudioConfiguration.hpp"
 

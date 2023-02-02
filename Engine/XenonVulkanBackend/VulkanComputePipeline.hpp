@@ -39,6 +39,20 @@ namespace Xenon
 			 */
 			[[nodiscard]] std::unique_ptr<Descriptor> createDescriptor(DescriptorType type) override;
 
+			/**
+			 * Get the pipeline.
+			 *
+			 * @return The pipeline handle.
+			 */
+			[[nodiscard]] VkPipeline getPipeline() const noexcept { return m_Pipeline; }
+
+			/**
+			 * Get the pipeline layout.
+			 *
+			 * @return The pipeline layout.
+			 */
+			[[nodiscard]] VkPipelineLayout getPipelineLayout() const noexcept { return m_PipelineLayout; }
+
 		private:
 			/**
 			 * Create the pipeline layout.

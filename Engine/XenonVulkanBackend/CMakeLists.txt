@@ -65,6 +65,8 @@ set(
 	"VulkanRayTracingPipeline.hpp"
 	"VulkanShaderBindingTable.cpp"
 	"VulkanShaderBindingTable.hpp"
+	"VulkanImageLayoutManager.cpp"
+	"VulkanImageLayoutManager.hpp"
 )
 
 # Add the source group.

@@ -69,6 +69,13 @@ namespace Xenon
 			virtual void copyFrom(Image* pSrcImage, CommandRecorder* pCommandRecorder = nullptr) = 0;
 
 			/**
+			 * Generate mip maps for the currently stored image.
+			 *
+			 * @param pCommandRecorder The command recorder pointer to record the commands to. Default is nullptr (in which case the backend will create one for this purpose).
+			 */
+			virtual void generateMipMaps(CommandRecorder* pCommandRecorder = nullptr) = 0;
+
+			/**
 			 * Get the image specification.
 			 *
 			 * @return The image specification.

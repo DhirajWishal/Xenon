@@ -16,7 +16,7 @@ namespace Xenon
 	 * Renderer class.
 	 * This class renders a scene using its camera.
 	 */
-	class Renderer final : public XObject
+	class Renderer : public XObject
 	{
 	public:
 		/**

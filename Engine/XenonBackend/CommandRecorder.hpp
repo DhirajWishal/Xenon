@@ -10,6 +10,7 @@
 #include "OcclusionQuery.hpp"
 #include "RayTracer.hpp"
 #include "RayTracingPipeline.hpp"
+#include "ComputePipeline.hpp"
 
 namespace Xenon
 {
@@ -88,6 +89,18 @@ namespace Xenon
 			virtual void copy(Image* pSource, const glm::vec3& sourceOffset, Image* pDestination, const glm::vec3& destinationOffset) = 0;
 
 			/**
+			 * Copy a source image to the destination image.
+			 *
+			 * @param pSource The source image pointer.
+			 * @param sourceLayer The source image's layer to copy.
+			 * @param sourceOffset The source image's offset.
+			 * @param pDestination The destination image pointer.
+			 * @param destinationLayer The destination image's layer to copy to.
+			 * @param destinationOffset The destination image's offset.
+			 */
+			virtual void copyImageLayer(Image* pSource, uint32_t sourceLayer, const glm::vec3& sourceOffset, Image* pDestination, uint32_t destinationLayer, const glm::vec3& destinationOffset) = 0;
+
+			/**
 			 * Copy image data from a buffer to an image.
 			 *
 			 * @param pSource The source buffer pointer.
@@ -130,6 +143,13 @@ namespace Xenon
 			virtual void bind(RayTracingPipeline* pPipeline) = 0;
 
 			/**
+			 * Bind a compute pipeline.
+			 *
+			 * @param pPipeline The pipeline to bind.
+			 */
+			virtual void bind(ComputePipeline* pPipeline) = 0;
+
+			/**
 			 * Bind a vertex buffer to the command recorder.
 			 *
 			 * @param pVertexBuffer The vertex buffer pointer.
@@ -168,6 +188,15 @@ namespace Xenon
 			 * @param pSceneDescriptor The scene descriptor. Default is nullptr.
 			 */
 			virtual void bind(RayTracingPipeline* pPipeline, Descriptor* pUserDefinedDescriptor, Descriptor* pMaterialDescriptor, Descriptor* pPerGeometryDescriptor, Descriptor* pSceneDescriptor) = 0;
+
+			/**
+			 * Bind descriptors to the command recorder.
+			 * Note that the descriptor can be null in which case this call will be disregarded.
+			 *
+			 * @param pPipeline The pipeline to bind.
+			 * @param pUserDefinedDescriptor The user defined descriptor to bind.
+			 */
+			virtual void bind(ComputePipeline* pPipeline, Descriptor* pUserDefinedDescriptor) = 0;
 
 			/**
 			 * Set the viewport.
@@ -231,6 +260,15 @@ namespace Xenon
 			 * @param pShaderBindingTable The shader binding table.
 			 */
 			virtual void drawRayTraced(RayTracer* pRayTracer, ShaderBindingTable* pShaderBindingTable) = 0;
+
+			/**
+			 * Perform compute operations.
+			 *
+			 * @param width The cluster width.
+			 * @param height The cluster height.
+			 * @param depth The cluster depth.
+			 */
+			virtual void compute(uint32_t width, uint32_t height, uint32_t depth) = 0;
 
 			/**
 			 * End the occlusion query.

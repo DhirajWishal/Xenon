@@ -39,6 +39,34 @@ namespace Xenon
 			 */
 			[[nodiscard]] std::unique_ptr<Descriptor> createDescriptor(DescriptorType type) override;
 
+			/**
+			 * Get the root signature object.
+			 *
+			 * @return The root signature pointer.
+			 */
+			[[nodiscard]] ID3D12RootSignature* getRootSignature() noexcept { return m_RootSignature.Get(); }
+
+			/**
+			 * Get the root signature object.
+			 *
+			 * @return The root signature pointer.
+			 */
+			[[nodiscard]] const ID3D12RootSignature* getRootSignature() const noexcept { return m_RootSignature.Get(); }
+
+			/**
+			 * Get the pipeline state.
+			 *
+			 * @return The pipeline state pointer.
+			 */
+			[[nodiscard]] ID3D12PipelineState* getPipelineState() noexcept { return m_PipelineState.Get(); }
+
+			/**
+			 * Get the pipeline state.
+			 *
+			 * @return The pipeline state pointer.
+			 */
+			[[nodiscard]] const ID3D12PipelineState* getPipelineState() const noexcept { return m_PipelineState.Get(); }
+
 		private:
 			/**
 			 * Create the root signature.

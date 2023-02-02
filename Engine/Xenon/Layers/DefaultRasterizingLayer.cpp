@@ -127,6 +127,30 @@ namespace Xenon
 				break;
 			}
 
+			case MaterialPropertyType::ShadowMap:
+			{
+				const auto& texture = std::get<0>(payload);
+				pDescriptor->attach(binding, texture.m_pImage, texture.m_pImageView, texture.m_pImageSampler, Backend::ImageUsage::Graphics);
+
+				break;
+			}
+
+			case MaterialPropertyType::Custom:
+			{
+				if (payload.index() == 0)
+				{
+					const auto& texture = std::get<0>(payload);
+					pDescriptor->attach(binding, texture.m_pImage, texture.m_pImageView, texture.m_pImageSampler, Backend::ImageUsage::Graphics);
+				}
+				else
+				{
+					const auto& pBuffer = std::get<1>(payload);
+					pDescriptor->attach(binding, pBuffer);
+				}
+
+				break;
+			}
+
 			default:
 				break;
 			}

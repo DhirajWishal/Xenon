@@ -201,6 +201,8 @@ namespace Xenon
 
 		VkDeviceAddress VulkanBuffer::getDeviceAddress() const
 		{
+			OPTICK_EVENT();
+
 			VkBufferDeviceAddressInfoKHR bufferDeviceAddressInfo = {};
 			bufferDeviceAddressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
 			bufferDeviceAddressInfo.buffer = m_Buffer;

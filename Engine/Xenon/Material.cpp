@@ -47,6 +47,24 @@ namespace Xenon
 		return *this;
 	}
 
+	Xenon::MaterialBuilder& MaterialBuilder::addShadowMap(Texture payload)
+	{
+		m_MaterialSpecification.m_Properties.emplace_back(payload, MaterialPropertyType::ShadowMap);
+		return *this;
+	}
+
+	Xenon::MaterialBuilder& MaterialBuilder::addCustomProperty(Texture payload)
+	{
+		m_MaterialSpecification.m_Properties.emplace_back(payload, MaterialPropertyType::Custom);
+		return *this;
+	}
+
+	Xenon::MaterialBuilder& MaterialBuilder::addCustomProperty(Backend::Buffer* payload)
+	{
+		m_MaterialSpecification.m_Properties.emplace_back(payload, MaterialPropertyType::Custom);
+		return *this;
+	}
+
 	const Xenon::Backend::RasterizingPipelineSpecification& MaterialBuilder::getRasterizingPipelineSpecification() const noexcept
 	{
 		return m_MaterialSpecification.m_RasterizingPipelineSpecification;
