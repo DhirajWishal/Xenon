@@ -13,6 +13,7 @@
  * @param VA ARGS The log message to send.
  */
 #define XENON_STUDIO_LOG(level, ...)								::spdlog::get("XenonStudio")->log(level, __VA_ARGS__)
+
 #define XENON_STUDIO_LOG_FATAL(...)									XENON_STUDIO_LOG(::spdlog::level::critical, __VA_ARGS__)
 #define XENON_STUDIO_LOG_ERROR(...)									XENON_STUDIO_LOG(::spdlog::level::err, __VA_ARGS__)
 #define XENON_STUDIO_LOG_WARNING(...)								XENON_STUDIO_LOG(::spdlog::level::warn, __VA_ARGS__)
