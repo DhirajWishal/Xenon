@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "Studio.hpp"
+#include "Logging.hpp"
+
 #include "Layers/ImGuiLayer.hpp"
 
 #include "Xenon/MonoCamera.hpp"
@@ -35,6 +37,8 @@
 #include <glm/gtc/type_ptr.hpp>
 
 constexpr auto g_DefaultRenderingPriority = 5;
+constexpr auto g_DefaultWidth = 1920;
+constexpr auto g_DefaultHeight = 1080;
 
 namespace /* anonymous */
 {
@@ -110,8 +114,8 @@ namespace /* anonymous */
 
 Studio::Studio(Xenon::BackendType type /*= Xenon::BackendType::Any*/)
 	: m_Instance("Xenon Studio", 0, Xenon::RenderTargetType::All, type)
-	, m_Scene(m_Instance, std::make_unique<Xenon::MonoCamera>(m_Instance, 1920, 1080))
-	, m_Renderer(m_Instance, m_Scene.getCamera(), GetRendererTitle(type))
+	, m_Scene(m_Instance, std::make_unique<Xenon::MonoCamera>(m_Instance, g_DefaultWidth, g_DefaultHeight))
+	, m_Renderer(m_Instance, g_DefaultWidth, g_DefaultHeight, GetRendererTitle(type))
 {
 	XENON_LOG_INFORMATION("Starting the {}", GetRendererTitle(m_Instance.getBackendType()));
 }
@@ -123,16 +127,16 @@ void Studio::run()
 	materialBuidler.addBaseColorTexture();	// Use the sub mesh's one.
 
 	// // Create the occlusion layer for occlusion culling.
-	// auto pOcclusionLayer = m_Renderer.createLayer<Xenon::OcclusionLayer>(m_Scene.getCamera(), g_DefaultRenderingPriority);
+	// auto pOcclusionLayer = m_Renderer.createLayer<Xenon::OcclusionLayer>(g_DefaultWidth, g_DefaultHeight, g_DefaultRenderingPriority);
 	// pOcclusionLayer->setScene(m_Scene);
-	
+
 	// Create the shadow map layer.
-	auto pShadowMapLayer = m_Renderer.createLayer<Xenon::Experimental::ShadowMapLayer>(m_Scene.getCamera());
+	auto pShadowMapLayer = m_Renderer.createLayer<Xenon::Experimental::ShadowMapLayer>(g_DefaultWidth, g_DefaultHeight);
 	pShadowMapLayer->setScene(m_Scene);
 
 	// Setup the pipeline.
 #ifdef XENON_DEV_ENABLE_RAY_TRACING
-	auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRayTracingLayer>(m_Scene.getCamera());
+	auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRayTracingLayer>(g_DefaultWidth, g_DefaultHeight);
 	pRenderTarget->setScene(m_Scene);
 
 	materialBuidler.setRayTracingPipelineSpecification(getRayTracingPipelineSpecification());
@@ -146,7 +150,7 @@ void Studio::run()
 	};
 
 #else 
-	auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRasterizingLayer>(m_Scene.getCamera(), g_DefaultRenderingPriority);
+	auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRasterizingLayer>(g_DefaultWidth, g_DefaultHeight, g_DefaultRenderingPriority);
 	pRenderTarget->setScene(m_Scene);
 	// pRenderTarget->setOcclusionLayer(pOcclusionLayer);
 
@@ -171,11 +175,11 @@ void Studio::run()
 #endif // XENON_DEV_ENABLE_RAY_TRACING
 
 	// Create the diffusion layer.
-	auto pDiffusionLayer = m_Renderer.createLayer<Xenon::Experimental::DiffusionLayer>(m_Scene.getCamera()->getWidth(), m_Scene.getCamera()->getHeight(), pRenderTarget->getPriority());
+	auto pDiffusionLayer = m_Renderer.createLayer<Xenon::Experimental::DiffusionLayer>(g_DefaultWidth, g_DefaultHeight, pRenderTarget->getPriority());
 	pDiffusionLayer->setSourceImage(pRenderTarget->getColorAttachment());
 
 	// Create the layers.
-	auto pImGui = m_Renderer.createLayer<ImGuiLayer>(m_Scene.getCamera());
+	auto pImGui = m_Renderer.createLayer<ImGuiLayer>(g_DefaultWidth, g_DefaultHeight);
 	pImGui->setScene(m_Scene);
 	// m_Renderer.setScene(m_Scene);
 
@@ -194,6 +198,7 @@ void Studio::run()
 
 	{
 		auto ret = Xenon::XObject::GetJobSystem().insert(loaderFunction);
+		XENON_STUDIO_LOG_INFORMATION("Test log!");
 
 		Xenon::FrameTimer timer;
 		do
@@ -330,7 +335,7 @@ void Studio::updateLightSources()
 
 		ImGui::Text("Light ID: %i", Xenon::EnumToInt(group));
 		ImGui::NewLine();
-		
+
 		ImGui::ColorPicker4("Color", glm::value_ptr(light.m_Color));
 		ImGui::NewLine();
 

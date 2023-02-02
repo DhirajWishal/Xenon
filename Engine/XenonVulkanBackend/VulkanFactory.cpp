@@ -49,9 +49,9 @@ namespace Xenon
 			return std::make_unique<VulkanImage>(pDevice->as<VulkanDevice>(), specification);
 		}
 
-		std::unique_ptr<Xenon::Backend::Rasterizer> VulkanFactory::createRasterizer(Device* pDevice, Camera* pCamera, AttachmentType attachmentTypes, bool enableTripleBuffering /*= false*/, MultiSamplingCount multiSampleCount /*= MultiSamplingCount::x1*/)
+		std::unique_ptr<Xenon::Backend::Rasterizer> VulkanFactory::createRasterizer(Device* pDevice, uint32_t width, uint32_t height, AttachmentType attachmentTypes, bool enableTripleBuffering /*= false*/, MultiSamplingCount multiSampleCount /*= MultiSamplingCount::x1*/)
 		{
-			return std::make_unique<VulkanRasterizer>(pDevice->as<VulkanDevice>(), pCamera, attachmentTypes, enableTripleBuffering, multiSampleCount);
+			return std::make_unique<VulkanRasterizer>(pDevice->as<VulkanDevice>(), width, height, attachmentTypes, enableTripleBuffering, multiSampleCount);
 		}
 
 		std::unique_ptr<Xenon::Backend::Swapchain> VulkanFactory::createSwapchain(Device* pDevice, const std::string& title, uint32_t width, uint32_t height)
@@ -99,9 +99,9 @@ namespace Xenon
 			return std::make_unique<VulkanBottomLevelAccelerationStructure>(pDevice->as<VulkanDevice>(), geometries);
 		}
 
-		std::unique_ptr<Xenon::Backend::RayTracer> VulkanFactory::createRayTracer(Device* pDevice, Camera* pCamera)
+		std::unique_ptr<Xenon::Backend::RayTracer> VulkanFactory::createRayTracer(Device* pDevice, uint32_t width, uint32_t height)
 		{
-			return std::make_unique<VulkanRayTracer>(pDevice->as<VulkanDevice>(), pCamera);
+			return std::make_unique<VulkanRayTracer>(pDevice->as<VulkanDevice>(), width, height);
 		}
 
 		std::unique_ptr<Xenon::Backend::RayTracingPipeline> VulkanFactory::createRayTracingPipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const RayTracingPipelineSpecification& specification)

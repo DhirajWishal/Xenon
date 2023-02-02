@@ -15,8 +15,8 @@ namespace Xenon
 {
 	namespace Experimental
 	{
-		ShadowMapLayer::ShadowMapLayer(Renderer& renderer, Backend::Camera* pCamera, uint32_t priority /*= 4*/)
-			: RasterizingLayer(renderer, priority, pCamera, Backend::AttachmentType::Depth)
+		ShadowMapLayer::ShadowMapLayer(Renderer& renderer, uint32_t width, uint32_t height, uint32_t priority /*= 4*/)
+			: RasterizingLayer(renderer, priority, width, height, Backend::AttachmentType::Depth)
 			, m_pDefaultTransformBuffer(renderer.getInstance().getFactory()->createBuffer(renderer.getInstance().getBackendDevice(), sizeof(glm::mat4), Backend::BufferType::Uniform))
 		{
 			// Create the pipeline.
@@ -52,8 +52,8 @@ namespace Xenon
 			m_pCommandRecorder->bind(m_pRasterizer.get(), { 1.0f });
 
 			// Set the scissor and view port.
-			m_pCommandRecorder->setViewport(0.0f, 0.0f, static_cast<float>(m_Renderer.getCamera()->getWidth()), static_cast<float>(m_Renderer.getCamera()->getHeight()), 0.0f, 1.0f);
-			m_pCommandRecorder->setScissor(0, 0, m_Renderer.getCamera()->getWidth(), m_Renderer.getCamera()->getHeight());
+			m_pCommandRecorder->setViewport(0.0f, 0.0f, static_cast<float>(m_Renderer.getWindow()->getWidth()), static_cast<float>(m_Renderer.getWindow()->getHeight()), 0.0f, 1.0f);
+			m_pCommandRecorder->setScissor(0, 0, m_Renderer.getWindow()->getWidth(), m_Renderer.getWindow()->getHeight());
 
 			// Issue the draw calls.
 			issueDrawCalls();
@@ -138,8 +138,8 @@ namespace Xenon
 			OPTICK_EVENT();
 
 			ShadowCamera camera = {};
-			camera.m_View = glm::lookAt(lightSource.m_Position, lightSource.m_Position + lightSource.m_Direction, m_Renderer.getCamera()->m_WorldUp);
-			camera.m_Projection = glm::perspective(glm::radians(lightSource.m_FieldAngle), m_Renderer.getCamera()->m_AspectRatio, m_Renderer.getCamera()->m_NearPlane, m_Renderer.getCamera()->m_FarPlane);
+			camera.m_View = glm::lookAt(lightSource.m_Position, lightSource.m_Position + lightSource.m_Direction, m_pScene->getCamera()->m_WorldUp);
+			camera.m_Projection = glm::perspective(glm::radians(lightSource.m_FieldAngle), m_pScene->getCamera()->m_AspectRatio, m_pScene->getCamera()->m_NearPlane, m_pScene->getCamera()->m_FarPlane);
 
 			return camera;
 		}

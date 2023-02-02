@@ -43,11 +43,12 @@ namespace Xenon
 			 * Explicit constructor.
 			 *
 			 * @param renderer The renderer reference.
-			 * @param pCamera The camera pointer used by the renderer.
+			 * @param width The width of the render target.
+			 * @param height The height of the render target.
 			 * @param face The camera's current face. Default is front (no change to the camera).
 			 * @param priority The priority of the layer. Default is 0.
 			 */
-			explicit GBufferLayer(Renderer& renderer, Backend::Camera* pCamera, GBufferFace face = GBufferFace::Front, uint32_t priority = 0);
+			explicit GBufferLayer(Renderer& renderer, uint32_t width, uint32_t height, GBufferFace face = GBufferFace::Front, uint32_t priority = 0);
 
 			/**
 			 * On pre-update function.

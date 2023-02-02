@@ -830,8 +830,8 @@ namespace Xenon
 			beginInfo.pNext = nullptr;
 			beginInfo.renderPass = pVkRenderPass->getRenderPass();
 			beginInfo.framebuffer = pVkRenderPass->getFramebuffer();
-			beginInfo.renderArea.extent.width = pVkRenderPass->getCamera()->getWidth();
-			beginInfo.renderArea.extent.height = pVkRenderPass->getCamera()->getHeight();
+			beginInfo.renderArea.extent.width = pVkRenderPass->getWidth();
+			beginInfo.renderArea.extent.height = pVkRenderPass->getHeight();
 			beginInfo.renderArea.offset.x = 0.0f;
 			beginInfo.renderArea.offset.y = 0.0f;
 			beginInfo.clearValueCount = static_cast<uint32_t>(vkClearValues.size());
@@ -1104,7 +1104,7 @@ namespace Xenon
 			const auto hitEntry = pVkBindngTable->getHitAddressRegion();
 			const auto callableEntry = pVkBindngTable->getCallableAddressRegion();
 
-			m_pDevice->getDeviceTable().vkCmdTraceRaysKHR(*m_pCurrentBuffer, &raygenEntry, &missEntry, &hitEntry, &callableEntry, pRayTracer->getCamera()->getWidth(), pRayTracer->getCamera()->getHeight(), 1);
+			m_pDevice->getDeviceTable().vkCmdTraceRaysKHR(*m_pCurrentBuffer, &raygenEntry, &missEntry, &hitEntry, &callableEntry, pRayTracer->getWidth(), pRayTracer->getHeight(), 1);
 		}
 
 		void VulkanCommandRecorder::compute(uint32_t width, uint32_t height, uint32_t depth)

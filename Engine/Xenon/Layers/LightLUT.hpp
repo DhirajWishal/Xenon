@@ -39,10 +39,11 @@ namespace Xenon
 			 * Explicit constructor.
 			 *
 			 * @param renderer The renderer reference.
-			 * @param pCamera The camera pointer used by the renderer.
+			 * @param width The width of the render target.
+			 * @param height The height of the render target.
 			 * @param priority The priority of the layer.
 			 */
-			explicit LightLUT(Renderer& renderer, Backend::Camera* pCamera, uint32_t priority);
+			explicit LightLUT(Renderer& renderer, uint32_t width, uint32_t height, uint32_t priority);
 
 			/**
 			 * On pre-update function.

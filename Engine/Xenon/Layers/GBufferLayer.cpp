@@ -28,8 +28,8 @@ namespace Xenon
 {
 	namespace Experimental
 	{
-		GBufferLayer::GBufferLayer(Renderer& renderer, Backend::Camera* pCamera, GBufferFace face /*= GBufferFace::Front*/, uint32_t priority /*= 0*/)
-			: RasterizingLayer(renderer, priority, pCamera, Backend::AttachmentType::Color | Backend::AttachmentType::Normal | Backend::AttachmentType::Position | Backend::AttachmentType::Depth)
+		GBufferLayer::GBufferLayer(Renderer& renderer, uint32_t width, uint32_t height, GBufferFace face /*= GBufferFace::Front*/, uint32_t priority /*= 0*/)
+			: RasterizingLayer(renderer, priority, width, height, Backend::AttachmentType::Color | Backend::AttachmentType::Normal | Backend::AttachmentType::Position | Backend::AttachmentType::Depth)
 			, m_pRotationBuffer(renderer.getInstance().getFactory()->createBuffer(renderer.getInstance().getBackendDevice(), sizeof(glm::mat4), Backend::BufferType::Uniform))
 			, m_Face(face)
 		{
@@ -123,8 +123,8 @@ namespace Xenon
 			m_pCommandRecorder->bind(m_pRasterizer.get(), { glm::vec4(0.0f), glm::vec4(0.0f), glm::vec4(0.0f), 1.0f });
 
 			// Set the scissor and view port.
-			m_pCommandRecorder->setViewport(0.0f, 0.0f, static_cast<float>(m_Renderer.getCamera()->getWidth()), static_cast<float>(m_Renderer.getCamera()->getHeight()), 0.0f, 1.0f);
-			m_pCommandRecorder->setScissor(0, 0, m_Renderer.getCamera()->getWidth(), m_Renderer.getCamera()->getHeight());
+			m_pCommandRecorder->setViewport(0.0f, 0.0f, static_cast<float>(m_Renderer.getWindow()->getWidth()), static_cast<float>(m_Renderer.getWindow()->getHeight()), 0.0f, 1.0f);
+			m_pCommandRecorder->setScissor(0, 0, m_Renderer.getWindow()->getWidth(), m_Renderer.getWindow()->getHeight());
 
 			// Issue the draw calls if we have a scene.
 			if (m_pScene)
@@ -192,14 +192,14 @@ namespace Xenon
 			OPTICK_EVENT();
 
 			// Get the camera information.
-			const auto position = m_Renderer.getCamera()->m_Position;
-			const auto cameraUp = m_Renderer.getCamera()->m_Up;
+			const auto position = m_pScene->getCamera()->m_Position;
+			const auto cameraUp = m_pScene->getCamera()->m_Up;
 			// const auto front = m_RotationMatrix * glm::vec4(m_Renderer.getCamera()->m_Front, 1.0f);
-
+			
 			// Calculate the view-model matrix.
 			// const auto matrix = glm::lookAt(position, position + glm::vec3(front), cameraUp);
-			const auto matrix = glm::lookAt(position, position + m_Renderer.getCamera()->m_Front, cameraUp) * m_RotationMatrix;
-
+			const auto matrix = glm::lookAt(position, position + m_pScene->getCamera()->m_Front, cameraUp) * m_RotationMatrix;
+			
 			// Copy the rotation matrix.
 			m_pRotationBuffer->write(ToBytes(glm::value_ptr(matrix)), sizeof(glm::mat4));
 		}

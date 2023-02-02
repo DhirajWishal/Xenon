@@ -6,9 +6,9 @@
 
 namespace Xenon
 {
-	RayTracingLayer::RayTracingLayer(Renderer& renderer, uint32_t priority, Backend::Camera* pCamera)
+	RayTracingLayer::RayTracingLayer(Renderer& renderer, uint32_t priority, uint32_t width, uint32_t height)
 		: Layer(renderer, priority)
-		, m_pRayTracer(renderer.getInstance().getFactory()->createRayTracer(renderer.getInstance().getBackendDevice(), pCamera))
+		, m_pRayTracer(renderer.getInstance().getFactory()->createRayTracer(renderer.getInstance().getBackendDevice(), width, height))
 	{
 	}
 

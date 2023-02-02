@@ -53,9 +53,10 @@ public:
 	 * Explicit constructor.
 	 *
 	 * @param renderer The renderer reference.
-	 * @param pCamera The camera pointer.
+	 * @param width The width of the render target.
+	 * @param height The height of the render target.
 	 */
-	explicit ImGuiLayer(Xenon::Renderer& renderer, Xenon::Backend::Camera* pCamera);
+	explicit ImGuiLayer(Xenon::Renderer& renderer, uint32_t width, uint32_t height);
 
 	/**
 	 * Destructor.
@@ -193,8 +194,6 @@ private:
 
 	std::unique_ptr<Xenon::Backend::Descriptor> m_pUserDescriptor = nullptr;
 	std::unique_ptr<Xenon::Backend::Buffer> m_pUniformBuffer = nullptr;
-
-	std::shared_ptr<spdlog::logger> m_pDefaultLogger = nullptr;
 
 	std::unique_ptr<Xenon::Backend::Image> m_pImage = nullptr;
 	std::unique_ptr<Xenon::Backend::ImageView> m_pImageView = nullptr;

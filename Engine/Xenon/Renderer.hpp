@@ -25,9 +25,11 @@ namespace Xenon
 		 *
 		 * @param instance The instance to create the rasterizing renderer with.
 		 * @param pCamera The camera pointer.
+		 * @param width The width of the window.
+		 * @param height The height of the window.
 		 * @param title The title of the renderer window.
 		 */
-		explicit Renderer(Instance& instance, Backend::Camera* pCamera, const std::string& title);
+		explicit Renderer(Instance& instance, uint32_t width, uint32_t height, const std::string& title);
 
 		/**
 		 * Update the renderer.
@@ -70,20 +72,6 @@ namespace Xenon
 		void close();
 
 	public:
-		/**
-		 * Get the attached camera pointer.
-		 *
-		 * @return The camera pointer.
-		 */
-		[[nodiscard]] Backend::Camera* getCamera() { return m_pCamera; }
-
-		/**
-		 * Get the attached camera pointer.
-		 *
-		 * @return The camera pointer.
-		 */
-		[[nodiscard]] const Backend::Camera* getCamera() const { return m_pCamera; }
-
 		/**
 		 * Get the instance to which the renderer is bound to.
 		 *

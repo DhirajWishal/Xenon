@@ -25,10 +25,11 @@ namespace Xenon
 			 * This will automatically initialize the object and setup the window.
 			 *
 			 * @param instance The instance to create the rasterizing renderer with.
-			 * @param pCamera The camera pointer.
+			 * @param width The width of the window.
+			 * @param height The height of the window.
 			 * @param title The title of the renderer window.
 			 */
-			explicit DefaultRenderer(Instance& instance, Backend::Camera* pCamera, const std::string& title);
+			explicit DefaultRenderer(Instance& instance, uint32_t width, uint32_t height, const std::string& title);
 
 			/**
 			 * Set the renderable scene to the layers.

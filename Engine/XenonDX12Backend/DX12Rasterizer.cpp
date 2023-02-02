@@ -10,8 +10,8 @@ namespace Xenon
 {
 	namespace Backend
 	{
-		DX12Rasterizer::DX12Rasterizer(DX12Device* pDevice, Camera* pCamera, AttachmentType attachmentTypes, bool enableTripleBuffering /*= false*/, MultiSamplingCount multiSampleCount /*= MultiSamplingCount::x1*/)
-			: Rasterizer(pDevice, pCamera, attachmentTypes, enableTripleBuffering, multiSampleCount)
+		DX12Rasterizer::DX12Rasterizer(DX12Device* pDevice, uint32_t width, uint32_t height, AttachmentType attachmentTypes, bool enableTripleBuffering /*= false*/, MultiSamplingCount multiSampleCount /*= MultiSamplingCount::x1*/)
+			: Rasterizer(pDevice, width, height, attachmentTypes, enableTripleBuffering, multiSampleCount)
 			, DX12DeviceBoundObject(pDevice)
 		{
 			// Setup the descriptor counts.
@@ -213,8 +213,8 @@ namespace Xenon
 		void DX12Rasterizer::setupRenderTargets()
 		{
 			ImageSpecification specification;
-			specification.m_Width = m_pCamera->getWidth();
-			specification.m_Height = m_pCamera->getHeight();
+			specification.m_Width = getWidth();
+			specification.m_Height = getHeight();
 			specification.m_EnableMipMaps = false;
 
 			D3D12_CLEAR_VALUE colorOptimizedClearValue = {};

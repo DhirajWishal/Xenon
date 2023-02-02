@@ -34,13 +34,14 @@ namespace Xenon
 			 * Explicit constructor.
 			 *
 			 * @param pDevice The device pointer.
-			 * @param pCamera The camera which is used to render the scene.
+			 * @param width The width of the render target.
+			 * @param height The height of the render target.
 			 * @param attachmentTypes The attachment types the render target should support.
 			 * @param enableTripleBuffering Whether to enable triple-buffering. Default is false.
 			 * @param multiSampleCount Multi-sampling count to use. Default is x1.
 			 */
-			explicit Rasterizer(const Device* pDevice, Camera* pCamera, AttachmentType attachmentTypes, bool enableTripleBuffering = false, MultiSamplingCount multiSampleCount = MultiSamplingCount::x1)
-				: RenderTarget(pDevice, pCamera, attachmentTypes), m_bEnableTripleBuffering(enableTripleBuffering), m_MultiSamplingCount(multiSampleCount) {}
+			explicit Rasterizer(const Device* pDevice, uint32_t width, uint32_t height, AttachmentType attachmentTypes, bool enableTripleBuffering = false, MultiSamplingCount multiSampleCount = MultiSamplingCount::x1)
+				: RenderTarget(pDevice, width, height, attachmentTypes), m_bEnableTripleBuffering(enableTripleBuffering), m_MultiSamplingCount(multiSampleCount) {}
 
 		public:
 			/**
