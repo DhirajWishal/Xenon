@@ -9,6 +9,8 @@
 #include "../../XenonShaderBank/Diffusion/Shader.comp.hpp"
 #include "../../XenonShaderBank/Diffusion/MipMapGenerator.comp.hpp"
 
+#include <optick.h>
+
 namespace Xenon
 {
 	namespace Experimental
@@ -30,14 +32,18 @@ namespace Xenon
 			specification.m_Height = height;
 			specification.m_Format = Backend::DataFormat::R8G8B8A8_UNORMAL;
 			specification.m_Usage = Backend::ImageUsage::Storage | Backend::ImageUsage::Graphics;
-			m_pOutputImage = renderer.getInstance().getFactory()->createImage(renderer.getInstance().getBackendDevice(), specification);
-			m_pOutputImageView = m_Renderer.getInstance().getFactory()->createImageView(m_Renderer.getInstance().getBackendDevice(), m_pOutputImage.get(), {});
+			m_pOutputImage = getInstance().getFactory()->createImage(getInstance().getBackendDevice(), specification);
+			m_pOutputImageView = getInstance().getFactory()->createImageView(getInstance().getBackendDevice(), m_pOutputImage.get(), {});
 
 			specification.m_Usage = Backend::ImageUsage::Graphics;
-			m_pScalingImage = renderer.getInstance().getFactory()->createImage(renderer.getInstance().getBackendDevice(), specification);
-			m_pScalingImageView = m_Renderer.getInstance().getFactory()->createImageView(m_Renderer.getInstance().getBackendDevice(), m_pScalingImage.get(), {});
+			m_pScalingImage = renderer.getInstance().getFactory()->createImage(getInstance().getBackendDevice(), specification);
+			m_pScalingImageView = getInstance().getFactory()->createImageView(getInstance().getBackendDevice(), m_pScalingImage.get(), {});
 
-			m_pImageSampler = m_Renderer.getInstance().getFactory()->createImageSampler(m_Renderer.getInstance().getBackendDevice(), {});
+			m_pImageSampler = getInstance().getFactory()->createImageSampler(getInstance().getBackendDevice(), {});
+
+			specification.m_Format = Backend::DataFormat::R32_SFLOAT;
+			specification.m_Usage = Backend::ImageUsage::Storage | Backend::ImageUsage::Graphics;
+			m_pIlluminationImage = getInstance().getFactory()->createImage(getInstance().getBackendDevice(), specification);
 
 			// Bind the images to the required descriptors.
 			m_pDiffusionDescriptor->attach(1, m_pScalingImage.get(), m_pScalingImageView.get(), m_pImageSampler.get(), Backend::ImageUsage::Graphics);
@@ -45,10 +51,15 @@ namespace Xenon
 			m_pDiffusionDescriptor->attach(3, m_pControlBlockBuffer.get());
 
 			m_pMipMapGenerationDescriptor->attach(1, m_pScalingImage.get(), m_pScalingImageView.get(), m_pImageSampler.get(), Backend::ImageUsage::Storage);
+
+			// Create the default diffusion pass.
+			createPass<DiffusionPass>(width, height);
 		}
 
 		void DiffusionLayer::onUpdate(Layer* pPreviousLayer, uint32_t imageIndex, uint32_t frameIndex)
 		{
+			OPTICK_EVENT();
+
 			// Copy the control block data.
 			m_pControlBlockBuffer->write(ToBytes(&m_ControlBlock), sizeof(ControlBlock));
 
@@ -71,6 +82,9 @@ namespace Xenon
 				m_pCommandRecorder->bind(m_pDiffusionPipeline.get());
 				m_pCommandRecorder->bind(m_pDiffusionPipeline.get(), m_pDiffusionDescriptor.get());
 				m_pCommandRecorder->compute(m_pSourceImage->getWidth() / 8, m_pSourceImage->getHeight() / 8, m_pSourceImage->getDepth());
+
+				// Run all the passes.
+				runPasses(pPreviousLayer, imageIndex, frameIndex);
 			}
 
 			m_pCommandRecorder->end();
@@ -78,9 +92,11 @@ namespace Xenon
 
 		void DiffusionLayer::setSourceImage(Backend::Image* pImage)
 		{
-			m_Renderer.getInstance().getBackendDevice()->waitIdle();
+			OPTICK_EVENT();
+
+			getInstance().getBackendDevice()->waitIdle();
 			m_pSourceImage = pImage;
-			m_pSourceImageView = m_Renderer.getInstance().getFactory()->createImageView(m_Renderer.getInstance().getBackendDevice(), pImage, {});
+			m_pSourceImageView = getInstance().getFactory()->createImageView(getInstance().getBackendDevice(), pImage, {});
 
 			m_pDiffusionDescriptor->attach(0, m_pSourceImage, m_pSourceImageView.get(), m_pImageSampler.get(), Backend::ImageUsage::Graphics);
 			m_pMipMapGenerationDescriptor->attach(0, m_pSourceImage, m_pSourceImageView.get(), m_pImageSampler.get(), Backend::ImageUsage::Graphics);

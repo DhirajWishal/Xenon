@@ -4,8 +4,7 @@
 #pragma once
 
 #include "../Layer.hpp"
-
-#include "../../XenonBackend/ComputePipeline.hpp"
+#include "../Passes/DiffusionPass.hpp"
 
 namespace Xenon
 {
@@ -80,6 +79,8 @@ namespace Xenon
 
 			std::unique_ptr<Backend::Image> m_pScalingImage = nullptr;
 			std::unique_ptr<Backend::Image> m_pOutputImage = nullptr;
+
+			std::unique_ptr<Backend::Image> m_pIlluminationImage = nullptr;
 
 			std::unique_ptr<Backend::ImageView> m_pSourceImageView = nullptr;
 			std::unique_ptr<Backend::ImageView> m_pScalingImageView = nullptr;

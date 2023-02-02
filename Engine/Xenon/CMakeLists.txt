@@ -44,6 +44,7 @@ set(
 	"DefaultCacheHandler.hpp"
 	"UserDataContainer.cpp"
 	"UserDataContainer.hpp"
+	"LayerPass.hpp"
 
 	"Layers/ClearScreenLayer.cpp"
 	"Layers/ClearScreenLayer.hpp"
@@ -66,6 +67,9 @@ set(
 
 	"Renderers/DefaultRenderer.cpp"
 	"Renderers/DefaultRenderer.hpp"
+
+	"Passes/DiffusionPass.cpp"
+	"Passes/DiffusionPass.hpp"
 )
 
 # Add the source group.

@@ -64,6 +64,8 @@ namespace Xenon
 
 		Xenon::Texture ShadowMapLayer::getShadowTexture()
 		{
+			OPTICK_EVENT();
+
 			Texture texture;
 			texture.m_pImage = getShadowImage();
 			texture.m_pImageView = m_pImageView.get();
