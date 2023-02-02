@@ -8,19 +8,14 @@ Texture2D originalImage : register(t0);
 [[vk::combinedImageSampler]]
 SamplerState originalImageSampler : register(s0);
 
-[[vk::combinedImageSampler]]
-Texture2D mipMapImage : register(t1);
-[[vk::combinedImageSampler]]
-SamplerState mipMapImageSampler : register(s1);
-
-RWTexture2D<float4> resultImage : register(u2);
+RWTexture2D<float4> resultImage : register(u1);
 
 struct ControlBlock 
 {
 	uint m_LOD;
 };
 
-cbuffer controlBlock : register(b3) { ControlBlock controlBlock; }
+cbuffer controlBlock : register(b2) { ControlBlock controlBlock; }
 
 float4 getSumOfPixels(uint width, uint height, int2 coordinate, uint distanceX, uint distanceY)
 {
@@ -64,19 +59,5 @@ float4 downsample(int2 coordinate, uint factor)
 void main(uint2 ThreadID : SV_DispatchThreadID)
 {
 	int2 coordinate = int2(ThreadID.xy);
-
-	uint width;
-	uint height;
-	originalImage.GetDimensions(width, height);
-	float ratio = float(width) / height;
-
-	uint levels = floor(log2(max(width, height))) + 1;
-	float4 contribution = originalImage[coordinate] / 2;
-	for(uint i = 2; i <= levels; i++)
-	{
-		uint factor = 1 << i;
-		contribution += mipMapImage.mips[i - 2][int2(coordinate.x, coordinate.y)] / factor;
-	}
-
 	resultImage[coordinate] = originalImage[coordinate];
 }

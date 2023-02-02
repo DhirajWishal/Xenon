@@ -4,6 +4,7 @@
 #pragma once
 
 #include "../Layer.hpp"
+
 #include "../Passes/DiffusionPass.hpp"
 
 namespace Xenon
@@ -27,14 +28,6 @@ namespace Xenon
 		 */
 		class DiffusionLayer final : public Layer
 		{
-			/**
-			 * Control block structure.
-			 */
-			struct ControlBlock final
-			{
-				XENON_HLSL_VEC3_ALIGNMENT uint32_t m_LOD = 0;
-			};
-
 		public:
 			/**
 			 * Explicit constructor.
@@ -61,7 +54,7 @@ namespace Xenon
 			 *
 			 * @return The image pointer.
 			 */
-			[[nodiscard]] Backend::Image* getColorAttachment() override { return m_pOutputImage.get(); }
+			[[nodiscard]] Backend::Image* getColorAttachment() override { return m_pDiffusionPass->getOutputImage(); }
 
 			/**
 			 * Set the source image pointer to perform diffusion.
@@ -72,26 +65,16 @@ namespace Xenon
 
 		private:
 			std::unique_ptr<Backend::ComputePipeline> m_pMipMapGenerationPipeline = nullptr;
-			std::unique_ptr<Backend::ComputePipeline> m_pDiffusionPipeline = nullptr;
 
 			std::unique_ptr<Backend::Descriptor> m_pMipMapGenerationDescriptor = nullptr;
-			std::unique_ptr<Backend::Descriptor> m_pDiffusionDescriptor = nullptr;
 
 			std::unique_ptr<Backend::Image> m_pScalingImage = nullptr;
-			std::unique_ptr<Backend::Image> m_pOutputImage = nullptr;
 
 			std::unique_ptr<Backend::Image> m_pIlluminationImage = nullptr;
 
-			std::unique_ptr<Backend::ImageView> m_pSourceImageView = nullptr;
 			std::unique_ptr<Backend::ImageView> m_pScalingImageView = nullptr;
-			std::unique_ptr<Backend::ImageView> m_pOutputImageView = nullptr;
 
-			std::unique_ptr<Backend::ImageSampler> m_pImageSampler = nullptr;
-
-			ControlBlock m_ControlBlock = {};
-			std::unique_ptr<Backend::Buffer> m_pControlBlockBuffer = nullptr;
-
-			Backend::Image* m_pSourceImage = nullptr;
+			DiffusionPass* m_pDiffusionPass = nullptr;
 
 			uint32_t m_ImageLayers = 0;
 		};

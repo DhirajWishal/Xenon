@@ -19,6 +19,7 @@ namespace Xenon
 			: LayerPass(layer)
 			, m_pPipeline(layer.getInstance().getFactory()->createComputePipeline(layer.getInstance().getBackendDevice(), std::make_unique<DefaultCacheHandler>(), Generated::CreateShaderShader_comp()))
 			, m_pImageSampler(layer.getInstance().getFactory()->createImageSampler(layer.getInstance().getBackendDevice(), {}))
+			, m_pControlBlockBuffer(layer.getInstance().getFactory()->createBuffer(layer.getInstance().getBackendDevice(), sizeof(ControlBlock), Backend::BufferType::Uniform))
 		{
 			// Setup the output image.
 			Backend::ImageSpecification specification = {};
@@ -34,11 +35,15 @@ namespace Xenon
 
 			// Attach everything that we need.
 			m_pDescriptor->attach(1, m_pOutputImage.get(), m_pOutputImageView.get(), m_pImageSampler.get(), Backend::ImageUsage::Storage);
+			m_pDescriptor->attach(2, m_pControlBlockBuffer.get());
 		}
 
 		void DiffusionPass::onUpdate(Layer* pPreviousLayer, uint32_t imageIndex, uint32_t frameIndex, Backend::CommandRecorder* pCommandRecorder)
 		{
 			OPTICK_EVENT();
+
+			// Copy the control block data.
+			m_pControlBlockBuffer->write(ToBytes(&m_ControlBlock), sizeof(ControlBlock));
 
 			pCommandRecorder->bind(m_pPipeline.get());
 			pCommandRecorder->bind(m_pPipeline.get(), m_pDescriptor.get());

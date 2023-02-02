@@ -5,6 +5,7 @@
 
 #include "../LayerPass.hpp"
 
+#include "../Components.hpp"
 #include "../../XenonBackend/ComputePipeline.hpp"
 
 namespace Xenon
@@ -17,6 +18,14 @@ namespace Xenon
 		 */
 		class DiffusionPass final : public LayerPass
 		{
+			/**
+			 * Control block structure.
+			 */
+			struct ControlBlock final
+			{
+				XENON_HLSL_VEC3_ALIGNMENT uint32_t m_LOD = 0;
+			};
+
 		public:
 			/**
 			 * Explicit constructor.
@@ -45,6 +54,20 @@ namespace Xenon
 			 */
 			void setSourceImage(Backend::Image* pImage);
 
+			/**
+			 * Get the output image pointer.
+			 *
+			 * @return The image pointer.
+			 */
+			[[nodiscard]] Backend::Image* getOutputImage() noexcept { return m_pOutputImage.get(); }
+
+			/**
+			 * Get the output image pointer.
+			 *
+			 * @return The image pointer.
+			 */
+			[[nodiscard]] const Backend::Image* getOutputImage() const noexcept { return m_pOutputImage.get(); }
+
 		private:
 			std::unique_ptr<Backend::ComputePipeline> m_pPipeline = nullptr;
 
@@ -53,6 +76,9 @@ namespace Xenon
 			std::unique_ptr<Backend::Image> m_pOutputImage = nullptr;
 			std::unique_ptr<Backend::ImageView> m_pOutputImageView = nullptr;
 			std::unique_ptr<Backend::ImageSampler> m_pImageSampler = nullptr;
+
+			ControlBlock m_ControlBlock = {};
+			std::unique_ptr<Backend::Buffer> m_pControlBlockBuffer = nullptr;
 
 			std::unique_ptr<Backend::ImageView> m_pSourceImageView = nullptr;
 			Backend::Image* m_pSourceImage = nullptr;
