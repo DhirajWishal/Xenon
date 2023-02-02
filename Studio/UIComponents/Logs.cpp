@@ -5,6 +5,11 @@
 
 #include <imgui.h>
 
+#ifdef XENON_DEBUG
+#include <iostream>
+
+#endif // XENON_DEBUG
+
 void Logs::begin(std::chrono::nanoseconds delta)
 {
 	if (m_bIsOpen)
