@@ -9,11 +9,11 @@ namespace /* anonymous */
 	/**
 	 * Get the image specification used to create the color image.
 	 */
-	[[nodiscard]] Xenon::Backend::ImageSpecification GetImageSpecification(const Xenon::Backend::Camera* pCamera) noexcept
+	[[nodiscard]] Xenon::Backend::ImageSpecification GetImageSpecification(uint32_t width, uint32_t height) noexcept
 	{
 		Xenon::Backend::ImageSpecification specification;
-		specification.m_Width = pCamera->getWidth();
-		specification.m_Height = pCamera->getHeight();
+		specification.m_Width = width;
+		specification.m_Height = height;
 		specification.m_Usage = Xenon::Backend::ImageUsage::ColorAttachment | Xenon::Backend::ImageUsage::Storage;
 		specification.m_Format = Xenon::Backend::DataFormat::R8G8B8A8_UNORMAL | Xenon::Backend::DataFormat::R8G8B8A8_SRGB;
 		specification.m_EnableMipMaps = false;
@@ -26,10 +26,10 @@ namespace Xenon
 {
 	namespace Backend
 	{
-		DX12RayTracer::DX12RayTracer(DX12Device* pDevice, Camera* pCamera)
-			: RayTracer(pDevice, pCamera)
+		DX12RayTracer::DX12RayTracer(DX12Device* pDevice, uint32_t width, uint32_t height)
+			: RayTracer(pDevice, width, height)
 			, DX12DeviceBoundObject(pDevice)
-			, m_ColorImage(pDevice, GetImageSpecification(pCamera))
+			, m_ColorImage(pDevice, GetImageSpecification(width, height))
 		{
 		}
 

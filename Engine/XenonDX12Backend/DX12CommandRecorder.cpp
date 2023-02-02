@@ -898,8 +898,8 @@ namespace Xenon
 			desc.MissShaderTable = pDxBindingTable->getMissAddressRange();
 			desc.HitGroupTable = pDxBindingTable->getHitGroupAddressRange();
 			desc.CallableShaderTable = pDxBindingTable->getCallableAddressRange();
-			desc.Width = pRayTracer->getCamera()->getWidth();
-			desc.Height = pRayTracer->getCamera()->getHeight();
+			desc.Width = pRayTracer->getWidth();
+			desc.Height = pRayTracer->getHeight();
 			desc.Depth = 1;
 
 			m_pCurrentCommandList->DispatchRays(&desc);
