@@ -195,6 +195,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonPlatform)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonPlatformWindows)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonEvents)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonShaderBank)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonAssetPackager)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Studio)
 
 # Set the output directories.
