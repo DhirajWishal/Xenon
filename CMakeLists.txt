@@ -178,6 +178,11 @@ add_compile_definitions(
 	# This is required since not all devices support ray tracing for all backends (for me Vulkan ray tracing does not work).
 	# Comment this out to disable ray tracing from the studio.
 	# XENON_DEV_ENABLE_RAY_TRACING
+
+	# Conditionally enable experimental features.
+	# This may contain code that might not be supported by all backends, or in other platforms, or just won't compile to begin with.
+	# Comment this to disable experimental features of the engine. We recommend using this only in experimental branches.
+	# XENON_ENABLE_EXPERIMENTAL
 )
 
 # Include the main subdirectories.

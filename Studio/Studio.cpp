@@ -3,6 +3,7 @@
 
 #include "Studio.hpp"
 #include "Logging.hpp"
+#include "StudioConfiguration.hpp"
 
 #include "Layers/ImGuiLayer.hpp"
 
@@ -118,6 +119,7 @@ Studio::Studio(Xenon::BackendType type /*= Xenon::BackendType::Any*/)
 	, m_Renderer(m_Instance, g_DefaultWidth, g_DefaultHeight, GetRendererTitle(type))
 {
 	XENON_LOG_INFORMATION("Starting the {}", GetRendererTitle(m_Instance.getBackendType()));
+	StudioConfiguration::GetInstance().setCurrentBackendType(m_Instance.getBackendType());
 }
 
 void Studio::run()
@@ -126,13 +128,16 @@ void Studio::run()
 	Xenon::MaterialBuilder materialBuidler;
 	materialBuidler.addBaseColorTexture();	// Use the sub mesh's one.
 
-	// // Create the occlusion layer for occlusion culling.
-	// auto pOcclusionLayer = m_Renderer.createLayer<Xenon::OcclusionLayer>(g_DefaultWidth, g_DefaultHeight, g_DefaultRenderingPriority);
-	// pOcclusionLayer->setScene(m_Scene);
+	// Create the occlusion layer for occlusion culling.
+	auto pOcclusionLayer = m_Renderer.createLayer<Xenon::OcclusionLayer>(g_DefaultWidth, g_DefaultHeight, g_DefaultRenderingPriority);
+	pOcclusionLayer->setScene(m_Scene);
 
+#ifdef XENON_ENABLE_EXPERIMENTAL
 	// Create the shadow map layer.
 	auto pShadowMapLayer = m_Renderer.createLayer<Xenon::Experimental::ShadowMapLayer>(g_DefaultWidth, g_DefaultHeight);
 	pShadowMapLayer->setScene(m_Scene);
+
+#endif // XENON_ENABLE_EXPERIMENTAL
 
 	// Setup the pipeline.
 #ifdef XENON_DEV_ENABLE_RAY_TRACING
@@ -142,41 +147,37 @@ void Studio::run()
 	materialBuidler.setRayTracingPipelineSpecification(getRayTracingPipelineSpecification());
 	auto pPipeline = m_Instance.getFactory()->createRayTracingPipeline(m_Instance.getBackendDevice(), std::make_unique<Xenon::DefaultCacheHandler>(), materialBuidler.getRayTracingPipelineSpecification());
 
-	const auto loaderFunction = [this, &pPipeline, &pRenderTarget, &materialBuidler]
-	{
-		const auto grouping = m_Scene.createGroup();
-		[[maybe_unused]] const auto& geometry = m_Scene.create<Xenon::Geometry>(grouping, Xenon::Geometry::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"));
-		[[maybe_unused]] const auto& material = m_Scene.create<Xenon::Material>(grouping, materialBuidler);
-	};
-
 #else 
 	auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRasterizingLayer>(g_DefaultWidth, g_DefaultHeight, g_DefaultRenderingPriority);
 	pRenderTarget->setScene(m_Scene);
-	// pRenderTarget->setOcclusionLayer(pOcclusionLayer);
+	pRenderTarget->setOcclusionLayer(pOcclusionLayer);
 
 	Xenon::Backend::RasterizingPipelineSpecification specification;
-	// specification.m_VertexShader = Xenon::Generated::CreateShaderShader_vert();
-	// specification.m_FragmentShader = Xenon::Generated::CreateShaderShader_frag();
-	specification.m_VertexShader = Xenon::Generated::CreateShaderScene_vert();
-	specification.m_FragmentShader = Xenon::Generated::CreateShaderScene_frag();
+#ifndef XENON_ENABLE_EXPERIMENTAL
+	specification.m_VertexShader = Xenon::Generated::CreateShaderShader_vert();
+	specification.m_FragmentShader = Xenon::Generated::CreateShaderShader_frag();
+
+#else
+	// specification.m_VertexShader = Xenon::Generated::CreateShaderScene_vert();
+	// specification.m_FragmentShader = Xenon::Generated::CreateShaderScene_frag();
+
+#endif // !XENON_ENABLE_EXPERIMENTAL
 	materialBuidler.setRasterizingPipelineSpecification(specification);
 
+#ifdef XENON_ENABLE_EXPERIMENTAL
 	materialBuidler.addShadowMap(pShadowMapLayer->getShadowTexture());
 	materialBuidler.addCustomProperty(pShadowMapLayer->getShadowCameraBuffer());
 
-	const auto loaderFunction = [this, &materialBuidler]
-	{
-		const auto grouping = m_Scene.createGroup();
-		[[maybe_unused]] const auto& geometry = m_Scene.create<Xenon::Geometry>(grouping, Xenon::Geometry::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"));
-		[[maybe_unused]] const auto& material = m_Scene.create<Xenon::Material>(grouping, materialBuidler);
-		[[maybe_unused]] const auto& transform = m_Scene.create<Xenon::Components::Transform>(grouping, glm::vec3(0), glm::vec3(0), glm::vec3(0.05f));
-	};
+#endif // XENON_ENABLE_EXPERIMENTAL
 
 #endif // XENON_DEV_ENABLE_RAY_TRACING
 
+#ifdef XENON_ENABLE_EXPERIMENTAL
 	// Create the diffusion layer.
 	auto pDiffusionLayer = m_Renderer.createLayer<Xenon::Experimental::DiffusionLayer>(g_DefaultWidth, g_DefaultHeight, pRenderTarget->getPriority());
 	pDiffusionLayer->setSourceImage(pRenderTarget->getColorAttachment());
+
+#endif // XENON_ENABLE_EXPERIMENTAL
 
 	// Create the layers.
 	auto pImGui = m_Renderer.createLayer<ImGuiLayer>(g_DefaultWidth, g_DefaultHeight);
@@ -197,8 +198,17 @@ void Studio::run()
 	m_LightGroups.emplace_back(createLightSource());
 
 	{
+		const auto loaderFunction = [this, &materialBuidler]
+		{
+			XENON_STUDIO_LOG_INFORMATION("Loading Sponza...");
+			const auto grouping = m_Scene.createGroup();
+			[[maybe_unused]] const auto& geometry = m_Scene.create<Xenon::Geometry>(grouping, Xenon::Geometry::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"));
+			// [[maybe_unused]] const auto& geometry = m_Scene.create<Xenon::Geometry>(grouping, Xenon::Geometry::FromFile(m_Instance, "E:\\Assets\\Sponza\\Main\\Main\\NewSponza_Main_Blender_glTF.gltf"));
+			[[maybe_unused]] const auto& material = m_Scene.create<Xenon::Material>(grouping, materialBuidler);
+			[[maybe_unused]] const auto& transform = m_Scene.create<Xenon::Components::Transform>(grouping, glm::vec3(0), glm::vec3(0), glm::vec3(0.05f));
+			XENON_STUDIO_LOG_INFORMATION("Sponza model loaded!");
+		};
 		auto ret = Xenon::XObject::GetJobSystem().insert(loaderFunction);
-		XENON_STUDIO_LOG_INFORMATION("Test log!");
 
 		Xenon::FrameTimer timer;
 		do
@@ -209,7 +219,7 @@ void Studio::run()
 			m_Scene.beginUpdate();
 
 			// Set the draw call count.
-			// pImGui->setDrawCallCount(m_Scene.getDrawableCount(), pRenderTarget->getDrawCount());
+			pImGui->setDrawCallCount(m_Scene.getDrawableCount(), pRenderTarget->getDrawCount());
 
 			// Begin the ImGui scene.
 			// Handle the inputs and update the camera only if we need to.

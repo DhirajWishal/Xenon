@@ -93,7 +93,7 @@ namespace /* anonymous */
 		// Set the supported types if required.
 		if (supportedTypes && !requiredExtensions.contains(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME)
 			&& !requiredExtensions.contains(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME)
-			/* && requiredExtensions.contains(VK_KHR_RAY_QUERY_EXTENSION_NAME)*/)
+			&& requiredExtensions.contains(VK_KHR_RAY_QUERY_EXTENSION_NAME))
 		{
 			*supportedTypes = Xenon::RenderTargetType::All;
 		}
@@ -138,7 +138,7 @@ namespace /* anonymous */
 		// Set the supported types if required.
 		if (supportedTypes && !requiredExtensions.contains(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME)
 			&& !requiredExtensions.contains(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME)
-			/* && requiredExtensions.contains(VK_KHR_RAY_QUERY_EXTENSION_NAME)*/)
+			&& requiredExtensions.contains(VK_KHR_RAY_QUERY_EXTENSION_NAME))
 		{
 			*supportedTypes = Xenon::RenderTargetType::All;
 		}

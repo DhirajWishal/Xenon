@@ -41,7 +41,8 @@ float2 GetEquirectangularUV(float3 direction)
     return float2(phi / (2 * PI) + 0.5, theta / PI);
 }
 
-[numthreads(32, 32, 6)]
+// [numthreads(32, 32, 6)]
+[numthreads(1, 1, 6)]
 void main(uint3 DispatchThreadID : SV_DispatchThreadID)
 {
     uint faceIndex = DispatchThreadID.z;
