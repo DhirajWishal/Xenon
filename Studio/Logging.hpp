@@ -5,6 +5,8 @@
 
 #include <spdlog/spdlog.h>
 
+constexpr auto g_XenonLoggerName = "XenonStudio";
+
 /**
  * Xenon studio logger.
  * Compared to the Xenon logger, this will log everything to the studio's logger instead.

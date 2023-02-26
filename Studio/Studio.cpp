@@ -128,13 +128,16 @@ void Studio::run()
 	Xenon::MaterialBuilder materialBuidler;
 	materialBuidler.addBaseColorTexture();	// Use the sub mesh's one.
 
-	// // Create the occlusion layer for occlusion culling.
-	// auto pOcclusionLayer = m_Renderer.createLayer<Xenon::OcclusionLayer>(g_DefaultWidth, g_DefaultHeight, g_DefaultRenderingPriority);
-	// pOcclusionLayer->setScene(m_Scene);
+	// Create the occlusion layer for occlusion culling.
+	auto pOcclusionLayer = m_Renderer.createLayer<Xenon::OcclusionLayer>(g_DefaultWidth, g_DefaultHeight, g_DefaultRenderingPriority);
+	pOcclusionLayer->setScene(m_Scene);
 
+#ifdef XENON_ENABLE_EXPERIMENTAL
 	// Create the shadow map layer.
-	// auto pShadowMapLayer = m_Renderer.createLayer<Xenon::Experimental::ShadowMapLayer>(g_DefaultWidth, g_DefaultHeight);
-	// pShadowMapLayer->setScene(m_Scene);
+	auto pShadowMapLayer = m_Renderer.createLayer<Xenon::Experimental::ShadowMapLayer>(g_DefaultWidth, g_DefaultHeight);
+	pShadowMapLayer->setScene(m_Scene);
+
+#endif // XENON_ENABLE_EXPERIMENTAL
 
 	// Setup the pipeline.
 #ifdef XENON_DEV_ENABLE_RAY_TRACING
@@ -147,24 +150,34 @@ void Studio::run()
 #else 
 	auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRasterizingLayer>(g_DefaultWidth, g_DefaultHeight, g_DefaultRenderingPriority);
 	pRenderTarget->setScene(m_Scene);
-	// pRenderTarget->setOcclusionLayer(pOcclusionLayer);
+	pRenderTarget->setOcclusionLayer(pOcclusionLayer);
 
 	Xenon::Backend::RasterizingPipelineSpecification specification;
+#ifndef XENON_ENABLE_EXPERIMENTAL
 	specification.m_VertexShader = Xenon::Generated::CreateShaderShader_vert();
 	specification.m_FragmentShader = Xenon::Generated::CreateShaderShader_frag();
+
+#else
 	// specification.m_VertexShader = Xenon::Generated::CreateShaderScene_vert();
 	// specification.m_FragmentShader = Xenon::Generated::CreateShaderScene_frag();
-	// specification.m_PolygonMode = Xenon::Backend::PolygonMode::Point;
+
+#endif // !XENON_ENABLE_EXPERIMENTAL
 	materialBuidler.setRasterizingPipelineSpecification(specification);
 
-	// materialBuidler.addShadowMap(pShadowMapLayer->getShadowTexture());
-	// materialBuidler.addCustomProperty(pShadowMapLayer->getShadowCameraBuffer());
+#ifdef XENON_ENABLE_EXPERIMENTAL
+	materialBuidler.addShadowMap(pShadowMapLayer->getShadowTexture());
+	materialBuidler.addCustomProperty(pShadowMapLayer->getShadowCameraBuffer());
+
+#endif // XENON_ENABLE_EXPERIMENTAL
 
 #endif // XENON_DEV_ENABLE_RAY_TRACING
 
+#ifdef XENON_ENABLE_EXPERIMENTAL
 	// Create the diffusion layer.
 	auto pDiffusionLayer = m_Renderer.createLayer<Xenon::Experimental::DiffusionLayer>(g_DefaultWidth, g_DefaultHeight, pRenderTarget->getPriority());
 	pDiffusionLayer->setSourceImage(pRenderTarget->getColorAttachment());
+
+#endif // XENON_ENABLE_EXPERIMENTAL
 
 	// Create the layers.
 	auto pImGui = m_Renderer.createLayer<ImGuiLayer>(g_DefaultWidth, g_DefaultHeight);
@@ -206,7 +219,7 @@ void Studio::run()
 			m_Scene.beginUpdate();
 
 			// Set the draw call count.
-			// pImGui->setDrawCallCount(m_Scene.getDrawableCount(), pRenderTarget->getDrawCount());
+			pImGui->setDrawCallCount(m_Scene.getDrawableCount(), pRenderTarget->getDrawCount());
 
 			// Begin the ImGui scene.
 			// Handle the inputs and update the camera only if we need to.

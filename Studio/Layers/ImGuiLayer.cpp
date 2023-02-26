@@ -4,6 +4,7 @@
 #include "ImGuiLayer.hpp"
 
 #include "../StudioConfiguration.hpp"
+#include "../Logging.hpp"
 
 #include "../Shaders/ImGuiLayer/ImGuiLayer.vert.hpp"
 #include "../Shaders/ImGuiLayer/ImGuiLayer.frag.hpp"
@@ -47,12 +48,15 @@ ImGuiLayer::ImGuiLayer(Xenon::Renderer& renderer, uint32_t width, uint32_t heigh
 	setupDefaultMaterial();
 
 	// Setup the ImGui logger.
-	auto logger = std::make_shared<spdlog::logger>("XenonStudio", m_UIStorage.m_pLogs);
+	auto logger = std::make_shared<spdlog::logger>(g_XenonLoggerName, m_UIStorage.m_pLogs);
 	spdlog::register_logger(logger);
 }
 
 ImGuiLayer::~ImGuiLayer()
 {
+	// Remove the ImGui logger.
+	spdlog::drop(g_XenonLoggerName);
+
 	ImNodes::DestroyContext();
 	ImGui::DestroyContext();
 }
