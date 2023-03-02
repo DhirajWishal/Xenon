@@ -13,6 +13,8 @@ set(
 	SOURCES
 
 	"Main.cpp"
+	"Packager.cpp"
+	"Packager.hpp"
 )
 
 # Add the source group.
