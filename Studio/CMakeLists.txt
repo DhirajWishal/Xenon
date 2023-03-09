@@ -83,3 +83,7 @@ CompileShaders()
 
 # Copy the font files to the output directory.
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Fonts DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
+include(${CMAKE_SOURCE_DIR}/Tools/CMake/PackageAsset.CMake)
+
+PackageAsset(XenonStudio ${CMAKE_SOURCE_DIR}/Testing/AssetPack.json ${CMAKE_CURRENT_BINARY_DIR})

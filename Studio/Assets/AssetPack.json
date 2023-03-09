@@ -1,0 +1,12 @@
+{
+  "model": {
+    "file": "../../ThirdParty/glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf",
+    "type": "bytes"
+  },
+  "rawValue": 0,
+  "object": {
+    "x": "The x value of something",
+    "y": 100
+  },
+  "sponza": "../../ThirdParty/glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf"
+}

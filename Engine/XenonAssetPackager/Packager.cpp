@@ -29,7 +29,7 @@ namespace Xenon
 
 		// Load the input file.
 		std::ifstream inputFile(m_InputFile);
-		JsonDocument inputData = JsonDocument::parse(inputFile);
+		const auto inputData = JsonDocument::parse(inputFile);
 		inputFile.close();
 
 		// Load all the data to a new json document.
