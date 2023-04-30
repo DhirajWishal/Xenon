@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Dhiraj Wishal
+// Copyright 2022-2023 Nexonous
 // SPDX-License-Identifier: Apache-2.0
 
 #include "VulkanRasterizer.hpp"
@@ -10,8 +10,8 @@ namespace Xenon
 {
 	namespace Backend
 	{
-		VulkanRasterizer::VulkanRasterizer(VulkanDevice* pDevice, Camera* pCamera, AttachmentType attachmentTypes, bool enableTripleBuffering /*= false*/, MultiSamplingCount multiSampleCount /*= MultiSamplingCount::x1*/)
-			: Rasterizer(pDevice, pCamera, attachmentTypes, enableTripleBuffering, multiSampleCount)
+		VulkanRasterizer::VulkanRasterizer(VulkanDevice* pDevice, uint32_t width, uint32_t height, AttachmentType attachmentTypes, bool enableTripleBuffering /*= false*/, MultiSamplingCount multiSampleCount /*= MultiSamplingCount::x1*/)
+			: Rasterizer(pDevice, width, height, attachmentTypes, enableTripleBuffering, multiSampleCount)
 			, VulkanDeviceBoundObject(pDevice)
 		{
 			// Setup the image attachments.
@@ -68,6 +68,14 @@ namespace Xenon
 					index++;
 				}
 
+				if (m_AttachmentTypes & AttachmentType::Position)
+				{
+					if (type & AttachmentType::Position)
+						return &m_ImageAttachments[index];
+
+					index++;
+				}
+
 				if (m_AttachmentTypes & AttachmentType::Depth && m_AttachmentTypes & AttachmentType::Stencil)
 				{
 					if (type & AttachmentType::Depth && type & AttachmentType::Stencil)
@@ -103,8 +111,8 @@ namespace Xenon
 		void VulkanRasterizer::setupAttachments()
 		{
 			ImageSpecification specification;
-			specification.m_Width = m_pCamera->getWidth();
-			specification.m_Height = m_pCamera->getHeight();
+			specification.m_Width = getWidth();
+			specification.m_Height = getHeight();
 			specification.m_Depth = 1;
 			specification.m_EnableMipMaps = false;
 
@@ -136,7 +144,16 @@ namespace Xenon
 			// Create and add the normal attachment if required.
 			if (m_AttachmentTypes & AttachmentType::Normal)
 			{
-				specification.m_Format = DataFormat::R32G32B32_SFLOAT;
+				specification.m_Format = DataFormat::R32G32B32A32_SFLOAT;
+
+				const auto& image = m_ImageAttachments.emplace_back(m_pDevice, specification);
+				createImageView(image.getImage(), image.getAspectFlags(), VulkanDevice::ConvertFormat(image.getDataFormat()));
+			}
+
+			// Create and add the normal attachment if required.
+			if (m_AttachmentTypes & AttachmentType::Position)
+			{
+				specification.m_Format = DataFormat::R32G32B32A32_SFLOAT;
 
 				const auto& image = m_ImageAttachments.emplace_back(m_pDevice, specification);
 				createImageView(image.getImage(), image.getAspectFlags(), VulkanDevice::ConvertFormat(image.getDataFormat()));
@@ -155,7 +172,7 @@ namespace Xenon
 			// Create and add the depth attachment if required.
 			else if (m_AttachmentTypes & AttachmentType::Depth)
 			{
-				specification.m_Usage = ImageUsage::DepthAttachment | ImageUsage::Storage;
+				specification.m_Usage = ImageUsage::DepthAttachment;
 				specification.m_Format = DataFormat::D32_SFLOAT | DataFormat::D16_SINT;
 
 				const auto& image = m_ImageAttachments.emplace_back(m_pDevice, specification);
@@ -256,8 +273,8 @@ namespace Xenon
 			createInfo.renderPass = m_RenderPass;
 			createInfo.attachmentCount = static_cast<uint32_t>(m_AttachmentViews.size());
 			createInfo.pAttachments = m_AttachmentViews.data();
-			createInfo.width = m_pCamera->getWidth();
-			createInfo.height = m_pCamera->getHeight();
+			createInfo.width = getWidth();
+			createInfo.height = getHeight();
 			createInfo.layers = 1;
 
 			const auto bufferCount = m_bEnableTripleBuffering ? 3 : 1;

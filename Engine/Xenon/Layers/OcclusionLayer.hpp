@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Dhiraj Wishal
+// Copyright 2022-2023 Nexonous
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -40,10 +40,11 @@ namespace Xenon
 		 * Explicit constructor.
 		 *
 		 * @param renderer The renderer reference.
-		 * @param pCamera The camera pointer used by the renderer.
+		 * @param width The width of the render target.
+		 * @param height The height of the render target.
 		 * @param priority The priority of the layer. Default is 5.
 		 */
-		explicit OcclusionLayer(Renderer& renderer, Backend::Camera* pCamera, uint32_t priority = 5);
+		explicit OcclusionLayer(Renderer& renderer, uint32_t width, uint32_t height, uint32_t priority = 5);
 
 		/**
 		 * On pre-update function.

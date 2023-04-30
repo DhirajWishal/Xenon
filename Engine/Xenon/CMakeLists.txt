@@ -1,4 +1,4 @@
-# Copyright 2022-2023 Dhiraj Wishal
+# Copyright 2022-2023 Nexonous
 # SPDX-License-Identifier: Apache-2.0
 
 # Set the basic project information.
@@ -42,6 +42,9 @@ set(
 	"Material.hpp"
 	"DefaultCacheHandler.cpp"
 	"DefaultCacheHandler.hpp"
+	"UserDataContainer.cpp"
+	"UserDataContainer.hpp"
+	"LayerPass.hpp"
 
 	"Layers/ClearScreenLayer.cpp"
 	"Layers/ClearScreenLayer.hpp"
@@ -51,6 +54,22 @@ set(
 	"Layers/DefaultRayTracingLayer.hpp"
 	"Layers/OcclusionLayer.cpp"
 	"Layers/OcclusionLayer.hpp"
+	"Layers/ShadowMapLayer.cpp"
+	"Layers/ShadowMapLayer.hpp"
+	"Layers/DiffusionLayer.cpp"
+	"Layers/DiffusionLayer.hpp"
+	"Layers/GBufferLayer.cpp"
+	"Layers/GBufferLayer.hpp"
+	"Layers/DirectLightingLayer.cpp"
+	"Layers/DirectLightingLayer.hpp"
+	"Layers/LightLUT.cpp"
+	"Layers/LightLUT.hpp"
+
+	"Renderers/DefaultRenderer.cpp"
+	"Renderers/DefaultRenderer.hpp"
+
+	"Passes/DiffusionPass.cpp"
+	"Passes/DiffusionPass.hpp"
 )
 
 # Add the source group.

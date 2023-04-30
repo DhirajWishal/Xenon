@@ -1,9 +1,10 @@
-// Copyright 2022-2023 Dhiraj Wishal
+// Copyright 2022-2023 Nexonous
 // SPDX-License-Identifier: Apache-2.0
 
 #include "ImGuiLayer.hpp"
 
-#include "../Globals.hpp"
+#include "../StudioConfiguration.hpp"
+#include "../Logging.hpp"
 
 #include "../Shaders/ImGuiLayer/ImGuiLayer.vert.hpp"
 #include "../Shaders/ImGuiLayer/ImGuiLayer.frag.hpp"
@@ -13,7 +14,6 @@
 #include "Xenon/MonoCamera.hpp"
 
 #include <imgui.h>
-#include <imnodes.h>
 #include <ImGuizmo.h>
 
 #include <glm/gtc/type_ptr.hpp>
@@ -32,32 +32,29 @@ namespace /* anonymous */
 	[[nodiscard]] constexpr float CreateColor256(float value) noexcept { return value / 256; }
 }
 
-ImGuiLayer::ImGuiLayer(Xenon::Renderer& renderer, Xenon::Backend::Camera* pCamera)
-	: RasterizingLayer(renderer, 100, pCamera, Xenon::Backend::AttachmentType::Color)
+ImGuiLayer::ImGuiLayer(Xenon::Renderer& renderer, uint32_t width, uint32_t height)
+	: RasterizingLayer(renderer, 100, width, height, Xenon::Backend::AttachmentType::Color)
 	, m_UIStorage(this)
 	, m_pVertexBuffers(renderer.getCommandRecorder()->getBufferCount())
 	, m_pIndexBuffers(renderer.getCommandRecorder()->getBufferCount())
 	, m_ClearValues({ glm::vec4(0.0f, 0.0f, 0.0f, 1.0f) })
 {
 	ImGui::CreateContext();
-	ImNodes::CreateContext();
 
 	configureImGui();
 	setupPipeline();
 	setupDefaultMaterial();
 
 	// Setup the ImGui logger.
-	// auto logger = std::make_shared<spdlog::logger>("XenonStudio", m_UIStorage.m_pLogs);
-	// m_pDefaultLogger = spdlog::default_logger();
-	// spdlog::register_logger(logger);
-	// spdlog::set_default_logger(logger);
+	auto logger = std::make_shared<spdlog::logger>(g_XenonLoggerName, m_UIStorage.m_pLogs);
+	spdlog::register_logger(logger);
 }
 
 ImGuiLayer::~ImGuiLayer()
 {
-	// spdlog::set_default_logger(m_pDefaultLogger);
+	// Remove the ImGui logger.
+	spdlog::drop(g_XenonLoggerName);
 
-	ImNodes::DestroyContext();
 	ImGui::DestroyContext();
 }
 
@@ -70,8 +67,8 @@ bool ImGuiLayer::beginFrame(std::chrono::nanoseconds delta)
 	auto& io = ImGui::GetIO();
 
 	// Set the display size in case it was resized.
-	io.DisplaySize.x = static_cast<float>(m_Renderer.getCamera()->getWidth());
-	io.DisplaySize.y = static_cast<float>(m_Renderer.getCamera()->getHeight());
+	io.DisplaySize.x = static_cast<float>(m_Renderer.getWindow()->getWidth());
+	io.DisplaySize.y = static_cast<float>(m_Renderer.getWindow()->getHeight());
 
 	// Set the time difference.
 	io.DeltaTime = static_cast<float>(delta.count()) / std::nano::den;
@@ -229,58 +226,6 @@ bool ImGuiLayer::beginFrame(std::chrono::nanoseconds delta)
 
 void ImGuiLayer::endFrame() const
 {
-	// Finally show the ImGuizmo stuff. Probably we need to move this to it's own UI component.
-	if (m_UIStorage.m_LayerViewUI.isVisible())
-	{
-		auto [view, projection] = m_pScene->getCamera()->as<Xenon::MonoCamera>()->getCameraBuffer();
-
-		view[0][1] = -view[0][1];
-		view[1][1] = -view[1][1];
-		view[2][1] = -view[2][1];
-
-#ifdef XENON_PLATFORM_WINDOWS
-		// Flip if we're using Vulkan (because of the inverted y-axis in DirectX.
-		view[3][1] = g_Globals.m_CurrentBackendType == Xenon::BackendType::Vulkan ? -view[3][1] : view[3][1];
-
-#else
-		view[3][1] = -view[3][1];
-
-#endif // XENON_PLATFORM_WINDOWS
-
-		constexpr auto currentGizmoMode = ImGuizmo::LOCAL;
-		constexpr auto currentGizmoOperation = ImGuizmo::UNIVERSAL;
-
-		auto lock = std::scoped_lock(m_pScene->getMutex());
-		for (const auto group : m_pScene->getRegistry().view<Xenon::Components::Transform>())
-		{
-			// Get the transform and compute the model matrix.
-			auto modelMatrix = m_pScene->getRegistry().get<Xenon::Components::Transform>(group).computeModelMatrix();
-
-			// Setup and show ImGuizmo.
-			const auto position = m_UIStorage.m_LayerViewUI.getPosition();
-			const auto size = m_UIStorage.m_LayerViewUI.getSize();
-			ImGuizmo::SetRect(position.x, position.y, size.x, size.y);
-			ImGuizmo::Manipulate(glm::value_ptr(view), glm::value_ptr(projection), currentGizmoOperation, currentGizmoMode, glm::value_ptr(modelMatrix), nullptr, nullptr, nullptr, nullptr);
-
-			// Decompose the matrix and update the component.
-			glm::vec3 scale;
-			glm::quat rotation;
-			glm::vec3 translation;
-			glm::vec3 skew;
-			glm::vec4 perspective;
-			glm::decompose(modelMatrix, scale, rotation, translation, skew, perspective);
-
-			const auto patchFunction = [translation, scale, rotation](auto& object)
-			{
-				object.m_Position = translation;
-				object.m_Rotation = glm::eulerAngles(rotation);
-				object.m_Scale = scale;
-			};
-
-			m_pScene->getRegistry().patch<Xenon::Components::Transform>(group, patchFunction);
-		}
-	}
-
 	ImGui::End();
 	ImGui::Render();
 }
@@ -370,8 +315,8 @@ uintptr_t ImGuiLayer::getImageID(Xenon::Backend::Image* pImage, Xenon::Backend::
 void ImGuiLayer::configureImGui() const
 {
 	auto& io = ImGui::GetIO();
-	io.DisplaySize.x = static_cast<float>(m_Renderer.getCamera()->getWidth());
-	io.DisplaySize.y = static_cast<float>(m_Renderer.getCamera()->getHeight());
+	io.DisplaySize.x = static_cast<float>(m_Renderer.getWindow()->getWidth());
+	io.DisplaySize.y = static_cast<float>(m_Renderer.getWindow()->getHeight());
 
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
@@ -574,21 +519,23 @@ void ImGuiLayer::showFileMenu()
 		if (ImGui::MenuItem("Close"))
 		{
 			m_Renderer.close();
-			g_Globals.m_bExitAppliation = true;
+			StudioConfiguration::GetInstance().toggleExitApplication();
 		}
+
+		const auto currentBackendType = StudioConfiguration::GetInstance().getCurrentBackendType();
 
 		ImGui::Separator();
 		if (ImGui::BeginMenu("Settings"))
 		{
-			if (ImGui::Selectable("Vulkan Backend", g_Globals.m_CurrentBackendType == Xenon::BackendType::Vulkan) && g_Globals.m_CurrentBackendType != Xenon::BackendType::Vulkan)
+			if (ImGui::Selectable("Vulkan Backend", currentBackendType == Xenon::BackendType::Vulkan) && currentBackendType != Xenon::BackendType::Vulkan)
 			{
-				g_Globals.m_RequiredBackendType = Xenon::BackendType::Vulkan;
+				StudioConfiguration::GetInstance().setCurrentBackendType(Xenon::BackendType::Vulkan);
 				m_Renderer.close();
 			}
 
-			if (ImGui::Selectable("DirectX 12 Backend", g_Globals.m_CurrentBackendType == Xenon::BackendType::DirectX_12) && g_Globals.m_CurrentBackendType != Xenon::BackendType::DirectX_12)
+			if (ImGui::Selectable("DirectX 12 Backend", currentBackendType == Xenon::BackendType::DirectX_12) && currentBackendType != Xenon::BackendType::DirectX_12)
 			{
-				g_Globals.m_RequiredBackendType = Xenon::BackendType::DirectX_12;
+				StudioConfiguration::GetInstance().setCurrentBackendType(Xenon::BackendType::DirectX_12);
 				m_Renderer.close();
 			}
 

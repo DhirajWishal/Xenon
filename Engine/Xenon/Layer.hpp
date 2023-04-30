@@ -1,10 +1,10 @@
-// Copyright 2022-2023 Dhiraj Wishal
+// Copyright 2022-2023 Nexonous
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
 
-#include "Instance.hpp"
 #include "Scene.hpp"
+#include "LayerPass.hpp"
 
 #include "../XenonBackend/Image.hpp"
 #include "../XenonBackend/CommandRecorder.hpp"
@@ -56,7 +56,21 @@ namespace Xenon
 		 *
 		 * @param scene The scene to attach.
 		 */
-		void setScene(Scene& scene) { m_pScene = &scene; }
+		virtual void setScene(Scene& scene) { m_pScene = &scene; }
+
+		/**
+		 * Get the scene pointer.
+		 *
+		 * @return The scene pointer. Note that this could be nullptr!
+		 */
+		[[nodiscard]] Scene* getScene() noexcept { return m_pScene; }
+
+		/**
+		 * Get the scene pointer.
+		 *
+		 * @return The scene pointer. Note that this could be nullptr!
+		 */
+		[[nodiscard]] const Scene* getScene() const noexcept { return m_pScene; }
 
 		/**
 		 * Notify the renderer to render this layer.
@@ -91,6 +105,20 @@ namespace Xenon
 		[[nodiscard]] const Renderer& getRenderer() const noexcept { return m_Renderer; }
 
 		/**
+		 * Get the parent instance.
+		 *
+		 * @return The instance reference.
+		 */
+		[[nodiscard]] Instance& getInstance() noexcept;
+
+		/**
+		 * Get the parent instance.
+		 *
+		 * @return The instance reference.
+		 */
+		[[nodiscard]] const Instance& getInstance() const noexcept;
+
+		/**
 		 * Get the command recorder pointer.
 		 *
 		 * @return The command recorder pointer.
@@ -119,11 +147,42 @@ namespace Xenon
 		 */
 		void selectNextCommandBuffer() { m_pCommandRecorder->next(); }
 
+		/**
+		 * Create a new layer pass.
+		 *
+		 * @tparam Type The layer's type.
+		 * @tparam Arguments The layer's constructor arguments.
+		 * @param arguments The constructor arguments to pass. The first argument (the layer class reference) is provided by this function.
+		 * @return The created layer pointer.
+		 */
+		template<class Type, class... Arguments>
+		Type* createPass(Arguments&&... arguments)
+		{
+			auto pLayer = std::make_unique<Type>(*this, std::forward<Arguments>(arguments)...);
+			auto pRawLayerPointer = pLayer.get();
+			m_pLayerPasses.emplace_back(std::move(pLayer));
+
+			return pRawLayerPointer;
+		}
+
+	protected:
+		/**
+		 * Run all the passes.
+		 * This function is a utility function and must be called by each layer when needed.
+		 *
+		 * @param pPreviousLayer The previous layer pointer. This will be nullptr if this layer is the first.
+		 * @param imageIndex The image's index.
+		 * @param frameIndex The frame's index.
+		 */
+		void runPasses(Layer* pPreviousLayer, uint32_t imageIndex, uint32_t frameIndex) const;
+
 	protected:
 		Renderer& m_Renderer;
 		Scene* m_pScene = nullptr;
 
 		std::unique_ptr<Backend::CommandRecorder> m_pCommandRecorder = nullptr;
+
+		std::vector<std::unique_ptr<LayerPass>> m_pLayerPasses;
 
 	private:
 		uint32_t m_Priority = 0;

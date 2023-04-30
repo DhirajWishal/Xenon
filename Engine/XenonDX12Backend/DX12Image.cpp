@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Dhiraj Wishal
+// Copyright 2022-2023 Nexonous
 // SPDX-License-Identifier: Apache-2.0
 
 #include "DX12Image.hpp"
@@ -121,7 +121,7 @@ namespace Xenon
 			case Xenon::Backend::ImageType::CubeMap:
 				break;
 
-			case Xenon::Backend::ImageType::ThreeDImentional:
+			case Xenon::Backend::ImageType::ThreeDimensional:
 				dimension = D3D12_RESOURCE_DIMENSION_TEXTURE3D;
 				break;
 
@@ -399,6 +399,11 @@ namespace Xenon
 			XENON_DX12_ASSERT(fence->SetEventOnCompletion(1, fenceEvent), "Failed to set the fence event on completion event!");
 			WaitForSingleObjectEx(fenceEvent, std::numeric_limits<DWORD>::max(), FALSE);
 			CloseHandle(fenceEvent);
+		}
+
+		void DX12Image::generateMipMaps(CommandRecorder* pCommandRecorder /*= nullptr*/)
+		{
+			OPTICK_EVENT();
 		}
 
 		Xenon::Backend::DX12Image& DX12Image::operator=(DX12Image&& other) noexcept

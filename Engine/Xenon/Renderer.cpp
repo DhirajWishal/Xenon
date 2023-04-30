@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Dhiraj Wishal
+// Copyright 2022-2023 Nexonous
 // SPDX-License-Identifier: Apache-2.0
 
 #include "Renderer.hpp"
@@ -8,10 +8,9 @@
 
 namespace Xenon
 {
-	Renderer::Renderer(Instance& instance, Backend::Camera* pCamera, const std::string& title)
-		: m_pSwapChain(instance.getFactory()->createSwapchain(instance.getBackendDevice(), title, pCamera->getWidth(), pCamera->getHeight()))
+	Renderer::Renderer(Instance& instance, uint32_t width, uint32_t height, const std::string& title)
+		: m_pSwapChain(instance.getFactory()->createSwapchain(instance.getBackendDevice(), title, width, height))
 		, m_pCommandRecorder(instance.getFactory()->createCommandRecorder(instance.getBackendDevice(), Backend::CommandRecorderUsage::Graphics, 3))
-		, m_pCamera(pCamera)
 		, m_Instance(instance)
 	{
 		m_pCommandSubmitters.reserve(3);

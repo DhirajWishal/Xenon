@@ -1,4 +1,4 @@
-# Copyright 2022-2023 Dhiraj Wishal
+# Copyright 2022-2023 Nexonous
 # SPDX-License-Identifier: Apache-2.0
 
 # Set the basic project information.
@@ -23,7 +23,9 @@ set(
 	"Studio.cpp"
 	"Studio.hpp"
 	"UIComponent.hpp"
-	"Globals.hpp"
+	"StudioConfiguration.cpp"
+	"StudioConfiguration.hpp"
+	"Logging.hpp"
 
 	"Layers/ImGuiLayer.cpp"
 	"Layers/ImGuiLayer.hpp"
@@ -58,12 +60,11 @@ target_include_directories(
 
 	PRIVATE ${CMAKE_SOURCE_DIR}/Engine
 	PRIVATE ${IMGUI_INCLUDE_DIR}
-	PRIVATE ${IMNODES_INCLUDE_DIR}
 	PRIVATE ${IMGUIZMO_INCLUDE_DIR}
 )
 
 # Add the target links.
-target_link_libraries(XenonStudio XenonEngine XenonThirdParty_ImGui XenonThirdParty_imnodes XenonThirdParty_ImGuizmo)
+target_link_libraries(XenonStudio XenonEngine XenonThirdParty_ImGui XenonThirdParty_ImGuizmo)
 
 # Make sure to specify the C++ standard to C++20.
 set_property(TARGET XenonStudio PROPERTY CXX_STANDARD 20)
@@ -81,3 +82,7 @@ CompileShaders()
 
 # Copy the font files to the output directory.
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Fonts DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
+include(${CMAKE_SOURCE_DIR}/Tools/CMake/PackageAsset.CMake)
+
+PackageAsset(XenonStudio ${CMAKE_SOURCE_DIR}/Testing/AssetPack.json ${CMAKE_CURRENT_BINARY_DIR})

@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Dhiraj Wishal
+// Copyright 2022-2023 Nexonous
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -33,9 +33,10 @@ namespace Xenon
 		 */
 		enum class AttachmentType : uint8_t
 		{
-			Color = XENON_BIT_SHIFT(0),					// Used for color output. Shader output: layout(location = 0) out vec4
-			EntityID = XENON_BIT_SHIFT(1),				// Commonly used for mouse picking. Shader output: layout(location = 1) out float
-			Normal = XENON_BIT_SHIFT(2),				// Used for normal output. Shader output: layout(location = 2) out vec3
+			Color = XENON_BIT_SHIFT(0),					// Used for color output. Shader output: This is a 4 component image.
+			EntityID = XENON_BIT_SHIFT(1),				// Commonly used for mouse picking. This is a 1 component image.
+			Normal = XENON_BIT_SHIFT(2),				// Used for normal output. This is a 4 component image.
+			Position = XENON_BIT_SHIFT(3),				// Used for position output. This is a 4 component image, the last being the depth.
 
 			Depth = XENON_BIT_SHIFT(6),					// Used for depth information.
 			Stencil = XENON_BIT_SHIFT(7),				// Used for stencil information.
@@ -133,13 +134,111 @@ namespace Xenon
 		}
 
 		/**
+		 * Check if the format is a depth format.
+		 *
+		 * @param format The data format.
+		 * @return True if the format is a depth format.
+		 * @return False if the format is not a depth format.
+		 */
+		[[nodiscard]] constexpr bool IsDepthFormat(DataFormat format) noexcept
+		{
+			switch (format)
+			{
+			case Xenon::Backend::DataFormat::Undefined:
+			case Xenon::Backend::DataFormat::R8_SRGB:
+			case Xenon::Backend::DataFormat::R8_UNORMAL:
+			case Xenon::Backend::DataFormat::R16_SFLOAT:
+			case Xenon::Backend::DataFormat::R32_SFLOAT:
+			case Xenon::Backend::DataFormat::R8G8_SRGB:
+			case Xenon::Backend::DataFormat::R8G8_UNORMAL:
+			case Xenon::Backend::DataFormat::R16G16_SFLOAT:
+			case Xenon::Backend::DataFormat::R32G32_SFLOAT:
+			case Xenon::Backend::DataFormat::R8G8B8_SRGB:
+			case Xenon::Backend::DataFormat::R8G8B8_UNORMAL:
+			case Xenon::Backend::DataFormat::R16G16B16_SFLOAT:
+			case Xenon::Backend::DataFormat::R32G32B32_SFLOAT:
+			case Xenon::Backend::DataFormat::B8G8R8_SRGB:
+			case Xenon::Backend::DataFormat::B8G8R8_UNORMAL:
+			case Xenon::Backend::DataFormat::R8G8B8A8_SRGB:
+			case Xenon::Backend::DataFormat::R8G8B8A8_UNORMAL:
+			case Xenon::Backend::DataFormat::R16G16B16A16_SFLOAT:
+			case Xenon::Backend::DataFormat::R32G32B32A32_SFLOAT:
+			case Xenon::Backend::DataFormat::B8G8R8A8_SRGB:
+			case Xenon::Backend::DataFormat::B8G8R8A8_UNORMAL:
+			case Xenon::Backend::DataFormat::S8_UINT:
+				return false;
+
+			case Xenon::Backend::DataFormat::D16_SINT:
+			case Xenon::Backend::DataFormat::D32_SFLOAT:
+			case Xenon::Backend::DataFormat::D16_UNORMAL_S8_UINT:
+			case Xenon::Backend::DataFormat::D24_UNORMAL_S8_UINT:
+			case Xenon::Backend::DataFormat::D32_SFLOAT_S8_UINT:
+				return true;
+
+			default:
+				break;
+			}
+
+			return false;
+		}
+
+		/**
+		 * Check if the data format has a stencil component.
+		 *
+		 * @param format The data format to check.
+		 * @return True if the format has a stencil component.
+		 * @return False if the format doesn't have a stencil component.
+		 */
+		[[nodiscard]] constexpr bool HasStencilComponent(DataFormat format) noexcept
+		{
+			switch (format)
+			{
+			case Xenon::Backend::DataFormat::Undefined:
+			case Xenon::Backend::DataFormat::R8_SRGB:
+			case Xenon::Backend::DataFormat::R8_UNORMAL:
+			case Xenon::Backend::DataFormat::R16_SFLOAT:
+			case Xenon::Backend::DataFormat::R32_SFLOAT:
+			case Xenon::Backend::DataFormat::R8G8_SRGB:
+			case Xenon::Backend::DataFormat::R8G8_UNORMAL:
+			case Xenon::Backend::DataFormat::R16G16_SFLOAT:
+			case Xenon::Backend::DataFormat::R32G32_SFLOAT:
+			case Xenon::Backend::DataFormat::R8G8B8_SRGB:
+			case Xenon::Backend::DataFormat::R8G8B8_UNORMAL:
+			case Xenon::Backend::DataFormat::R16G16B16_SFLOAT:
+			case Xenon::Backend::DataFormat::R32G32B32_SFLOAT:
+			case Xenon::Backend::DataFormat::B8G8R8_SRGB:
+			case Xenon::Backend::DataFormat::B8G8R8_UNORMAL:
+			case Xenon::Backend::DataFormat::R8G8B8A8_SRGB:
+			case Xenon::Backend::DataFormat::R8G8B8A8_UNORMAL:
+			case Xenon::Backend::DataFormat::R16G16B16A16_SFLOAT:
+			case Xenon::Backend::DataFormat::R32G32B32A32_SFLOAT:
+			case Xenon::Backend::DataFormat::B8G8R8A8_SRGB:
+			case Xenon::Backend::DataFormat::B8G8R8A8_UNORMAL:
+			case Xenon::Backend::DataFormat::D16_SINT:
+			case Xenon::Backend::DataFormat::D32_SFLOAT:
+				return false;
+
+			case Xenon::Backend::DataFormat::S8_UINT:
+			case Xenon::Backend::DataFormat::D16_UNORMAL_S8_UINT:
+			case Xenon::Backend::DataFormat::D24_UNORMAL_S8_UINT:
+			case Xenon::Backend::DataFormat::D32_SFLOAT_S8_UINT:
+				return true;
+
+			default:
+				break;
+			}
+
+			return false;
+		}
+
+		/**
 		 * Image type enum.
 		 */
 		enum class ImageType : uint8_t
 		{
 			OneDimensional,
 			TwoDimensional,
-			ThreeDImentional,
+			ThreeDimensional,
 			CubeMap
 		};
 
@@ -620,7 +719,6 @@ namespace Xenon
 
 			// Used for ray tracing.
 			RenderTarget
-
 		};
 
 		/**

@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Dhiraj Wishal
+// Copyright 2022-2023 Nexonous
 // SPDX-License-Identifier: Apache-2.0
 
 #include "Logs.hpp"
@@ -7,7 +7,6 @@
 
 void Logs::begin(std::chrono::nanoseconds delta)
 {
-
 	if (m_bIsOpen)
 	{
 		if (ImGui::Begin("Logs", &m_bIsOpen))

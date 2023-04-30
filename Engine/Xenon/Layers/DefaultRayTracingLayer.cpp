@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Dhiraj Wishal
+// Copyright 2022-2023 Nexonous
 // SPDX-License-Identifier: Apache-2.0
 
 #include "DefaultRayTracingLayer.hpp"
@@ -8,8 +8,8 @@
 
 namespace Xenon
 {
-	DefaultRayTracingLayer::DefaultRayTracingLayer(Renderer& renderer, Backend::Camera* pCamera, uint32_t priority/* = 10*/)
-		: RayTracingLayer(renderer, priority, pCamera)
+	DefaultRayTracingLayer::DefaultRayTracingLayer(Renderer& renderer, uint32_t width, uint32_t height, uint32_t priority/* = 10*/)
+		: RayTracingLayer(renderer, priority, width, height)
 	{
 	}
 

@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Dhiraj Wishal
+// Copyright 2022-2023 Nexonous
 // SPDX-License-Identifier: Apache-2.0
 
 #include "DX12Factory.hpp"
@@ -48,9 +48,9 @@ namespace Xenon
 			return std::make_unique<DX12Image>(pDevice->as<DX12Device>(), specification);
 		}
 
-		std::unique_ptr<Xenon::Backend::Rasterizer> DX12Factory::createRasterizer(Device* pDevice, Camera* pCamera, AttachmentType attachmentTypes, bool enableTripleBuffering /*= false*/, MultiSamplingCount multiSampleCount /*= MultiSamplingCount::x1*/)
+		std::unique_ptr<Xenon::Backend::Rasterizer> DX12Factory::createRasterizer(Device* pDevice, uint32_t width, uint32_t height, AttachmentType attachmentTypes, bool enableTripleBuffering /*= false*/, MultiSamplingCount multiSampleCount /*= MultiSamplingCount::x1*/)
 		{
-			return std::make_unique<DX12Rasterizer>(pDevice->as<DX12Device>(), pCamera, attachmentTypes, enableTripleBuffering, multiSampleCount);
+			return std::make_unique<DX12Rasterizer>(pDevice->as<DX12Device>(), width, height, attachmentTypes, enableTripleBuffering, multiSampleCount);
 		}
 
 		std::unique_ptr<Xenon::Backend::Swapchain> DX12Factory::createSwapchain(Device* pDevice, const std::string& title, uint32_t width, uint32_t height)
@@ -98,9 +98,9 @@ namespace Xenon
 			return std::make_unique<DX12BottomLevelAccelerationStructure>(pDevice->as<DX12Device>(), geometries);
 		}
 
-		std::unique_ptr<Xenon::Backend::RayTracer> DX12Factory::createRayTracer(Device* pDevice, Camera* pCamera)
+		std::unique_ptr<Xenon::Backend::RayTracer> DX12Factory::createRayTracer(Device* pDevice, uint32_t width, uint32_t height)
 		{
-			return std::make_unique<DX12RayTracer>(pDevice->as<DX12Device>(), pCamera);
+			return std::make_unique<DX12RayTracer>(pDevice->as<DX12Device>(), width, height);
 		}
 
 		std::unique_ptr<Xenon::Backend::RayTracingPipeline> DX12Factory::createRayTracingPipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const RayTracingPipelineSpecification& specification)

@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Dhiraj Wishal
+// Copyright 2022-2023 Nexonous
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -11,6 +11,8 @@ namespace Xenon
 {
 	namespace Backend
 	{
+		class VulkanCommandRecorder;
+
 		/**
 		 * Vulkan image class.
 		 */
@@ -52,6 +54,13 @@ namespace Xenon
 			 * @param pCommandRecorder The command recorder pointer to record the commands to. Default is nullptr.
 			 */
 			void copyFrom(Image* pSrcImage, CommandRecorder* pCommandRecorder = nullptr) override;
+
+			/**
+			 * Generate mip maps for the currently stored image.
+			 *
+			 * @param pCommandRecorder The command recorder pointer to record the commands to. Default is nullptr (in which case the backend will create one for this purpose).
+			 */
+			void generateMipMaps(CommandRecorder* pCommandRecorder = nullptr) override;
 
 			/**
 			 * Get the Vulkan image handle.
@@ -96,6 +105,14 @@ namespace Xenon
 			 * @return The move-assigned image.
 			 */
 			VulkanImage& operator=(VulkanImage&& other) noexcept;
+
+		private:
+			/**
+			 * Blit image and generate the mip maps.
+			 *
+			 * @param pCommandRecorder The command recorder to record the commands to.
+			 */
+			void blitImage(VulkanCommandRecorder* pCommandRecorder);
 
 		private:
 			VkAttachmentDescription m_AttachmentDescription = {};

@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Dhiraj Wishal
+// Copyright 2022-2023 Nexonous
 // SPDX-License-Identifier: Apache-2.0
 
 #include "DX12ImageView.hpp"
@@ -99,7 +99,7 @@ namespace Xenon
 				m_UnorderedAccessView.Texture2D.PlaneSlice = specification.m_BaseArrayLayer;
 				break;
 
-			case Xenon::Backend::ImageType::ThreeDImentional:
+			case Xenon::Backend::ImageType::ThreeDimensional:
 				m_ShaderResouceView.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE3D;
 				m_ShaderResouceView.Texture3D.MostDetailedMip = specification.m_BaseMipLevel;
 				m_ShaderResouceView.Texture3D.MipLevels = specification.m_LevelCount;

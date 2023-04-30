@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Dhiraj Wishal
+// Copyright 2022-2023 Nexonous
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -21,7 +21,8 @@ namespace Xenon
 		 *
 		 * @param renderer The renderer reference.
 		 * @param priority The priority of the layer.
-		 * @param pCamera The camera which is used to render the scene.
+		 * @param width The width of the render target.
+		 * @param height The height of the render target.
 		 * @param attachmentTypes The attachment types the render target should support.
 		 * @param enableTripleBuffering Whether to enable triple-buffering. Default is false.
 		 * @param multiSampleCount Multi-sampling count to use. Default is x1.
@@ -29,7 +30,8 @@ namespace Xenon
 		explicit RasterizingLayer(
 			Renderer& renderer,
 			uint32_t priority,
-			Backend::Camera* pCamera,
+			uint32_t width, 
+			uint32_t height,
 			Backend::AttachmentType attachmentTypes,
 			bool enableTripleBuffering = false,
 			Backend::MultiSamplingCount multiSampleCount = Backend::MultiSamplingCount::x1);

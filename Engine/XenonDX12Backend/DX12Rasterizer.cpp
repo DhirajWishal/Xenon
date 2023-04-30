@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Dhiraj Wishal
+// Copyright 2022-2023 Nexonous
 // SPDX-License-Identifier: Apache-2.0
 
 #include "DX12Rasterizer.hpp"
@@ -10,8 +10,8 @@ namespace Xenon
 {
 	namespace Backend
 	{
-		DX12Rasterizer::DX12Rasterizer(DX12Device* pDevice, Camera* pCamera, AttachmentType attachmentTypes, bool enableTripleBuffering /*= false*/, MultiSamplingCount multiSampleCount /*= MultiSamplingCount::x1*/)
-			: Rasterizer(pDevice, pCamera, attachmentTypes, enableTripleBuffering, multiSampleCount)
+		DX12Rasterizer::DX12Rasterizer(DX12Device* pDevice, uint32_t width, uint32_t height, AttachmentType attachmentTypes, bool enableTripleBuffering /*= false*/, MultiSamplingCount multiSampleCount /*= MultiSamplingCount::x1*/)
+			: Rasterizer(pDevice, width, height, attachmentTypes, enableTripleBuffering, multiSampleCount)
 			, DX12DeviceBoundObject(pDevice)
 		{
 			// Setup the descriptor counts.
@@ -21,6 +21,7 @@ namespace Xenon
 			if (attachmentTypes & AttachmentType::Color) colorAttachmentCount++;
 			if (attachmentTypes & AttachmentType::EntityID) colorAttachmentCount++;
 			if (attachmentTypes & AttachmentType::Normal) colorAttachmentCount++;
+			if (attachmentTypes & AttachmentType::Position) colorAttachmentCount++;
 			const auto colorDescriptorCount = colorAttachmentCount * frameCount;
 
 			uint8_t depthAttachmentCount = 0;
@@ -83,6 +84,9 @@ namespace Xenon
 					m_pDevice->getDevice()->CreateRenderTargetView((itr++)->getResource(), nullptr, CD3DX12_CPU_DESCRIPTOR_HANDLE(m_ColorTargetHeap->GetCPUDescriptorHandleForHeapStart(), colorIndex + 1, m_ColorHeapSize));
 
 				if (attachmentTypes & AttachmentType::Normal)
+					m_pDevice->getDevice()->CreateRenderTargetView((itr++)->getResource(), nullptr, CD3DX12_CPU_DESCRIPTOR_HANDLE(m_ColorTargetHeap->GetCPUDescriptorHandleForHeapStart(), colorIndex + 2, m_ColorHeapSize));
+
+				if (attachmentTypes & AttachmentType::Position)
 					m_pDevice->getDevice()->CreateRenderTargetView((itr++)->getResource(), nullptr, CD3DX12_CPU_DESCRIPTOR_HANDLE(m_ColorTargetHeap->GetCPUDescriptorHandleForHeapStart(), colorIndex + 2, m_ColorHeapSize));
 
 				// Bind the depth and/ or stencil attachments.
@@ -168,6 +172,14 @@ namespace Xenon
 					index++;
 				}
 
+				if (m_AttachmentTypes & AttachmentType::Position)
+				{
+					if (type & AttachmentType::Position)
+						return index;
+
+					index++;
+				}
+
 				if (m_AttachmentTypes & AttachmentType::Depth && m_AttachmentTypes & AttachmentType::Stencil)
 				{
 					if (type & AttachmentType::Depth && type & AttachmentType::Stencil)
@@ -201,8 +213,8 @@ namespace Xenon
 		void DX12Rasterizer::setupRenderTargets()
 		{
 			ImageSpecification specification;
-			specification.m_Width = m_pCamera->getWidth();
-			specification.m_Height = m_pCamera->getHeight();
+			specification.m_Width = getWidth();
+			specification.m_Height = getHeight();
 			specification.m_EnableMipMaps = false;
 
 			D3D12_CLEAR_VALUE colorOptimizedClearValue = {};
@@ -246,7 +258,22 @@ namespace Xenon
 			if (m_AttachmentTypes & AttachmentType::Normal)
 			{
 				specification.m_Usage = ImageUsage::ColorAttachment | ImageUsage::Storage;
-				specification.m_Format = getBestFormat({ DataFormat::R32G32B32_SFLOAT }, D3D12_FORMAT_SUPPORT1_RENDER_TARGET);
+				specification.m_Format = getBestFormat({ DataFormat::R32G32B32A32_SFLOAT }, D3D12_FORMAT_SUPPORT1_RENDER_TARGET);
+
+				if (specification.m_Format == DataFormat::Undefined)
+				{
+					XENON_LOG_FATAL("The required normal attachment formats are not supported by the Direct X 12 backend! Failed to create the render target.");
+					return;
+				}
+
+				colorOptimizedClearValue.Format = DX12Device::ConvertFormat(specification.m_Format);
+				m_RenderTargets.emplace_back(m_pDevice, specification, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_HEAP_TYPE_DEFAULT, D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES, &colorOptimizedClearValue);
+			}
+
+			if (m_AttachmentTypes & AttachmentType::Position)
+			{
+				specification.m_Usage = ImageUsage::ColorAttachment | ImageUsage::Storage;
+				specification.m_Format = getBestFormat({ DataFormat::R32G32B32A32_SFLOAT }, D3D12_FORMAT_SUPPORT1_RENDER_TARGET);
 
 				if (specification.m_Format == DataFormat::Undefined)
 				{

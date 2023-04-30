@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Dhiraj Wishal
+// Copyright 2022-2023 Nexonous
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -7,7 +7,18 @@
 #include <glm/vec4.hpp>
 #include <glm/mat4x4.hpp>
 
+/**
+ * We have to separately and explicitly define the alignment of the glm::vec3 structure when building a shader-visible buffer.
+ * This is because in C++ the glm::vec3 alignment is not equal to the HLSL float3 alignment. It actually requires the alignment to be
+ * the same as glm::vec4.
+ *
+ * So when defining a 3 component shader-visible vector (stand-along or in a struct) make sure to add this to avoid any unwanted errors.
+ * Usage:
+ *	XENON_HLSL_VEC3_ALIGNMENT glm::vec3 variable = ...;
+ */
 #define XENON_HLSL_VEC3_ALIGNMENT alignas(sizeof(glm::vec4))
+
+#define XENON_MAX_LIGHT_SOURCE_COUNT 1000
 
 namespace Xenon
 {
@@ -42,7 +53,7 @@ namespace Xenon
 			XENON_HLSL_VEC3_ALIGNMENT glm::vec3 m_Direction;
 
 			float m_Intensity = 0;	// 0 = No intensity, 1 = Full intensity.
-			float m_FieldAngle = 0;	// 0 or 360 = point light.
+			float m_FieldAngle = 45.0;	// 0 or 360 = point light.
 		};
 	}
 }
