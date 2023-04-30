@@ -1,0 +1,12 @@
+# Log levels
+
+Xenon has 6 levels of logging (including disable).
+
+| Log level | Log title    | Description                                                                                                                                                                                                                                                |
+|-----------|--------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|         0 | Disable logs | This will disable all logs.                                                                                                                                                                                                                                |
+|         1 | FATAL        | Only critical errors are logged to the console. These errors will cause internal errors and may be due to unsupported formats or any other data that the backend(s) deemed unsuitable for usage.                                                             |
+|         2 | ERROR        | This level shows only errors and critical (fatal) errors. This may be from critical internal errors or any other error from the backend that might cause bugs within the application. Note that levels above this might result in performance hits. |
+|         3 | WARNING      | This level shows errors, critical errors and warnings. Warnings are internal errors which do not result in an error immediately but might result in one later on.                                                                                         |
+|         4 | INFORMATION  | This level shows errors, critical errors, warnings and information. This information contains data mainly for debugging.                                                                                                                                   |
+|         5 | TRACE        | This level contains trace logs and everything before this. Trace logs are for debugging only and should not be enabled when on release.                                                                                                                   |                                                                                                            |
