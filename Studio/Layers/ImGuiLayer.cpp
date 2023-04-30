@@ -14,7 +14,6 @@
 #include "Xenon/MonoCamera.hpp"
 
 #include <imgui.h>
-#include <imnodes.h>
 #include <ImGuizmo.h>
 
 #include <glm/gtc/type_ptr.hpp>
@@ -41,7 +40,6 @@ ImGuiLayer::ImGuiLayer(Xenon::Renderer& renderer, uint32_t width, uint32_t heigh
 	, m_ClearValues({ glm::vec4(0.0f, 0.0f, 0.0f, 1.0f) })
 {
 	ImGui::CreateContext();
-	ImNodes::CreateContext();
 
 	configureImGui();
 	setupPipeline();
@@ -57,7 +55,6 @@ ImGuiLayer::~ImGuiLayer()
 	// Remove the ImGui logger.
 	spdlog::drop(g_XenonLoggerName);
 
-	ImNodes::DestroyContext();
 	ImGui::DestroyContext();
 }
 
