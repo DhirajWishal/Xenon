@@ -1,6 +1,6 @@
 # Xenon
 
-Cross-platform graphics engine.
+Cross-platform graphics engine for testing new technologies.
 
 ## How to build?
 
@@ -20,7 +20,7 @@ The scripts will create the output directory and the CMake project files. From t
 
 ## How to use it with a project?
 
-To get started, look into the Studio project's `/Studio/CMakeLists.txt` file to get started. You can easily add this repo as a submodule if you want which will configure
+Take a look into the Studio project's `/Studio/CMakeLists.txt` file to get started. You can easily add this repo as a submodule if you want which will configure
 a lot of things for you. Right now we don't have an option to install Xenon (because it's not our biggest concern yet). Just make sure that you set the include path to `/Engine/` and link the `XenonEngine`
 static library file (which will be in the `/Build/Engine/Xenon/` folder).
 
