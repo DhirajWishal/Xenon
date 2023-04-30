@@ -3,17 +3,7 @@ name: CMake
 on:
   push:
     branches: 
-      - release
-      - dev
-      - cleanup
-      - ray-tracing
-      - bugfix/**/*
-      - hotfix/**/*
-      - feature/**/*
-      - backup/**/*
-      - platform/**/*
-      - quickfix/**/*
-      - experimental/**/*
+      - "**"
   pull_request:
     branches:
       - release
