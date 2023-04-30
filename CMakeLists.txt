@@ -48,7 +48,6 @@ set(SPIRV_REFLECT_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/SPIRV-Refle
 set(XXHASH_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/xxHash)
 set(OPTICK_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/optick/src)
 set(IMGUI_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/imgui)
-set(IMNODES_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/imnodes)
 set(FMT_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/fmt/include)
 set(ENTT_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/entt/src)
 set(IMGUIZMO_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/ImGuizmo)
@@ -109,22 +108,6 @@ add_library(
 	"${IMGUI_INCLUDE_DIR}/imstb_rectpack.h"
 	"${IMGUI_INCLUDE_DIR}/imstb_textedit.h"
 	"${IMGUI_INCLUDE_DIR}/imstb_truetype.h"
-)
-
-# Add imnodes library as a third party static link.
-add_library(
-	XenonThirdParty_imnodes
-	STATIC 
-
-	"${IMNODES_INCLUDE_DIR}/imnodes.cpp"
-	"${IMNODES_INCLUDE_DIR}/imnodes.h"
-)
-
-# Set the include directories.
-target_include_directories(
-	XenonThirdParty_imnodes 
-
-	PRIVATE ${IMGUI_INCLUDE_DIR}
 )
 
 # Set the ImGuizmo library.
@@ -195,6 +178,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonPlatform)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonPlatformWindows)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonEvents)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonShaderBank)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonAssetPackager)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Studio)
 
 # Set the output directories.
@@ -221,7 +205,6 @@ if (MSVC)
 	set_target_properties(
 		XenonThirdParty_Optick
 		XenonThirdParty_ImGui
-		XenonThirdParty_imnodes
 		XenonThirdParty_ImGuizmo
 			
 		PROPERTIES FOLDER "ThirdParty"
