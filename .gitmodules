@@ -47,3 +47,6 @@
 [submodule "ThirdParty/json"]
 	path = ThirdParty/json
 	url = https://github.com/nlohmann/json
+[submodule "ThirdParty/SDL"]
+	path = ThirdParty/SDL
+	url = https://github.com/libsdl-org/SDL
