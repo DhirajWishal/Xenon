@@ -158,4 +158,4 @@ namespace Xenon
 	{																						\
 		lhs = lhs | rhs;																	\
 		return lhs;																			\
-	}																						
+	}

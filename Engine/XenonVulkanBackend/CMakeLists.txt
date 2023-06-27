@@ -87,6 +87,7 @@ target_include_directories(
 	PRIVATE ${VULKAN_HEADERS_INCLUDE_DIR}
 	PRIVATE ${VOLK_INCLUDE_DIR}
 	PRIVATE ${VMA_INCLUDE_DIR}
+	PRIVATE ${SDL_INCLUDE_DIR}
 )
 
 # Make sure to specify the C++ standard to C++20.

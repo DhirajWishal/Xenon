@@ -47,7 +47,7 @@ namespace Xenon
 			 * @param descriptorType The descriptor type.
 			 * @return The descriptor set layout.
 			 */
-			[[nodicard]] VkDescriptorSetLayout getDescriptorSetLayout(const std::unordered_map<uint32_t, DescriptorBindingInfo>& bindingInfo);
+			[[nodiscard]] VkDescriptorSetLayout getDescriptorSetLayout(const std::unordered_map<uint32_t, DescriptorBindingInfo>& bindingInfo);
 
 			/**
 			 * Create a new descriptor set.
