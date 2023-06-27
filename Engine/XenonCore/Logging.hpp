@@ -49,10 +49,10 @@ namespace Xenon
 }
 
 #ifdef XENON_FEATURE_SOURCE_LOCATION
-#	define XENON_TRACE_FUNCTION(frmt, ...)	::Xenon::TraceLog(std::source_location::current(), fmt::format(frmt, __VA_ARGS__))
+#	define XENON_TRACE_FUNCTION(...)	::Xenon::TraceLog(std::source_location::current(), fmt::format(__VA_ARGS__))
 
 #else
-#	define XENON_TRACE_FUNCTION(frmt, ...)	::spdlog::info("[Trace \"{}\":{}] {}", __FILE__, __LINE__, fmt::format(frmt, __VA_ARGS__))
+#	define XENON_TRACE_FUNCTION(...)	::spdlog::info("[Trace \"{}\":{}] {}", __FILE__, __LINE__, fmt::format(__VA_ARGS__))
 
 #endif // XENONE_FEATURE_SOURCE_LOCATION
 
@@ -81,7 +81,7 @@ namespace Xenon
 #					define XENON_LOG_INFORMATION(...)			::spdlog::info(__VA_ARGS__)
 
 #					if XENON_LOG_LEVEL > 4
-#						define XENON_LOG_TRACE(msg,...)			XENON_TRACE_FUNCTION(msg, __VA_ARGS__)
+#						define XENON_LOG_TRACE(...)				XENON_TRACE_FUNCTION(__VA_ARGS__)
 
 #					endif
 #				endif
