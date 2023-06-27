@@ -29,6 +29,13 @@ add_library(
 	${SOURCES}
 )
 
+# Set the include directories.
+target_include_directories(
+	XenonPlatformLinux 
+
+	PUBLIC ${SDL_INCLUDE_DIR}
+)
+
 # Set the target links.
 target_link_libraries(XenonPlatformLinux XenonPlatform SDL3-shared)
 

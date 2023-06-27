@@ -38,14 +38,14 @@ namespace Xenon
 		 *
 		 * @return The ray tracer pointer.
 		 */
-		[[nodsicard]] Backend::RayTracer* getRayTracer() { return m_pRayTracer.get(); }
+		[[nodiscard]] Backend::RayTracer* getRayTracer() { return m_pRayTracer.get(); }
 
 		/**
 		 * Get the internally stored ray tracer.
 		 *
 		 * @return The ray tracer pointer.
 		 */
-		[[nodsicard]] const Backend::RayTracer* getRayTracer() const { return m_pRayTracer.get(); }
+		[[nodiscard]] const Backend::RayTracer* getRayTracer() const { return m_pRayTracer.get(); }
 
 	protected:
 		std::unique_ptr<Backend::RayTracer> m_pRayTracer = nullptr;
