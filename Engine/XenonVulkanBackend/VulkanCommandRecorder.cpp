@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "VulkanCommandRecorder.hpp"
@@ -11,7 +11,6 @@
 #include "VulkanOcclusionQuery.hpp"
 #include "VulkanRayTracingPipeline.hpp"
 #include "VulkanShaderBindingTable.hpp"
-#include "VulkanComputePipeline.hpp"
 
 #include <optick.h>
 
@@ -71,35 +70,17 @@ namespace /* anonymous */
 		{
 			try
 			{
-				const auto clearColor = std::get<glm::vec4>(*(itr++));
+				const auto clearColor = std::get<float>(*(itr++));
 
 				auto& clearValue = vkClearValues.emplace_back();
-				clearValue.color.float32[0] = clearColor.x;
-				clearValue.color.float32[1] = clearColor.y;
-				clearValue.color.float32[2] = clearColor.z;
-				clearValue.color.float32[3] = clearColor.w;
+				clearValue.color.float32[0] = clearColor;
+				clearValue.color.float32[1] = 0.0f;
+				clearValue.color.float32[2] = 0.0f;
+				clearValue.color.float32[3] = 0.0f;
 			}
 			catch (const std::exception& e)
 			{
 				XENON_LOG_ERROR("Clear normal value error: {}", e.what());
-			}
-		}
-
-		if (attachmentTypes & Xenon::Backend::AttachmentType::Position)
-		{
-			try
-			{
-				const auto clearColor = std::get<glm::vec4>(*(itr++));
-
-				auto& clearValue = vkClearValues.emplace_back();
-				clearValue.color.float32[0] = clearColor.x;
-				clearValue.color.float32[1] = clearColor.y;
-				clearValue.color.float32[2] = clearColor.z;
-				clearValue.color.float32[3] = clearColor.w;
-			}
-			catch (const std::exception& e)
-			{
-				XENON_LOG_ERROR("Clear position value error: {}", e.what());
 			}
 		}
 
@@ -389,7 +370,7 @@ namespace Xenon
 			m_pDevice->getDeviceTable().vkBeginCommandBuffer(*m_pCurrentBuffer, &beginInfo);
 		}
 
-		void VulkanCommandRecorder::changeImageLayout(VkImage image, VkImageLayout currentLayout, VkImageLayout newLayout, VkImageAspectFlags aspectFlags, uint32_t mipLevels /*= 1*/, uint32_t layer /*= 1*/)
+		void VulkanCommandRecorder::changeImageLayout(VkImage image, VkImageLayout currentLayout, VkImageLayout newLayout, VkImageAspectFlags aspectFlags, uint32_t mipLevels /*= 1*/, uint32_t layers /*= 1*/)
 		{
 			OPTICK_EVENT();
 
@@ -413,8 +394,8 @@ namespace Xenon
 			memorybarrier.subresourceRange.aspectMask = aspectFlags;
 			memorybarrier.subresourceRange.baseMipLevel = 0;
 			memorybarrier.subresourceRange.levelCount = mipLevels;
-			memorybarrier.subresourceRange.baseArrayLayer = layer;
-			memorybarrier.subresourceRange.layerCount = 1;
+			memorybarrier.subresourceRange.baseArrayLayer = 0;
+			memorybarrier.subresourceRange.layerCount = layers;
 
 			// Resolve the source access masks.
 			switch (currentLayout)
@@ -709,101 +690,6 @@ namespace Xenon
 			);
 		}
 
-		void VulkanCommandRecorder::copyImageLayer(Image* pSource, uint32_t sourceLayer, const glm::vec3& sourceOffset, Image* pDestination, uint32_t destinationLayer, const glm::vec3& destinationOffset)
-		{
-			OPTICK_EVENT();
-
-			auto pVkSourceImage = pSource->as<VulkanImage>();
-			auto pVkDestinationImage = pDestination->as<VulkanImage>();
-
-			VkImageBlit blit = {};
-			blit.srcSubresource.aspectMask = pVkSourceImage->getAspectFlags();
-			blit.srcSubresource.baseArrayLayer = sourceLayer;
-			blit.srcSubresource.layerCount = 1;
-			blit.srcSubresource.mipLevel = 0;
-			blit.srcOffsets[0].x = static_cast<int32_t>(sourceOffset.x);
-			blit.srcOffsets[0].y = static_cast<int32_t>(sourceOffset.y);
-			blit.srcOffsets[0].z = static_cast<int32_t>(sourceOffset.z);
-			blit.srcOffsets[1].x = static_cast<int32_t>(pVkSourceImage->getWidth()) - blit.srcOffsets[0].x;
-			blit.srcOffsets[1].y = static_cast<int32_t>(pVkSourceImage->getHeight()) - blit.srcOffsets[0].y;
-			blit.srcOffsets[1].z = static_cast<int32_t>(pVkSourceImage->getDepth()) - blit.srcOffsets[0].z;
-			blit.dstSubresource.aspectMask = pVkDestinationImage->getAspectFlags();
-			blit.dstSubresource.baseArrayLayer = destinationLayer;
-			blit.dstSubresource.layerCount = 1;
-			blit.dstSubresource.mipLevel = 0;
-			blit.dstOffsets[0].x = static_cast<int32_t>(destinationOffset.x);
-			blit.dstOffsets[0].y = static_cast<int32_t>(destinationOffset.y);
-			blit.dstOffsets[0].z = static_cast<int32_t>(destinationOffset.z);
-			blit.dstOffsets[1].x = static_cast<int32_t>(pVkDestinationImage->getWidth()) - blit.dstOffsets[0].x;
-			blit.dstOffsets[1].y = static_cast<int32_t>(pVkDestinationImage->getHeight()) - blit.dstOffsets[0].y;
-			blit.dstOffsets[1].z = static_cast<int32_t>(pVkDestinationImage->getDepth()) - blit.dstOffsets[0].z;
-
-			// Prepare to transfer.
-			changeImageLayout(pVkSourceImage->getImage(), pVkSourceImage->getImageLayout(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, blit.srcSubresource.aspectMask, sourceLayer);
-			changeImageLayout(pVkDestinationImage->getImage(), pVkDestinationImage->getImageLayout(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, blit.dstSubresource.aspectMask, destinationLayer);
-
-			// Copy the image.
-			m_pDevice->getDeviceTable().vkCmdBlitImage(
-				*m_pCurrentBuffer,
-				pVkSourceImage->getImage(),
-				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-				pVkDestinationImage->getImage(),
-				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-				1,
-				&blit,
-				VK_FILTER_LINEAR
-			);
-
-			// Change back to previous.
-			if (pVkSourceImage->getImageLayout() == VK_IMAGE_LAYOUT_UNDEFINED)
-			{
-				auto newLayout = VK_IMAGE_LAYOUT_GENERAL;
-				const auto usage = pVkSourceImage->getUsage();
-				if (usage & ImageUsage::Graphics)
-					newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-				else if (usage & ImageUsage::Storage)
-					newLayout = VK_IMAGE_LAYOUT_GENERAL;
-
-				else if (usage & ImageUsage::ColorAttachment)
-					newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-				else if (usage & ImageUsage::DepthAttachment)
-					newLayout = VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL;
-
-				changeImageLayout(pVkSourceImage->getImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, newLayout, blit.srcSubresource.aspectMask);
-				pVkSourceImage->setImageLayout(newLayout);
-			}
-			else
-			{
-				changeImageLayout(pVkSourceImage->getImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, pVkSourceImage->getImageLayout(), blit.srcSubresource.aspectMask, sourceLayer);
-			}
-
-			if (pVkDestinationImage->getImageLayout() == VK_IMAGE_LAYOUT_UNDEFINED)
-			{
-				auto newLayout = VK_IMAGE_LAYOUT_GENERAL;
-				const auto usage = pVkDestinationImage->getUsage();
-				if (usage & ImageUsage::Graphics)
-					newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-				else if (usage & ImageUsage::Storage)
-					newLayout = VK_IMAGE_LAYOUT_GENERAL;
-
-				else if (usage & ImageUsage::ColorAttachment)
-					newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-				else if (usage & ImageUsage::DepthAttachment)
-					newLayout = VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL;
-
-				changeImageLayout(pVkDestinationImage->getImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, newLayout, blit.dstSubresource.aspectMask, destinationLayer);
-				pVkDestinationImage->setImageLayout(newLayout);
-			}
-			else
-			{
-				changeImageLayout(pVkDestinationImage->getImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, pVkDestinationImage->getImageLayout(), blit.dstSubresource.aspectMask, destinationLayer);
-			}
-		}
-
 		void VulkanCommandRecorder::resetQuery(OcclusionQuery* pOcclusionQuery)
 		{
 			OPTICK_EVENT();
@@ -830,8 +716,8 @@ namespace Xenon
 			beginInfo.pNext = nullptr;
 			beginInfo.renderPass = pVkRenderPass->getRenderPass();
 			beginInfo.framebuffer = pVkRenderPass->getFramebuffer();
-			beginInfo.renderArea.extent.width = pVkRenderPass->getWidth();
-			beginInfo.renderArea.extent.height = pVkRenderPass->getHeight();
+			beginInfo.renderArea.extent.width = pVkRenderPass->getCamera()->getWidth();
+			beginInfo.renderArea.extent.height = pVkRenderPass->getCamera()->getHeight();
 			beginInfo.renderArea.offset.x = 0.0f;
 			beginInfo.renderArea.offset.y = 0.0f;
 			beginInfo.clearValueCount = static_cast<uint32_t>(vkClearValues.size());
@@ -1018,34 +904,6 @@ namespace Xenon
 			}
 		}
 
-		void VulkanCommandRecorder::bind(ComputePipeline* pPipeline)
-		{
-			OPTICK_EVENT();
-
-			m_pDevice->getDeviceTable().vkCmdBindPipeline(*m_pCurrentBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pPipeline->as<VulkanComputePipeline>()->getPipeline());
-		}
-
-		void VulkanCommandRecorder::bind(ComputePipeline* pPipeline, Descriptor* pUserDefinedDescriptor)
-		{
-			OPTICK_EVENT();
-
-			auto pVkPipeline = pPipeline->as<VulkanComputePipeline>();
-			if (pUserDefinedDescriptor)
-			{
-				auto descriptorSet = pUserDefinedDescriptor->as<VulkanDescriptor>()->getDescriptorSet();
-				m_pDevice->getDeviceTable().vkCmdBindDescriptorSets(
-					*m_pCurrentBuffer,
-					VK_PIPELINE_BIND_POINT_COMPUTE,
-					pVkPipeline->getPipelineLayout(),
-					EnumToInt(DescriptorType::UserDefined),
-					1,
-					&descriptorSet,
-					0,
-					nullptr
-				);
-			}
-		}
-
 		void VulkanCommandRecorder::setViewport(float x, float y, float width, float height, float minDepth, float maxDepth)
 		{
 			OPTICK_EVENT();
@@ -1104,14 +962,7 @@ namespace Xenon
 			const auto hitEntry = pVkBindngTable->getHitAddressRegion();
 			const auto callableEntry = pVkBindngTable->getCallableAddressRegion();
 
-			m_pDevice->getDeviceTable().vkCmdTraceRaysKHR(*m_pCurrentBuffer, &raygenEntry, &missEntry, &hitEntry, &callableEntry, pRayTracer->getWidth(), pRayTracer->getHeight(), 1);
-		}
-
-		void VulkanCommandRecorder::compute(uint32_t width, uint32_t height, uint32_t depth)
-		{
-			OPTICK_EVENT();
-
-			m_pDevice->getDeviceTable().vkCmdDispatch(*m_pCurrentBuffer, width, height, depth);
+			m_pDevice->getDeviceTable().vkCmdTraceRaysKHR(*m_pCurrentBuffer, &raygenEntry, &missEntry, &hitEntry, &callableEntry, pRayTracer->getCamera()->getWidth(), pRayTracer->getCamera()->getHeight(), 1);
 		}
 
 		void VulkanCommandRecorder::endQuery(OcclusionQuery* pOcclusionQuery, uint32_t index)

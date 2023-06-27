@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "Shader.hpp"
@@ -18,91 +18,28 @@ namespace /* anonymous */
 	{
 		switch (result)
 		{
-		case SPV_REFLECT_RESULT_SUCCESS:
-			return;
-
-		case SPV_REFLECT_RESULT_NOT_READY:
-			XENON_LOG_ERROR("Shader not ready!");
-			break;
-
-		case SPV_REFLECT_RESULT_ERROR_PARSE_FAILED:
-			XENON_LOG_ERROR("Shader parse failed!");
-			break;
-
-		case SPV_REFLECT_RESULT_ERROR_ALLOC_FAILED:
-			XENON_LOG_ERROR("Shader allocation failed!");
-			break;
-
-		case SPV_REFLECT_RESULT_ERROR_RANGE_EXCEEDED:
-			XENON_LOG_ERROR("Shader range exceeded!");
-			break;
-
-		case SPV_REFLECT_RESULT_ERROR_NULL_POINTER:
-			XENON_LOG_ERROR("Shader null pointer!");
-			break;
-
-		case SPV_REFLECT_RESULT_ERROR_INTERNAL_ERROR:
-			XENON_LOG_ERROR("Shader internal reflection error!");
-			break;
-
-		case SPV_REFLECT_RESULT_ERROR_COUNT_MISMATCH:
-			XENON_LOG_ERROR("Shader count mismatch!");
-			break;
-
-		case SPV_REFLECT_RESULT_ERROR_ELEMENT_NOT_FOUND:
-			XENON_LOG_ERROR("Shader element not found!");
-			break;
-
-		case SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_CODE_SIZE:
-			XENON_LOG_ERROR("Shader invalid SPIRV code size!");
-			break;
-
-		case SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_MAGIC_NUMBER:
-			XENON_LOG_ERROR("Shader invalid SPIRV magic number!");
-			break;
-
-		case SPV_REFLECT_RESULT_ERROR_SPIRV_UNEXPECTED_EOF:
-			XENON_LOG_ERROR("Shader SPIRV unexpected end of file (EOF)!");
-			break;
-
-		case SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_ID_REFERENCE:
-			XENON_LOG_ERROR("Shader invalid SPIRV ID reference!");
-			break;
-
-		case SPV_REFLECT_RESULT_ERROR_SPIRV_SET_NUMBER_OVERFLOW:
-			XENON_LOG_ERROR("Shader invalid SPIRV descriptor set number overflow!");
-			break;
-
-		case SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_STORAGE_CLASS:
-			XENON_LOG_ERROR("Shader invalid SPIRV storage class!");
-			break;
-
-		case SPV_REFLECT_RESULT_ERROR_SPIRV_RECURSION:
-			XENON_LOG_ERROR("Shader invalid SPIRV recursion!");
-			break;
-
-		case SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_INSTRUCTION:
-			XENON_LOG_ERROR("Shader invalid SPIRV instruction!");
-			break;
-
-		case SPV_REFLECT_RESULT_ERROR_SPIRV_UNEXPECTED_BLOCK_DATA:
-			XENON_LOG_ERROR("Shader invalid SPIRV block data!");
-			break;
-
-		case SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_BLOCK_MEMBER_REFERENCE:
-			XENON_LOG_ERROR("Shader invalid SPIRV block member reference!");
-			break;
-
-		case SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_ENTRY_POINT:
-			XENON_LOG_ERROR("Shader invalid SPIRV entry point!");
-			break;
-
-		case SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_EXECUTION_MODE:
-			XENON_LOG_ERROR("Shader invalid SPIRV execution mode!");
-			break;
-
-		default:
-			XENON_LOG_ERROR("Unknown reflection error!");
+		case SPV_REFLECT_RESULT_SUCCESS:										return;
+		case SPV_REFLECT_RESULT_NOT_READY:										XENON_LOG_ERROR("Shader not ready!"); break;
+		case SPV_REFLECT_RESULT_ERROR_PARSE_FAILED:								XENON_LOG_ERROR("Shader parse failed!"); break;
+		case SPV_REFLECT_RESULT_ERROR_ALLOC_FAILED:								XENON_LOG_ERROR("Shader allocation failed!"); break;
+		case SPV_REFLECT_RESULT_ERROR_RANGE_EXCEEDED:							XENON_LOG_ERROR("Shader range exceeded!"); break;
+		case SPV_REFLECT_RESULT_ERROR_NULL_POINTER:								XENON_LOG_ERROR("Shader null pointer!"); break;
+		case SPV_REFLECT_RESULT_ERROR_INTERNAL_ERROR:							XENON_LOG_ERROR("Shader internal reflection error!"); break;
+		case SPV_REFLECT_RESULT_ERROR_COUNT_MISMATCH:							XENON_LOG_ERROR("Shader count mismatch!"); break;
+		case SPV_REFLECT_RESULT_ERROR_ELEMENT_NOT_FOUND:						XENON_LOG_ERROR("Shader element not found!"); break;
+		case SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_CODE_SIZE:					XENON_LOG_ERROR("Shader invalid SPIRV code size!"); break;
+		case SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_MAGIC_NUMBER:				XENON_LOG_ERROR("Shader invalid SPIRV magic number!"); break;
+		case SPV_REFLECT_RESULT_ERROR_SPIRV_UNEXPECTED_EOF:						XENON_LOG_ERROR("Shader SPIRV unexpected end of file (EOF)!"); break;
+		case SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_ID_REFERENCE:				XENON_LOG_ERROR("Shader invalid SPIRV ID reference!"); break;
+		case SPV_REFLECT_RESULT_ERROR_SPIRV_SET_NUMBER_OVERFLOW:				XENON_LOG_ERROR("Shader invalid SPIRV descriptor set number overflow!"); break;
+		case SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_STORAGE_CLASS:				XENON_LOG_ERROR("Shader invalid SPIRV storage class!"); break;
+		case SPV_REFLECT_RESULT_ERROR_SPIRV_RECURSION:							XENON_LOG_ERROR("Shader invalid SPIRV recursion!"); break;
+		case SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_INSTRUCTION:				XENON_LOG_ERROR("Shader invalid SPIRV instruction!"); break;
+		case SPV_REFLECT_RESULT_ERROR_SPIRV_UNEXPECTED_BLOCK_DATA:				XENON_LOG_ERROR("Shader invalid SPIRV block data!"); break;
+		case SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_BLOCK_MEMBER_REFERENCE:		XENON_LOG_ERROR("Shader invalid SPIRV block member reference!"); break;
+		case SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_ENTRY_POINT:				XENON_LOG_ERROR("Shader invalid SPIRV entry point!"); break;
+		case SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_EXECUTION_MODE:				XENON_LOG_ERROR("Shader invalid SPIRV execution mode!"); break;
+		default:																XENON_LOG_ERROR("Unknown reflection error!");
 		}
 	}
 
@@ -153,7 +90,7 @@ namespace /* anonymous */
 			return Xenon::Backend::ResourceType::AccelerationStructure;
 
 		default:
-			XENON_LOG_ERROR("Invalid resource type! Defaulting to uniform buffer.");
+			XENON_LOG_ERROR("Invalid resource type!");
 			return Xenon::Backend::ResourceType::UniformBuffer;
 		}
 	}

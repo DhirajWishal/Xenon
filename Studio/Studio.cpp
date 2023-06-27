@@ -1,10 +1,7 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "Studio.hpp"
-#include "Logging.hpp"
-#include "StudioConfiguration.hpp"
-
 #include "Layers/ImGuiLayer.hpp"
 
 #include "Xenon/MonoCamera.hpp"
@@ -17,17 +14,11 @@
 
 #include "Xenon/Layers/DefaultRasterizingLayer.hpp"
 #include "Xenon/Layers/DefaultRayTracingLayer.hpp"
-#include "Xenon/Layers/ShadowMapLayer.hpp"
-#include "Xenon/Layers/DiffusionLayer.hpp"
-#include "Xenon/Layers/GBufferLayer.hpp"
-#include "Xenon/Layers/DirectLightingLayer.hpp"
 
 #include "XenonShaderBank/Debugging/Shader.vert.hpp"
 #include "XenonShaderBank/Debugging/Shader.frag.hpp"
 #include "XenonShaderBank/Billboard/Billboard.vert.hpp"
 #include "XenonShaderBank/Billboard/Billboard.frag.hpp"
-#include "XenonShaderBank/ShadowMap/Scene.vert.hpp"
-#include "XenonShaderBank/ShadowMap/Scene.frag.hpp"
 
 #include "XenonShaderBank/Testing/RayTracing/ClosestHit.rchit.hpp"
 #include "XenonShaderBank/Testing/RayTracing/Miss.rmiss.hpp"
@@ -38,8 +29,6 @@
 #include <glm/gtc/type_ptr.hpp>
 
 constexpr auto g_DefaultRenderingPriority = 5;
-constexpr auto g_DefaultWidth = 1920;
-constexpr auto g_DefaultHeight = 1080;
 
 namespace /* anonymous */
 {
@@ -115,11 +104,10 @@ namespace /* anonymous */
 
 Studio::Studio(Xenon::BackendType type /*= Xenon::BackendType::Any*/)
 	: m_Instance("Xenon Studio", 0, Xenon::RenderTargetType::All, type)
-	, m_Scene(m_Instance, std::make_unique<Xenon::MonoCamera>(m_Instance, g_DefaultWidth, g_DefaultHeight))
-	, m_Renderer(m_Instance, g_DefaultWidth, g_DefaultHeight, GetRendererTitle(type))
+	, m_Scene(m_Instance, std::make_unique<Xenon::MonoCamera>(m_Instance, 1920, 1080))
+	, m_Renderer(m_Instance, m_Scene.getCamera(), GetRendererTitle(type))
 {
 	XENON_LOG_INFORMATION("Starting the {}", GetRendererTitle(m_Instance.getBackendType()));
-	StudioConfiguration::GetInstance().setCurrentBackendType(m_Instance.getBackendType());
 }
 
 void Studio::run()
@@ -129,85 +117,54 @@ void Studio::run()
 	materialBuidler.addBaseColorTexture();	// Use the sub mesh's one.
 
 	// Create the occlusion layer for occlusion culling.
-	auto pOcclusionLayer = m_Renderer.createLayer<Xenon::OcclusionLayer>(g_DefaultWidth, g_DefaultHeight, g_DefaultRenderingPriority);
+	auto pOcclusionLayer = m_Renderer.createLayer<Xenon::OcclusionLayer>(m_Scene.getCamera(), g_DefaultRenderingPriority);
 	pOcclusionLayer->setScene(m_Scene);
-
-#ifdef XENON_ENABLE_EXPERIMENTAL
-	// Create the shadow map layer.
-	auto pShadowMapLayer = m_Renderer.createLayer<Xenon::Experimental::ShadowMapLayer>(g_DefaultWidth, g_DefaultHeight);
-	pShadowMapLayer->setScene(m_Scene);
-
-#endif // XENON_ENABLE_EXPERIMENTAL
 
 	// Setup the pipeline.
 #ifdef XENON_DEV_ENABLE_RAY_TRACING
-	auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRayTracingLayer>(g_DefaultWidth, g_DefaultHeight);
+	auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRayTracingLayer>(m_Scene.getCamera());
 	pRenderTarget->setScene(m_Scene);
 
 	materialBuidler.setRayTracingPipelineSpecification(getRayTracingPipelineSpecification());
 	auto pPipeline = m_Instance.getFactory()->createRayTracingPipeline(m_Instance.getBackendDevice(), std::make_unique<Xenon::DefaultCacheHandler>(), materialBuidler.getRayTracingPipelineSpecification());
 
+	const auto loaderFunction = [this, &pPipeline, &pRenderTarget, &materialBuidler]
+	{
+		const auto grouping = m_Scene.createGroup();
+		[[maybe_unused]] const auto& geometry = m_Scene.create<Xenon::Geometry>(grouping, Xenon::Geometry::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"));
+		[[maybe_unused]] const auto& material = m_Scene.create<Xenon::Material>(grouping, materialBuidler);
+	};
+
 #else 
-	auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRasterizingLayer>(g_DefaultWidth, g_DefaultHeight, g_DefaultRenderingPriority);
+	auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRasterizingLayer>(m_Scene.getCamera(), g_DefaultRenderingPriority);
 	pRenderTarget->setScene(m_Scene);
 	pRenderTarget->setOcclusionLayer(pOcclusionLayer);
 
 	Xenon::Backend::RasterizingPipelineSpecification specification;
-#ifndef XENON_ENABLE_EXPERIMENTAL
 	specification.m_VertexShader = Xenon::Generated::CreateShaderShader_vert();
 	specification.m_FragmentShader = Xenon::Generated::CreateShaderShader_frag();
-
-#else
-	// specification.m_VertexShader = Xenon::Generated::CreateShaderScene_vert();
-	// specification.m_FragmentShader = Xenon::Generated::CreateShaderScene_frag();
-
-#endif // !XENON_ENABLE_EXPERIMENTAL
 	materialBuidler.setRasterizingPipelineSpecification(specification);
 
-#ifdef XENON_ENABLE_EXPERIMENTAL
-	materialBuidler.addShadowMap(pShadowMapLayer->getShadowTexture());
-	materialBuidler.addCustomProperty(pShadowMapLayer->getShadowCameraBuffer());
-
-#endif // XENON_ENABLE_EXPERIMENTAL
+	const auto loaderFunction = [this, &materialBuidler]
+	{
+		const auto grouping = m_Scene.createGroup();
+		[[maybe_unused]] const auto& geometry = m_Scene.create<Xenon::Geometry>(grouping, Xenon::Geometry::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"));
+		[[maybe_unused]] const auto& material = m_Scene.create<Xenon::Material>(grouping, materialBuidler);
+	};
 
 #endif // XENON_DEV_ENABLE_RAY_TRACING
 
-#ifdef XENON_ENABLE_EXPERIMENTAL
-	// Create the diffusion layer.
-	auto pDiffusionLayer = m_Renderer.createLayer<Xenon::Experimental::DiffusionLayer>(g_DefaultWidth, g_DefaultHeight, pRenderTarget->getPriority());
-	pDiffusionLayer->setSourceImage(pRenderTarget->getColorAttachment());
-
-#endif // XENON_ENABLE_EXPERIMENTAL
-
 	// Create the layers.
-	auto pImGui = m_Renderer.createLayer<ImGuiLayer>(g_DefaultWidth, g_DefaultHeight);
+	auto pImGui = m_Renderer.createLayer<ImGuiLayer>(m_Scene.getCamera());
 	pImGui->setScene(m_Scene);
-	// m_Renderer.setScene(m_Scene);
 
 	// Set the layer to be shown.
 	pImGui->showLayer(pRenderTarget);
-	// pImGui->getLayerView().addLayerOption("GBuffer Positive X Color", m_Renderer.getPositiveXLayer());
-	// pImGui->getLayerView().addLayerOption("GBuffer Negative X Color", m_Renderer.getNegativeXLayer());
-	// pImGui->getLayerView().addLayerOption("GBuffer Positive Y Color", m_Renderer.getPositiveYLayer());
-	// pImGui->getLayerView().addLayerOption("GBuffer Negative Y Color", m_Renderer.getNegativeYLayer());
-	// pImGui->getLayerView().addLayerOption("GBuffer Positive Z Color", m_Renderer.getPositiveZLayer());
-	// pImGui->getLayerView().addLayerOption("GBuffer Negative Z Color", m_Renderer.getNegativeZLayer());
-	// pImGui->getLayerView().addLayerOption("Direct Lighting Layer", m_Renderer.getDirectLightingLayer());
 
 	// Create the light source.
 	m_LightGroups.emplace_back(createLightSource());
 
 	{
-		const auto loaderFunction = [this, &materialBuidler]
-		{
-			XENON_STUDIO_LOG_INFORMATION("Loading Sponza...");
-			const auto grouping = m_Scene.createGroup();
-			[[maybe_unused]] const auto& geometry = m_Scene.create<Xenon::Geometry>(grouping, Xenon::Geometry::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"));
-			// [[maybe_unused]] const auto& geometry = m_Scene.create<Xenon::Geometry>(grouping, Xenon::Geometry::FromFile(m_Instance, "E:\\Assets\\Sponza\\Main\\Main\\NewSponza_Main_Blender_glTF.gltf"));
-			[[maybe_unused]] const auto& material = m_Scene.create<Xenon::Material>(grouping, materialBuidler);
-			[[maybe_unused]] const auto& transform = m_Scene.create<Xenon::Components::Transform>(grouping, glm::vec3(0), glm::vec3(0), glm::vec3(0.05f));
-			XENON_STUDIO_LOG_INFORMATION("Sponza model loaded!");
-		};
 		auto ret = Xenon::XObject::GetJobSystem().insert(loaderFunction);
 
 		Xenon::FrameTimer timer;
@@ -273,7 +230,7 @@ void Studio::updateCamera(std::chrono::nanoseconds delta)
 		m_Scene.getCamera()->moveDown(delta);
 
 	// Rotate the camera.
-	if (m_Renderer.getMouse().m_ButtonMiddle == Xenon::MouseButtonEvent::Press)
+	if (m_Renderer.getMouse().m_ButtonLeft == Xenon::MouseButtonEvent::Press)
 	{
 		const auto positionX = m_Renderer.getMouse().m_MousePosition.m_XAxis * -1.0f;
 		const auto positionY = m_Renderer.getMouse().m_MousePosition.m_YAxis * -1.0f;
@@ -304,11 +261,9 @@ Xenon::Group Studio::createLightSource()
 {
 	// Setup the group and add the light source and the quad.
 	const auto lighting = m_Scene.createGroup();
-	[[maybe_unused]] const auto& lightSource = m_Scene.create<Xenon::Components::LightSource>(lighting, glm::vec4(1.0f), glm::vec3(2.0f), glm::vec3(0.0f), 1.0f, 45.0f);
-
-#ifdef XENON_DEBUG_G
 	[[maybe_unused]] const auto& quad = m_Scene.create<Xenon::Geometry>(lighting, Xenon::Geometry::CreateQuad(m_Scene.getInstance()));
 	[[maybe_unused]] const auto& transform = m_Scene.create<Xenon::Components::Transform>(lighting, glm::vec3(0), glm::vec3(0), glm::vec3(0.5f));
+	[[maybe_unused]] const auto& lightSource = m_Scene.create<Xenon::Components::LightSource>(lighting, glm::vec4(1.0f), glm::vec3(0.0f), glm::vec3(0.0f), 1.0f, 360.0f);
 
 	// Setup the light bulb image and it's view and sampler.
 	auto& bulb = m_Scene.create<LightBulb>(lighting);
@@ -331,8 +286,6 @@ Xenon::Group Studio::createLightSource()
 	// Create the material.
 	[[maybe_unused]] const auto& material = m_Scene.create<Xenon::Material>(lighting, materialBuidler);
 
-#endif // XENON_DEBUG
-
 	return lighting;
 }
 
@@ -341,25 +294,24 @@ void Studio::updateLightSources()
 	ImGui::Begin("Light Sources");
 	for (const auto& group : m_LightGroups)
 	{
-		Xenon::Components::LightSource light = m_Scene.getRegistry().get<Xenon::Components::LightSource>(group);
+		auto& transform = m_Scene.getRegistry().get<Xenon::Components::Transform>(group);
 
 		ImGui::Text("Light ID: %i", Xenon::EnumToInt(group));
 		ImGui::NewLine();
-
-		ImGui::ColorPicker4("Color", glm::value_ptr(light.m_Color));
-		ImGui::NewLine();
-
-		ImGui::InputFloat3("Position", glm::value_ptr(light.m_Position));
-		ImGui::InputFloat3("Direction", glm::value_ptr(light.m_Direction));
-		ImGui::NewLine();
-
-		ImGui::SliderFloat("Field Angle", &light.m_FieldAngle, 0.0f, 360.0f);
-		ImGui::DragFloat("Intensity", &light.m_Intensity, 0.01f, 0.0f, 1.0f);
+		ImGui::InputFloat3("Position", glm::value_ptr(transform.m_Position));
+		ImGui::InputFloat3("Rotation", glm::value_ptr(transform.m_Rotation));
+		ImGui::InputFloat3("Scale", glm::value_ptr(transform.m_Scale));
 		ImGui::Separator();
 
 		// VS please fix your formatting...
-		const auto updateFunction = [light](auto& object) { object = light; };
-		m_Scene.getRegistry().patch<Xenon::Components::LightSource>(group, updateFunction);
+		const auto updateFunction = [transform](auto& object)
+		{
+			object.m_Position = transform.m_Position;
+			object.m_Rotation = transform.m_Rotation;
+			object.m_Scale = transform.m_Scale;
+		};
+
+		m_Scene.getRegistry().patch<Xenon::Components::Transform>(group, updateFunction);
 	}
 
 	ImGui::End();

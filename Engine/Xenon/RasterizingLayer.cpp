@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "RasterizingLayer.hpp"
@@ -10,9 +10,9 @@
 
 namespace Xenon
 {
-	RasterizingLayer::RasterizingLayer(Renderer& renderer, uint32_t priority, uint32_t width, uint32_t height, Backend::AttachmentType attachmentTypes, bool enableTripleBuffering /*= false*/, Backend::MultiSamplingCount multiSampleCount /*= Backend::MultiSamplingCount::x1*/)
+	RasterizingLayer::RasterizingLayer(Renderer& renderer, uint32_t priority, Backend::Camera* pCamera, Backend::AttachmentType attachmentTypes, bool enableTripleBuffering /*= false*/, Backend::MultiSamplingCount multiSampleCount /*= Backend::MultiSamplingCount::x1*/)
 		: Layer(renderer, priority)
-		, m_pRasterizer(renderer.getInstance().getFactory()->createRasterizer(renderer.getInstance().getBackendDevice(), width, height, attachmentTypes, enableTripleBuffering, multiSampleCount))
+		, m_pRasterizer(renderer.getInstance().getFactory()->createRasterizer(renderer.getInstance().getBackendDevice(), pCamera, attachmentTypes, enableTripleBuffering, multiSampleCount))
 	{
 	}
 

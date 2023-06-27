@@ -1,4 +1,4 @@
-# Copyright 2022-2023 Nexonous
+# Copyright 2022-2023 Dhiraj Wishal
 # SPDX-License-Identifier: Apache-2.0
 
 # Main build script for Xenon.
@@ -48,10 +48,10 @@ set(SPIRV_REFLECT_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/SPIRV-Refle
 set(XXHASH_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/xxHash)
 set(OPTICK_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/optick/src)
 set(IMGUI_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/imgui)
+set(IMNODES_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/imnodes)
 set(FMT_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/fmt/include)
 set(ENTT_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/entt/src)
 set(IMGUIZMO_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/ImGuizmo)
-set(JSON_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/json/include)
 
 # Add the Optick library as a third party static link.
 add_library(
@@ -110,6 +110,22 @@ add_library(
 	"${IMGUI_INCLUDE_DIR}/imstb_truetype.h"
 )
 
+# Add imnodes library as a third party static link.
+add_library(
+	XenonThirdParty_imnodes
+	STATIC 
+
+	"${IMNODES_INCLUDE_DIR}/imnodes.cpp"
+	"${IMNODES_INCLUDE_DIR}/imnodes.h"
+)
+
+# Set the include directories.
+target_include_directories(
+	XenonThirdParty_imnodes 
+
+	PRIVATE ${IMGUI_INCLUDE_DIR}
+)
+
 # Set the ImGuizmo library.
 add_library(
 	XenonThirdParty_ImGuizmo
@@ -161,11 +177,6 @@ add_compile_definitions(
 	# This is required since not all devices support ray tracing for all backends (for me Vulkan ray tracing does not work).
 	# Comment this out to disable ray tracing from the studio.
 	# XENON_DEV_ENABLE_RAY_TRACING
-
-	# Conditionally enable experimental features.
-	# This may contain code that might not be supported by all backends, or in other platforms, or just won't compile to begin with.
-	# Comment this to disable experimental features of the engine. We recommend using this only in experimental branches.
-	# XENON_ENABLE_EXPERIMENTAL
 )
 
 # Include the main subdirectories.
@@ -178,7 +189,6 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonPlatform)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonPlatformWindows)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonEvents)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonShaderBank)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonAssetPackager)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Studio)
 
 # Set the output directories.
@@ -205,6 +215,7 @@ if (MSVC)
 	set_target_properties(
 		XenonThirdParty_Optick
 		XenonThirdParty_ImGui
+		XenonThirdParty_imnodes
 		XenonThirdParty_ImGuizmo
 			
 		PROPERTIES FOLDER "ThirdParty"

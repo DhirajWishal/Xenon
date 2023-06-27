@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -41,9 +41,6 @@ namespace Xenon
 		NormalTexture,
 		OcclusionTexture,
 		EmissiveTexture,
-		ShadowMap,
-
-		Custom
 	};
 
 	/**
@@ -51,8 +48,7 @@ namespace Xenon
 	 * This is a variant with all the possible types a single material property could have.
 	 */
 	using MaterialPayload = std::variant<
-		Texture,
-		Backend::Buffer*
+		Texture
 	>;
 
 	/**
@@ -150,30 +146,6 @@ namespace Xenon
 		 * @return The builder reference used to chain.
 		 */
 		MaterialBuilder& addEmissiveTexture(Texture payload = {});
-
-		/**
-		 * Add a shadow map texture property to the builder.
-		 *
-		 * @param payload The texture payload.
-		 * @return The builder reference used to chain.
-		 */
-		MaterialBuilder& addShadowMap(Texture payload);
-
-		/**
-		 * Add a custom property to the builder.
-		 *
-		 * @param payload The texture payload.
-		 * @return The builder reference used to chain.
-		 */
-		MaterialBuilder& addCustomProperty(Texture payload);
-
-		/**
-		 * Add a custom property to the builder.
-		 *
-		 * @param payload The buffer payload.
-		 * @return The builder reference used to chain.
-		 */
-		MaterialBuilder& addCustomProperty(Backend::Buffer* payload);
 
 		/**
 		 * Get the rasterizing pipeline specification.

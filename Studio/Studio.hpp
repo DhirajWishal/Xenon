@@ -1,11 +1,10 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
 
 #include "Xenon/Instance.hpp"
 #include "Xenon/Renderer.hpp"
-#include "Xenon/Renderers/DefaultRenderer.hpp"
 #include "Xenon/Scene.hpp"
 
 /**
@@ -23,9 +22,6 @@ class Studio final
 		std::unique_ptr<Xenon::Backend::ImageView> m_pImageView = nullptr;
 		std::unique_ptr<Xenon::Backend::ImageSampler> m_pImageSampler = nullptr;
 	};
-
-	// using RendererType = Xenon::Experimental::DefaultRenderer;
-	using RendererType = Xenon::Renderer;
 
 public:
 	/**
@@ -63,7 +59,7 @@ private:
 private:
 	Xenon::Instance m_Instance;
 	Xenon::Scene m_Scene;
-	RendererType m_Renderer;
+	Xenon::Renderer m_Renderer;
 
 	std::vector<Xenon::Group> m_LightGroups;
 

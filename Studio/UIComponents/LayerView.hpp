@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -15,8 +15,6 @@ class ImGuiLayer;
  */
 class LayerView final : public UIComponent
 {
-	using LayerOption = std::pair<std::string, Xenon::Layer*>;
-
 public:
 	/**
 	 * Explicit constructor.
@@ -74,32 +72,15 @@ public:
 	 */
 	[[nodiscard]] glm::vec2 getSize() const noexcept { return m_Size; }
 
-	/**
-	 * Add an option to the layer view.
-	 *
-	 * @param title The layer's title.
-	 * @param pLayer The layer pointer.
-	 */
-	void addLayerOption(const std::string& title, Xenon::Layer* pLayer);
-
-private:
-	/**
-	 * Show the options combo.
-	 */
-	void showOptionsCombo();
-
 private:
 	ImGuiLayer* m_pImGuiLayer = nullptr;
 	Xenon::Layer* m_pLayerToShow = nullptr;
-	LayerOption m_SelectedOption;
 
 	uintptr_t m_ImageHash = 0;
 
 	std::unique_ptr<Xenon::Backend::Image> m_pImage = nullptr;
 	std::unique_ptr<Xenon::Backend::ImageView> m_pImageView = nullptr;
 	std::unique_ptr<Xenon::Backend::ImageSampler> m_pSampler = nullptr;
-
-	std::vector<LayerOption> m_LayerOptions;
 
 	glm::vec2 m_Position;
 	glm::vec2 m_Size;

@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "Material.hpp"
@@ -44,24 +44,6 @@ namespace Xenon
 	Xenon::MaterialBuilder& MaterialBuilder::addEmissiveTexture(Texture payload /*= {}*/)
 	{
 		m_MaterialSpecification.m_Properties.emplace_back(payload, MaterialPropertyType::EmissiveTexture);
-		return *this;
-	}
-
-	Xenon::MaterialBuilder& MaterialBuilder::addShadowMap(Texture payload)
-	{
-		m_MaterialSpecification.m_Properties.emplace_back(payload, MaterialPropertyType::ShadowMap);
-		return *this;
-	}
-
-	Xenon::MaterialBuilder& MaterialBuilder::addCustomProperty(Texture payload)
-	{
-		m_MaterialSpecification.m_Properties.emplace_back(payload, MaterialPropertyType::Custom);
-		return *this;
-	}
-
-	Xenon::MaterialBuilder& MaterialBuilder::addCustomProperty(Backend::Buffer* payload)
-	{
-		m_MaterialSpecification.m_Properties.emplace_back(payload, MaterialPropertyType::Custom);
 		return *this;
 	}
 

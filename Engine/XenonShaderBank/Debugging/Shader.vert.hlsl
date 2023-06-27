@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "../Core/VertexInputDefines.hlsli"
@@ -12,8 +12,6 @@ struct VSInput
 
 XENON_SETUP_CAMERA(MonoCamera, camera)
 
-XENON_SETUP_TRANSFORM(transform);
-
 struct VSOutput 
 {
 	float4 position : SV_POSITION;
@@ -23,7 +21,7 @@ struct VSOutput
 VSOutput main(VSInput input)
 {
 	VSOutput output;
-	output.position = mul(camera.projection, mul(camera.view, mul(transform.m_Matrix, float4(input.position, 1.0f))));
+	output.position = mul(camera.projection, mul(camera.view, mul(GetIdentityMatrix(), float4(input.position, 100.0f))));
 	output.textureCoordinates = input.textureCoordinates;
 
 	return output;

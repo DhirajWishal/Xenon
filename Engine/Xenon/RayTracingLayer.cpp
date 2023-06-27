@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "RayTracingLayer.hpp"
@@ -6,9 +6,9 @@
 
 namespace Xenon
 {
-	RayTracingLayer::RayTracingLayer(Renderer& renderer, uint32_t priority, uint32_t width, uint32_t height)
+	RayTracingLayer::RayTracingLayer(Renderer& renderer, uint32_t priority, Backend::Camera* pCamera)
 		: Layer(renderer, priority)
-		, m_pRayTracer(renderer.getInstance().getFactory()->createRayTracer(renderer.getInstance().getBackendDevice(), width, height))
+		, m_pRayTracer(renderer.getInstance().getFactory()->createRayTracer(renderer.getInstance().getBackendDevice(), pCamera))
 	{
 	}
 

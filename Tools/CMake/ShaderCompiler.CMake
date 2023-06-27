@@ -43,7 +43,7 @@ function(CompileShaders)
 			WRITE 
 			${XENON_COMPILE_TARGET} 
 
-			"// Copyright 2022-2023 Nexonous\n"
+			"// Copyright 2022 Dhiraj Wishal\n"
 			"// SPDX-License-Identifier: Apache-2.0\n"
 			"\n"
 			"#pragma once\n"

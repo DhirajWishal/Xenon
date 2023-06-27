@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -89,14 +89,13 @@ namespace Xenon
 			 * Create a new rasterizer.
 			 *
 			 * @param pDevice The device pointer.
-			 * @param width The width of the render target.
-			 * @param height The height of the render target.
+			 * @param pCamera The camera which is used to render the scene.
 			 * @param attachmentTypes The attachment types the render target should support.
 			 * @param enableTripleBuffering Whether to enable triple-buffering. Default is false.
 			 * @param multiSampleCount Multi-sampling count to use. Default is x1.
 			 * @return The rasterizer pointer.
 			 */
-			[[nodiscard]] virtual std::unique_ptr<Rasterizer> createRasterizer(Device* pDevice, uint32_t width, uint32_t height, AttachmentType attachmentTypes, bool enableTripleBuffering = false, MultiSamplingCount multiSampleCount = MultiSamplingCount::x1) = 0;
+			[[nodiscard]] virtual std::unique_ptr<Rasterizer> createRasterizer(Device* pDevice, Camera* pCamera, AttachmentType attachmentTypes, bool enableTripleBuffering = false, MultiSamplingCount multiSampleCount = MultiSamplingCount::x1) = 0;
 
 			/**
 			 * Create a new swapchain.
@@ -188,11 +187,10 @@ namespace Xenon
 			 * Create a new ray tracer.
 			 *
 			 * @param pDevice The device pointer.
-			 * @param width The width of the render target.
-			 * @param height The height of the render target.
+			 * @param pCamera The camera pointer.
 			 * @return The ray tracer pointer.
 			 */
-			[[nodiscard]] virtual std::unique_ptr<RayTracer> createRayTracer(Device* pDevice, uint32_t width, uint32_t height) = 0;
+			[[nodiscard]] virtual std::unique_ptr<RayTracer> createRayTracer(Device* pDevice, Camera* pCamera) = 0;
 
 			/**
 			 * Create anew ray tracing pipeline.

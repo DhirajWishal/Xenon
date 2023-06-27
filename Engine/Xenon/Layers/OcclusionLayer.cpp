@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "OcclusionLayer.hpp"
@@ -9,17 +9,19 @@
 #include "../../XenonCore/Logging.hpp"
 
 #include "../../XenonShaderBank/Occlusion/Occlusion.vert.hpp"
+#include "../../XenonShaderBank/Occlusion/Occlusion.frag.hpp"
 
 #include <optick.h>
 
 namespace Xenon
 {
-	OcclusionLayer::OcclusionLayer(Renderer& renderer, uint32_t width, uint32_t height, uint32_t priority /*= 5*/)
-		: RasterizingLayer(renderer, priority, width, height, Backend::AttachmentType::Depth | Backend::AttachmentType::Stencil)
+	OcclusionLayer::OcclusionLayer(Renderer& renderer, Backend::Camera* pCamera, uint32_t priority /*= 5*/)
+		: RasterizingLayer(renderer, priority, pCamera, Backend::AttachmentType::Depth | Backend::AttachmentType::Stencil)
 	{
 		// Create the pipeline.
 		Backend::RasterizingPipelineSpecification specification = {};
 		specification.m_VertexShader = Generated::CreateShaderOcclusion_vert();
+		// specification.m_FragmentShader = Generated::CreateShaderOcclusion_frag();
 
 		m_pOcclusionPipeline = m_Renderer.getInstance().getFactory()->createRasterizingPipeline(m_Renderer.getInstance().getBackendDevice(), std::make_unique<DefaultCacheHandler>(), m_pRasterizer.get(), specification);
 
@@ -123,8 +125,8 @@ namespace Xenon
 		auto pOcclusionSceneDescriptor = m_pOcclusionSceneDescriptors[m_pScene].get();
 
 		// Set the scissor and view port.
-		m_pCommandRecorder->setViewport(0.0f, 0.0f, static_cast<float>(m_Renderer.getWindow()->getWidth()), static_cast<float>(m_Renderer.getWindow()->getHeight()), 0.0f, 1.0f);
-		m_pCommandRecorder->setScissor(0, 0, m_Renderer.getWindow()->getWidth(), m_Renderer.getWindow()->getHeight());
+		m_pCommandRecorder->setViewport(0.0f, 0.0f, static_cast<float>(m_Renderer.getCamera()->getWidth()), static_cast<float>(m_Renderer.getCamera()->getHeight()), 0.0f, 1.0f);
+		m_pCommandRecorder->setScissor(0, 0, m_Renderer.getCamera()->getWidth(), m_Renderer.getCamera()->getHeight());
 
 		// Get the query samples structure for the current command buffer.
 		auto& querySample = m_OcclusionQuerySamples[m_pCommandRecorder->getCurrentIndex()];

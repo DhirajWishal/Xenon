@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "Geometry.hpp"
@@ -487,10 +487,6 @@ namespace /* anonymous */
 	{
 		OPTICK_EVENT();
 
-		// If it's an invalid index, return.
-		if (node.mesh == -1)
-			return;
-
 		// Get the mesh and initialize everything.
 		const auto& gltfMesh = model.meshes[node.mesh];
 		auto& mesh = geometry.getMeshes().emplace_back();
@@ -549,9 +545,9 @@ namespace /* anonymous */
 			subMesh.m_EmissiveTexture = CreateTexture(instance, geometry, model, material.emissiveTexture);
 		}
 
-		// // Load the children.
-		// for (const auto child : node.children)
-		// 	LoadNode(instance, model, model.nodes[child], geometry, vertices, vertexItr, indices, indexItr, synchronization);
+		// Load the children.
+		for (const auto child : node.children)
+			LoadNode(instance, model, model.nodes[child], geometry, vertices, vertexItr, indices, indexItr, synchronization);
 	}
 
 	/**
@@ -715,9 +711,8 @@ namespace Xenon
 		geometry.m_Meshes.reserve(model.meshes.size());
 		auto synchronization = std::latch(workerSubmissions);
 
-		// Load the nodes.
-		for (const auto& node : model.nodes)
-			LoadNode(instance, model, node, geometry, vertices, vertexItr, indices, indexItr, synchronization);
+		const auto& scene = model.scenes[model.defaultScene];
+		LoadNode(instance, model, model.nodes[scene.nodes.front()], geometry, vertices, vertexItr, indices, indexItr, synchronization);
 
 		// Wait till all the sub-meshes are loaded.
 		synchronization.wait();

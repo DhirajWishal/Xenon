@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "VulkanDevice.hpp"
@@ -93,7 +93,7 @@ namespace /* anonymous */
 		// Set the supported types if required.
 		if (supportedTypes && !requiredExtensions.contains(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME)
 			&& !requiredExtensions.contains(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME)
-			&& requiredExtensions.contains(VK_KHR_RAY_QUERY_EXTENSION_NAME))
+			/* && requiredExtensions.contains(VK_KHR_RAY_QUERY_EXTENSION_NAME)*/)
 		{
 			*supportedTypes = Xenon::RenderTargetType::All;
 		}
@@ -138,7 +138,7 @@ namespace /* anonymous */
 		// Set the supported types if required.
 		if (supportedTypes && !requiredExtensions.contains(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME)
 			&& !requiredExtensions.contains(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME)
-			&& requiredExtensions.contains(VK_KHR_RAY_QUERY_EXTENSION_NAME))
+			/* && requiredExtensions.contains(VK_KHR_RAY_QUERY_EXTENSION_NAME)*/)
 		{
 			*supportedTypes = Xenon::RenderTargetType::All;
 		}
@@ -610,8 +610,6 @@ namespace Xenon
 			features.sampleRateShading = VK_TRUE;
 			features.tessellationShader = VK_TRUE;
 			features.geometryShader = VK_TRUE;
-			features.fragmentStoresAndAtomics = VK_TRUE;
-			features.fillModeNonSolid = VK_TRUE;
 
 			VkPhysicalDeviceBufferDeviceAddressFeatures bufferDeviceAddressFeatures = {};
 			bufferDeviceAddressFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES;

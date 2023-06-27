@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -21,10 +21,9 @@ namespace Xenon
 		 *
 		 * @param renderer The renderer reference.
 		 * @param priority The priority of the layer.
-		 * @param width The width of the render target.
-		 * @param height The height of the render target.
+		 * @param pCamera The camera which is used to render the scene.
 		 */
-		explicit RayTracingLayer(Renderer& renderer, uint32_t priority, uint32_t width, uint32_t height);
+		explicit RayTracingLayer(Renderer& renderer, uint32_t priority, Backend::Camera* pCamera);
 
 		/**
 		 * Get the color attachment from the layer.

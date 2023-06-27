@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -25,7 +25,7 @@ namespace Xenon
 	 */
 	struct SceneInformation final
 	{
-		XENON_HLSL_VEC3_ALIGNMENT uint32_t m_LightSourceCount = 0;
+		uint32_t m_LightSourceCount = 0;
 	};
 
 	namespace Internal

@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "VulkanBuffer.hpp"
@@ -201,8 +201,6 @@ namespace Xenon
 
 		VkDeviceAddress VulkanBuffer::getDeviceAddress() const
 		{
-			OPTICK_EVENT();
-
 			VkBufferDeviceAddressInfoKHR bufferDeviceAddressInfo = {};
 			bufferDeviceAddressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
 			bufferDeviceAddressInfo.buffer = m_Buffer;

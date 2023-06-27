@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -34,11 +34,10 @@ namespace Xenon
 		 * Explicit constructor.
 		 *
 		 * @param renderer The renderer reference.
-		 * @param width The width of the render target.
-		 * @param height The height of the render target.
+		 * @param pCamera The camera which is used to render the scene.
 		 * @param priority The priority of the layer. Default is 10.
 		 */
-		explicit DefaultRayTracingLayer(Renderer& renderer, uint32_t width, uint32_t height, uint32_t priority = 10);
+		explicit DefaultRayTracingLayer(Renderer& renderer, Backend::Camera* pCamera, uint32_t priority = 10);
 
 		/**
 		 * Destructor.

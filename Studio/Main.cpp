@@ -1,23 +1,23 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "Studio.hpp"
-#include "StudioConfiguration.hpp"
+#include "Globals.hpp"
 
-void run()
+void run(Xenon::BackendType backend)
 {
-	auto studio = Studio(StudioConfiguration::GetInstance().getCurrentBackendType());
+	g_Globals.m_CurrentBackendType = backend;
+
+	auto studio = Studio(backend);
 	studio.run();
 }
 
 int main()
 {
-	StudioConfiguration::GetInstance().load("StudioConfig.bin");
-
-	while (!StudioConfiguration::GetInstance().shouldExitApplication())
-		run();
-
-	StudioConfiguration::GetInstance().save("StudioConfig.bin");
+	g_Globals.m_RequiredBackendType = Xenon::BackendType::Vulkan;
+	// g_Globals.m_RequiredBackendType = Xenon::BackendType::DirectX_12;
+	while (!g_Globals.m_bExitAppliation)
+		run(g_Globals.m_RequiredBackendType);
 
 	return 0;
 }

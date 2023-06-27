@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -65,21 +65,6 @@ namespace Xenon
 			 * @param pCommandRecorder The command recorder used for internal transfer. Default is nullptr.
 			 */
 			virtual void write(const std::byte* pData, uint64_t size, uint64_t offset = 0, CommandRecorder* pCommandRecorder = nullptr) = 0;
-
-			/**
-			 * Utility function to copy an object to the buffer.
-			 * This might be useful especially when copying uniform data.
-			 *
-			 * @tparam Type The object type.
-			 * @param data The data to copy.
-			 * @param offset The buffer's offset to copy to. Default is 0.
-			 * @param pCommandRecorder The command recorder used for internal transfer. Default is nullptr.
-			 */
-			template<class Type>
-			void writeObject(const Type& data, uint64_t offset = 0, CommandRecorder* pCommandRecorder = nullptr)
-			{
-				write(ToBytes(&data), sizeof(Type), offset, pCommandRecorder);
-			}
 
 			/**
 			 * Read data from the buffer.

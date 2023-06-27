@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "VulkanImageView.hpp"
@@ -66,7 +66,7 @@ namespace Xenon
 				viewType = VK_IMAGE_VIEW_TYPE_CUBE;
 				break;
 
-			case Xenon::Backend::ImageType::ThreeDimensional:
+			case Xenon::Backend::ImageType::ThreeDImentional:
 				viewType = VK_IMAGE_VIEW_TYPE_3D;
 				break;
 
