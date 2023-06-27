@@ -7,6 +7,7 @@
 
 #include <typeindex>
 #include <string_view>
+#include <bit>
 
 #define XENON_BIT_SHIFT(x)							(1 << x)
 #define XENON_ALIGNED_SIZE_2(size, alignment)		(((size) + (alignment)-1) & ~((alignment)-1))
