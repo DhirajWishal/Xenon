@@ -49,7 +49,7 @@ namespace /* anonymous */
 	 * @param type The type of the backend.
 	 * @return The renderer title.
 	 */
-	[[nodiscard]] constexpr std::string GetRendererTitle(Xenon::BackendType type)
+	[[nodiscard]] constexpr const char* GetRendererTitle(Xenon::BackendType type)
 	{
 		switch (type)
 		{

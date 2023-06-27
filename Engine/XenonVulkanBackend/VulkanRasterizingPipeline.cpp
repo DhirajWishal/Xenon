@@ -344,6 +344,7 @@ namespace /* anonymous */
 		}
 	}
 
+#ifdef XENON_FEATURE_CONSTEXPR_VECTOR
 	/**
 	 * Get the dynamic states.
 	 *
@@ -360,6 +361,26 @@ namespace /* anonymous */
 
 		return states;
 	}
+
+#else
+	/**
+	 * Get the dynamic states.
+	 *
+	 * @param flags The flint flags.
+	 * @return The Vulkan flags.
+	 */
+	[[nodiscard]] std::vector<VkDynamicState> GetDynamicStates(Xenon::Backend::DynamicStateFlags flags) noexcept
+	{
+		std::vector<VkDynamicState> states = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
+		if (flags & Xenon::Backend::DynamicStateFlags::LineWidth) states.emplace_back(VK_DYNAMIC_STATE_LINE_WIDTH);
+		if (flags & Xenon::Backend::DynamicStateFlags::DepthBias) states.emplace_back(VK_DYNAMIC_STATE_DEPTH_BIAS);
+		if (flags & Xenon::Backend::DynamicStateFlags::BlendConstants) states.emplace_back(VK_DYNAMIC_STATE_BLEND_CONSTANTS);
+		if (flags & Xenon::Backend::DynamicStateFlags::DepthBounds) states.emplace_back(VK_DYNAMIC_STATE_DEPTH_BOUNDS);
+
+		return states;
+	}
+
+#endif // XENON_FEATURE_CONSTEXPR_VECTOR
 
 	/**
 	 * Get the blend factor.
