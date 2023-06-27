@@ -8,7 +8,7 @@
 #include "../XenonPlatformWindows/WindowsWindow.hpp"
 
 #elif defined(XENON_PLATFORM_LINUX)
-#include <SDL/SDL_vulkan.h>
+#include <SDL3/SDL_vulkan.h>
 
 #include "../XenonPlatformLinux/LinuxWindow.hpp"
 
