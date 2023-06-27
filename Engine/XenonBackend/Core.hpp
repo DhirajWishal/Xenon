@@ -115,6 +115,7 @@ namespace Xenon
 			return count;
 		}
 
+#ifdef XENON_FEATURE_CONSTEXPR_VECTOR
 		/**
 		 * Get the candidate formats from the format list.
 		 *
@@ -132,6 +133,27 @@ namespace Xenon
 
 			return candidates;
 		}
+
+#else
+		/**
+		 * Get the candidate formats from the format list.
+		 *
+		 * @param format The format with candidates.
+		 * @return The candidate format vector with the most to least important order.
+		 */
+		[[nodiscard]] std::vector<DataFormat> GetCandidateFormats(DataFormat format)
+		{
+			std::vector<DataFormat> candidates;
+			for (auto i = (sizeof(std::underlying_type_t<DataFormat>) * 8) - 1; i > 0; i--)
+			{
+				if (EnumToInt(format) & (1 << i))
+					candidates.push_back(static_cast<DataFormat>(1 << i));
+			}
+
+			return candidates;
+		}
+
+#endif
 
 		/**
 		 * Check if the format is a depth format.
@@ -543,10 +565,19 @@ namespace Xenon
 			};
 
 		public:
+#ifdef XENON_FEATURE_CONSTEXPR_VECTOR
 			/**
 			 * Default constructor.
 			 */
 			constexpr VertexSpecification() = default;
+
+#else
+			/**
+			 * Default constructor.
+			 */
+			VertexSpecification() = default;
+
+#endif
 
 			/**
 			 * Add a vertex element to the specification.

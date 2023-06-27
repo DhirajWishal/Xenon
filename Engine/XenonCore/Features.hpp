@@ -31,3 +31,11 @@
 #		define XENON_FEATURE_BIT_CAST
 #	endif
 #endif
+
+// Check and define the XENON_FEATURE_CONSTEXPR_VECTOR macro if std::vector has a constexpr constructor.
+#ifdef __cpp_lib_constexpr_vector
+#	if XENON_CHECK_FEATURE(__cpp_lib_constexpr_vector, 201907L)
+// The compiler supports the' __cpp_lib_constexpr_vector' feature (has support for constexpr std::vector constructor).
+#		define XENON_FEATURE_CONSTEXPR_VECTOR
+#	endif
+#endif
