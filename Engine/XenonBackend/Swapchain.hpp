@@ -35,7 +35,7 @@ namespace Xenon
 			 *
 			 * @return The swapchain image index.
 			 */
-			[[nodiscard]] virtual uint32_t prepare() = 0;
+			XENON_NODISCARD virtual uint32_t prepare() = 0;
 
 			/**
 			 * Present the swapchain to the window.
@@ -47,21 +47,21 @@ namespace Xenon
 			 *
 			 * @return The window pointer.
 			 */
-			[[nodiscard]] Platform::Window* getWindow() noexcept { return m_pWindow.get(); }
+			XENON_NODISCARD Platform::Window* getWindow() noexcept { return m_pWindow.get(); }
 
 			/**
 			 * Get the swapchain's window pointer.
 			 *
 			 * @return The const window pointer.
 			 */
-			[[nodiscard]] const Platform::Window* getWindow() const noexcept { return m_pWindow.get(); }
+			XENON_NODISCARD const Platform::Window* getWindow() const noexcept { return m_pWindow.get(); }
 
 			/**
 			 * Get the current frame index.
 			 *
 			 * @return The frame index.
 			 */
-			[[nodiscard]] uint32_t getFrameIndex() const noexcept { return m_FrameIndex; }
+			XENON_NODISCARD uint32_t getFrameIndex() const noexcept { return m_FrameIndex; }
 
 		protected:
 			/**

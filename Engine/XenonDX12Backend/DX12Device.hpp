@@ -44,7 +44,7 @@ namespace Xenon
 			 * @param format The Xenon format.
 			 * @return The DX12 format.
 			 */
-			[[nodiscard]] static DXGI_FORMAT ConvertFormat(DataFormat format) noexcept;
+			XENON_NODISCARD static DXGI_FORMAT ConvertFormat(DataFormat format) noexcept;
 
 			/**
 			 * Get the format support.
@@ -54,7 +54,7 @@ namespace Xenon
 			 * @param support2 The format support 2. Default is none.
 			 * @return The format support pair. The first one is for the support 1 and second is for support 2.
 			 */
-			[[nodiscard]] std::pair<bool, bool> getFormatSupport(DXGI_FORMAT format, D3D12_FORMAT_SUPPORT1 support1 = D3D12_FORMAT_SUPPORT1_NONE, D3D12_FORMAT_SUPPORT2 support2 = D3D12_FORMAT_SUPPORT2_NONE) const;
+			XENON_NODISCARD std::pair<bool, bool> getFormatSupport(DXGI_FORMAT format, D3D12_FORMAT_SUPPORT1 support1 = D3D12_FORMAT_SUPPORT1_NONE, D3D12_FORMAT_SUPPORT2 support2 = D3D12_FORMAT_SUPPORT2_NONE) const;
 
 			/**
 			 * Get the descriptor range type.
@@ -63,7 +63,7 @@ namespace Xenon
 			 * @param operations The Xenon resource operations.
 			 * @return The D3D12 descriptor range type.
 			 */
-			[[nodiscard]] static D3D12_DESCRIPTOR_RANGE_TYPE GetDescriptorRangeType(Xenon::Backend::ResourceType resource, Xenon::Backend::ResouceOperation operations) noexcept;
+			XENON_NODISCARD static D3D12_DESCRIPTOR_RANGE_TYPE GetDescriptorRangeType(Xenon::Backend::ResourceType resource, Xenon::Backend::ResouceOperation operations) noexcept;
 
 		public:
 			/**
@@ -71,112 +71,112 @@ namespace Xenon
 			 *
 			 * @return The instance pointer.
 			 */
-			[[nodiscard]] DX12Instance* getInstance() { return m_pInstance; }
+			XENON_NODISCARD DX12Instance* getInstance() { return m_pInstance; }
 
 			/**
 			 * Get the instance pointer.
 			 *
 			 * @return The const instance pointer.
 			 */
-			[[nodiscard]] const DX12Instance* getInstance() const { return m_pInstance; }
+			XENON_NODISCARD const DX12Instance* getInstance() const { return m_pInstance; }
 
 			/**
 			 * Get the device factory.
 			 *
 			 * @return The factory pointer.
 			 */
-			[[nodiscard]] IDXGIFactory4* getFactory() { return m_Factory.Get(); }
+			XENON_NODISCARD IDXGIFactory4* getFactory() { return m_Factory.Get(); }
 
 			/**
 			 * Get the device factory.
 			 *
 			 * @return The const factory pointer.
 			 */
-			[[nodiscard]] const IDXGIFactory4* getFactory() const { return m_Factory.Get(); }
+			XENON_NODISCARD const IDXGIFactory4* getFactory() const { return m_Factory.Get(); }
 
 			/**
 			 * Get the backend device object.
 			 *
 			 * @return The device pointer.
 			 */
-			[[nodiscard]] ID3D12Device5* getDevice() { return m_Device.Get(); }
+			XENON_NODISCARD ID3D12Device5* getDevice() { return m_Device.Get(); }
 
 			/**
 			 * Get the backend device object.
 			 *
 			 * @return The const device pointer.
 			 */
-			[[nodiscard]] const ID3D12Device5* getDevice() const { return m_Device.Get(); }
+			XENON_NODISCARD const ID3D12Device5* getDevice() const { return m_Device.Get(); }
 
 			/**
 			 * Get the device adapter.
 			 *
 			 * @return The adapter pointer.
 			 */
-			[[nodiscard]] IDXGIAdapter* getAdapter() { return m_Adapter.Get(); }
+			XENON_NODISCARD IDXGIAdapter* getAdapter() { return m_Adapter.Get(); }
 
 			/**
 			 * Get the device adapter.
 			 *
 			 * @return The adapter pointer.
 			 */
-			[[nodiscard]] const IDXGIAdapter* getAdapter() const { return m_Adapter.Get(); }
+			XENON_NODISCARD const IDXGIAdapter* getAdapter() const { return m_Adapter.Get(); }
 
 			/**
 			 * Get the memory allocator.
 			 *
 			 * @return The allocator.
 			 */
-			[[nodiscard]] D3D12MA::Allocator* getAllocator() { return m_pAllocator; }
+			XENON_NODISCARD D3D12MA::Allocator* getAllocator() { return m_pAllocator; }
 
 			/**
 			 * Get the memory allocator.
 			 *
 			 * @return The const allocator.
 			 */
-			[[nodiscard]] const D3D12MA::Allocator* getAllocator() const { return m_pAllocator; }
+			XENON_NODISCARD const D3D12MA::Allocator* getAllocator() const { return m_pAllocator; }
 
 			/**
 			 * Get the direct command queue.
 			 *
 			 * @return The direct command queue pointer.
 			 */
-			[[nodiscard]] ID3D12CommandQueue* getDirectQueue() { return m_DirectQueue.Get(); }
+			XENON_NODISCARD ID3D12CommandQueue* getDirectQueue() { return m_DirectQueue.Get(); }
 
 			/**
 			 * Get the direct queue.
 			 *
 			 * @return The const direct queue pointer.
 			 */
-			[[nodiscard]] const ID3D12CommandQueue* getDirectQueue() const { return m_DirectQueue.Get(); }
+			XENON_NODISCARD const ID3D12CommandQueue* getDirectQueue() const { return m_DirectQueue.Get(); }
 
 			/**
 			 * Get the bundle command queue.
 			 *
 			 * @return The bundle command queue pointer.
 			 */
-			[[nodiscard]] ID3D12CommandQueue* getBundleQueue() { return m_BundleQueue.Get(); }
+			XENON_NODISCARD ID3D12CommandQueue* getBundleQueue() { return m_BundleQueue.Get(); }
 
 			/**
 			 * Get the bundle queue.
 			 *
 			 * @return The const bundle queue pointer.
 			 */
-			[[nodiscard]] const ID3D12CommandQueue* getBundleQueue() const { return m_BundleQueue.Get(); }
+			XENON_NODISCARD const ID3D12CommandQueue* getBundleQueue() const { return m_BundleQueue.Get(); }
 
 			/**
 			 * Get the copy queue.
 			 *
 			 * @return The command queue pointer.
 			 */
-			[[nodiscard]] ID3D12CommandQueue* getCopyQueue() { return m_CopyQueue.Get(); }
+			XENON_NODISCARD ID3D12CommandQueue* getCopyQueue() { return m_CopyQueue.Get(); }
 
 			/**
 			 * Get the copy queue.
 			 *
 			 * @return The const command queue pointer.
 			 */
-			[[nodiscard]] const ID3D12CommandQueue* getCopyQueue() const { return m_CopyQueue.Get(); }
+			XENON_NODISCARD const ID3D12CommandQueue* getCopyQueue() const { return m_CopyQueue.Get(); }
 
 
 		private:

@@ -38,7 +38,7 @@ namespace Xenon
 			 *
 			 * @return The flags.
 			 */
-			[[nodiscard]] UINT getFactoryFlags() const { return m_FactoryFlags; }
+			XENON_NODISCARD UINT getFactoryFlags() const { return m_FactoryFlags; }
 
 		private:
 			ComPtr<ID3D12Debug> m_Debugger;

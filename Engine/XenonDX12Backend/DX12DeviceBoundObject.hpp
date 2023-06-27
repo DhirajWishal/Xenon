@@ -43,14 +43,14 @@ namespace Xenon
 			 *
 			 * @return The device pointer.
 			 */
-			[[nodiscard]] DX12Device* getDevice() { return m_pDevice; }
+			XENON_NODISCARD DX12Device* getDevice() { return m_pDevice; }
 
 			/**
 			 * Get the Direct X 12 device pointer.
 			 *
 			 * @return The const device pointer.
 			 */
-			[[nodiscard]] const DX12Device* getDevice() const { return m_pDevice; }
+			XENON_NODISCARD const DX12Device* getDevice() const { return m_pDevice; }
 
 		public:
 			/**

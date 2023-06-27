@@ -71,7 +71,7 @@ public:
 	 * @return True if the user should handle the inputs.
 	 * @return False if the events are handled internally and the user should not handle inputs.
 	 */
-	[[nodiscard]] bool beginFrame(std::chrono::nanoseconds delta);
+	XENON_NODISCARD bool beginFrame(std::chrono::nanoseconds delta);
 
 	/**
 	 * End the frame.
@@ -112,14 +112,14 @@ public:
 	 * @param pImageSampler The image sampler pointer.
 	 * @return The texture ID.
 	 */
-	[[nodiscard]] uintptr_t getImageID(Xenon::Backend::Image* pImage, Xenon::Backend::ImageView* pImageView, Xenon::Backend::ImageSampler* pImageSampler);
+	XENON_NODISCARD uintptr_t getImageID(Xenon::Backend::Image* pImage, Xenon::Backend::ImageView* pImageView, Xenon::Backend::ImageSampler* pImageSampler);
 
 	/**
 	 * Get the layer view UI.
 	 *
 	 * @return The object reference.
 	 */
-	[[nodiscard]] LayerView& getLayerView() noexcept { return m_UIStorage.m_LayerViewUI; }
+	XENON_NODISCARD LayerView& getLayerView() noexcept { return m_UIStorage.m_LayerViewUI; }
 
 private:
 	/**
@@ -151,7 +151,7 @@ private:
 	 * @param requiredSize The size required by the buffer.
 	 * @return The size requested to be allocated.
 	 */
-	[[nodiscard]] uint64_t getNextBufferSize(uint64_t requiredSize) const;
+	XENON_NODISCARD uint64_t getNextBufferSize(uint64_t requiredSize) const;
 
 	/**
 	 * Show the main menu.

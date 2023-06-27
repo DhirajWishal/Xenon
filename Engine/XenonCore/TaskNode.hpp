@@ -46,7 +46,7 @@ namespace Xenon
 		 * @return The child node.
 		 */
 		template<class Function>
-		[[nodiscard]] std::shared_ptr<TaskNode> then(Function&& function)
+		XENON_NODISCARD std::shared_ptr<TaskNode> then(Function&& function)
 		{
 			auto pChild = std::make_shared<TaskNode>(m_JobSystem, std::forward<Function>(function), 1);
 			addDependency(pChild);
@@ -88,7 +88,7 @@ namespace Xenon
 		 * @return True if the task has been executed.
 		 * @return False if the task has not been executed.
 		 */
-		[[nodiscard]] bool isComplete() const { return m_Completed; }
+		XENON_NODISCARD bool isComplete() const { return m_Completed; }
 
 		/**
 		 * Wait till the node has been executed.

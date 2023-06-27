@@ -37,7 +37,7 @@ namespace Xenon
 			 * @param type The attachment type.
 			 * @return The attachment image.
 			 */
-			[[nodiscard]] Image* getImageAttachment(AttachmentType type) override;
+			XENON_NODISCARD Image* getImageAttachment(AttachmentType type) override;
 
 		private:
 			VulkanImage m_ColorImage;

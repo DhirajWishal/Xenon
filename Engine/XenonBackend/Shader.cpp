@@ -112,7 +112,7 @@ namespace /* anonymous */
 	 * @parma type The reflection type.
 	 * @return The binding type.
 	 */
-	[[nodiscard]] constexpr Xenon::Backend::ResourceType GetResourceType(SpvReflectDescriptorType type) noexcept
+	XENON_NODISCARD constexpr Xenon::Backend::ResourceType GetResourceType(SpvReflectDescriptorType type) noexcept
 	{
 		switch (type)
 		{
@@ -164,7 +164,7 @@ namespace /* anonymous */
 	 * @param dimensions The vector's dimensions.
 	 * @return The attribute data type.
 	 */
-	[[nodiscard]] constexpr Xenon::Backend::AttributeDataType ResolveVectorDataType(uint32_t dimensions) noexcept
+	XENON_NODISCARD constexpr Xenon::Backend::AttributeDataType ResolveVectorDataType(uint32_t dimensions) noexcept
 	{
 		switch (dimensions)
 		{

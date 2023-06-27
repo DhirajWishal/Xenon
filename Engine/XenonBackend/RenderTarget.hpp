@@ -33,7 +33,7 @@ namespace Xenon
 			 * @param type The attachment type.
 			 * @return The attachment image.
 			 */
-			[[nodiscard]] virtual Image* getImageAttachment(AttachmentType type) = 0;
+			XENON_NODISCARD virtual Image* getImageAttachment(AttachmentType type) = 0;
 
 		public:
 			/**
@@ -41,21 +41,21 @@ namespace Xenon
 			 *
 			 * @return The attachment types.
 			 */
-			[[nodiscard]] AttachmentType getAttachmentTypes() const noexcept { return m_AttachmentTypes; }
+			XENON_NODISCARD AttachmentType getAttachmentTypes() const noexcept { return m_AttachmentTypes; }
 
 			/**
 			 * Get the width of the render target.
 			 *
 			 * @return The width.
 			 */
-			[[nodiscard]] uint32_t getWidth() const noexcept { return m_Width; }
+			XENON_NODISCARD uint32_t getWidth() const noexcept { return m_Width; }
 
 			/**
 			 * Get the height of the render target.
 			 *
 			 * @return The height.
 			 */
-			[[nodiscard]] uint32_t getHeight() const noexcept { return m_Height; }
+			XENON_NODISCARD uint32_t getHeight() const noexcept { return m_Height; }
 
 		protected:
 			uint32_t m_Width = 0;

@@ -3,9 +3,10 @@
 
 #pragma once
 
+#include "../XenonCore/Common.hpp"
+
 #include <filesystem>
 #include <vector>
-#include <bit>
 
 namespace Xenon
 {
@@ -56,7 +57,7 @@ namespace Xenon
 		 *
 		 * @return The return status.
 		 */
-		[[nodiscard]] uint32_t package() const;
+		XENON_NODISCARD uint32_t package() const;
 
 	private:
 		/**
@@ -65,7 +66,7 @@ namespace Xenon
 		 * @param file The file to load the data from.
 		 * @return The loaded bytes.
 		 */
-		[[nodiscard]] std::vector<std::byte> loadFileData(const std::filesystem::path& file) const;
+		XENON_NODISCARD std::vector<std::byte> loadFileData(const std::filesystem::path& file) const;
 
 	private:
 		std::filesystem::path m_InputFile;

@@ -296,7 +296,7 @@ namespace Xenon
 			 *
 			 * @return The specification.
 			 */
-			[[nodiscard]] const RasterizingPipelineSpecification& getSpecification() const noexcept { return m_Specification; }
+			XENON_NODISCARD const RasterizingPipelineSpecification& getSpecification() const noexcept { return m_Specification; }
 
 		protected:
 			RasterizingPipelineSpecification m_Specification;
@@ -311,7 +311,7 @@ namespace Xenon
 	 * @return The 64-bit hash value.
 	 */
 	template<>
-	[[nodiscard]] inline uint64_t GenerateHashFor<Backend::RasterizingPipelineSpecification>(const Backend::RasterizingPipelineSpecification& specification, uint64_t seed) noexcept
+	XENON_NODISCARD inline uint64_t GenerateHashFor<Backend::RasterizingPipelineSpecification>(const Backend::RasterizingPipelineSpecification& specification, uint64_t seed) noexcept
 	{
 		constexpr auto structSize = sizeof(Backend::RasterizingPipelineSpecification) - offsetof(Backend::RasterizingPipelineSpecification, m_ColorBlendConstants);
 

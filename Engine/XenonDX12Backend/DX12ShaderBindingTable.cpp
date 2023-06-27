@@ -15,7 +15,7 @@ namespace /* anonymous */
 	 * @param entry The entry to get the size of.
 	 * @return The size.
 	 */
-	[[nodiscard]] uint64_t GetEntrySize(const Xenon::Backend::BindingGroup::DataVariant& entry) noexcept
+	XENON_NODISCARD uint64_t GetEntrySize(const Xenon::Backend::BindingGroup::DataVariant& entry) noexcept
 	{
 		uint64_t entrySize = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
 

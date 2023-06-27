@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "../XenonCore/Common.hpp"
+
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 #include <glm/mat4x4.hpp>
@@ -39,7 +41,7 @@ namespace Xenon
 			 *
 			 * @return The model matrix which will be passed to the shader.
 			 */
-			[[nodiscard]] glm::mat4 computeModelMatrix() const;
+			XENON_NODISCARD glm::mat4 computeModelMatrix() const;
 		};
 
 		/**

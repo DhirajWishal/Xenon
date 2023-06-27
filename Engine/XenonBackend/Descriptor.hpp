@@ -51,14 +51,14 @@ namespace Xenon
 			 *
 			 * @return The binding information vector.
 			 */
-			[[nodiscard]] const std::unordered_map<uint32_t, DescriptorBindingInfo>& getBindingInfo() const { return m_BindingInformation; }
+			XENON_NODISCARD const std::unordered_map<uint32_t, DescriptorBindingInfo>& getBindingInfo() const { return m_BindingInformation; }
 
 			/**
 			 * Get the descriptor set type.
 			 *
 			 * @return The descriptor set type.
 			 */
-			[[nodiscard]] DescriptorType getType() const { return m_Type; }
+			XENON_NODISCARD DescriptorType getType() const { return m_Type; }
 
 		protected:
 			std::unordered_map<uint32_t, DescriptorBindingInfo> m_BindingInformation;

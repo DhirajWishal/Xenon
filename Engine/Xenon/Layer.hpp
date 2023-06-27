@@ -49,7 +49,7 @@ namespace Xenon
 		 *
 		 * @return The image pointer.
 		 */
-		[[nodiscard]] virtual Backend::Image* getColorAttachment() = 0;
+		XENON_NODISCARD virtual Backend::Image* getColorAttachment() = 0;
 
 		/**
 		 * Set the scene to perform operations on.
@@ -63,14 +63,14 @@ namespace Xenon
 		 *
 		 * @return The scene pointer. Note that this could be nullptr!
 		 */
-		[[nodiscard]] Scene* getScene() noexcept { return m_pScene; }
+		XENON_NODISCARD Scene* getScene() noexcept { return m_pScene; }
 
 		/**
 		 * Get the scene pointer.
 		 *
 		 * @return The scene pointer. Note that this could be nullptr!
 		 */
-		[[nodiscard]] const Scene* getScene() const noexcept { return m_pScene; }
+		XENON_NODISCARD const Scene* getScene() const noexcept { return m_pScene; }
 
 		/**
 		 * Notify the renderer to render this layer.
@@ -88,49 +88,49 @@ namespace Xenon
 		 * @return True if the layer is active.
 		 * @return False if the layer is inactive (should not be rendered).
 		 */
-		[[nodiscard]] bool isActive() const noexcept { return m_IsActive; }
+		XENON_NODISCARD bool isActive() const noexcept { return m_IsActive; }
 
 		/**
 		 * Get the renderer to which the layer is bound to.
 		 *
 		 * @return The layer.
 		 */
-		[[nodiscard]] Renderer& getRenderer() noexcept { return m_Renderer; }
+		XENON_NODISCARD Renderer& getRenderer() noexcept { return m_Renderer; }
 
 		/**
 		 * Get the renderer to which the layer is bound to.
 		 *
 		 * @return The layer.
 		 */
-		[[nodiscard]] const Renderer& getRenderer() const noexcept { return m_Renderer; }
+		XENON_NODISCARD const Renderer& getRenderer() const noexcept { return m_Renderer; }
 
 		/**
 		 * Get the parent instance.
 		 *
 		 * @return The instance reference.
 		 */
-		[[nodiscard]] Instance& getInstance() noexcept;
+		XENON_NODISCARD Instance& getInstance() noexcept;
 
 		/**
 		 * Get the parent instance.
 		 *
 		 * @return The instance reference.
 		 */
-		[[nodiscard]] const Instance& getInstance() const noexcept;
+		XENON_NODISCARD const Instance& getInstance() const noexcept;
 
 		/**
 		 * Get the command recorder pointer.
 		 *
 		 * @return The command recorder pointer.
 		 */
-		[[nodiscard]] Backend::CommandRecorder* getCommandRecorder() noexcept { return m_pCommandRecorder.get(); }
+		XENON_NODISCARD Backend::CommandRecorder* getCommandRecorder() noexcept { return m_pCommandRecorder.get(); }
 
 		/**
 		 * Get the command recorder pointer.
 		 *
 		 * @return The command recorder pointer.
 		 */
-		[[nodiscard]] const Backend::CommandRecorder* getCommandRecorder() const noexcept { return m_pCommandRecorder.get(); }
+		XENON_NODISCARD const Backend::CommandRecorder* getCommandRecorder() const noexcept { return m_pCommandRecorder.get(); }
 
 		/**
 		 * Get the priority of the current layer.
@@ -139,7 +139,7 @@ namespace Xenon
 		 *
 		 * @return The priority index.
 		 */
-		[[nodiscard]] uint32_t getPriority() const noexcept { return m_Priority; }
+		XENON_NODISCARD uint32_t getPriority() const noexcept { return m_Priority; }
 
 		/**
 		 * Select the next command buffer.

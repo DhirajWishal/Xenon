@@ -54,7 +54,7 @@ namespace Xenon
 			 *
 			 * @return The image pointer.
 			 */
-			[[nodiscard]] Backend::Image* getColorAttachment() override { return m_pDiffusionPass->getOutputImage(); }
+			XENON_NODISCARD Backend::Image* getColorAttachment() override { return m_pDiffusionPass->getOutputImage(); }
 
 			/**
 			 * Set the source image pointer to perform diffusion.

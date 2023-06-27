@@ -363,7 +363,7 @@ namespace /* anonymous */
 	 * @param sampler The sampler.
 	 * @return The image sampler specification.
 	 */
-	[[nodiscard]] Xenon::Backend::ImageSamplerSpecification GetImageSamplerSpecification(const tinygltf::Sampler& sampler) noexcept
+	XENON_NODISCARD Xenon::Backend::ImageSamplerSpecification GetImageSamplerSpecification(const tinygltf::Sampler& sampler) noexcept
 	{
 		OPTICK_EVENT();
 
@@ -434,7 +434,7 @@ namespace /* anonymous */
 	 * @return The created texture structure.
 	 */
 	template<TextureInfo Type>
-	[[nodiscard]] Xenon::Texture CreateTexture(Xenon::Instance& instance, const Xenon::Geometry& geometry, const tinygltf::Model& model, const Type& info)
+	XENON_NODISCARD Xenon::Texture CreateTexture(Xenon::Instance& instance, const Xenon::Geometry& geometry, const tinygltf::Model& model, const Type& info)
 	{
 		OPTICK_EVENT();
 
@@ -562,7 +562,7 @@ namespace /* anonymous */
 	 * @param pixelType The pixel type.
 	 * @return The format.
 	 */
-	[[nodiscard]] constexpr Xenon::Backend::DataFormat GetDataFormat(int bits, int components, int pixelType) noexcept
+	XENON_NODISCARD constexpr Xenon::Backend::DataFormat GetDataFormat(int bits, int components, int pixelType) noexcept
 	{
 		// For now just don't do anything. We got more things to worry about than this :P
 		switch (pixelType)

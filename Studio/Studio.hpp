@@ -53,7 +53,7 @@ private:
 	 *
 	 * @return The light source group.
 	 */
-	[[nodiscard]] Xenon::Group createLightSource();
+	XENON_NODISCARD Xenon::Group createLightSource();
 
 	/**
 	 * Update the light sources.

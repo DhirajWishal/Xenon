@@ -9,8 +9,8 @@
 #include <string_view>
 #include <bit>
 
-#define XENON_BIT_SHIFT(x)							(1 << x)
-#define XENON_ALIGNED_SIZE_2(size, alignment)		(((size) + (alignment)-1) & ~((alignment)-1))
+#define XENON_BIT_SHIFT(x)								(1 << x)
+#define XENON_ALIGNED_SIZE_2(size, alignment)			(((size) + (alignment)-1) & ~((alignment)-1))
 
 #define XENON_DISABLE_COPY(object)															\
 	object(const object&) = delete;															\
@@ -31,12 +31,14 @@
 #endif
 
 #ifdef XENON_FEATURE_BIT_CAST
-#	define XENON_BIT_CAST(to, from)					std::bit_cast<to>(from)
+#	define XENON_BIT_CAST(to, from)						std::bit_cast<to>(from)
 
 #else
-#	define XENON_BIT_CAST(to, from)					reinterpret_cast<to>(from)
+#	define XENON_BIT_CAST(to, from)						reinterpret_cast<to>(from)
 
 #endif
+
+#define XENON_NODISCARD									[[nodiscard]]
 
 namespace Xenon
 {
@@ -47,7 +49,7 @@ namespace Xenon
 	 * @return The type index.
 	 */
 	template<class Type>
-	[[nodiscard]] constexpr std::type_index GetTypeIndex() noexcept { return std::type_index(typeid(Type)); }
+	XENON_NODISCARD constexpr std::type_index GetTypeIndex() noexcept { return std::type_index(typeid(Type)); }
 
 	/**
 	 * Check if an enum contains multiple values.
@@ -60,7 +62,7 @@ namespace Xenon
 	 * @return False if all the enums are not in the value.
 	 */
 	template<class Enum, class...Enums>
-	[[nodiscard]] constexpr bool EnumContains(Enum value, Enums... enums) noexcept
+	XENON_NODISCARD constexpr bool EnumContains(Enum value, Enums... enums) noexcept
 	{
 		bool contains = false;
 		const auto function = [value, &contains](Enum e) { contains |= value & e; };
@@ -77,7 +79,7 @@ namespace Xenon
 	 * @return The integer value.
 	 */
 	template<class Type>
-	[[nodiscard]] constexpr std::underlying_type_t<Type> EnumToInt(Type value) noexcept { return static_cast<std::underlying_type_t<Type>>(value); }
+	XENON_NODISCARD constexpr std::underlying_type_t<Type> EnumToInt(Type value) noexcept { return static_cast<std::underlying_type_t<Type>>(value); }
 
 	/**
 	 * Cast a pointer to std::byte pointer.
@@ -87,7 +89,7 @@ namespace Xenon
 	 * @return The std::byte pointer.
 	 */
 	template<class Type>
-	[[nodiscard]] constexpr std::byte* ToBytes(Type* pointer) noexcept { return XENON_BIT_CAST(std::byte*, pointer); }
+	XENON_NODISCARD constexpr std::byte* ToBytes(Type* pointer) noexcept { return XENON_BIT_CAST(std::byte*, pointer); }
 
 	/**
 	 * Cast a pointer to std::byte pointer.
@@ -97,7 +99,7 @@ namespace Xenon
 	 * @return The std::byte pointer.
 	 */
 	template<class Type>
-	[[nodiscard]] constexpr const std::byte* ToBytes(const Type* pointer) noexcept { return XENON_BIT_CAST(const std::byte*, pointer); }
+	XENON_NODISCARD constexpr const std::byte* ToBytes(const Type* pointer) noexcept { return XENON_BIT_CAST(const std::byte*, pointer); }
 
 	/**
 	 * Cast a std::byte pointer to a typed pointer.
@@ -107,7 +109,7 @@ namespace Xenon
 	 * @return The type pointer.
 	 */
 	template<class Type>
-	[[nodiscard]] constexpr Type* FromBytes(std::byte* pointer) noexcept { return XENON_BIT_CAST(Type*, pointer); }
+	XENON_NODISCARD constexpr Type* FromBytes(std::byte* pointer) noexcept { return XENON_BIT_CAST(Type*, pointer); }
 
 	/**
 	 * Cast a std::byte pointer to a typed pointer.
@@ -117,7 +119,7 @@ namespace Xenon
 	 * @return The type pointer.
 	 */
 	template<class Type>
-	[[nodiscard]] constexpr const Type* FromBytes(const std::byte* pointer) noexcept { return XENON_BIT_CAST(const Type*, pointer); }
+	XENON_NODISCARD constexpr const Type* FromBytes(const std::byte* pointer) noexcept { return XENON_BIT_CAST(const Type*, pointer); }
 
 	/**
 	 * Generate hash for a set of bytes.
@@ -127,7 +129,7 @@ namespace Xenon
 	 * @param seed The hash seed. Default is 0.
 	 * @return The 64-bit hash value.
 	 */
-	[[nodiscard]] uint64_t GenerateHash(const std::byte* pBytes, uint64_t size, uint64_t seed = 0) noexcept;
+	XENON_NODISCARD uint64_t GenerateHash(const std::byte* pBytes, uint64_t size, uint64_t seed = 0) noexcept;
 
 	/**
 	 * Utility function to easily generate the hash for an object.
@@ -139,7 +141,7 @@ namespace Xenon
 	 * @return The 64-bit hash value.
 	 */
 	template<class Type>
-	[[nodiscard]] inline uint64_t GenerateHashFor(const Type& data, uint64_t seed = 0) noexcept { return GenerateHash(XENON_BIT_CAST(const std::byte*, &data), sizeof(Type), seed); }
+	XENON_NODISCARD inline uint64_t GenerateHashFor(const Type& data, uint64_t seed = 0) noexcept { return GenerateHash(XENON_BIT_CAST(const std::byte*, &data), sizeof(Type), seed); }
 }
 
 #define XENON_DEFINE_ENUM_AND(name)															\

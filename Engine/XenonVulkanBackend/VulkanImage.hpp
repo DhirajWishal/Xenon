@@ -67,28 +67,28 @@ namespace Xenon
 			 *
 			 * @return The image.
 			 */
-			[[nodiscard]] VkImage getImage() const { return m_Image; }
+			XENON_NODISCARD VkImage getImage() const { return m_Image; }
 
 			/**
 			 * Get the image aspect flags.
 			 *
 			 * @return The aspect flags.
 			 */
-			[[nodiscard]] VkImageAspectFlags getAspectFlags() const;
+			XENON_NODISCARD VkImageAspectFlags getAspectFlags() const;
 
 			/**
 			 * Get the image's attachment description.
 			 *
 			 * @return The Vulkan attachment description.
 			 */
-			[[nodiscard]] VkAttachmentDescription getAttachmentDescription() const { return m_AttachmentDescription; }
+			XENON_NODISCARD VkAttachmentDescription getAttachmentDescription() const { return m_AttachmentDescription; }
 
 			/**
 			 * Get the current image layout.
 			 *
 			 * @return The image layout.
 			 */
-			[[nodiscard]] VkImageLayout getImageLayout() const { return m_CurrentLayout; }
+			XENON_NODISCARD VkImageLayout getImageLayout() const { return m_CurrentLayout; }
 
 			/**
 			 * Set the current image layout.

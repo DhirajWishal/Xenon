@@ -57,126 +57,126 @@ namespace Xenon
 		 *
 		 * @return The application name string view.
 		 */
-		[[nodiscard]] const std::string_view getApplicationName() const noexcept { return m_ApplicationName; }
+		XENON_NODISCARD const std::string_view getApplicationName() const noexcept { return m_ApplicationName; }
 
 		/**
 		 * Get the application version.
 		 *
 		 * @return The application version.
 		 */
-		[[nodiscard]] uint32_t getApplicationVersion() const noexcept { return m_ApplicationVersion; }
+		XENON_NODISCARD uint32_t getApplicationVersion() const noexcept { return m_ApplicationVersion; }
 
 		/**
 		 * Get the supported render target types.
 		 *
 		 * @return The render target types.
 		 */
-		[[nodiscard]] RenderTargetType getSupportedRenderTargetTypes() const { return m_pDevice->getSupportedRenderTargetTypes(); }
+		XENON_NODISCARD RenderTargetType getSupportedRenderTargetTypes() const { return m_pDevice->getSupportedRenderTargetTypes(); }
 
 		/**
 		 * Get the current backend type that's been used.
 		 *
 		 * @return The backend type.
 		 */
-		[[nodiscard]] BackendType getBackendType() const noexcept { return m_BackendType; }
+		XENON_NODISCARD BackendType getBackendType() const noexcept { return m_BackendType; }
 
 		/**
 		 * Get the backend factory.
 		 *
 		 * @return The backend factory pointer.
 		 */
-		[[nodiscard]] Backend::IFactory* getFactory() noexcept { return m_pFactory.get(); }
+		XENON_NODISCARD Backend::IFactory* getFactory() noexcept { return m_pFactory.get(); }
 
 		/**
 		 * Get the backend factory.
 		 *
 		 * @return The const backend factory pointer.
 		 */
-		[[nodiscard]] const Backend::IFactory* getFactory() const noexcept { return m_pFactory.get(); }
+		XENON_NODISCARD const Backend::IFactory* getFactory() const noexcept { return m_pFactory.get(); }
 
 		/**
 		 * Get the backend instance pointer.
 		 *
 		 * @return The instance pointer.
 		 */
-		[[nodiscard]] Backend::Instance* getBackendInstance() noexcept { return m_pInstance.get(); }
+		XENON_NODISCARD Backend::Instance* getBackendInstance() noexcept { return m_pInstance.get(); }
 
 		/**
 		 * Get the backend instance pointer.
 		 *
 		 * @return The const instance pointer.
 		 */
-		[[nodiscard]] const Backend::Instance* getBackendInstance() const noexcept { return m_pInstance.get(); }
+		XENON_NODISCARD const Backend::Instance* getBackendInstance() const noexcept { return m_pInstance.get(); }
 
 		/**
 		 * Get the backend device pointer.
 		 *
 		 * @return The device pointer.
 		 */
-		[[nodiscard]] Backend::Device* getBackendDevice() noexcept { return m_pDevice.get(); }
+		XENON_NODISCARD Backend::Device* getBackendDevice() noexcept { return m_pDevice.get(); }
 
 		/**
 		 * Get the backend device pointer.
 		 *
 		 * @return The const device pointer.
 		 */
-		[[nodiscard]] const Backend::Device* getBackendDevice() const noexcept { return m_pDevice.get(); }
+		XENON_NODISCARD const Backend::Device* getBackendDevice() const noexcept { return m_pDevice.get(); }
 
 		/**
 		 * Get the default image pointer.
 		 *
 		 * @return The image pointer.
 		 */
-		[[nodiscard]] Backend::Image* getDefaultImage() noexcept { return m_pDefaultImage.get(); }
+		XENON_NODISCARD Backend::Image* getDefaultImage() noexcept { return m_pDefaultImage.get(); }
 
 		/**
 		 * Get the default image pointer.
 		 *
 		 * @return The image pointer.
 		 */
-		[[nodiscard]] const Backend::Image* getDefaultImage() const noexcept { return m_pDefaultImage.get(); }
+		XENON_NODISCARD const Backend::Image* getDefaultImage() const noexcept { return m_pDefaultImage.get(); }
 
 		/**
 		 * Get the default image view pointer.
 		 *
 		 * @return The image view pointer.
 		 */
-		[[nodiscard]] Backend::ImageView* getDefaultImageView() noexcept { return m_pDefaultImageView.get(); }
+		XENON_NODISCARD Backend::ImageView* getDefaultImageView() noexcept { return m_pDefaultImageView.get(); }
 
 		/**
 		 * Get the default image view pointer.
 		 *
 		 * @return The image view pointer.
 		 */
-		[[nodiscard]] const Backend::ImageView* getDefaultImageView() const noexcept { return m_pDefaultImageView.get(); }
+		XENON_NODISCARD const Backend::ImageView* getDefaultImageView() const noexcept { return m_pDefaultImageView.get(); }
 
 		/**
 		 * Get the default image sampler pointer.
 		 *
 		 * @return The image sampler pointer.
 		 */
-		[[nodiscard]] Backend::ImageSampler* getDefaultImageSampler() noexcept { return m_pDefaultImageSampler.get(); }
+		XENON_NODISCARD Backend::ImageSampler* getDefaultImageSampler() noexcept { return m_pDefaultImageSampler.get(); }
 
 		/**
 		 * Get the default image sampler pointer.
 		 *
 		 * @return The image sampler pointer.
 		 */
-		[[nodiscard]] const Backend::ImageSampler* getDefaultImageSampler() const noexcept { return m_pDefaultImageSampler.get(); }
+		XENON_NODISCARD const Backend::ImageSampler* getDefaultImageSampler() const noexcept { return m_pDefaultImageSampler.get(); }
 
 		/**
 		 * Get the material database.
 		 *
 		 * @return The database reference.
 		 */
-		[[nodiscard]] MaterialDatabase& getMaterialDatabase() { return m_MaterialDatabase; }
+		XENON_NODISCARD MaterialDatabase& getMaterialDatabase() { return m_MaterialDatabase; }
 
 		/**
 		 * Get the material database.
 		 *
 		 * @return The const database reference.
 		 */
-		[[nodiscard]] const MaterialDatabase& getMaterialDatabase() const { return m_MaterialDatabase; }
+		XENON_NODISCARD const MaterialDatabase& getMaterialDatabase() const { return m_MaterialDatabase; }
 
 	private:
 		std::string m_ApplicationName;

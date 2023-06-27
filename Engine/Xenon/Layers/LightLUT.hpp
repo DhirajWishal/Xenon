@@ -80,28 +80,28 @@ namespace Xenon
 			 *
 			 * @return The buffer pointer.
 			 */
-			[[nodiscard]] Backend::Buffer* getControlBlock() noexcept { return m_pControlBlock.get(); }
+			XENON_NODISCARD Backend::Buffer* getControlBlock() noexcept { return m_pControlBlock.get(); }
 
 			/**
 			 * Get the control block pointer.
 			 *
 			 * @return The buffer pointer.
 			 */
-			[[nodiscard]] const Backend::Buffer* getControlBlock() const noexcept { return m_pControlBlock.get(); }
+			XENON_NODISCARD const Backend::Buffer* getControlBlock() const noexcept { return m_pControlBlock.get(); }
 
 			/**
 			 * Get the look up table pointer.
 			 *
 			 * @return The buffer pointer.
 			 */
-			[[nodiscard]] Backend::Buffer* getLookUpTable() noexcept { return m_pLookUpTable.get(); }
+			XENON_NODISCARD Backend::Buffer* getLookUpTable() noexcept { return m_pLookUpTable.get(); }
 
 			/**
 			 * Get the look up table pointer.
 			 *
 			 * @return The buffer pointer.
 			 */
-			[[nodiscard]] const Backend::Buffer* getLookUpTable() const noexcept { return m_pLookUpTable.get(); }
+			XENON_NODISCARD const Backend::Buffer* getLookUpTable() const noexcept { return m_pLookUpTable.get(); }
 
 		private:
 			/**

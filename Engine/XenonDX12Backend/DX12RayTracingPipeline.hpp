@@ -39,7 +39,7 @@ namespace Xenon
 			 * @param type The descriptor type to create.
 			 * @return The descriptor pointer. It will return nullptr if the descriptor type is not present in the pipeline.
 			 */
-			[[nodiscard]] std::unique_ptr<Descriptor> createDescriptor(DescriptorType type) override;
+			XENON_NODISCARD std::unique_ptr<Descriptor> createDescriptor(DescriptorType type) override;
 
 			/**
 			 * Create a new shader binding table.
@@ -47,21 +47,21 @@ namespace Xenon
 			 * @param bindingGroups The binding groups.
 			 * @return The created shader binding table.
 			 */
-			[[nodiscard]] std::unique_ptr<ShaderBindingTable> createShaderBindingTable(const std::vector<BindingGroup>& bindingGroups) override;
+			XENON_NODISCARD std::unique_ptr<ShaderBindingTable> createShaderBindingTable(const std::vector<BindingGroup>& bindingGroups) override;
 
 			/**
 			 * Get the pipeline state object pointer.
 			 *
 			 * @return The state object pointer.
 			 */
-			[[nodiscard]] ID3D12StateObject* getStateObject() noexcept { return m_PipelineState.Get(); }
+			XENON_NODISCARD ID3D12StateObject* getStateObject() noexcept { return m_PipelineState.Get(); }
 
 			/**
 			 * Get the pipeline state object pointer.
 			 *
 			 * @return The state object pointer.
 			 */
-			[[nodiscard]] const ID3D12StateObject* getStateObject() const noexcept { return m_PipelineState.Get(); }
+			XENON_NODISCARD const ID3D12StateObject* getStateObject() const noexcept { return m_PipelineState.Get(); }
 
 			/**
 			 * Get the shader ID of a shader.
@@ -69,7 +69,7 @@ namespace Xenon
 			 * @param type The shader type.
 			 * @param group The group of the shader.
 			 */
-			[[nodiscard]] void* getShaderID(ShaderType type, uint32_t group) const;
+			XENON_NODISCARD void* getShaderID(ShaderType type, uint32_t group) const;
 
 		private:
 			/**
@@ -87,7 +87,7 @@ namespace Xenon
 			 * @param rangePairs The descriptor range maps.
 			 * @return The created root signature raw pointer.
 			 */
-			[[nodiscard]] ID3D12RootSignature* createLocalRootSignature(std::vector<std::pair<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>>&& rangePairs);
+			XENON_NODISCARD ID3D12RootSignature* createLocalRootSignature(std::vector<std::pair<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>>&& rangePairs);
 
 			/**
 			 * Create the global root signature.

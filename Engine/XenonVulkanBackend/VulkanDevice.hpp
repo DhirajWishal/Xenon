@@ -48,7 +48,7 @@ namespace Xenon
 			 * @param count The Xenon multi sampling count.
 			 * @return The Vulkan multi sampling count.
 			 */
-			[[nodiscard]] static VkSampleCountFlagBits ConvertSamplingCount(MultiSamplingCount count) noexcept;
+			XENON_NODISCARD static VkSampleCountFlagBits ConvertSamplingCount(MultiSamplingCount count) noexcept;
 
 			/**
 			 * Convert the Xenon data format to the Vulkan format.
@@ -56,7 +56,7 @@ namespace Xenon
 			 * @param format The data format.
 			 * @return The Vulkan format.
 			 */
-			[[nodiscard]] static VkFormat ConvertFormat(DataFormat format) noexcept;
+			XENON_NODISCARD static VkFormat ConvertFormat(DataFormat format) noexcept;
 
 			/**
 			 * Convert the Xenon resource type to the Vulkan descriptor type.
@@ -64,7 +64,7 @@ namespace Xenon
 			 * @param type The resource type.
 			 * @return The descriptor type.
 			 */
-			[[nodiscard]] static VkDescriptorType ConvertResourceType(ResourceType type) noexcept;
+			XENON_NODISCARD static VkDescriptorType ConvertResourceType(ResourceType type) noexcept;
 
 			/**
 			 * Get the shader stage flag bit from the Xenon shader type.
@@ -72,7 +72,7 @@ namespace Xenon
 			 * @param shaderType The shader type.
 			 * @return The Vulkan shader stage flag bit.
 			 */
-			[[nodiscard]] static VkShaderStageFlagBits GetShaderStageFlagBit(Xenon::Backend::ShaderType shaderType) noexcept;
+			XENON_NODISCARD static VkShaderStageFlagBits GetShaderStageFlagBit(Xenon::Backend::ShaderType shaderType) noexcept;
 
 		public:
 			/**
@@ -80,126 +80,126 @@ namespace Xenon
 			 *
 			 * @return The instance pointer.
 			 */
-			[[nodiscard]] VulkanInstance* getInstance() { return m_pInstance; }
+			XENON_NODISCARD VulkanInstance* getInstance() { return m_pInstance; }
 
 			/**
 			 * Get the instance pointer to which the object is bound to.
 			 *
 			 * @return The const instance pointer.
 			 */
-			[[nodiscard]] const VulkanInstance* getInstance() const { return m_pInstance; }
+			XENON_NODISCARD const VulkanInstance* getInstance() const { return m_pInstance; }
 
 			/**
 			 * Get the physical device.
 			 *
 			 * @return The physical device.
 			 */
-			[[nodiscard]] VkPhysicalDevice getPhysicalDevice() const { return m_PhysicalDevice; }
+			XENON_NODISCARD VkPhysicalDevice getPhysicalDevice() const { return m_PhysicalDevice; }
 
 			/**
 			 * Get the logical device.
 			 *
 			 * @return The logical device.
 			 */
-			[[nodiscard]] VkDevice getLogicalDevice() const { return m_LogicalDevice; }
+			XENON_NODISCARD VkDevice getLogicalDevice() const { return m_LogicalDevice; }
 
 			/**
 			 * Get the VMA allocator.
 			 *
 			 * @return The allocator.
 			 */
-			[[nodiscard]] Mutex<VmaAllocator>& getAllocator() { return m_Allocator; }
+			XENON_NODISCARD Mutex<VmaAllocator>& getAllocator() { return m_Allocator; }
 
 			/**
 			 * Get the VMA allocator.
 			 *
 			 * @return The allocator.
 			 */
-			[[nodiscard]] const Mutex<VmaAllocator>& getAllocator() const { return m_Allocator; }
+			XENON_NODISCARD const Mutex<VmaAllocator>& getAllocator() const { return m_Allocator; }
 
 			/**
 			 * Get the device table.
 			 *
 			 * @return The device table const reference.
 			 */
-			[[nodiscard]] const VolkDeviceTable& getDeviceTable() const { return m_DeviceTable; }
+			XENON_NODISCARD const VolkDeviceTable& getDeviceTable() const { return m_DeviceTable; }
 
 			/**
 			 * Get the physical device properties.
 			 *
 			 * @return The physical device properties.
 			 */
-			[[nodiscard]] const VkPhysicalDeviceProperties& getPhysicalDeviceProperties() const { return m_PhysicalDeviceProperties; }
+			XENON_NODISCARD const VkPhysicalDeviceProperties& getPhysicalDeviceProperties() const { return m_PhysicalDeviceProperties; }
 
 			/**
 			 * Get the physical device ray tracing pipeline properties.
 			 *
 			 * @return The properties.
 			 */
-			[[nodiscard]] const VkPhysicalDeviceRayTracingPipelinePropertiesKHR& getPhysicalDeviceRayTracingPipelineProperties() const { return m_RayTracingPipelineProperties; }
+			XENON_NODISCARD const VkPhysicalDeviceRayTracingPipelinePropertiesKHR& getPhysicalDeviceRayTracingPipelineProperties() const { return m_RayTracingPipelineProperties; }
 
 			/**
 			 * Get the physical device acceleration structure features.
 			 *
 			 * @return The features.
 			 */
-			[[nodiscard]] const VkPhysicalDeviceAccelerationStructureFeaturesKHR& getPhysicalDeviceAccelerationStructureProperties() const { return m_AccelerationStructureFeatures; }
+			XENON_NODISCARD const VkPhysicalDeviceAccelerationStructureFeaturesKHR& getPhysicalDeviceAccelerationStructureProperties() const { return m_AccelerationStructureFeatures; }
 
 			/**
 			 * Get the compute queue from the device.
 			 *
 			 * @return The compute queue.
 			 */
-			[[nodiscard]] Mutex<VulkanQueue>& getComputeQueue();
+			XENON_NODISCARD Mutex<VulkanQueue>& getComputeQueue();
 
 			/**
 			 * Get the compute queue from the device.
 			 *
 			 * @return The compute queue.
 			 */
-			[[nodiscard]] const Mutex<VulkanQueue>& getComputeQueue() const;
+			XENON_NODISCARD const Mutex<VulkanQueue>& getComputeQueue() const;
 
 			/**
 			 * Get the graphics queue from the device.
 			 *
 			 * @return The graphics queue.
 			 */
-			[[nodiscard]] Mutex<VulkanQueue>& getGraphicsQueue();
+			XENON_NODISCARD Mutex<VulkanQueue>& getGraphicsQueue();
 
 			/**
 			 * Get the graphics queue from the device.
 			 *
 			 * @return The graphics queue.
 			 */
-			[[nodiscard]] const Mutex<VulkanQueue>& getGraphicsQueue() const;
+			XENON_NODISCARD const Mutex<VulkanQueue>& getGraphicsQueue() const;
 
 			/**
 			 * Get the transfer queue from the device.
 			 *
 			 * @return The transfer queue.
 			 */
-			[[nodiscard]] Mutex<VulkanQueue>& getTransferQueue();
+			XENON_NODISCARD Mutex<VulkanQueue>& getTransferQueue();
 
 			/**
 			 * Get the transfer queue from the device.
 			 *
 			 * @return The transfer queue.
 			 */
-			[[nodiscard]] const Mutex<VulkanQueue>& getTransferQueue() const;
+			XENON_NODISCARD const Mutex<VulkanQueue>& getTransferQueue() const;
 
 			/**
 			 * Get the descriptor set manager.
 			 *
 			 * @return The descriptor set manager pointer.
 			 */
-			[[nodiscard]] VulkanDescriptorSetManager* getDescriptorSetManager() { return m_pDescriptorSetManager; }
+			XENON_NODISCARD VulkanDescriptorSetManager* getDescriptorSetManager() { return m_pDescriptorSetManager; }
 
 			/**
 			 * Get the descriptor set manager.
 			 *
 			 * @return The descriptor set manager pointer.
 			 */
-			[[nodiscard]] const VulkanDescriptorSetManager* getDescriptorSetManager() const { return m_pDescriptorSetManager; }
+			XENON_NODISCARD const VulkanDescriptorSetManager* getDescriptorSetManager() const { return m_pDescriptorSetManager; }
 
 		private:
 			/**

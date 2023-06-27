@@ -13,7 +13,7 @@ namespace /* anonymous */
 	 * @param defaultValue The default value of the component.
 	 * @return The component mapping.
 	 */
-	[[nodiscard]] constexpr UINT GetComponentMapping(Xenon::Backend::ComponentSwizzle swizzle, UINT deafultValue) noexcept
+	XENON_NODISCARD constexpr UINT GetComponentMapping(Xenon::Backend::ComponentSwizzle swizzle, UINT deafultValue) noexcept
 	{
 		switch (swizzle)
 		{
@@ -52,7 +52,7 @@ namespace /* anonymous */
 	 * @param a The alpha component swizzle.
 	 * @return The component mapping.
 	 */
-	[[nodiscard]] constexpr UINT GetShader4ComponentMapping(Xenon::Backend::ComponentSwizzle r, Xenon::Backend::ComponentSwizzle g, Xenon::Backend::ComponentSwizzle b, Xenon::Backend::ComponentSwizzle a) noexcept
+	XENON_NODISCARD constexpr UINT GetShader4ComponentMapping(Xenon::Backend::ComponentSwizzle r, Xenon::Backend::ComponentSwizzle g, Xenon::Backend::ComponentSwizzle b, Xenon::Backend::ComponentSwizzle a) noexcept
 	{
 		const auto rComponent = GetComponentMapping(r, 0);
 		const auto gComponent = GetComponentMapping(g, 1);

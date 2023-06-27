@@ -29,7 +29,7 @@ namespace /* anonymous */
 	 * @param value The color value.
 	 * @return The created color value.
 	 */
-	[[nodiscard]] constexpr float CreateColor256(float value) noexcept { return value / 256; }
+	XENON_NODISCARD constexpr float CreateColor256(float value) noexcept { return value / 256; }
 }
 
 ImGuiLayer::ImGuiLayer(Xenon::Renderer& renderer, uint32_t width, uint32_t height)

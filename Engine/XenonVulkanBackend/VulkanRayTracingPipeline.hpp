@@ -37,7 +37,7 @@ namespace Xenon
 			 * @param type The descriptor type to create.
 			 * @return The descriptor pointer. It will return nullptr if the descriptor type is not present in the pipeline.
 			 */
-			[[nodiscard]] std::unique_ptr<Descriptor> createDescriptor(DescriptorType type) override;
+			XENON_NODISCARD std::unique_ptr<Descriptor> createDescriptor(DescriptorType type) override;
 
 			/**
 			 * Create a new ray generation shader binding table.
@@ -45,21 +45,21 @@ namespace Xenon
 			 * @param bindingGroups The binding groups.
 			 * @return The created shader binding table.
 			 */
-			[[nodiscard]] std::unique_ptr<ShaderBindingTable> createShaderBindingTable(const std::vector<BindingGroup>& bindingGroups) override;
+			XENON_NODISCARD std::unique_ptr<ShaderBindingTable> createShaderBindingTable(const std::vector<BindingGroup>& bindingGroups) override;
 
 			/**
 			 * Get the pipeline.
 			 *
 			 * @return The pipeline handle.
 			 */
-			[[nodiscard]] VkPipeline getPipeline() const noexcept { return m_Pipeline; }
+			XENON_NODISCARD VkPipeline getPipeline() const noexcept { return m_Pipeline; }
 
 			/**
 			 * Get the pipeline layout.
 			 *
 			 * @return The pipeline layout.
 			 */
-			[[nodiscard]] VkPipelineLayout getPipelineLayout() const noexcept { return m_PipelineLayout; }
+			XENON_NODISCARD VkPipelineLayout getPipelineLayout() const noexcept { return m_PipelineLayout; }
 
 		private:
 			/**
@@ -87,7 +87,7 @@ namespace Xenon
 			 * @param shaderStage The shader stage.
 			 * @return The create info structure.
 			 */
-			[[nodiscard]] VkPipelineShaderStageCreateInfo createShaderStage(const Shader& source, VkShaderStageFlagBits shaderStage) const;
+			XENON_NODISCARD VkPipelineShaderStageCreateInfo createShaderStage(const Shader& source, VkShaderStageFlagBits shaderStage) const;
 
 			/**
 			 * Create the pipeline.

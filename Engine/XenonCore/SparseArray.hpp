@@ -52,7 +52,7 @@ namespace Xenon
 		 * @param index The index of the element.
 		 * @return The value reference.
 		 */
-		[[nodiscard]] Type& at(uint64_t index) { return m_DenseArray[m_SparseArray[index]]; }
+		XENON_NODISCARD Type& at(uint64_t index) { return m_DenseArray[m_SparseArray[index]]; }
 
 		/**
 		 * Get the element stored at a given index.
@@ -60,49 +60,49 @@ namespace Xenon
 		 * @param index The index of the element.
 		 * @return The const value reference.
 		 */
-		[[nodiscard]] const Type& at(uint64_t index) const { return m_DenseArray[m_SparseArray[index]]; }
+		XENON_NODISCARD const Type& at(uint64_t index) const { return m_DenseArray[m_SparseArray[index]]; }
 
 		/**
 		 * Get the front element in the storage.
 		 *
 		 * @return The front value reference.
 		 */
-		[[nodiscard]] Type& front() { return m_DenseArray.front(); }
+		XENON_NODISCARD Type& front() { return m_DenseArray.front(); }
 
 		/**
 		 * Get the front element in the storage.
 		 *
 		 * @return The front const value reference.
 		 */
-		[[nodiscard]] const Type& front() const { return m_DenseArray.front(); }
+		XENON_NODISCARD const Type& front() const { return m_DenseArray.front(); }
 
 		/**
 		 * Get the back element in the storage.
 		 *
 		 * @return The back value reference.
 		 */
-		[[nodiscard]] Type& back() { return m_DenseArray.back(); }
+		XENON_NODISCARD Type& back() { return m_DenseArray.back(); }
 
 		/**
 		 * Get the back element in the storage.
 		 *
 		 * @return The back const value reference.
 		 */
-		[[nodiscard]] const Type& back() const { return m_DenseArray.back(); }
+		XENON_NODISCARD const Type& back() const { return m_DenseArray.back(); }
 
 		/**
 		 * Get the data pointer.
 		 *
 		 * @return The data pointer.
 		 */
-		[[nodiscard]] Type* data() { return m_DenseArray.data(); }
+		XENON_NODISCARD Type* data() { return m_DenseArray.data(); }
 
 		/**
 		 * Get the data pointer.
 		 *
 		 * @return The const data pointer.
 		 */
-		[[nodiscard]] const Type* data() const { return m_DenseArray.data(); }
+		XENON_NODISCARD const Type* data() const { return m_DenseArray.data(); }
 
 	public:
 		/**
@@ -110,84 +110,84 @@ namespace Xenon
 		 *
 		 * @return The begin pointer.
 		 */
-		[[nodiscard]] decltype(auto) begin() { return m_DenseArray.begin(); }
+		XENON_NODISCARD decltype(auto) begin() { return m_DenseArray.begin(); }
 
 		/**
 		 * Get the begin pointer.
 		 *
 		 * @return The begin pointer.
 		 */
-		[[nodiscard]] decltype(auto) begin() const { return m_DenseArray.begin(); }
+		XENON_NODISCARD decltype(auto) begin() const { return m_DenseArray.begin(); }
 
 		/**
 		 * Get the begin pointer.
 		 *
 		 * @return The begin pointer.
 		 */
-		[[nodiscard]] decltype(auto) cbegin() { return m_DenseArray.cbegin(); }
+		XENON_NODISCARD decltype(auto) cbegin() { return m_DenseArray.cbegin(); }
 
 		/**
 		 * Get the end pointer.
 		 *
 		 * @return The end pointer.
 		 */
-		[[nodiscard]] decltype(auto) end() { return m_DenseArray.end(); }
+		XENON_NODISCARD decltype(auto) end() { return m_DenseArray.end(); }
 
 		/**
 		 * Get the end pointer.
 		 *
 		 * @return The end pointer.
 		 */
-		[[nodiscard]] decltype(auto) cend() const { return m_DenseArray.cend(); }
+		XENON_NODISCARD decltype(auto) cend() const { return m_DenseArray.cend(); }
 
 		/**
 		 * Get the end pointer.
 		 *
 		 * @return The end pointer.
 		 */
-		[[nodiscard]] decltype(auto) cend() { return m_DenseArray.cend(); }
+		XENON_NODISCARD decltype(auto) cend() { return m_DenseArray.cend(); }
 
 		/**
 		 * Get the reverse begin pointer.
 		 *
 		 * @return The reverse begin pointer.
 		 */
-		[[nodiscard]] decltype(auto) rbegin() { return m_DenseArray.rbegin(); }
+		XENON_NODISCARD decltype(auto) rbegin() { return m_DenseArray.rbegin(); }
 
 		/**
 		 * Get the reverse begin pointer.
 		 *
 		 * @return The reverse begin pointer.
 		 */
-		[[nodiscard]] decltype(auto) rbegin() const { return m_DenseArray.rbegin(); }
+		XENON_NODISCARD decltype(auto) rbegin() const { return m_DenseArray.rbegin(); }
 
 		/**
 		 * Get the reverse begin pointer.
 		 *
 		 * @return The reverse begin pointer.
 		 */
-		[[nodiscard]] decltype(auto) rcbegin() { return m_DenseArray.rcbegin(); }
+		XENON_NODISCARD decltype(auto) rcbegin() { return m_DenseArray.rcbegin(); }
 
 		/**
 		 * Get the reverse end pointer.
 		 *
 		 * @return The reverse end pointer.
 		 */
-		[[nodiscard]] decltype(auto) rend() { return m_DenseArray.rend(); }
+		XENON_NODISCARD decltype(auto) rend() { return m_DenseArray.rend(); }
 
 		/**
 		 * Get the reverse end pointer.
 		 *
 		 * @return The reverse end pointer.
 		 */
-		[[nodiscard]] decltype(auto) rcend() const { return m_DenseArray.rcend(); }
+		XENON_NODISCARD decltype(auto) rcend() const { return m_DenseArray.rcend(); }
 
 		/**
 		 * Get the reverse end pointer.
 		 *
 		 * @return The reverse end pointer.
 		 */
-		[[nodiscard]] decltype(auto) rcend() { return m_DenseArray.rcend(); }
+		XENON_NODISCARD decltype(auto) rcend() { return m_DenseArray.rcend(); }
 
 	public:
 		/**
@@ -196,14 +196,14 @@ namespace Xenon
 		 * @return True if the array is empty.
 		 * @return False if the array is not empty.
 		 */
-		[[nodiscard]] bool empty() const { return m_DenseArray.empty(); }
+		XENON_NODISCARD bool empty() const { return m_DenseArray.empty(); }
 
 		/**
 		 * Get the size of the array.
 		 *
 		 * @return The size of the array.
 		 */
-		[[nodiscard]] uint64_t size() const { return m_DenseArray.size(); }
+		XENON_NODISCARD uint64_t size() const { return m_DenseArray.size(); }
 
 	public:
 		/**
@@ -214,7 +214,7 @@ namespace Xenon
 		 * @return The index and the value pointer pair.
 		 */
 		template<class...Arguments>
-		[[nodiscard]] std::pair<IndexType, Type*> insert(Arguments&&... arguments)
+		XENON_NODISCARD std::pair<IndexType, Type*> insert(Arguments&&... arguments)
 		{
 			const auto index = m_SparseArray.size();
 			m_SparseArray.emplace_back(m_DenseArray.size());
@@ -271,7 +271,7 @@ namespace Xenon
 		 * @param index The index of the element.
 		 * @return The value reference.
 		 */
-		[[nodiscard]] Type& operator[](uint64_t index) { return m_DenseArray[m_SparseArray[index]]; }
+		XENON_NODISCARD Type& operator[](uint64_t index) { return m_DenseArray[m_SparseArray[index]]; }
 
 		/**
 		 * Get the element stored at a given index.
@@ -279,7 +279,7 @@ namespace Xenon
 		 * @param index The index of the element.
 		 * @return The const value reference.
 		 */
-		[[nodiscard]] const Type& operator[](uint64_t index) const { return m_DenseArray[m_SparseArray[index]]; }
+		XENON_NODISCARD const Type& operator[](uint64_t index) const { return m_DenseArray[m_SparseArray[index]]; }
 
 	private:
 		std::vector<Type> m_DenseArray;

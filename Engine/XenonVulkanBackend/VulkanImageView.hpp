@@ -36,7 +36,7 @@ namespace Xenon
 			 *
 			 * @return The image view.
 			 */
-			[[nodiscard]] VkImageView getView() const { return m_View; }
+			XENON_NODISCARD VkImageView getView() const { return m_View; }
 
 		private:
 			VkImageView m_View = VK_NULL_HANDLE;

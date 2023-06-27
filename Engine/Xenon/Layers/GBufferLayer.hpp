@@ -78,21 +78,21 @@ namespace Xenon
 			 *
 			 * @return The normal attachment
 			 */
-			[[nodiscard]] Backend::Image* getNormalAttachment() { return m_pRasterizer->getImageAttachment(Backend::AttachmentType::Normal); }
+			XENON_NODISCARD Backend::Image* getNormalAttachment() { return m_pRasterizer->getImageAttachment(Backend::AttachmentType::Normal); }
 
 			/**
 			 * Get the position attachment.
 			 *
 			 * @return The position attachment
 			 */
-			[[nodiscard]] Backend::Image* getPositionAttachment() { return m_pRasterizer->getImageAttachment(Backend::AttachmentType::Position); }
+			XENON_NODISCARD Backend::Image* getPositionAttachment() { return m_pRasterizer->getImageAttachment(Backend::AttachmentType::Position); }
 
 			/**
 			 * Get the GBuffer face.
 			 *
 			 * @return The face.
 			 */
-			[[nodiscard]] GBufferFace getFace() const noexcept { return m_Face; }
+			XENON_NODISCARD GBufferFace getFace() const noexcept { return m_Face; }
 
 		private:
 			/**

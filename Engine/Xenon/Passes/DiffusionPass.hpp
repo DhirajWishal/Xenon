@@ -59,14 +59,14 @@ namespace Xenon
 			 *
 			 * @return The image pointer.
 			 */
-			[[nodiscard]] Backend::Image* getOutputImage() noexcept { return m_pOutputImage.get(); }
+			XENON_NODISCARD Backend::Image* getOutputImage() noexcept { return m_pOutputImage.get(); }
 
 			/**
 			 * Get the output image pointer.
 			 *
 			 * @return The image pointer.
 			 */
-			[[nodiscard]] const Backend::Image* getOutputImage() const noexcept { return m_pOutputImage.get(); }
+			XENON_NODISCARD const Backend::Image* getOutputImage() const noexcept { return m_pOutputImage.get(); }
 
 		private:
 			std::unique_ptr<Backend::ComputePipeline> m_pPipeline = nullptr;

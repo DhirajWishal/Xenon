@@ -18,7 +18,7 @@ namespace /* anonymous */
 	 * @param flag The queue flag to check.
 	 * @return Whether or not the queues are supported.
 	 */
-	[[nodiscard]] bool CheckQueueSupport(VkPhysicalDevice physicalDevice, VkQueueFlagBits flag)
+	XENON_NODISCARD bool CheckQueueSupport(VkPhysicalDevice physicalDevice, VkQueueFlagBits flag)
 	{
 		// Get the queue family count.
 		uint32_t queueFamilyCount = 0;
@@ -58,7 +58,7 @@ namespace /* anonymous */
 	 * @return True if the device supports at least one of the device extensions.
 	 * @return False if the device does not support any of the required extensions.
 	 */
-	[[nodiscard]] bool CheckDeviceExtensionSupport(VkPhysicalDevice physicalDevice, const std::vector<const char*>& deviceExtensions, Xenon::RenderTargetType* supportedTypes = nullptr)
+	XENON_NODISCARD bool CheckDeviceExtensionSupport(VkPhysicalDevice physicalDevice, const std::vector<const char*>& deviceExtensions, Xenon::RenderTargetType* supportedTypes = nullptr)
 	{
 		// If there are no extension to check, we can just return true.
 		if (deviceExtensions.empty())
@@ -110,7 +110,7 @@ namespace /* anonymous */
 	 * @return True if the device supports at least one of the device extensions.
 	 * @return False if the device does not support any of the required extensions.
 	 */
-	[[nodiscard]] std::set<std::string_view> GetUnsupportedDeviceExtensions(VkPhysicalDevice physicalDevice, const std::vector<const char*>& deviceExtensions, Xenon::RenderTargetType* supportedTypes = nullptr)
+	XENON_NODISCARD std::set<std::string_view> GetUnsupportedDeviceExtensions(VkPhysicalDevice physicalDevice, const std::vector<const char*>& deviceExtensions, Xenon::RenderTargetType* supportedTypes = nullptr)
 	{
 		// If there are no extension to check, we can just return true.
 		if (deviceExtensions.empty())

@@ -69,7 +69,7 @@ namespace Xenon
 		 *
 		 * @return The count.
 		 */
-		[[nodiscard]] uint64_t getTotalDrawCount() const noexcept { return m_SubMeshCount; }
+		XENON_NODISCARD uint64_t getTotalDrawCount() const noexcept { return m_SubMeshCount; }
 
 		/**
 		 * Get the draw count.
@@ -77,7 +77,7 @@ namespace Xenon
 		 *
 		 * @return The count.
 		 */
-		[[nodiscard]] uint64_t getDrawCount() const noexcept { return m_DrawCount; }
+		XENON_NODISCARD uint64_t getDrawCount() const noexcept { return m_DrawCount; }
 
 	private:
 		std::mutex m_Mutex;

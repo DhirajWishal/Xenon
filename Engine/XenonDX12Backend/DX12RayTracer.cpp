@@ -9,7 +9,7 @@ namespace /* anonymous */
 	/**
 	 * Get the image specification used to create the color image.
 	 */
-	[[nodiscard]] Xenon::Backend::ImageSpecification GetImageSpecification(uint32_t width, uint32_t height) noexcept
+	XENON_NODISCARD Xenon::Backend::ImageSpecification GetImageSpecification(uint32_t width, uint32_t height) noexcept
 	{
 		Xenon::Backend::ImageSpecification specification;
 		specification.m_Width = width;

@@ -54,7 +54,7 @@ namespace Xenon
 			 *
 			 * @return The image pointer.
 			 */
-			[[nodiscard]] Backend::Image* getColorAttachment() override { return m_pOutputImage.get(); }
+			XENON_NODISCARD Backend::Image* getColorAttachment() override { return m_pOutputImage.get(); }
 
 			/**
 			 * Get the GBuffer layer to the lighting layer.

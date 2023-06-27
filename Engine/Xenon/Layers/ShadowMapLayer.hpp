@@ -67,21 +67,21 @@ namespace Xenon
 			 *
 			 * @return The shadow image pointer.
 			 */
-			[[nodiscard]] Backend::Image* getShadowImage() { return m_pRasterizer->getImageAttachment(Backend::AttachmentType::Depth); }
+			XENON_NODISCARD Backend::Image* getShadowImage() { return m_pRasterizer->getImageAttachment(Backend::AttachmentType::Depth); }
 
 			/**
 			 * Get the shadow camera's buffer.
 			 *
 			 * @return The buffer pointer.
 			 */
-			[[nodiscard]] Backend::Buffer* getShadowCameraBuffer() noexcept { return m_LightCamera.m_pBuffer.get(); }
+			XENON_NODISCARD Backend::Buffer* getShadowCameraBuffer() noexcept { return m_LightCamera.m_pBuffer.get(); }
 
 			/**
 			 * Get the shadow texture from the layer.
 			 *
 			 * @return The texture.
 			 */
-			[[nodiscard]] Texture getShadowTexture();
+			XENON_NODISCARD Texture getShadowTexture();
 
 		private:
 			/**
@@ -95,7 +95,7 @@ namespace Xenon
 			 * @param lightSource The light source.
 			 * @return The shadow camera.
 			 */
-			[[nodiscard]] ShadowCamera calculateShadowCamera(const Components::LightSource& lightSource) const;
+			XENON_NODISCARD ShadowCamera calculateShadowCamera(const Components::LightSource& lightSource) const;
 
 			/**
 			 * Create a per-geometry descriptor.
@@ -103,7 +103,7 @@ namespace Xenon
 			 * @param group The group.
 			 * @return The descriptor pointer.
 			 */
-			[[nodiscard]] std::unique_ptr<Backend::Descriptor> createPerGeometryDescriptor(Group group);
+			XENON_NODISCARD std::unique_ptr<Backend::Descriptor> createPerGeometryDescriptor(Group group);
 
 		private:
 			CameraInformation m_LightCamera;

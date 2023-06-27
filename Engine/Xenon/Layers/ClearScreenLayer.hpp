@@ -43,7 +43,7 @@ namespace Xenon
 		 *
 		 * @return The color.
 		 */
-		[[nodiscard]] glm::vec4 getClearColor() const { return m_ClearColor; }
+		XENON_NODISCARD glm::vec4 getClearColor() const { return m_ClearColor; }
 
 		/**
 		 * Set the clear color.

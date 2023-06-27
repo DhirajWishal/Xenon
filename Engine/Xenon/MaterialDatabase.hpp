@@ -26,7 +26,7 @@ namespace Xenon
 		 * @param specification The material specification to store.
 		 * @return The material.
 		 */
-		[[nodiscard]] Material storeSpecification(const MaterialSpecification& specification)
+		XENON_NODISCARD Material storeSpecification(const MaterialSpecification& specification)
 		{
 			const auto material = static_cast<Material>(GenerateHashFor(specification));
 			if (!m_MaterialSpecifications.contains(material))
@@ -41,7 +41,7 @@ namespace Xenon
 		 * @param material The material.
 		 * @return The material specification reference.
 		 */
-		[[nodiscard]] MaterialSpecification& getSpecification(Material material)
+		XENON_NODISCARD MaterialSpecification& getSpecification(Material material)
 		{
 			return m_MaterialSpecifications.at(material);
 		}
@@ -52,7 +52,7 @@ namespace Xenon
 		 * @param material The material.
 		 * @return The material specification reference.
 		 */
-		[[nodiscard]] const MaterialSpecification& getSpecification(Material material) const
+		XENON_NODISCARD const MaterialSpecification& getSpecification(Material material) const
 		{
 			return m_MaterialSpecifications.at(material);
 		}

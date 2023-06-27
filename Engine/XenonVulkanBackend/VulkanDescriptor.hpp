@@ -55,7 +55,7 @@ namespace Xenon
 			 *
 			 * @return The Vulkan descriptor set.
 			 */
-			[[nodiscard]] VkDescriptorSet getDescriptorSet() const noexcept { return m_DescriptorSet; }
+			XENON_NODISCARD VkDescriptorSet getDescriptorSet() const noexcept { return m_DescriptorSet; }
 
 		private:
 			VkDescriptorPool m_Pool = VK_NULL_HANDLE;

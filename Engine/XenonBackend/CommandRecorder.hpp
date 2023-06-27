@@ -332,14 +332,14 @@ namespace Xenon
 			 *
 			 * @return The buffer count.
 			 */
-			[[nodiscard]] uint32_t getBufferCount() const { return m_BufferCount; }
+			XENON_NODISCARD uint32_t getBufferCount() const { return m_BufferCount; }
 
 			/**
 			 * Get the current buffer index.
 			 *
 			 * @return The buffer index.
 			 */
-			[[nodiscard]] uint32_t getCurrentIndex() const { return m_CurrentIndex; }
+			XENON_NODISCARD uint32_t getCurrentIndex() const { return m_CurrentIndex; }
 
 		protected:
 			/**
@@ -347,7 +347,7 @@ namespace Xenon
 			 *
 			 * @return The incremented index.
 			 */
-			[[nodiscard]] uint32_t incrementIndex() { return m_CurrentIndex = ++m_CurrentIndex % m_BufferCount; }
+			XENON_NODISCARD uint32_t incrementIndex() { return m_CurrentIndex = ++m_CurrentIndex % m_BufferCount; }
 
 		protected:
 			uint32_t m_BufferCount;

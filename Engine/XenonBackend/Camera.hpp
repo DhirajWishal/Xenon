@@ -57,7 +57,7 @@ namespace Xenon
 			 *
 			 * @return The view ports of the camera.
 			 */
-			[[nodiscard]] virtual std::vector<Viewport> getViewports() = 0;
+			XENON_NODISCARD virtual std::vector<Viewport> getViewports() = 0;
 
 			/**
 			 * Move the camera forward.
@@ -160,14 +160,14 @@ namespace Xenon
 			 *
 			 * @return The width.
 			 */
-			[[nodiscard]] uint32_t getWidth() const noexcept { return m_Width; }
+			XENON_NODISCARD uint32_t getWidth() const noexcept { return m_Width; }
 
 			/**
 			 * Get the height of the camera frame.
 			 *
 			 * @return The height.
 			 */
-			[[nodiscard]] uint32_t getHeight() const noexcept { return m_Height; }
+			XENON_NODISCARD uint32_t getHeight() const noexcept { return m_Height; }
 
 		public:
 			glm::vec3 m_Position = glm::vec3(0.0f, 1.0f, 0.0f);

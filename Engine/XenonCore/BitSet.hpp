@@ -31,7 +31,7 @@ namespace Xenon
 			 * @return true if this is equal to the other.
 			 * @return false if this is not equal to the other.
 			 */
-			[[nodiscard]] constexpr bool operator==(const BitField other) const { return m_Value == other.m_Value; }
+			XENON_NODISCARD constexpr bool operator==(const BitField other) const { return m_Value == other.m_Value; }
 
 			/**
 			 * Three-way comparison operator.
@@ -39,7 +39,7 @@ namespace Xenon
 			 * @param other The other bit field to compare.
 			 * @return The return of the comparison.
 			 */
-			[[nodiscard]] constexpr auto operator<=>(const BitField other) const { return m_Value <=> other.m_Value; }
+			XENON_NODISCARD constexpr auto operator<=>(const BitField other) const { return m_Value <=> other.m_Value; }
 
 			/**
 			 * Bitwise and operator.
@@ -47,7 +47,7 @@ namespace Xenon
 			 * @param other The other bit field.
 			 * @return The bitwise AND value.
 			 */
-			[[nodiscard]] constexpr std::byte operator&(const BitField other) const { return m_Value & other.m_Value; }
+			XENON_NODISCARD constexpr std::byte operator&(const BitField other) const { return m_Value & other.m_Value; }
 
 			union
 			{
@@ -74,7 +74,7 @@ namespace Xenon
 		 * @return constexpr uint64_t The array size to set.
 		 */
 		template<uint64_t size>
-		[[nodiscard]] static consteval uint64_t ResolveArraySize()
+		XENON_NODISCARD static consteval uint64_t ResolveArraySize()
 		{
 			if constexpr (size % 8 == 0)
 				return size / 8;
@@ -112,14 +112,14 @@ namespace Xenon
 		 *
 		 * @return constexpr uint64_t The size.
 		 */
-		[[nodiscard]] constexpr uint64_t getSize() const { return ResolveArraySize<Bits>(); }
+		XENON_NODISCARD constexpr uint64_t getSize() const { return ResolveArraySize<Bits>(); }
 
 		/**
 		 * Get the indexable capacity of the internal byte array.
 		 *
 		 * @return constexpr uint64_t The capacity.
 		 */
-		[[nodiscard]] constexpr uint64_t getCapacity() const { return m_Bytes.size() * 8; }
+		XENON_NODISCARD constexpr uint64_t getCapacity() const { return m_Bytes.size() * 8; }
 
 		/**
 		 * Test a given position to check if the bit value is 1 or 0.
@@ -128,7 +128,7 @@ namespace Xenon
 		 * @return true if the bit is 1.
 		 * @return false if the bit is 0.
 		 */
-		[[nodiscard]] constexpr bool test(const uint64_t pos) const
+		XENON_NODISCARD constexpr bool test(const uint64_t pos) const
 		{
 			const auto field = m_Bytes[pos / 8];
 			switch (pos % 8)
@@ -223,7 +223,7 @@ namespace Xenon
 		 *
 		 * @return constexpr decltype(auto) The container.
 		 */
-		[[nodiscard]] constexpr decltype(auto) getContainer() const { return m_Bytes; }
+		XENON_NODISCARD constexpr decltype(auto) getContainer() const { return m_Bytes; }
 
 		/**
 		 * Index a single bit using the position of it.
@@ -232,7 +232,7 @@ namespace Xenon
 		 * @return true if the bit value is 1.
 		 * @return false if the bit value is 0.
 		 */
-		[[nodiscard]] constexpr bool operator[](const uint64_t pos) const { return test(pos); }
+		XENON_NODISCARD constexpr bool operator[](const uint64_t pos) const { return test(pos); }
 
 		/**
 		 * Not equal to operator.
@@ -241,7 +241,7 @@ namespace Xenon
 		 * @return true if this bit set is not equal to the other.
 		 * @return false if this bit set is equal to the other.
 		 */
-		[[nodiscard]] constexpr bool operator!=(const BitSet other) const
+		XENON_NODISCARD constexpr bool operator!=(const BitSet other) const
 		{
 			return std::equal(std::execution::unseq, m_Bytes.begin(), m_Bytes.end(), other.m_Bytes.begin(), [](const auto lhs, const auto rhs) { return lhs != rhs; });
 		}

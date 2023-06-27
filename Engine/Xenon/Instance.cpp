@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "Instance.hpp"
+#include "../XenonCore/Logging.hpp"
 
 #include "../XenonVulkanBackend/VulkanFactory.hpp"
 

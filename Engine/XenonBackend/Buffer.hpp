@@ -86,14 +86,14 @@ namespace Xenon
 			 *
 			 * @return The buffer's memory view.
 			 */
-			[[nodiscard]] BufferMemoryView read() { return BufferMemoryView(this); }
+			XENON_NODISCARD BufferMemoryView read() { return BufferMemoryView(this); }
 
 			/**
 			 * Begin reading data from the GPU.
 			 *
 			 * @return The const data pointer.
 			 */
-			[[nodiscard]] virtual const std::byte* beginRead() = 0;
+			XENON_NODISCARD virtual const std::byte* beginRead() = 0;
 
 			/**
 			 * End the buffer reading.
@@ -106,14 +106,14 @@ namespace Xenon
 			 *
 			 * @return The size.
 			 */
-			[[nodiscard]] uint64_t getSize() const { return m_Size; }
+			XENON_NODISCARD uint64_t getSize() const { return m_Size; }
 
 			/**
 			 * Get the buffer type.
 			 *
 			 * @return The buffer type.
 			 */
-			[[nodiscard]] BufferType getType() const { return m_Type; }
+			XENON_NODISCARD BufferType getType() const { return m_Type; }
 
 		protected:
 			uint64_t m_Size = 0;

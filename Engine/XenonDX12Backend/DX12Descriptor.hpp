@@ -57,28 +57,28 @@ namespace Xenon
 			 *
 			 * @return The heap start.
 			 */
-			[[nodiscard]] UINT getCbvSrvUavDescriptorHeapStart() const { return m_CbvSrvUavDescriptorHeapStart; }
+			XENON_NODISCARD UINT getCbvSrvUavDescriptorHeapStart() const { return m_CbvSrvUavDescriptorHeapStart; }
 
 			/**
 			 * Get the CBV, SRV and UAV descriptor heap increment size.
 			 *
 			 * @return The heap increment size.
 			 */
-			[[nodiscard]] UINT getCbvSrvUavDescriptorHeapIncrementSize() const { return m_pManager->getCbvSrvUavHeapIncrementSize(); }
+			XENON_NODISCARD UINT getCbvSrvUavDescriptorHeapIncrementSize() const { return m_pManager->getCbvSrvUavHeapIncrementSize(); }
 
 			/**
 			 * Get the sampler descriptor heap start.
 			 *
 			 * @return The heap start.
 			 */
-			[[nodiscard]] UINT getSamplerDescriptorHeapStart() const { return m_SamplerDescriptorHeapStart; }
+			XENON_NODISCARD UINT getSamplerDescriptorHeapStart() const { return m_SamplerDescriptorHeapStart; }
 
 			/**
 			 * Get the sampler descriptor heap increment size.
 			 *
 			 * @return The heap increment size.
 			 */
-			[[nodiscard]] UINT getSamplerDescriptorHeapIncrementSize() const { return m_pManager->getSamplerHeapIncrementSize(); }
+			XENON_NODISCARD UINT getSamplerDescriptorHeapIncrementSize() const { return m_pManager->getSamplerHeapIncrementSize(); }
 
 			/**
 			 * Check if the descriptor has buffers.
@@ -86,7 +86,7 @@ namespace Xenon
 			 * @return True if the descriptor has buffers.
 			 * @return False if the descriptor does not have buffers.
 			 */
-			[[nodiscard]] bool hasBuffers() const { return m_pManager->getGroupSize(m_Type).first > 0; }
+			XENON_NODISCARD bool hasBuffers() const { return m_pManager->getGroupSize(m_Type).first > 0; }
 
 			/**
 			 * Check if the descriptor has samplers.
@@ -94,7 +94,7 @@ namespace Xenon
 			 * @return True if the descriptor has samplers.
 			 * @return False if the descriptor does not have samplers.
 			 */
-			[[nodiscard]] bool hasSampler() const { return m_pManager->getGroupSize(m_Type).second > 0; }
+			XENON_NODISCARD bool hasSampler() const { return m_pManager->getGroupSize(m_Type).second > 0; }
 
 		public:
 			std::unordered_map<uint32_t, UINT> m_BindingOffsets;

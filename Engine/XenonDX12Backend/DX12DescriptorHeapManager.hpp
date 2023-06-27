@@ -47,7 +47,7 @@ namespace Xenon
 			 *
 			 * @return The storage reference.
 			 */
-			[[nodiscard]] DX12PipelineDescriptorHeapStorage& getDescriptorHeapStorage();
+			XENON_NODISCARD DX12PipelineDescriptorHeapStorage& getDescriptorHeapStorage();
 
 			/**
 			 * Get the binding infos.
@@ -55,7 +55,7 @@ namespace Xenon
 			 * @param type The descriptor type.
 			 * @return The binding infos.
 			 */
-			[[nodiscard]] const std::unordered_map<uint32_t, DescriptorBindingInfo>& getBindingInfo(DescriptorType type) const { return m_BindingMap.at(type); }
+			XENON_NODISCARD const std::unordered_map<uint32_t, DescriptorBindingInfo>& getBindingInfo(DescriptorType type) const { return m_BindingMap.at(type); }
 
 			/**
 			 * Setup a new descriptor
@@ -64,7 +64,7 @@ namespace Xenon
 			 * @return First contains the CBV, SRV and UAV count.
 			 * @return Second contains the Sampler count.
 			 */
-			[[nodiscard]] std::pair<UINT, UINT> setupDescriptor(DescriptorType type);
+			XENON_NODISCARD std::pair<UINT, UINT> setupDescriptor(DescriptorType type);
 
 			/**
 			 * Get the heap group size pair.
@@ -73,7 +73,7 @@ namespace Xenon
 			 * @return First contains the CBV, SRV and UAV count.
 			 * @return Second contains the Sampler count.
 			 */
-			[[nodiscard]] std::pair<UINT, UINT> getGroupSize(DescriptorType type) const { return m_GroupSizes.at(type); }
+			XENON_NODISCARD std::pair<UINT, UINT> getGroupSize(DescriptorType type) const { return m_GroupSizes.at(type); }
 
 			/**
 			 * Free the descriptor.
@@ -89,7 +89,7 @@ namespace Xenon
 			 * @param index The index to access.
 			 * @return The sampler index.
 			 */
-			[[nodiscard]] UINT getSamplerIndex(uint32_t index) const { return m_SamplerIndex[index]; }
+			XENON_NODISCARD UINT getSamplerIndex(uint32_t index) const { return m_SamplerIndex[index]; }
 
 			/**
 			 * Notify the manager that the heap has been updated.
@@ -101,42 +101,42 @@ namespace Xenon
 			 *
 			 * @return The descriptor handle.
 			 */
-			[[nodiscard]] D3D12_CPU_DESCRIPTOR_HANDLE getCbvSrvUavHeapStartCPU() const { return m_CbvSrvUavDescriptorHeap->GetCPUDescriptorHandleForHeapStart(); }
+			XENON_NODISCARD D3D12_CPU_DESCRIPTOR_HANDLE getCbvSrvUavHeapStartCPU() const { return m_CbvSrvUavDescriptorHeap->GetCPUDescriptorHandleForHeapStart(); }
 
 			/**
 			 * Get the GPU CBV, SRV and UAV heap start.
 			 *
 			 * @return The descriptor handle.
 			 */
-			[[nodiscard]] D3D12_GPU_DESCRIPTOR_HANDLE getCbvSrvUavHeapStartGPU() const { return m_CbvSrvUavDescriptorHeap->GetGPUDescriptorHandleForHeapStart(); }
+			XENON_NODISCARD D3D12_GPU_DESCRIPTOR_HANDLE getCbvSrvUavHeapStartGPU() const { return m_CbvSrvUavDescriptorHeap->GetGPUDescriptorHandleForHeapStart(); }
 
 			/**
 			 * Get the CBV, SRV and UAV heap increment size.
 			 *
 			 * @return The increment size.
 			 */
-			[[nodiscard]] UINT getCbvSrvUavHeapIncrementSize() const { return m_CbvSrvUavHeapIncrementSize; }
+			XENON_NODISCARD UINT getCbvSrvUavHeapIncrementSize() const { return m_CbvSrvUavHeapIncrementSize; }
 
 			/**
 			 * Get the CPU sampler heap start.
 			 *
 			 * @return The descriptor handle.
 			 */
-			[[nodiscard]] D3D12_CPU_DESCRIPTOR_HANDLE getSamplerHeapStartCPU() const { return m_SamplerDescriptorHeap->GetCPUDescriptorHandleForHeapStart(); }
+			XENON_NODISCARD D3D12_CPU_DESCRIPTOR_HANDLE getSamplerHeapStartCPU() const { return m_SamplerDescriptorHeap->GetCPUDescriptorHandleForHeapStart(); }
 
 			/**
 			 * Get the GPU sampler heap start.
 			 *
 			 * @return The descriptor handle.
 			 */
-			[[nodiscard]] D3D12_GPU_DESCRIPTOR_HANDLE getSamplerHeapStartGPU() const { return m_SamplerDescriptorHeap->GetGPUDescriptorHandleForHeapStart(); }
+			XENON_NODISCARD D3D12_GPU_DESCRIPTOR_HANDLE getSamplerHeapStartGPU() const { return m_SamplerDescriptorHeap->GetGPUDescriptorHandleForHeapStart(); }
 
 			/**
 			 * Get the sampler heap increment size.
 			 *
 			 * @return The increment size.
 			 */
-			[[nodiscard]] UINT getSamplerHeapIncrementSize() const { return m_SamplerHeapIncrementSize; }
+			XENON_NODISCARD UINT getSamplerHeapIncrementSize() const { return m_SamplerHeapIncrementSize; }
 
 		private:
 			/**

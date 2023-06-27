@@ -43,14 +43,14 @@ namespace Xenon
 			 *
 			 * @return The device pointer.
 			 */
-			[[nodiscard]] VulkanDevice* getDevice() { return m_pDevice; }
+			XENON_NODISCARD VulkanDevice* getDevice() { return m_pDevice; }
 
 			/**
 			 * Get the Vulkan device pointer.
 			 *
 			 * @return The const device pointer.
 			 */
-			[[nodiscard]] const VulkanDevice* getDevice() const { return m_pDevice; }
+			XENON_NODISCARD const VulkanDevice* getDevice() const { return m_pDevice; }
 
 		public:
 			/**

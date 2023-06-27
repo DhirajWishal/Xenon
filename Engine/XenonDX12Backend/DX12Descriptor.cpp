@@ -17,7 +17,7 @@ namespace /* anonymous */
 	 * @param resource The Xenon resource type.
 	 * @return The D3D12 descriptor range type.
 	 */
-	[[nodiscard]] constexpr D3D12_DESCRIPTOR_RANGE_TYPE GetDescriptorRangeType(Xenon::Backend::ResourceType resource) noexcept
+	XENON_NODISCARD constexpr D3D12_DESCRIPTOR_RANGE_TYPE GetDescriptorRangeType(Xenon::Backend::ResourceType resource) noexcept
 	{
 		switch (resource)
 		{

@@ -58,21 +58,21 @@ public:
 	 * @return True if the layer is in focus.
 	 * @return False if the layer is not in focus.
 	 */
-	[[nodiscard]] bool isInFocus() const noexcept { return m_bIsInFocus; }
+	XENON_NODISCARD bool isInFocus() const noexcept { return m_bIsInFocus; }
 
 	/**
 	 * Get the window position.
 	 *
 	 * @return The position.
 	 */
-	[[nodiscard]] glm::vec2 getPosition() const noexcept { return m_Position; }
+	XENON_NODISCARD glm::vec2 getPosition() const noexcept { return m_Position; }
 
 	/**
 	 * Get the window size.
 	 *
 	 * @return The size.
 	 */
-	[[nodiscard]] glm::vec2 getSize() const noexcept { return m_Size; }
+	XENON_NODISCARD glm::vec2 getSize() const noexcept { return m_Size; }
 
 	/**
 	 * Add an option to the layer view.

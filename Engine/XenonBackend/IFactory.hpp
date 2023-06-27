@@ -45,7 +45,7 @@ namespace Xenon
 			 * @param applicationVersion The application version.
 			 * @return The instance pointer.
 			 */
-			[[nodiscard]] virtual std::unique_ptr<Instance> createInstance(const std::string& applicationName, uint32_t applicationVersion) = 0;
+			XENON_NODISCARD virtual std::unique_ptr<Instance> createInstance(const std::string& applicationName, uint32_t applicationVersion) = 0;
 
 			/**
 			 * Create a new device.
@@ -54,7 +54,7 @@ namespace Xenon
 			 * @param requriedRenderTargets The render targets which are required to have.
 			 * @return The device pointer.
 			 */
-			[[nodiscard]] virtual std::unique_ptr<Device> createDevice(Instance* pInstance, RenderTargetType requiredRenderTargets) = 0;
+			XENON_NODISCARD virtual std::unique_ptr<Device> createDevice(Instance* pInstance, RenderTargetType requiredRenderTargets) = 0;
 
 			/**
 			 * Create a new command recorder.
@@ -64,7 +64,7 @@ namespace Xenon
 			 * @param bufferCount The backend primitive buffer count. Default is 1.
 			 * @return The command recorder pointer.
 			 */
-			[[nodiscard]] virtual std::unique_ptr<CommandRecorder> createCommandRecorder(Device* pDevice, CommandRecorderUsage usage, uint32_t bufferCount = 1) = 0;
+			XENON_NODISCARD virtual std::unique_ptr<CommandRecorder> createCommandRecorder(Device* pDevice, CommandRecorderUsage usage, uint32_t bufferCount = 1) = 0;
 
 			/**
 			 * Create a new index buffer.
@@ -74,7 +74,7 @@ namespace Xenon
 			 * @param type The buffer type.
 			 * @return The buffer pointer.
 			 */
-			[[nodiscard]] virtual std::unique_ptr<Buffer> createBuffer(Device* pDevice, uint64_t size, BufferType type) = 0;
+			XENON_NODISCARD virtual std::unique_ptr<Buffer> createBuffer(Device* pDevice, uint64_t size, BufferType type) = 0;
 
 			/**
 			 * Create a new image.
@@ -83,7 +83,7 @@ namespace Xenon
 			 * @param specification The image specification.
 			 * @return The image pointer.
 			 */
-			[[nodiscard]] virtual std::unique_ptr<Image> createImage(Device* pDevice, const ImageSpecification& specification) = 0;
+			XENON_NODISCARD virtual std::unique_ptr<Image> createImage(Device* pDevice, const ImageSpecification& specification) = 0;
 
 			/**
 			 * Create a new rasterizer.
@@ -96,7 +96,7 @@ namespace Xenon
 			 * @param multiSampleCount Multi-sampling count to use. Default is x1.
 			 * @return The rasterizer pointer.
 			 */
-			[[nodiscard]] virtual std::unique_ptr<Rasterizer> createRasterizer(Device* pDevice, uint32_t width, uint32_t height, AttachmentType attachmentTypes, bool enableTripleBuffering = false, MultiSamplingCount multiSampleCount = MultiSamplingCount::x1) = 0;
+			XENON_NODISCARD virtual std::unique_ptr<Rasterizer> createRasterizer(Device* pDevice, uint32_t width, uint32_t height, AttachmentType attachmentTypes, bool enableTripleBuffering = false, MultiSamplingCount multiSampleCount = MultiSamplingCount::x1) = 0;
 
 			/**
 			 * Create a new swapchain.
@@ -107,7 +107,7 @@ namespace Xenon
 			 * @param height The window's height.
 			 * @return The swapchain pointer.
 			 */
-			[[nodiscard]] virtual std::unique_ptr<Swapchain> createSwapchain(Device* pDevice, const std::string& title, uint32_t width, uint32_t height) = 0;
+			XENON_NODISCARD virtual std::unique_ptr<Swapchain> createSwapchain(Device* pDevice, const std::string& title, uint32_t width, uint32_t height) = 0;
 
 			/**
 			 * Create a new image view.
@@ -117,7 +117,7 @@ namespace Xenon
 			 * @param specification The view specification.
 			 * @return The image view pointer.
 			 */
-			[[nodiscard]] virtual std::unique_ptr<ImageView> createImageView(Device* pDevice, Image* pImage, const ImageViewSpecification& specification) = 0;
+			XENON_NODISCARD virtual std::unique_ptr<ImageView> createImageView(Device* pDevice, Image* pImage, const ImageViewSpecification& specification) = 0;
 
 			/**
 			 * Create a new image sampler.
@@ -126,7 +126,7 @@ namespace Xenon
 			 * @param specification The sampler specification.
 			 * @return The image sampler pointer.
 			 */
-			[[nodiscard]] virtual std::unique_ptr<ImageSampler> createImageSampler(Device* pDevice, const ImageSamplerSpecification& specification) = 0;
+			XENON_NODISCARD virtual std::unique_ptr<ImageSampler> createImageSampler(Device* pDevice, const ImageSamplerSpecification& specification) = 0;
 
 			/**
 			 * Create a new rasterizing pipeline.
@@ -137,7 +137,7 @@ namespace Xenon
 			 * @param specification The pipeline specification.
 			 * @return The pipeline pointer.
 			 */
-			[[nodiscard]] virtual std::unique_ptr<RasterizingPipeline> createRasterizingPipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, [[maybe_unused]] Rasterizer* pRasterizer, const RasterizingPipelineSpecification& specification) = 0;
+			XENON_NODISCARD virtual std::unique_ptr<RasterizingPipeline> createRasterizingPipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, [[maybe_unused]] Rasterizer* pRasterizer, const RasterizingPipelineSpecification& specification) = 0;
 
 			/**
 			 * Create a new compute pipeline.
@@ -147,7 +147,7 @@ namespace Xenon
 			 * @param computeShader The compute shader.
 			 * @return The pipeline pointer.
 			 */
-			[[nodiscard]] virtual std::unique_ptr<ComputePipeline> createComputePipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const Shader& computeShader) = 0;
+			XENON_NODISCARD virtual std::unique_ptr<ComputePipeline> createComputePipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const Shader& computeShader) = 0;
 
 			/**
 			 * Create a new command submitter.
@@ -155,7 +155,7 @@ namespace Xenon
 			 * @param pDevice The device pointer.
 			 * @return The command submitter pointer.
 			 */
-			[[nodiscard]] virtual std::unique_ptr<CommandSubmitter> createCommandSubmitter(Device* pDevice) = 0;
+			XENON_NODISCARD virtual std::unique_ptr<CommandSubmitter> createCommandSubmitter(Device* pDevice) = 0;
 
 			/**
 			 * Create a new occlusion query.
@@ -164,7 +164,7 @@ namespace Xenon
 			 * @param sampleCount The maximum sample count the query can hold.
 			 * @return The occlusion query pointer.
 			 */
-			[[nodiscard]] virtual std::unique_ptr<OcclusionQuery> createOcclusionQuery(Device* pDevice, uint64_t sampleCount) = 0;
+			XENON_NODISCARD virtual std::unique_ptr<OcclusionQuery> createOcclusionQuery(Device* pDevice, uint64_t sampleCount) = 0;
 
 			/**
 			 * Create a new top level acceleration structure.
@@ -173,7 +173,7 @@ namespace Xenon
 			 * @param pBottomLevelAccelerationStructures The bottom level acceleration structures.
 			 * @return The acceleration structure pointer.
 			 */
-			[[nodiscard]] virtual std::unique_ptr<TopLevelAccelerationStructure> createTopLevelAccelerationStructure(Device* pDevice, const std::vector<BottomLevelAccelerationStructure*>& pBottomLevelAccelerationStructures) = 0;
+			XENON_NODISCARD virtual std::unique_ptr<TopLevelAccelerationStructure> createTopLevelAccelerationStructure(Device* pDevice, const std::vector<BottomLevelAccelerationStructure*>& pBottomLevelAccelerationStructures) = 0;
 
 			/**
 			 * Create a new bottom level acceleration structure.
@@ -182,7 +182,7 @@ namespace Xenon
 			 * @param geometries The geometries to store.
 			 * @return The acceleration structure pointer.
 			 */
-			[[nodiscard]] virtual std::unique_ptr<BottomLevelAccelerationStructure> createBottomLevelAccelerationStructure(Device* pDevice, const std::vector<AccelerationStructureGeometry>& geometries) = 0;
+			XENON_NODISCARD virtual std::unique_ptr<BottomLevelAccelerationStructure> createBottomLevelAccelerationStructure(Device* pDevice, const std::vector<AccelerationStructureGeometry>& geometries) = 0;
 
 			/**
 			 * Create a new ray tracer.
@@ -192,7 +192,7 @@ namespace Xenon
 			 * @param height The height of the render target.
 			 * @return The ray tracer pointer.
 			 */
-			[[nodiscard]] virtual std::unique_ptr<RayTracer> createRayTracer(Device* pDevice, uint32_t width, uint32_t height) = 0;
+			XENON_NODISCARD virtual std::unique_ptr<RayTracer> createRayTracer(Device* pDevice, uint32_t width, uint32_t height) = 0;
 
 			/**
 			 * Create anew ray tracing pipeline.
@@ -202,7 +202,7 @@ namespace Xenon
 			 * @param specification The pipeline specification.
 			 * @return The pipeline pointer.
 			 */
-			[[nodiscard]] virtual std::unique_ptr<RayTracingPipeline> createRayTracingPipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const RayTracingPipelineSpecification& specification) = 0;
+			XENON_NODISCARD virtual std::unique_ptr<RayTracingPipeline> createRayTracingPipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, const RayTracingPipelineSpecification& specification) = 0;
 		};
 	}
 }

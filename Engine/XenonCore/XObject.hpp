@@ -30,6 +30,6 @@ namespace Xenon
 		 *
 		 * @return The job system reference.
 		 */
-		[[nodiscard]] static JobSystem& GetJobSystem();
+		XENON_NODISCARD static JobSystem& GetJobSystem();
 	};
 }

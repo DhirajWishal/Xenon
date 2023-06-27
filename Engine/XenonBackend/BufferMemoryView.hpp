@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "../XenonCore/Common.hpp"
+
 #include <cstddef>
 #include <iterator>
 
@@ -54,14 +56,14 @@ namespace Xenon
 			 *
 			 * @return The buffer pointer.
 			 */
-			[[nodiscard]] Buffer* getBuffer() { return m_pSourceBuffer; }
+			XENON_NODISCARD Buffer* getBuffer() { return m_pSourceBuffer; }
 
 			/**
 			 * Get the source buffer pointer.
 			 *
 			 * @return The const buffer pointer.
 			 */
-			[[nodiscard]] const Buffer* getBuffer() const { return m_pSourceBuffer; }
+			XENON_NODISCARD const Buffer* getBuffer() const { return m_pSourceBuffer; }
 
 			/**
 			 * Get a byte value at a given index.
@@ -69,7 +71,7 @@ namespace Xenon
 			 * @param index The index position to access.
 			 * @return The byte value of the position.
 			 */
-			[[nodiscard]] std::byte at(uint64_t index) const;
+			XENON_NODISCARD std::byte at(uint64_t index) const;
 
 		public:
 			/**
@@ -77,56 +79,56 @@ namespace Xenon
 			 *
 			 * @return The begin pointer.
 			 */
-			[[nodiscard]] const std::byte* begin() const { return m_pBegin; }
+			XENON_NODISCARD const std::byte* begin() const { return m_pBegin; }
 
 			/**
 			 * End function to get the end iterator.
 			 *
 			 * @return The end pointer.
 			 */
-			[[nodiscard]] const std::byte* end() const { return m_pEnd; }
+			XENON_NODISCARD const std::byte* end() const { return m_pEnd; }
 
 			/**
 			 * Const-begin function to get the const-begin iterator.
 			 *
 			 * @return The const begin pointer.
 			 */
-			[[nodiscard]] const std::byte* cbegin() const { return m_pBegin; }
+			XENON_NODISCARD const std::byte* cbegin() const { return m_pBegin; }
 
 			/**
 			 * Const-end function to get the const-end iterator.
 			 *
 			 * @return The const end pointer.
 			 */
-			[[nodiscard]] const std::byte* cend() const { return m_pEnd; }
+			XENON_NODISCARD const std::byte* cend() const { return m_pEnd; }
 
 			/**
 			 * Reverse begin function to get the reverse begin iterator.
 			 *
 			 * @return The reverse begin iterator.
 			 */
-			[[nodiscard]] const reverse_iterator rbegin() const { return reverse_iterator(m_pBegin); }
+			XENON_NODISCARD const reverse_iterator rbegin() const { return reverse_iterator(m_pBegin); }
 
 			/**
 			 * Reverse end function to get the reverse end iterator.
 			 *
 			 * @return The reverse end iterator.
 			 */
-			[[nodiscard]] const reverse_iterator rend() const { return reverse_iterator(m_pEnd); }
+			XENON_NODISCARD const reverse_iterator rend() const { return reverse_iterator(m_pEnd); }
 
 			/**
 			 * Reverse const-begin function to get the reverse const-begin iterator.
 			 *
 			 * @return The reverse const begin iterator.
 			 */
-			[[nodiscard]] const const_reverse_iterator crbegin() const { return const_reverse_iterator(m_pBegin); }
+			XENON_NODISCARD const const_reverse_iterator crbegin() const { return const_reverse_iterator(m_pBegin); }
 
 			/**
 			 * Reverse const-end function to get the reverse const-end iterator.
 			 *
 			 * @return The reverse const end iterator.
 			 */
-			[[nodiscard]] const const_reverse_iterator crend() const { return const_reverse_iterator(m_pEnd); }
+			XENON_NODISCARD const const_reverse_iterator crend() const { return const_reverse_iterator(m_pEnd); }
 
 		public:
 			/**
@@ -135,7 +137,7 @@ namespace Xenon
 			 * @param index The index position to access.
 			 * @return The byte value of the position.
 			 */
-			[[nodiscard]] std::byte operator[](uint64_t index) const;
+			XENON_NODISCARD std::byte operator[](uint64_t index) const;
 
 			/**
 			 * Move assignment operator.

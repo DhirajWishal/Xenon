@@ -92,28 +92,28 @@ namespace Xenon
 			 *
 			 * @return The command buffer.
 			 */
-			[[nodiscard]] VkCommandBuffer getCommandBuffer() const noexcept { return m_CommandBuffer; }
+			XENON_NODISCARD VkCommandBuffer getCommandBuffer() const noexcept { return m_CommandBuffer; }
 
 			/**
 			 * Get the command buffer address (pointer).
 			 *
 			 * @return The const command buffer pointer.
 			 */
-			[[nodiscard]] const VkCommandBuffer* getCommandBufferAddress() const noexcept { return &m_CommandBuffer; }
+			XENON_NODISCARD const VkCommandBuffer* getCommandBufferAddress() const noexcept { return &m_CommandBuffer; }
 
 			/**
 			 * Get the signal semaphore.
 			 *
 			 * @return The semaphore.
 			 */
-			[[nodiscard]] VkSemaphore getSignalSemaphore() const noexcept { return m_SignalSemaphore; }
+			XENON_NODISCARD VkSemaphore getSignalSemaphore() const noexcept { return m_SignalSemaphore; }
 
 			/**
 			 * Get the stage flags.
 			 *
 			 * @return The pipeline stage flags.
 			 */
-			[[nodiscard]] VkPipelineStageFlags getStageFlags() const noexcept { return m_StageFlags; }
+			XENON_NODISCARD VkPipelineStageFlags getStageFlags() const noexcept { return m_StageFlags; }
 
 		private:
 			VkCommandBuffer m_CommandBuffer = VK_NULL_HANDLE;

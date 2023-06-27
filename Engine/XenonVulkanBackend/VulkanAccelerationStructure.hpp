@@ -33,7 +33,7 @@ namespace Xenon
 			 *
 			 * @return The acceleration structure's device address.
 			 */
-			[[nodiscard]] VkDeviceAddress getDeviceAddress() const noexcept { return m_DeviceAddress; }
+			XENON_NODISCARD VkDeviceAddress getDeviceAddress() const noexcept { return m_DeviceAddress; }
 
 		protected:
 			/**

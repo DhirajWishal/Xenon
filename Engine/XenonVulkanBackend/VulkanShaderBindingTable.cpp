@@ -22,7 +22,7 @@ namespace /* anonymous */
 	 * @param entryAlignment The alignment of the whole entry.
 	 * @return The size.
 	 */
-	[[nodiscard]] uint64_t GetEntrySize(const Xenon::Backend::BindingGroup::DataVariant& entry, uint32_t handleSize, uint64_t entryAlignment) noexcept
+	XENON_NODISCARD uint64_t GetEntrySize(const Xenon::Backend::BindingGroup::DataVariant& entry, uint32_t handleSize, uint64_t entryAlignment) noexcept
 	{
 		uint64_t entrySize = handleSize;
 

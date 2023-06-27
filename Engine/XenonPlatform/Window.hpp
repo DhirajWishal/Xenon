@@ -62,35 +62,35 @@ namespace Xenon
 			 * @return True if the window is open.
 			 * @return False if the window is closed.
 			 */
-			[[nodiscard]] virtual bool isOpen() const = 0;
+			XENON_NODISCARD virtual bool isOpen() const = 0;
 
 			/**
 			 * Get the width of the window.
 			 *
 			 * @return The window's width.
 			 */
-			[[nodiscard]] uint32_t getWidth() const { return m_Width; }
+			XENON_NODISCARD uint32_t getWidth() const { return m_Width; }
 
 			/**
 			 * Get the height of the window.
 			 *
 			 * @return The window's height.
 			 */
-			[[nodiscard]] uint32_t getHeight() const { return m_Height; }
+			XENON_NODISCARD uint32_t getHeight() const { return m_Height; }
 
 			/**
 			 * Get the mouse inputs.
 			 *
 			 * @return The mouse input container.
 			 */
-			[[nodiscard]] const Mouse& getMouse() const { return m_Mouse; }
+			XENON_NODISCARD const Mouse& getMouse() const { return m_Mouse; }
 
 			/**
 			 * Get the keyboard inputs.
 			 *
 			 * @return The keyboard input container.
 			 */
-			[[nodiscard]] const Keyboard& getKeyboard() const { return m_Keyboard; }
+			XENON_NODISCARD const Keyboard& getKeyboard() const { return m_Keyboard; }
 
 		protected:
 			std::string m_Title;

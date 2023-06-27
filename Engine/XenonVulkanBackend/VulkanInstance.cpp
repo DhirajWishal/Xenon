@@ -145,7 +145,7 @@ namespace /* anonymous */
 	 * @param pUserData The user data to pass into the structure.
 	 * @return The created structure.
 	 */
-	[[nodiscard]] constexpr VkDebugUtilsMessengerCreateInfoEXT CreateDebugMessengerCreateInfo(void* pUserData)
+	XENON_NODISCARD constexpr VkDebugUtilsMessengerCreateInfoEXT CreateDebugMessengerCreateInfo(void* pUserData)
 	{
 		VkDebugUtilsMessengerCreateInfoEXT createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;

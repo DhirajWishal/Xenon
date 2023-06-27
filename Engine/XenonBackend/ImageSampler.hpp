@@ -119,7 +119,7 @@ namespace Xenon
 			 *
 			 * @return The image sampler specification.
 			 */
-			[[nodiscard]] const ImageSamplerSpecification& getSpecification() const { return m_Specification; }
+			XENON_NODISCARD const ImageSamplerSpecification& getSpecification() const { return m_Specification; }
 
 		private:
 			ImageSamplerSpecification m_Specification = {};

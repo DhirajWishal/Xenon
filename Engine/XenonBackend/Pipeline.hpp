@@ -33,7 +33,7 @@ namespace Xenon
 			 * @param hash The internal hash used to identify unique pipelines.
 			 * @return The pipeline cache.
 			 */
-			[[nodiscard]] virtual std::vector<std::byte> load(uint64_t hash) = 0;
+			XENON_NODISCARD virtual std::vector<std::byte> load(uint64_t hash) = 0;
 
 			/**
 			 * Store the cache data generated from the backend.
@@ -65,7 +65,7 @@ namespace Xenon
 			 * @param type The descriptor type to create.
 			 * @return The descriptor pointer. It will return nullptr if the descriptor type is not present in the pipeline.
 			 */
-			[[nodiscard]] virtual std::unique_ptr<Descriptor> createDescriptor(DescriptorType type) = 0;
+			XENON_NODISCARD virtual std::unique_ptr<Descriptor> createDescriptor(DescriptorType type) = 0;
 
 		protected:
 			std::unique_ptr<PipelineCacheHandler> m_pCacheHandler = nullptr;

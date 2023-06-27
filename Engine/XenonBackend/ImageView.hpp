@@ -61,7 +61,7 @@ namespace Xenon
 			 *
 			 * @return The image view specification.
 			 */
-			[[nodiscard]] const ImageViewSpecification& getSpecification() const { return m_Specification; }
+			XENON_NODISCARD const ImageViewSpecification& getSpecification() const { return m_Specification; }
 
 		private:
 			ImageViewSpecification m_Specification = {};

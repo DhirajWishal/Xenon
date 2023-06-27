@@ -43,49 +43,49 @@ namespace Xenon
 			 *
 			 * @return The layer pointer.
 			 */
-			[[nodiscard]] GBufferLayer* getPositiveXLayer() noexcept { return m_pPositiveXLayer; }
+			XENON_NODISCARD GBufferLayer* getPositiveXLayer() noexcept { return m_pPositiveXLayer; }
 
 			/**
 			 * Get the negative X layer.
 			 *
 			 * @return The layer pointer.
 			 */
-			[[nodiscard]] GBufferLayer* getNegativeXLayer() noexcept { return m_pNegativeXLayer; }
+			XENON_NODISCARD GBufferLayer* getNegativeXLayer() noexcept { return m_pNegativeXLayer; }
 
 			/**
 			 * Get the positive Y layer.
 			 *
 			 * @return The layer pointer.
 			 */
-			[[nodiscard]] GBufferLayer* getPositiveYLayer() noexcept { return m_pPositiveYLayer; }
+			XENON_NODISCARD GBufferLayer* getPositiveYLayer() noexcept { return m_pPositiveYLayer; }
 
 			/**
 			 * Get the negative Y layer.
 			 *
 			 * @return The layer pointer.
 			 */
-			[[nodiscard]] GBufferLayer* getNegativeYLayer() noexcept { return m_pNegativeYLayer; }
+			XENON_NODISCARD GBufferLayer* getNegativeYLayer() noexcept { return m_pNegativeYLayer; }
 
 			/**
 			 * Get the positive Z layer.
 			 *
 			 * @return The layer pointer.
 			 */
-			[[nodiscard]] GBufferLayer* getPositiveZLayer() noexcept { return m_pPositiveZLayer; }
+			XENON_NODISCARD GBufferLayer* getPositiveZLayer() noexcept { return m_pPositiveZLayer; }
 
 			/**
 			 * Get the negative Z layer.
 			 *
 			 * @return The layer pointer.
 			 */
-			[[nodiscard]] GBufferLayer* getNegativeZLayer() noexcept { return m_pNegativeZLayer; }
+			XENON_NODISCARD GBufferLayer* getNegativeZLayer() noexcept { return m_pNegativeZLayer; }
 
 			/**
 			 * Get the direct lighting layer.
 			 *
 			 * @return The layer pointer.
 			 */
-			[[nodiscard]] DirectLightingLayer* getDirectLightingLayer() noexcept { return m_pDirectLightingLayer; }
+			XENON_NODISCARD DirectLightingLayer* getDirectLightingLayer() noexcept { return m_pDirectLightingLayer; }
 
 		private:
 			GBufferLayer* m_pPositiveXLayer = nullptr;

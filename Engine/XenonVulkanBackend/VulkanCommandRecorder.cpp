@@ -150,7 +150,7 @@ namespace /* anonymous */
 	 * @param flags Access flags.
 	 * @return The stage flags.
 	 */
-	[[nodiscard]] constexpr VkPipelineStageFlags GetPipelineStageFlags(VkAccessFlags flags) noexcept
+	XENON_NODISCARD constexpr VkPipelineStageFlags GetPipelineStageFlags(VkAccessFlags flags) noexcept
 	{
 		switch (flags)
 		{

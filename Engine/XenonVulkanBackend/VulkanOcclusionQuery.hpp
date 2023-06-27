@@ -36,14 +36,14 @@ namespace Xenon
 			 *
 			 * @return The samples.
 			 */
-			[[nodiscard]] std::vector<uint64_t> getSamples() override;
+			XENON_NODISCARD std::vector<uint64_t> getSamples() override;
 
 			/**
 			 * Get the query pool.
 			 *
 			 * @return The query pool.
 			 */
-			[[nodiscard]] VkQueryPool getQueryPool() const noexcept { return m_QueryPool; }
+			XENON_NODISCARD VkQueryPool getQueryPool() const noexcept { return m_QueryPool; }
 
 		private:
 			VkQueryPool m_QueryPool = VK_NULL_HANDLE;

@@ -49,7 +49,7 @@ namespace /* anonymous */
 	 * @param type The type of the backend.
 	 * @return The renderer title.
 	 */
-	[[nodiscard]] constexpr const char* GetRendererTitle(Xenon::BackendType type)
+	XENON_NODISCARD constexpr const char* GetRendererTitle(Xenon::BackendType type)
 	{
 		switch (type)
 		{
@@ -76,7 +76,7 @@ namespace /* anonymous */
 	 * @return False if the future is not ready to be read from.
 	 */
 	template<typename R>
-	[[nodiscard]] bool is_ready(std::future<R> const& f)
+	XENON_NODISCARD bool is_ready(std::future<R> const& f)
 	{
 		return f.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
 	}
@@ -99,7 +99,7 @@ namespace /* anonymous */
 	 *
 	 * @return The pipeline specification.
 	 */
-	[[nodiscard]] Xenon::Backend::RayTracingPipelineSpecification getRayTracingPipelineSpecification()
+	XENON_NODISCARD Xenon::Backend::RayTracingPipelineSpecification getRayTracingPipelineSpecification()
 	{
 		Xenon::Backend::RayTracingPipelineSpecification specification = {};
 		specification.m_ShaderGroups.emplace_back().m_RayGenShader = Xenon::Generated::CreateShaderRayGen_rgen();

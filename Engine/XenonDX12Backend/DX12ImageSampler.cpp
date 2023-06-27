@@ -13,7 +13,7 @@ namespace /* anonymous */
 	 * @param magnification The magnification filter.
 	 * @return The DX12 filter.
 	 */
-	[[nodiscard]] constexpr D3D12_FILTER GetFilter(Xenon::Backend::ImageFilter minification, Xenon::Backend::ImageFilter magnification) noexcept
+	XENON_NODISCARD constexpr D3D12_FILTER GetFilter(Xenon::Backend::ImageFilter minification, Xenon::Backend::ImageFilter magnification) noexcept
 	{
 		D3D12_FILTER filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
 
@@ -41,7 +41,7 @@ namespace /* anonymous */
 	 * @param addressMode The Xenon address mode.
 	 * @return The DX12 address mode.
 	 */
-	[[nodiscard]] constexpr D3D12_TEXTURE_ADDRESS_MODE GetAddressMode(Xenon::Backend::AddressMode addressMode) noexcept
+	XENON_NODISCARD constexpr D3D12_TEXTURE_ADDRESS_MODE GetAddressMode(Xenon::Backend::AddressMode addressMode) noexcept
 	{
 		switch (addressMode)
 		{
@@ -72,7 +72,7 @@ namespace /* anonymous */
 	 * @param op The compare operator.
 	 * @return The DX12 comparison function.
 	 */
-	[[nodiscard]] constexpr D3D12_COMPARISON_FUNC GetComparisonFunction(Xenon::Backend::CompareOperator op) noexcept
+	XENON_NODISCARD constexpr D3D12_COMPARISON_FUNC GetComparisonFunction(Xenon::Backend::CompareOperator op) noexcept
 	{
 		switch (op)
 		{

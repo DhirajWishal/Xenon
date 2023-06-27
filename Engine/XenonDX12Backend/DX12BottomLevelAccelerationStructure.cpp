@@ -15,7 +15,7 @@ namespace /* anonymous */
 	 * @param dataType The component data type.
 	 * @return The DXGI format.
 	 */
-	[[nodiscard]] constexpr DXGI_FORMAT GetElementFormat(uint8_t componentCount, Xenon::Backend::ComponentDataType dataType) noexcept
+	XENON_NODISCARD constexpr DXGI_FORMAT GetElementFormat(uint8_t componentCount, Xenon::Backend::ComponentDataType dataType) noexcept
 	{
 		if (componentCount == 1)
 		{

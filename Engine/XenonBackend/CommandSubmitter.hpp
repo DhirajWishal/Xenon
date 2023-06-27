@@ -46,7 +46,7 @@ namespace Xenon
 			 * @return True if all the commands have been executed.
 			 * @return False if the commands are still being executed.
 			 */
-			[[nodiscard]] bool isWaiting() const noexcept { return m_bIsWaiting; }
+			XENON_NODISCARD bool isWaiting() const noexcept { return m_bIsWaiting; }
 
 		protected:
 			bool m_bIsWaiting = false;

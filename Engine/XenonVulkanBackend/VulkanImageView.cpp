@@ -12,7 +12,7 @@ namespace /* anonymous */
 	 * @param swizzle The component swizzle.
 	 * @return The Vulkan component swizzle.
 	 */
-	[[nodiscard]] constexpr VkComponentSwizzle GetComponentSwizzle(Xenon::Backend::ComponentSwizzle swizzle) noexcept
+	XENON_NODISCARD constexpr VkComponentSwizzle GetComponentSwizzle(Xenon::Backend::ComponentSwizzle swizzle) noexcept
 	{
 		switch (swizzle)
 		{

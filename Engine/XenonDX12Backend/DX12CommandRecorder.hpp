@@ -324,14 +324,14 @@ namespace Xenon
 			 *
 			 * @return The command list pointer.
 			 */
-			[[nodiscard]] ID3D12GraphicsCommandList* getCurrentCommandList() noexcept { return m_pCurrentCommandList; }
+			XENON_NODISCARD ID3D12GraphicsCommandList* getCurrentCommandList() noexcept { return m_pCurrentCommandList; }
 
 			/**
 			 * Get the current command list.
 			 *
 			 * @return The command list pointer.
 			 */
-			[[nodiscard]] const ID3D12GraphicsCommandList* getCurrentCommandList() const noexcept { return m_pCurrentCommandList; }
+			XENON_NODISCARD const ID3D12GraphicsCommandList* getCurrentCommandList() const noexcept { return m_pCurrentCommandList; }
 
 		private:
 			std::mutex m_Mutex;

@@ -80,42 +80,42 @@ namespace Xenon
 			 *
 			 * @return The image specification.
 			 */
-			[[nodiscard]] const ImageSpecification& getSpecification() const noexcept { return m_Specification; }
+			XENON_NODISCARD const ImageSpecification& getSpecification() const noexcept { return m_Specification; }
 
 			/**
 			 * Get the width of the image.
 			 *
 			 * @return The image's width.
 			 */
-			[[nodiscard]] uint32_t getWidth() const noexcept { return m_Specification.m_Width; }
+			XENON_NODISCARD uint32_t getWidth() const noexcept { return m_Specification.m_Width; }
 
 			/**
 			 * Get the height of the image.
 			 *
 			 * @return The image's height.
 			 */
-			[[nodiscard]] uint32_t getHeight() const noexcept { return m_Specification.m_Height; }
+			XENON_NODISCARD uint32_t getHeight() const noexcept { return m_Specification.m_Height; }
 
 			/**
 			 * Get the depth of the image.
 			 *
 			 * @return The image's depth.
 			 */
-			[[nodiscard]] uint32_t getDepth() const noexcept { return m_Specification.m_Depth; }
+			XENON_NODISCARD uint32_t getDepth() const noexcept { return m_Specification.m_Depth; }
 
 			/**
 			 * Get the image's data format.
 			 *
 			 * @return The format.
 			 */
-			[[nodiscard]] DataFormat getDataFormat() const noexcept { return m_Specification.m_Format; }
+			XENON_NODISCARD DataFormat getDataFormat() const noexcept { return m_Specification.m_Format; }
 
 			/**
 			 * Get the image usage.
 			 *
 			 * @return The image usage.
 			 */
-			[[nodiscard]] ImageUsage getUsage() const noexcept { return m_Specification.m_Usage; }
+			XENON_NODISCARD ImageUsage getUsage() const noexcept { return m_Specification.m_Usage; }
 
 		public:
 			/**

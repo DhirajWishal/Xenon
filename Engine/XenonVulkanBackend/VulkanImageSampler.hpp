@@ -35,7 +35,7 @@ namespace Xenon
 			 *
 			 * @return The image sampler.
 			 */
-			[[nodiscard]] VkSampler getSampler() const { return m_Sampler; }
+			XENON_NODISCARD VkSampler getSampler() const { return m_Sampler; }
 
 		private:
 			VkSampler m_Sampler = VK_NULL_HANDLE;

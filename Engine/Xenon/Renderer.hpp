@@ -37,7 +37,7 @@ namespace Xenon
 		 * @return True if the render window is not closed.
 		 * @return False if the render widow is closed.
 		 */
-		[[nodiscard]] bool update();
+		XENON_NODISCARD bool update();
 
 		/**
 		 * Create a new layer and attach it to the renderer.
@@ -77,49 +77,49 @@ namespace Xenon
 		 *
 		 * @return The instance reference.
 		 */
-		[[nodiscard]] Instance& getInstance() { return m_Instance; }
+		XENON_NODISCARD Instance& getInstance() { return m_Instance; }
 
 		/**
 		 * Get the instance to which the renderer is bound to.
 		 *
 		 * @return The instance reference.
 		 */
-		[[nodiscard]] const Instance& getInstance() const { return m_Instance; }
+		XENON_NODISCARD const Instance& getInstance() const { return m_Instance; }
 
 		/**
 		 * Get the window pointer.
 		 *
 		 * @return The window pointer.
 		 */
-		[[nodiscard]] const Platform::Window* getWindow() const { return m_pSwapChain->getWindow(); }
+		XENON_NODISCARD const Platform::Window* getWindow() const { return m_pSwapChain->getWindow(); }
 
 		/**
 		 * Get the mouse from the associated window.
 		 *
 		 * @return The mouse inputs.
 		 */
-		[[nodiscard]] const Mouse& getMouse() const { return m_pSwapChain->getWindow()->getMouse(); }
+		XENON_NODISCARD const Mouse& getMouse() const { return m_pSwapChain->getWindow()->getMouse(); }
 
 		/**
 		 * Get the keyboard from the associated window.
 		 *
 		 * @return The keyboard inputs.
 		 */
-		[[nodiscard]] const Keyboard& getKeyboard() const { return m_pSwapChain->getWindow()->getKeyboard(); }
+		XENON_NODISCARD const Keyboard& getKeyboard() const { return m_pSwapChain->getWindow()->getKeyboard(); }
 
 		/**
 		 * Get the command recorder pointer.
 		 *
 		 * @return The pointer.
 		 */
-		[[nodiscard]] Backend::CommandRecorder* getCommandRecorder() { return m_pCommandRecorder.get(); }
+		XENON_NODISCARD Backend::CommandRecorder* getCommandRecorder() { return m_pCommandRecorder.get(); }
 
 		/**
 		 * Get the command recorder pointer.
 		 *
 		 * @return The pointer.
 		 */
-		[[nodiscard]] const Backend::CommandRecorder* getCommandRecorder() const { return m_pCommandRecorder.get(); }
+		XENON_NODISCARD const Backend::CommandRecorder* getCommandRecorder() const { return m_pCommandRecorder.get(); }
 
 	private:
 		/**

@@ -42,7 +42,7 @@ namespace Xenon
 			 * @return The casted type pointer.
 			 */
 			template<class Type>
-			[[nodiscard]] Type* as()
+			XENON_NODISCARD Type* as()
 			{
 				static_assert(std::is_base_of_v<BackendObject, Type>, "Invalid type cast! Make sure that the type to cast to is inherited from this class.");
 				return static_cast<Type*>(this);
@@ -56,7 +56,7 @@ namespace Xenon
 			 * @return The casted const type pointer.
 			 */
 			template<class Type>
-			[[nodiscard]] const Type* as() const
+			XENON_NODISCARD const Type* as() const
 			{
 				static_assert(std::is_base_of_v<BackendObject, Type>, "Invalid type cast! Make sure that the type to cast to is inherited from this class.");
 				return static_cast<const Type*>(this);
@@ -69,7 +69,7 @@ namespace Xenon
 			 * @return True if the object is valid.
 			 * @return False if the object is invalid.
 			 */
-			[[nodiscard]] bool isValid() const { return m_IsValid; }
+			XENON_NODISCARD bool isValid() const { return m_IsValid; }
 
 		public:
 			/**

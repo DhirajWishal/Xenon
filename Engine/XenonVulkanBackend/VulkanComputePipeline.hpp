@@ -37,21 +37,21 @@ namespace Xenon
 			 * @param type The descriptor type to create.
 			 * @return The descriptor pointer. It will return nullptr if the descriptor type is not present in the pipeline.
 			 */
-			[[nodiscard]] std::unique_ptr<Descriptor> createDescriptor(DescriptorType type) override;
+			XENON_NODISCARD std::unique_ptr<Descriptor> createDescriptor(DescriptorType type) override;
 
 			/**
 			 * Get the pipeline.
 			 *
 			 * @return The pipeline handle.
 			 */
-			[[nodiscard]] VkPipeline getPipeline() const noexcept { return m_Pipeline; }
+			XENON_NODISCARD VkPipeline getPipeline() const noexcept { return m_Pipeline; }
 
 			/**
 			 * Get the pipeline layout.
 			 *
 			 * @return The pipeline layout.
 			 */
-			[[nodiscard]] VkPipelineLayout getPipelineLayout() const noexcept { return m_PipelineLayout; }
+			XENON_NODISCARD VkPipelineLayout getPipelineLayout() const noexcept { return m_PipelineLayout; }
 
 		private:
 			/**

@@ -36,35 +36,35 @@ namespace Xenon
 			 *
 			 * @return The samples.
 			 */
-			[[nodiscard]] std::vector<uint64_t> getSamples() override;
+			XENON_NODISCARD std::vector<uint64_t> getSamples() override;
 
 			/**
 			 * Get the occlusion query heap.
 			 *
 			 * @return The heap pointer.
 			 */
-			[[nodiscard]] ID3D12QueryHeap* getHeap() noexcept { return m_QueryHeap.Get(); }
+			XENON_NODISCARD ID3D12QueryHeap* getHeap() noexcept { return m_QueryHeap.Get(); }
 
 			/**
 			 * Get the occlusion query heap.
 			 *
 			 * @return The heap pointer.
 			 */
-			[[nodiscard]] const ID3D12QueryHeap* getHeap() const noexcept { return m_QueryHeap.Get(); }
+			XENON_NODISCARD const ID3D12QueryHeap* getHeap() const noexcept { return m_QueryHeap.Get(); }
 
 			/**
 			 * Get the resource buffer pointer.
 			 *
 			 * @return The resource pointer.
 			 */
-			[[nodiscard]] ID3D12Resource* getBuffer() noexcept { return m_pAllocation->GetResource(); }
+			XENON_NODISCARD ID3D12Resource* getBuffer() noexcept { return m_pAllocation->GetResource(); }
 
 			/**
 			 * Get the resource buffer pointer.
 			 *
 			 * @return The resource pointer.
 			 */
-			[[nodiscard]] const ID3D12Resource* getBuffer() const noexcept { return m_pAllocation->GetResource(); }
+			XENON_NODISCARD const ID3D12Resource* getBuffer() const noexcept { return m_pAllocation->GetResource(); }
 
 		private:
 			ComPtr<ID3D12QueryHeap> m_QueryHeap;

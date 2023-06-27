@@ -54,7 +54,7 @@ namespace Xenon
 			 *
 			 * @return The supported render target types.
 			 */
-			[[nodiscard]] RenderTargetType getSupportedRenderTargetTypes() const { return m_SupportedRenderTargetTypes; }
+			XENON_NODISCARD RenderTargetType getSupportedRenderTargetTypes() const { return m_SupportedRenderTargetTypes; }
 
 		protected:
 			RenderTargetType m_SupportedRenderTargetTypes = RenderTargetType::All;
