@@ -67,6 +67,8 @@ set(
 
 	"Renderers/DefaultRenderer.cpp"
 	"Renderers/DefaultRenderer.hpp"
+	"Renderers/UniformGridRenderer.cpp"
+	"Renderers/UniformGridRenderer.hpp"
 
 	"Passes/DiffusionPass.cpp"
 	"Passes/DiffusionPass.hpp"
