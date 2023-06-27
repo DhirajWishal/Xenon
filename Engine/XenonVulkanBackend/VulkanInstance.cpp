@@ -114,7 +114,7 @@ namespace /* anonymous */
 		// Else log to the file.
 		else
 		{
-			auto& logFile = std::bit_cast<Xenon::Backend::VulkanInstance*>(pUserData)->getLogFile();
+			auto& logFile = XENON_BIT_CAST(Xenon::Backend::VulkanInstance*, pUserData)->getLogFile();
 
 			// Log if the log file is open.
 			if (logFile.is_open())
@@ -186,7 +186,7 @@ namespace Xenon
 
 			// Create the debugger.
 			const auto debugMessengerCreateInfo = CreateDebugMessengerCreateInfo(this);
-			const auto vkCreateDebugUtilsMessengerEXT = std::bit_cast<PFN_vkCreateDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(m_Instance, "vkCreateDebugUtilsMessengerEXT"));
+			const auto vkCreateDebugUtilsMessengerEXT = XENON_BIT_CAST(PFN_vkCreateDebugUtilsMessengerEXT, vkGetInstanceProcAddr(m_Instance, "vkCreateDebugUtilsMessengerEXT"));
 			XENON_VK_ASSERT(vkCreateDebugUtilsMessengerEXT(m_Instance, &debugMessengerCreateInfo, nullptr, &m_DebugMessenger), "Failed to create the debug messenger.");
 
 #endif // XENON_DEBUG
@@ -196,7 +196,7 @@ namespace Xenon
 		{
 #ifdef XENON_DEBUG
 			// Destroy the debugger.
-			const auto vkDestroyDebugUtilsMessengerEXT = std::bit_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(m_Instance, "vkDestroyDebugUtilsMessengerEXT"));
+			const auto vkDestroyDebugUtilsMessengerEXT = XENON_BIT_CAST(PFN_vkDestroyDebugUtilsMessengerEXT, vkGetInstanceProcAddr(m_Instance, "vkDestroyDebugUtilsMessengerEXT"));
 			vkDestroyDebugUtilsMessengerEXT(m_Instance, m_DebugMessenger, nullptr);
 
 #endif // XENON_DEBUG

@@ -78,7 +78,7 @@ void LayerView::begin(std::chrono::nanoseconds delta)
 			m_bIsInFocus = ImGui::IsWindowFocused();
 
 			// Show the image.
-			ImGui::Image(std::bit_cast<void*>(m_ImageHash), size);
+			ImGui::Image(XENON_BIT_CAST(void*, m_ImageHash), size);
 		}
 
 		// Finally show the ImGuizmo stuff.

@@ -278,7 +278,7 @@ void ImGuiLayer::onUpdate(Layer* pPreviousLayer, uint32_t imageIndex, uint32_t f
 				static_cast<uint32_t>(maxClip.y)
 			);
 
-			m_pCommandRecorder->bind(m_pPipeline.get(), m_pUserDescriptor.get(), m_pMaterialDescriptors[std::bit_cast<uintptr_t>(pCommandBuffer->TextureId)].get(), nullptr, nullptr);
+			m_pCommandRecorder->bind(m_pPipeline.get(), m_pUserDescriptor.get(), m_pMaterialDescriptors[XENON_BIT_CAST(uintptr_t, pCommandBuffer->TextureId)].get(), nullptr, nullptr);
 			m_pCommandRecorder->drawIndexed(pCommandBuffer->VtxOffset + vertexOffset, pCommandBuffer->IdxOffset + indexOffset, pCommandBuffer->ElemCount);
 		}
 
@@ -301,7 +301,7 @@ void ImGuiLayer::setDrawCallCount(uint64_t totalCount, uint64_t actualCount)
 
 uintptr_t ImGuiLayer::getImageID(Xenon::Backend::Image* pImage, Xenon::Backend::ImageView* pImageView, Xenon::Backend::ImageSampler* pImageSampler)
 {
-	const std::array<uintptr_t, 3> pointers = { std::bit_cast<uintptr_t>(pImage), std::bit_cast<uintptr_t>(pImageView), std::bit_cast<uintptr_t>(pImageSampler) };
+	const std::array<uintptr_t, 3> pointers = { XENON_BIT_CAST(uintptr_t, pImage), XENON_BIT_CAST(uintptr_t, pImageView), XENON_BIT_CAST(uintptr_t, pImageSampler) };
 	const auto ID = Xenon::GenerateHash(Xenon::ToBytes(pointers.data()), pointers.size() * sizeof(uintptr_t));
 	if (!m_pMaterialDescriptors.contains(ID))
 	{

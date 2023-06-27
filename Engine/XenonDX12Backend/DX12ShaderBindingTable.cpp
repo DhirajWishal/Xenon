@@ -317,7 +317,7 @@ namespace Xenon
 		std::byte* DX12ShaderBindingTable::map()
 		{
 			std::byte* pMemory = nullptr;
-			m_pAllocation->GetResource()->Map(0, nullptr, std::bit_cast<void**>(&pMemory));
+			m_pAllocation->GetResource()->Map(0, nullptr, XENON_BIT_CAST(void**, &pMemory));
 
 			return pMemory;
 		}

@@ -638,7 +638,7 @@ namespace Xenon
 
 			// Sort the ranges to the correct binding order.
 			auto sortedranges = std::vector<std::pair<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>>(rangeMap.begin(), rangeMap.end());
-			std::ranges::sort(sortedranges, [](const auto& lhs, const auto& rhs) { return lhs.first < rhs.first; });
+			XENON_RANGES(sort, sortedranges, [](const auto& lhs, const auto& rhs) { return lhs.first < rhs.first; });
 
 			// Setup the descriptor heap manager.
 			setupDescriptorHeapManager(std::move(bindingMap));
@@ -701,7 +701,7 @@ namespace Xenon
 				}
 
 				// Sort the inputs.
-				std::ranges::sort(pipeline.m_Inputs, [](const auto& lhs, const auto& rhs) { return lhs.AlignedByteOffset < rhs.AlignedByteOffset; });
+				XENON_RANGES(sort, pipeline.m_Inputs, [](const auto& lhs, const auto& rhs) { return lhs.AlignedByteOffset < rhs.AlignedByteOffset; });
 
 				// Create the pipeline.
 				D3D12_GRAPHICS_PIPELINE_STATE_DESC pipelineState = m_PipelineStateDescriptor;

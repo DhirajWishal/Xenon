@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "../XenonCore/Common.hpp"
+
 #include <nlohmann/json.hpp>
 
 #include <fstream>
@@ -61,7 +63,7 @@ namespace Xenon
 			if (outputFile.is_open())
 			{
 				const auto cborData = JsonDocument::to_cbor(m_Document);
-				outputFile.write(std::bit_cast<const char*>(cborData.data()), cborData.size());
+				outputFile.write(XENON_BIT_CAST(const char*, cborData.data()), cborData.size());
 			}
 		}
 

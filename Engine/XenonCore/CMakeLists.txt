@@ -28,6 +28,7 @@ set(
 	"CountingFence.cpp"
 	"CountingFence.hpp"
 	"GlobalConfiguration.hpp"
+	"Features.hpp"
 )
 
 # Add the source group.

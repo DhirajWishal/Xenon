@@ -905,7 +905,7 @@ namespace Xenon
 				}
 
 				// Sort the inputs.
-				std::ranges::sort(pipeline.m_InputAttributeDescriptions, [](const auto& lhs, const auto& rhs) { return lhs.offset < rhs.offset; });
+				XENON_RANGES(sort, pipeline.m_InputAttributeDescriptions, [](const auto& lhs, const auto& rhs) { return lhs.offset < rhs.offset; });
 
 				// Setup the input bindings if we have vertex data (stride is not 0).
 				if (hasVertexData)

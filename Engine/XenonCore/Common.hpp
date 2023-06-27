@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "Features.hpp"
+
 #include <typeindex>
 #include <string_view>
 
@@ -16,6 +18,24 @@
 #define XENON_DISABLE_MOVE(object)															\
 	object(object&&) = delete;																\
 	object& operator=(object&&) = delete 
+
+#ifdef XENON_FEATURE_RANGES
+#	define XENON_NAMESPACE_RANGES	std::ranges
+#	define XENON_RANGES(function, container, ...)		XENON_NAMESPACE_RANGES::function(container, __VA_ARGS__)
+
+#else
+#	define XENON_NAMESPACE_RANGES	std
+#	define XENON_RANGES(function, container, ...)		XENON_NAMESPACE_RANGES::function(container.begin(), container.end(), __VA_ARGS__)
+
+#endif
+
+#ifdef XENON_FEATURE_BIT_CAST
+#	define XENON_BIT_CAST(to, from)					std::bit_cast<to>(from)
+
+#else
+#	define XENON_BIT_CAST(to, from)					reinterpret_cast<to>(from)
+
+#endif
 
 namespace Xenon
 {
@@ -66,7 +86,7 @@ namespace Xenon
 	 * @return The std::byte pointer.
 	 */
 	template<class Type>
-	[[nodiscard]] constexpr std::byte* ToBytes(Type* pointer) noexcept { return std::bit_cast<std::byte*>(pointer); }
+	[[nodiscard]] constexpr std::byte* ToBytes(Type* pointer) noexcept { return XENON_BIT_CAST(std::byte*, pointer); }
 
 	/**
 	 * Cast a pointer to std::byte pointer.
@@ -76,7 +96,7 @@ namespace Xenon
 	 * @return The std::byte pointer.
 	 */
 	template<class Type>
-	[[nodiscard]] constexpr const std::byte* ToBytes(const Type* pointer) noexcept { return std::bit_cast<const std::byte*>(pointer); }
+	[[nodiscard]] constexpr const std::byte* ToBytes(const Type* pointer) noexcept { return XENON_BIT_CAST(const std::byte*, pointer); }
 
 	/**
 	 * Cast a std::byte pointer to a typed pointer.
@@ -86,7 +106,7 @@ namespace Xenon
 	 * @return The type pointer.
 	 */
 	template<class Type>
-	[[nodiscard]] constexpr Type* FromBytes(std::byte* pointer) noexcept { return std::bit_cast<Type*>(pointer); }
+	[[nodiscard]] constexpr Type* FromBytes(std::byte* pointer) noexcept { return XENON_BIT_CAST(Type*, pointer); }
 
 	/**
 	 * Cast a std::byte pointer to a typed pointer.
@@ -96,7 +116,7 @@ namespace Xenon
 	 * @return The type pointer.
 	 */
 	template<class Type>
-	[[nodiscard]] constexpr const Type* FromBytes(const std::byte* pointer) noexcept { return std::bit_cast<const Type*>(pointer); }
+	[[nodiscard]] constexpr const Type* FromBytes(const std::byte* pointer) noexcept { return XENON_BIT_CAST(const Type*, pointer); }
 
 	/**
 	 * Generate hash for a set of bytes.
@@ -118,7 +138,7 @@ namespace Xenon
 	 * @return The 64-bit hash value.
 	 */
 	template<class Type>
-	[[nodiscard]] inline uint64_t GenerateHashFor(const Type& data, uint64_t seed = 0) noexcept { return GenerateHash(std::bit_cast<const std::byte*>(&data), sizeof(Type), seed); }
+	[[nodiscard]] inline uint64_t GenerateHashFor(const Type& data, uint64_t seed = 0) noexcept { return GenerateHash(XENON_BIT_CAST(const std::byte*, &data), sizeof(Type), seed); }
 }
 
 #define XENON_DEFINE_ENUM_AND(name)															\

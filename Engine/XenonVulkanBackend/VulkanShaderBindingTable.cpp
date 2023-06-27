@@ -302,7 +302,7 @@ namespace Xenon
 			std::byte* pMemory = nullptr;
 			m_pDevice->getAllocator().access([this, &pMemory](VmaAllocator allocator)
 				{
-					XENON_VK_ASSERT(vmaMapMemory(allocator, m_Allocation, std::bit_cast<void**>(&pMemory)), "Failed to map the shader bindng table memory!");
+					XENON_VK_ASSERT(vmaMapMemory(allocator, m_Allocation, XENON_BIT_CAST(void**, &pMemory)), "Failed to map the shader bindng table memory!");
 				}
 			);
 

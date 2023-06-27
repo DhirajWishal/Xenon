@@ -556,8 +556,16 @@ namespace Xenon
 			{
 				XENON_LOG_INFORMATION("The {} extension is not supported and therefore will not be used.", extension.data());
 
-				auto ret = std::ranges::remove(m_DeviceExtensions, extension);
+#ifdef XENON_FEATURE_RANGES
+				auto ret = XENON_RANGES(remove, m_DeviceExtensions, extension);
 				m_DeviceExtensions.erase(ret.begin());
+
+#else
+				auto ret = XENON_RANGES(remove, m_DeviceExtensions, extension);
+				m_DeviceExtensions.erase(ret);
+
+#endif
+
 			}
 
 			// Setup the queue families.

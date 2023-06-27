@@ -22,7 +22,8 @@ namespace Xenon
 			: Swapchain(pDevice, title, width, height)
 			, DX12DeviceBoundObject(pDevice)
 		{
-			m_FrameCount = 3;	XENON_TODO(0, 0, 0, "(Dhiraj) Find a better system.");
+			m_FrameCount = 3;	
+			XENON_TODO(0, 0, 0, "(Dhiraj) Find a better system.");
 			m_SwapChainFormat = getBestSwapchainFormat();
 
 			// Create the swapchain.
