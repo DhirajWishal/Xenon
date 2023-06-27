@@ -204,7 +204,7 @@ void Studio::run()
 			const auto grouping = m_Scene.createGroup();
 			[[maybe_unused]] const auto& geometry = m_Scene.create<Xenon::Geometry>(grouping, Xenon::Geometry::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"));
 			// [[maybe_unused]] const auto& geometry = m_Scene.create<Xenon::Geometry>(grouping, Xenon::Geometry::FromFile(m_Instance, "E:\\Assets\\Sponza\\Main\\Main\\NewSponza_Main_Blender_glTF.gltf"));
-			[[maybe_unused]] const auto& material = m_Scene.create<Xenon::Material>(grouping, materialBuidler);
+			[[maybe_unused]] const auto& material = m_Scene.createMaterial(grouping, materialBuidler);
 			[[maybe_unused]] const auto& transform = m_Scene.create<Xenon::Components::Transform>(grouping, glm::vec3(0), glm::vec3(0), glm::vec3(0.05f));
 			XENON_STUDIO_LOG_INFORMATION("Sponza model loaded!");
 		};
@@ -329,7 +329,7 @@ Xenon::Group Studio::createLightSource()
 	materialBuidler.setRasterizingPipelineSpecification(specification);
 
 	// Create the material.
-	[[maybe_unused]] const auto& material = m_Scene.create<Xenon::Material>(lighting, materialBuidler);
+	[[maybe_unused]] const auto& material = m_Scene.createMaterial(lighting, materialBuidler);
 
 #endif // XENON_DEBUG
 

@@ -100,18 +100,12 @@ namespace Xenon
 
 		/**
 		 * Create a new material object.
-		 * This is a specialization function since materials are handles a little differently.
 		 *
 		 * @param group The object's grouping.
 		 * @param builder The material builder class.
 		 * @return The created material reference.
 		 */
-		template<>
-		XENON_NODISCARD Material& create<Material>(Group group, MaterialBuilder& builder)
-		{
-			const auto lock = std::scoped_lock(m_Mutex);
-			return m_Registry.emplace<Material>(group, m_Instance.getMaterialDatabase().storeSpecification(static_cast<const MaterialSpecification&>(builder)));
-		}
+		XENON_NODISCARD Material& createMaterial(Group group, MaterialBuilder& builder);
 
 		/**
 		 * Get a stored object from the registry.
