@@ -7,6 +7,10 @@ cmake_minimum_required(VERSION 3.22.2)
 
 if (MSVC)
 	set(TOOLS_DIR ${CMAKE_SOURCE_DIR}/Tools/Windows)
+
+elseif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+	set(TOOLS_DIR ${CMAKE_SOURCE_DIR}/Tools/Linux)
+
 endif()
 
 # Utility function to compile HLSL shaders to SPIR-V and DirectX binary which are found in subdirectories.

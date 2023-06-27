@@ -5,7 +5,7 @@
 
 #include "../XenonBackend/Instance.hpp"
 
-#if defined(XENON_PLATFORM_WINDOWS)
+#ifdef XENON_PLATFORM_WINDOWS
 #define VK_USE_PLATFORM_WIN32_KHR
 
 #endif // defined(XENON_PLATFORM_WINDOWS)

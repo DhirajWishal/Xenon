@@ -5,7 +5,7 @@
 project(
 	XenonPlatformWindows
 	VERSION 1.0.0
-	DESCRIPTION "The platform windows library."
+	DESCRIPTION "The platform Windows library."
 )
 
 # Set the sources.
