@@ -139,7 +139,7 @@ function(CompileShaders)
 
 		if(MSVC)
 			# Specify DXIL the output file.
-			set(DXIL_OUTPUT_FILE ${OUTPUT_FILE}.dxil.hpp)
+			set(DXIL_OUTPUT_FILE ${CMAKE_CURRENT_SOURCE_DIR}/${OUTPUT_FILE}.dxil.hpp)
 
 			# Set the HLSL compile command.
 			set(DXIL_COMPILE_COMMAND ${TOOLS_DIR}/dxc ${HIDE_WARNINGS} -Fh ${DXIL_OUTPUT_FILE} -I ${CMAKE_SOURCE_DIR}/Engine/XenonShaderBank -HV 2021 -Vn g_${FILE_NAME_FORMATTED_UPPER}_DXIL -T ${TARGET_PROFILE} -E main -D ${SHADER_TYPE_MACRO} ${SOURCE_FILE})
@@ -152,13 +152,13 @@ function(CompileShaders)
 				APPEND 
 				XENON_COMPILE_TARGET_CONTENT 
 
-				"#include \"Generated/${OUTPUT_FILE_NAME}.dxil.hpp\"\n"
+				"#include \"${CMAKE_CURRENT_SOURCE_DIR}/${FILE_DIR}/Generated/${OUTPUT_FILE_NAME}.dxil.hpp\"\n"
 			)
 
 		endif()
 
 		# Specify SPIR-V the output file.
-		set(SPIRV_OUTPUT_FILE ${OUTPUT_FILE}.spirv.hpp)
+		set(SPIRV_OUTPUT_FILE ${CMAKE_CURRENT_SOURCE_DIR}/${OUTPUT_FILE}.spirv.hpp)
 
 		# Set the SPIR-V compile command.
 		# set(SPIRV_COMPILE_COMMAND ${TOOLS_DIR}/glslangValidator -V ${SOURCE_FILE} -o ${SPIRV_OUTPUT_FILE} --variable-name g_${FILE_NAME_FORMATTED_UPPER}_SPIRV --target-env vulkan1.3 -I${CMAKE_SOURCE_DIR}/Engine/ShaderBank --entry-point main)
@@ -172,7 +172,7 @@ function(CompileShaders)
 			APPEND 
 			XENON_COMPILE_TARGET_CONTENT 
 			
-			"#include \"Generated/${OUTPUT_FILE_NAME}.spirv.hpp\"\n"
+			"#include \"${CMAKE_CURRENT_SOURCE_DIR}/${FILE_DIR}/Generated/${OUTPUT_FILE_NAME}.spirv.hpp\"\n"
 			"\n"
 		)
 
