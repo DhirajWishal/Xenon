@@ -42,10 +42,13 @@ function(CompileShaders)
 		set(XENON_COMPILE_TARGET ${FILE_DIR}/${TARGET_NAME}.hpp)
 		message(STATUS "Shader compile output set to ${XENON_COMPILE_TARGET}")
 
+		# Clear the previous content of the variable.
+		unset(XENON_COMPILE_TARGET_CONTENT)
+
 		# Setup the file containing the target file's content.
-		file(
-			WRITE 
-			${XENON_COMPILE_TARGET} 
+		list(
+			APPEND 
+			XENON_COMPILE_TARGET_CONTENT 
 
 			"// Copyright 2022-2023 Dhiraj Wishal\n"
 			"// SPDX-License-Identifier: Apache-2.0\n"
@@ -145,9 +148,9 @@ function(CompileShaders)
 			set_source_files_properties(${DXIL_OUTPUT_FILE} PROPERTIES SYMBOLIC TRUE)
 
 			# Include the header file.
-			file(
+			list(
 				APPEND 
-				${XENON_COMPILE_TARGET} 
+				XENON_COMPILE_TARGET_CONTENT 
 
 				"#include \"Generated/${OUTPUT_FILE_NAME}.dxil.hpp\"\n"
 			)
@@ -165,9 +168,9 @@ function(CompileShaders)
 		set_source_files_properties(${SPIRV_OUTPUT_FILE} PROPERTIES SYMBOLIC TRUE)
 
 		# Include the header file.
-		file(
+		list(
 			APPEND 
-			${XENON_COMPILE_TARGET} 
+			XENON_COMPILE_TARGET_CONTENT 
 			
 			"#include \"Generated/${OUTPUT_FILE_NAME}.spirv.hpp\"\n"
 			"\n"
@@ -175,19 +178,19 @@ function(CompileShaders)
 
 		# Setup the platform specific crate functions.
 		if(MSVC)
-			file(
+			list(
 				APPEND 
-				${XENON_COMPILE_TARGET} 
+				XENON_COMPILE_TARGET_CONTENT 
 				
-				"namespace Xenon { namespace Generated { [[nodisacrd]] inline Xenon::Backend::Shader CreateShader${FUNCTION_NAME}() { return Xenon::Backend::Shader::Create(g_${FILE_NAME_FORMATTED_UPPER}_SPIRV, g_${FILE_NAME_FORMATTED_UPPER}_DXIL); } } }\n"
+				"namespace Xenon { namespace Generated { XENON_NODISCARD inline Xenon::Backend::Shader CreateShader${FUNCTION_NAME}() { return Xenon::Backend::Shader::Create(g_${FILE_NAME_FORMATTED_UPPER}_SPIRV, g_${FILE_NAME_FORMATTED_UPPER}_DXIL)\; } } }\n"
 			)
 
 		else()
-			file(
+			list(
 				APPEND 
-				${XENON_COMPILE_TARGET} 
+				XENON_COMPILE_TARGET_CONTENT 
 				
-				"namespace Xenon { namespace Generated { [[nodisacrd]] inline Xenon::Backend::Shader CreateShader${FUNCTION_NAME}() { return Xenon::Backend::Shader::Create(g_${FILE_NAME_FORMATTED_UPPER}_SPIRV); } } }\n"
+				"namespace Xenon { namespace Generated { XENON_NODISCARD inline Xenon::Backend::Shader CreateShader${FUNCTION_NAME}() { return Xenon::Backend::Shader::Create(g_${FILE_NAME_FORMATTED_UPPER}_SPIRV)\; } } }\n"
 			)
 
 		endif()
@@ -197,6 +200,7 @@ function(CompileShaders)
 
 		# Compile the shader while configuring CMake.
 		if(MSVC)
+			message(STATUS  "Compiling HLSL to DXIL and SPIR-V using DXC (Windows). Source: ${SOURCE_FILE}")
 			execute_process(
 				COMMAND ${DXIL_COMPILE_COMMAND}
 				COMMAND ${SPIRV_COMPILE_COMMAND}
@@ -206,6 +210,7 @@ function(CompileShaders)
 			)
 
 		elseif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+			message(STATUS "Compiling HLSL to SPIR-V using DXC (Linux). Source: ${SOURCE_FILE}")
 			execute_process(
 				COMMAND ${SPIRV_COMPILE_COMMAND}
 				WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
@@ -218,6 +223,10 @@ function(CompileShaders)
 		# Show the process status.
 		message(STATUS ${SHADER_COMPILER_STATUS})
 		set(SHADER_SOURCE_ABSOLUTE ${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE_FILE})
+
+		# Write the shader target content to the target file.
+		message(STATUS "Writing C++ code to file: ${XENON_COMPILE_TARGET}")
+		file(WRITE ${XENON_COMPILE_TARGET} ${XENON_COMPILE_TARGET_CONTENT})
 
 		# Add the custom command to compile the shader.
 		add_custom_command(

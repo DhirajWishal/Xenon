@@ -10,4 +10,4 @@
 #include "Generated/ImGuiLayer.vert.hlsl.dxil.hpp"
 #include "Generated/ImGuiLayer.vert.hlsl.spirv.hpp"
 
-namespace Xenon { namespace Generated { [[nodisacrd]] inline Xenon::Backend::Shader CreateShaderImGuiLayer_vert() { return Xenon::Backend::Shader::Create(g_IMGUILAYER_VERT_SPIRV, g_IMGUILAYER_VERT_DXIL); } } }
+namespace Xenon { namespace Generated { XENON_NODISCARD inline Xenon::Backend::Shader CreateShaderImGuiLayer_vert() { return Xenon::Backend::Shader::Create(g_IMGUILAYER_VERT_SPIRV, g_IMGUILAYER_VERT_DXIL); } } }
