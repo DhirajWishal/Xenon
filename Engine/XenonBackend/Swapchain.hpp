@@ -28,7 +28,7 @@ namespace Xenon
 			 * @param width The window's width.
 			 * @param height The window's height.
 			 */
-			explicit Swapchain([[maybe_unused]] const Device* pDevice, const std::string& title, uint32_t width, uint32_t height);
+			explicit Swapchain(XENON_MAYBE_UNUSED const Device* pDevice, const std::string& title, uint32_t width, uint32_t height);
 
 			/**
 			 * Prepare the swapchain to present.

@@ -54,7 +54,7 @@ namespace Xenon
 			 * @param pImage The image pointer.
 			 * @param specification The view specification.
 			 */
-			explicit ImageView([[maybe_unused]] const Device* pDevice, [[maybe_unused]] const Image* pImage, const ImageViewSpecification& specification) : m_Specification(specification) {}
+			explicit ImageView(XENON_MAYBE_UNUSED const Device* pDevice, XENON_MAYBE_UNUSED const Image* pImage, const ImageViewSpecification& specification) : m_Specification(specification) {}
 
 			/**
 			 * Get the image view specification.

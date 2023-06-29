@@ -21,7 +21,7 @@ namespace Xenon
 			 *
 			 * @param pDevice The device pointer.
 			 */
-			explicit AccelerationStructure([[maybe_unused]] const Device* pDevice) {}
+			explicit AccelerationStructure(XENON_MAYBE_UNUSED const Device* pDevice) {}
 		};
 	}
 }

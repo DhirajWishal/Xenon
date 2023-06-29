@@ -44,7 +44,7 @@ namespace Xenon
 			 * @param usage The command recorder usage.
 			 * @param bufferCount The backend primitive buffer count. Default is 1.
 			 */
-			explicit CommandRecorder([[maybe_unused]] const Device* pDevice, CommandRecorderUsage usage, uint32_t bufferCount = 1) : m_BufferCount(bufferCount), m_Usage(usage) {}
+			explicit CommandRecorder(XENON_MAYBE_UNUSED const Device* pDevice, CommandRecorderUsage usage, uint32_t bufferCount = 1) : m_BufferCount(bufferCount), m_Usage(usage) {}
 
 			/**
 			 * Set the command recorder state to recording.

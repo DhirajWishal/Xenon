@@ -35,7 +35,7 @@ namespace Xenon
 			 * @param pDevice The device pointer.
 			 * @param geometries The geometries to be stored in the acceleration structure.
 			 */
-			explicit BottomLevelAccelerationStructure(const Device* pDevice, [[maybe_unused]] const std::vector<AccelerationStructureGeometry>& geometries) : AccelerationStructure(pDevice) {}
+			explicit BottomLevelAccelerationStructure(const Device* pDevice, XENON_MAYBE_UNUSED const std::vector<AccelerationStructureGeometry>& geometries) : AccelerationStructure(pDevice) {}
 		};
 	}
 }

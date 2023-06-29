@@ -57,7 +57,7 @@ namespace Xenon
 			 * @param pDevice The device pointer.
 			 * @param pCacheHandler The cache handler pointer. This can be null in which case the pipeline creation might get slow.
 			 */
-			explicit Pipeline([[maybe_unused]] const Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler) : m_pCacheHandler(std::move(pCacheHandler)) {}
+			explicit Pipeline(XENON_MAYBE_UNUSED const Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler) : m_pCacheHandler(std::move(pCacheHandler)) {}
 
 			/**
 			 * Create a new descriptor.

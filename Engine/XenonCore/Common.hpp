@@ -39,6 +39,7 @@
 #endif
 
 #define XENON_NODISCARD									[[nodiscard]]
+#define XENON_MAYBE_UNUSED								[[maybe_unused]]
 
 namespace Xenon
 {

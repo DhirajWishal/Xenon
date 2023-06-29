@@ -137,7 +137,7 @@ namespace Xenon
 			 * @param specification The pipeline specification.
 			 * @return The pipeline pointer.
 			 */
-			XENON_NODISCARD virtual std::unique_ptr<RasterizingPipeline> createRasterizingPipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, [[maybe_unused]] Rasterizer* pRasterizer, const RasterizingPipelineSpecification& specification) = 0;
+			XENON_NODISCARD virtual std::unique_ptr<RasterizingPipeline> createRasterizingPipeline(Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, XENON_MAYBE_UNUSED Rasterizer* pRasterizer, const RasterizingPipelineSpecification& specification) = 0;
 
 			/**
 			 * Create a new compute pipeline.

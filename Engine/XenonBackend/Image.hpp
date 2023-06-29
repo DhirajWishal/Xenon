@@ -43,7 +43,7 @@ namespace Xenon
 			 * @param pDevice The device pointer.
 			 * @param specification The image specification.
 			 */
-			explicit Image([[maybe_unused]] const Device* pDevice, const ImageSpecification& specification) : m_Specification(specification) {}
+			explicit Image(XENON_MAYBE_UNUSED const Device* pDevice, const ImageSpecification& specification) : m_Specification(specification) {}
 
 			/**
 			 * Move constructor.

@@ -25,7 +25,7 @@ namespace Xenon
 			 * @param bindingInfo The descriptor's binding information.
 			 * @param type The descriptor type.
 			 */
-			explicit Descriptor([[maybe_unused]] const Device* pDevice, const std::unordered_map<uint32_t, DescriptorBindingInfo>& bindingInfo, DescriptorType type) : m_BindingInformation(bindingInfo), m_Type(type) {}
+			explicit Descriptor(XENON_MAYBE_UNUSED const Device* pDevice, const std::unordered_map<uint32_t, DescriptorBindingInfo>& bindingInfo, DescriptorType type) : m_BindingInformation(bindingInfo), m_Type(type) {}
 
 			/**
 			 * Attach a buffer to the descriptor.

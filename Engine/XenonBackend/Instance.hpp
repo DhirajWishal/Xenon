@@ -25,7 +25,7 @@ namespace Xenon
 			 * @param appliationName The name of the application.
 			 * @param applicationVersion The application version.
 			 */
-			explicit Instance([[maybe_unused]] const std::string& applicationName, [[maybe_unused]] uint32_t applicationVersion) {}
+			explicit Instance(XENON_MAYBE_UNUSED const std::string& applicationName, XENON_MAYBE_UNUSED uint32_t applicationVersion) {}
 		};
 	}
 }

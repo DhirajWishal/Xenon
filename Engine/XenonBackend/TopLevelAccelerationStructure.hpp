@@ -22,7 +22,7 @@ namespace Xenon
 			 * @param pDevice The device pointer.
 			 * @param pBottomLevelAccelerationStructures The bottom level acceleration structures.
 			 */
-			explicit TopLevelAccelerationStructure(const Device* pDevice, [[maybe_unused]] const std::vector<BottomLevelAccelerationStructure*>& pBottomLevelAccelerationStructures) : AccelerationStructure(pDevice) {}
+			explicit TopLevelAccelerationStructure(const Device* pDevice, XENON_MAYBE_UNUSED const std::vector<BottomLevelAccelerationStructure*>& pBottomLevelAccelerationStructures) : AccelerationStructure(pDevice) {}
 		};
 	}
 }

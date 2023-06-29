@@ -25,7 +25,7 @@ namespace Xenon
 			 * @param height The height of the render target.
 			 * @param attachmentTypes The attachment types the render target should support.
 			 */
-			explicit RenderTarget([[maybe_unused]] const Device* pDevice, uint32_t width, uint32_t height, AttachmentType attachmentTypes) : m_Width(width), m_Height(height), m_AttachmentTypes(attachmentTypes) {}
+			explicit RenderTarget(XENON_MAYBE_UNUSED const Device* pDevice, uint32_t width, uint32_t height, AttachmentType attachmentTypes) : m_Width(width), m_Height(height), m_AttachmentTypes(attachmentTypes) {}
 
 			/**
 			 * Get the image attachment of the relevant attachment type.

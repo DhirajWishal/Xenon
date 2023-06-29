@@ -21,7 +21,7 @@ namespace Xenon
 			 *
 			 * @param pDevice The device pointer.
 			 */
-			explicit Query([[maybe_unused]] const Device* pDevice) {}
+			explicit Query(XENON_MAYBE_UNUSED const Device* pDevice) {}
 		};
 	}
 }

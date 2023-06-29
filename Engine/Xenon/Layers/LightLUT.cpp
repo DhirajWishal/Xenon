@@ -48,7 +48,7 @@ namespace Xenon
 
 			// Get the light count.
 			uint32_t lightCount = 0;
-			for ([[maybe_unused]] const auto& group : m_pScene->getRegistry().view<Components::LightSource>())
+			for (XENON_MAYBE_UNUSED const auto& group : m_pScene->getRegistry().view<Components::LightSource>())
 				lightCount++;
 
 			// Get the vertex count.

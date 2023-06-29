@@ -21,7 +21,7 @@ namespace Xenon
 			 *
 			 * @param pDevice The device pointer.
 			 */
-			explicit CommandSubmitter([[maybe_unused]] const Device* pDevice) {}
+			explicit CommandSubmitter(XENON_MAYBE_UNUSED const Device* pDevice) {}
 
 			/**
 			 * Submit the command recorders to the GPU.

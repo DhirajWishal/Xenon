@@ -93,7 +93,7 @@ namespace Xenon
 			 * @param pPipeline The ray tracing pipeline pointer.
 			 * @param bindingGroups The binding groups.
 			 */
-			explicit ShaderBindingTable([[maybe_unused]] const Device* pDevice, [[maybe_unused]] const RayTracingPipeline* pPipeline, const std::vector<BindingGroup>& bindingGroups) : m_BindingGroups(bindingGroups) {}
+			explicit ShaderBindingTable(XENON_MAYBE_UNUSED const Device* pDevice, XENON_MAYBE_UNUSED const RayTracingPipeline* pPipeline, const std::vector<BindingGroup>& bindingGroups) : m_BindingGroups(bindingGroups) {}
 
 		protected:
 			std::vector<BindingGroup> m_BindingGroups;

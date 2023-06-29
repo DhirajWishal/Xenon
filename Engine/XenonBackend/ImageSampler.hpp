@@ -112,7 +112,7 @@ namespace Xenon
 			 * @param pDevice The device pointer.
 			 * @param specification The sampler specification.
 			 */
-			explicit ImageSampler([[maybe_unused]] const Device* pDevice, const ImageSamplerSpecification& specification) : m_Specification(specification) {}
+			explicit ImageSampler(XENON_MAYBE_UNUSED const Device* pDevice, const ImageSamplerSpecification& specification) : m_Specification(specification) {}
 
 			/**
 			 * Get the image sampler specification.

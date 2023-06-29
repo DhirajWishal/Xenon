@@ -288,7 +288,7 @@ namespace Xenon
 			 * @param pRasterizer The rasterizer pointer.
 			 * @param specification The pipeline specification.
 			 */
-			explicit RasterizingPipeline(const Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, [[maybe_unused]] const Rasterizer* pRasterizer, const RasterizingPipelineSpecification& specification)
+			explicit RasterizingPipeline(const Device* pDevice, std::unique_ptr<PipelineCacheHandler>&& pCacheHandler, XENON_MAYBE_UNUSED const Rasterizer* pRasterizer, const RasterizingPipelineSpecification& specification)
 				: Pipeline(pDevice, std::move(pCacheHandler)), m_Specification(specification) {}
 
 			/**
