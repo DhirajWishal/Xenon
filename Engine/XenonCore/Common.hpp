@@ -50,7 +50,7 @@ namespace Xenon
 	 * @return The type index.
 	 */
 	template<class Type>
-	XENON_NODISCARD constexpr std::type_index GetTypeIndex() noexcept { return std::type_index(typeid(Type)); }
+	XENON_NODISCARD std::type_index GetTypeIndex() noexcept { return std::type_index(typeid(Type)); }
 
 	/**
 	 * Check if an enum contains multiple values.

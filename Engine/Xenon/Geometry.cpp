@@ -662,27 +662,26 @@ namespace Xenon
 		geometry.m_pImageAndImageViews.reserve(model.images.size());
 		for (const auto& image : model.images)
 		{
-			auto& [pImage, pImageView] = geometry.m_pImageAndImageViews.emplace_back();
-			const auto imageLoader = [&instance, &pImage, &pImageView, &image, &imageSynchronization]
+			const auto imageLoader = [&instance, entry = &geometry.m_pImageAndImageViews.emplace_back(), &image, &imageSynchronization]
 			{
 				// Setup the image.
 				Xenon::Backend::ImageSpecification imageSpecification = {};
 				imageSpecification.m_Width = image.width;
 				imageSpecification.m_Height = image.height;
 				imageSpecification.m_Format = GetDataFormat(image.bits, image.component, image.pixel_type);
-				pImage = instance.getFactory()->createImage(instance.getBackendDevice(), imageSpecification);
+				entry->first = instance.getFactory()->createImage(instance.getBackendDevice(), imageSpecification);
 
 				// Copy the image data to the image.
 				{
-					const auto copySize = pImage->getWidth() * pImage->getHeight() * image.component/* * (image.bits / 8)*/;
+					const auto copySize = entry->first->getWidth() * entry->first->getHeight() * image.component/* * (image.bits / 8)*/;
 					auto pStagingBuffer = instance.getFactory()->createBuffer(instance.getBackendDevice(), copySize, Xenon::Backend::BufferType::Staging);
 
 					pStagingBuffer->write(Xenon::ToBytes(image.image.data()), image.image.size());
-					pImage->copyFrom(pStagingBuffer.get());
+					entry->first->copyFrom(pStagingBuffer.get());
 				}
 
 				// Setup image view.
-				pImageView = instance.getFactory()->createImageView(instance.getBackendDevice(), pImage.get(), {});
+				entry->second = instance.getFactory()->createImageView(instance.getBackendDevice(), entry->first.get(), {});
 
 				// Notify that we're done.
 				imageSynchronization.arrive();

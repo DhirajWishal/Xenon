@@ -33,7 +33,7 @@ namespace Xenon
 			 * @param height The height of the window.
 			 * @return The window pointer.
 			 */
-			[[nodiscard]] std::unique_ptr<Window> createWindow(const std::string& title, uint32_t width, uint32_t height) override;
+			XENON_NODISCARD std::unique_ptr<Window> createWindow(const std::string& title, uint32_t width, uint32_t height) override;
 		};
 	}
 }

@@ -103,8 +103,6 @@ namespace Xenon
 			ComPtr<ID3D12RootSignature> m_GlobalRootSignature;
 			ComPtr<ID3D12StateObject> m_PipelineState;
 			ComPtr<ID3D12StateObjectProperties> m_PipelineStateProperties;
-
-			uint64_t m_PipelineHash = 0;
 		};
 	}
 }

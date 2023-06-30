@@ -313,11 +313,12 @@ namespace Xenon
 	template<>
 	XENON_NODISCARD inline uint64_t GenerateHashFor<Backend::RasterizingPipelineSpecification>(const Backend::RasterizingPipelineSpecification& specification, uint64_t seed) noexcept
 	{
-		constexpr auto structSize = sizeof(Backend::RasterizingPipelineSpecification) - offsetof(Backend::RasterizingPipelineSpecification, m_ColorBlendConstants);
+		constexpr auto offset = sizeof(Backend::Shader) + sizeof(Backend::Shader) + sizeof(std::vector<Backend::ColorBlendAttachment>);
+		constexpr auto structSize = sizeof(Backend::RasterizingPipelineSpecification) - offset;
 
 		const auto vsHash = GenerateHashFor(specification.m_VertexShader, seed);
 		const auto fsHash = GenerateHashFor(specification.m_FragmentShader, vsHash);
 		const auto cbaHash = GenerateHash(ToBytes(specification.m_ColorBlendAttachments.data()), specification.m_ColorBlendAttachments.size(), fsHash);
-		return GenerateHash(ToBytes(&specification) + structSize, structSize, cbaHash);
+		return GenerateHash(ToBytes(&specification) + offset, structSize, cbaHash);
 	}
 }

@@ -215,7 +215,7 @@ namespace Xenon
 				// Iterate through the attributes and load them.
 				for (auto& pResource : pInputs)
 				{
-					if (pResource->format == SPV_REFLECT_FORMAT_UNDEFINED || pResource->built_in != -1)
+					if (pResource->format == SPV_REFLECT_FORMAT_UNDEFINED || EnumToInt(pResource->built_in) != -1)
 						continue;
 
 					auto& input = m_InputAttributes.emplace_back();
@@ -235,7 +235,7 @@ namespace Xenon
 				// Iterate through the attributes and load them.
 				for (auto& pResource : pOutputs)
 				{
-					if (pResource->format == SPV_REFLECT_FORMAT_UNDEFINED || pResource->built_in != -1)
+					if (pResource->format == SPV_REFLECT_FORMAT_UNDEFINED || EnumToInt(pResource->built_in) != -1)
 						continue;
 
 					auto& output = m_OutputAttributes.emplace_back();

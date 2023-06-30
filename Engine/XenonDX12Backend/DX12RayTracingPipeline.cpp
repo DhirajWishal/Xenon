@@ -75,7 +75,7 @@ namespace /* anonymous */
 	 * @param type The descriptor type.
 	 * @return The descriptor type bit.
 	 */
-	[[nodiscard]] constexpr uint8_t GetDescriptorTypeBit(Xenon::Backend::DescriptorType type) noexcept
+	XENON_NODISCARD constexpr uint8_t GetDescriptorTypeBit(Xenon::Backend::DescriptorType type) noexcept
 	{
 		return static_cast<uint8_t>(1 << Xenon::EnumToInt(type));
 	}

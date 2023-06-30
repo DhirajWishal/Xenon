@@ -43,21 +43,21 @@ namespace Xenon
 			 * @return True if the window is open.
 			 * @return False if the window is closed.
 			 */
-			[[nodiscard]] bool isOpen() const override;
+			XENON_NODISCARD bool isOpen() const override;
 
 			/**
 			 * Get the SDL window handle.
 			 *
 			 * @return The window handle.
 			 */
-			[[nodiscard]] SDL_Window* getWindowHandle() { return m_pWindow; }
+			XENON_NODISCARD SDL_Window* getWindowHandle() { return m_pWindow; }
 
 			/**
 			 * Get the SDL window handle.
 			 *
 			 * @return The window handle.
 			 */
-			[[nodiscard]] const SDL_Window* getWindowHandle() const { return m_pWindow; }
+			XENON_NODISCARD const SDL_Window* getWindowHandle() const { return m_pWindow; }
 
 		private:
 			SDL_Window* m_pWindow = nullptr;

@@ -555,6 +555,10 @@ namespace Xenon
 			 */
 			struct VertexElement final
 			{
+				constexpr VertexElement() = default;
+				constexpr explicit VertexElement(InputElement element, uint8_t size, uint8_t offset, AttributeDataType attributeDataType, ComponentDataType componentDataType)
+					: m_Element(element), m_Size(size),m_Offset(offset), m_AttributeDataType(attributeDataType), m_ComponentDataType(componentDataType) {}
+
 				InputElement m_Element = InputElement::Undefined;
 
 				uint8_t m_Size = 0;

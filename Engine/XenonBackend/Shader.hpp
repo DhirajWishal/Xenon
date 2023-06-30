@@ -36,7 +36,7 @@ namespace Xenon
 			 * @return True if the two objects are similar.
 			 * @return False if the two objects are not similar.
 			 */
-			[[nodiscard]] bool operator==(const ShaderResource& other) const = default;
+			XENON_NODISCARD bool operator==(const ShaderResource& other) const = default;
 		};
 
 		/**
@@ -82,7 +82,7 @@ namespace Xenon
 			 * @return The shader.
 			 */
 			template<class SPIRVType, uint64_t SPIRVSize>
-			[[nodiscard]] static Shader Create(const SPIRVType(&pSPIRVSource)[SPIRVSize])
+			XENON_NODISCARD static Shader Create(const SPIRVType(&pSPIRVSource)[SPIRVSize])
 			{
 				auto spirvSource = std::vector<uint32_t>(SPIRVSize / (sizeof(uint32_t) / sizeof(SPIRVType)));
 				std::copy_n(pSPIRVSource, SPIRVSize, reinterpret_cast<std::remove_const_t<SPIRVType>*>(spirvSource.data()));
@@ -102,7 +102,7 @@ namespace Xenon
 			 * @return The shader.
 			 */
 			template<class SPIRVType, uint64_t SPIRVSize, class DXILType, uint64_t DXILSize>
-			[[nodiscard]] static Shader Create(const SPIRVType(&pSPIRVSource)[SPIRVSize], const DXILType(&pDXILSource)[DXILSize])
+			XENON_NODISCARD static Shader Create(const SPIRVType(&pSPIRVSource)[SPIRVSize], const DXILType(&pDXILSource)[DXILSize])
 			{
 				auto spirvSource = std::vector<uint32_t>(SPIRVSize / (sizeof(uint32_t) / sizeof(SPIRVType)));
 				std::copy_n(pSPIRVSource, SPIRVSize, reinterpret_cast<std::remove_const_t<SPIRVType>*>(spirvSource.data()));
@@ -118,35 +118,35 @@ namespace Xenon
 			 *
 			 * @return The shader source.
 			 */
-			[[nodiscard]] const ShaderSource& getSPIRV() const noexcept { return m_SPIRV; }
+			XENON_NODISCARD const ShaderSource& getSPIRV() const noexcept { return m_SPIRV; }
 
 			/**
 			 * Get the DXIL shader source.
 			 *
 			 * @return The shader source.
 			 */
-			[[nodiscard]] const ShaderSource& getDXIL() const noexcept { return m_DXIL; }
+			XENON_NODISCARD const ShaderSource& getDXIL() const noexcept { return m_DXIL; }
 
 			/**
 			 * Get the shader's input attributes.
 			 *
 			 * @return The input attributes.
 			 */
-			[[nodiscard]] const std::vector<ShaderAttribute>& getInputAttributes() const noexcept { return m_InputAttributes; }
+			XENON_NODISCARD const std::vector<ShaderAttribute>& getInputAttributes() const noexcept { return m_InputAttributes; }
 
 			/**
 			 * Get the shader's output attributes.
 			 *
 			 * @return The output attributes.
 			 */
-			[[nodiscard]] const std::vector<ShaderAttribute>& getOutputAttributes() const noexcept { return m_OutputAttributes; }
+			XENON_NODISCARD const std::vector<ShaderAttribute>& getOutputAttributes() const noexcept { return m_OutputAttributes; }
 
 			/**
 			 * Get the resources.
 			 *
 			 * @return The shader resources.
 			 */
-			[[nodiscard]] const std::vector<ShaderResource>& getResources() const noexcept { return m_Resources; }
+			XENON_NODISCARD const std::vector<ShaderResource>& getResources() const noexcept { return m_Resources; }
 
 		private:
 			/**
@@ -172,7 +172,7 @@ namespace Xenon
 	 * @return The 64-bit hash value.
 	 */
 	template<>
-	[[nodiscard]] inline uint64_t GenerateHashFor<Backend::Shader>(const Backend::Shader& shader, uint64_t seed) noexcept
+	XENON_NODISCARD inline uint64_t GenerateHashFor<Backend::Shader>(const Backend::Shader& shader, uint64_t seed) noexcept
 	{
 		return GenerateHash(
 			ToBytes(shader.getSPIRV().getBinaryData()),

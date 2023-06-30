@@ -60,6 +60,9 @@ namespace Xenon
 	 */
 	struct MaterialProperty final
 	{
+		constexpr MaterialProperty() = default;
+		constexpr explicit MaterialProperty(const MaterialPayload& payload, MaterialPropertyType type) : m_Payload(payload), m_Type(type) {}
+
 		MaterialPayload m_Payload;
 		MaterialPropertyType m_Type;
 	};

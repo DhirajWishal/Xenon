@@ -176,7 +176,7 @@ namespace Xenon
 			}
 
 			// Get the allocation sizes.
-			uint64_t rayGenCount = 0;
+			XENON_MAYBE_UNUSED uint64_t rayGenCount = 0;
 			uint64_t hitGroupCount = 0;
 			uint64_t missCount = 0;
 			uint64_t callableCount = 0;

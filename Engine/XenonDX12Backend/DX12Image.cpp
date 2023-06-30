@@ -101,7 +101,7 @@ namespace Xenon
 				m_Specification.m_Width = dataPitch / formatSize;
 			}
 
-			if (specification.m_Usage & ImageUsage::Storage) /* Do nothing here. */;
+			if (specification.m_Usage & ImageUsage::Storage) NoOp();
 
 			if (specification.m_Usage & ImageUsage::ColorAttachment)
 				flags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;

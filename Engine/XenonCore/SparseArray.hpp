@@ -27,18 +27,18 @@ namespace Xenon
 	class SparseArray final
 	{
 	public:
-		using value_type = std::vector<Type>::value_type;
-		using allocator_type = std::vector<Type>::allocator_type;
-		using size_type = std::vector<Type>::size_type;
-		using difference_type = std::vector<Type>::difference_type;
-		using reference = std::vector<Type>::reference;
-		using const_reference = std::vector<Type>::const_reference;
-		using pointer = std::vector<Type>::pointer;
-		using const_pointer = std::vector<Type>::const_pointer;
-		using iterator = std::vector<Type>::iterator;
-		using const_iterator = std::vector<Type>::const_iterator;
-		using reverse_iterator = std::vector<Type>::reverse_iterator;
-		using const_reverse_iterator = std::vector<Type>::const_reverse_iterator;
+		using value_type = typename std::vector<Type>::value_type;
+		using allocator_type = typename std::vector<Type>::allocator_type;
+		using size_type = typename std::vector<Type>::size_type;
+		using difference_type = typename std::vector<Type>::difference_type;
+		using reference = typename std::vector<Type>::reference;
+		using const_reference = typename std::vector<Type>::const_reference;
+		using pointer = typename std::vector<Type>::pointer;
+		using const_pointer = typename std::vector<Type>::const_pointer;
+		using iterator = typename std::vector<Type>::iterator;
+		using const_iterator = typename std::vector<Type>::const_iterator;
+		using reverse_iterator = typename std::vector<Type>::reverse_iterator;
+		using const_reverse_iterator = typename std::vector<Type>::const_reverse_iterator;
 
 	public:
 		/**

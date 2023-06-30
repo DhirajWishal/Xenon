@@ -72,7 +72,7 @@ namespace Xenon
 		 *
 		 * @return The object reference.
 		 */
-		[[nodiscard]] static Derived& GetInstance()
+		XENON_NODISCARD static Derived& GetInstance()
 		{
 			static Derived config;
 			return config;
@@ -83,14 +83,14 @@ namespace Xenon
 		 *
 		 * @return The document.
 		 */
-		[[nodiscard]] JsonDocumentType& getDocument() noexcept { return m_Document; }
+		XENON_NODISCARD JsonDocumentType& getDocument() noexcept { return m_Document; }
 
 		/**
 		 * Get the JSON document.
 		 *
 		 * @return The document.
 		 */
-		[[nodiscard]] const JsonDocumentType& getDocument() const noexcept { return m_Document; }
+		XENON_NODISCARD const JsonDocumentType& getDocument() const noexcept { return m_Document; }
 
 	protected:
 		JsonDocumentType m_Document;

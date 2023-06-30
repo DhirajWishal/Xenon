@@ -511,9 +511,9 @@ void ImGuiLayer::showFileMenu()
 {
 	if (ImGui::BeginMenu("File"))
 	{
-		if (ImGui::MenuItem("Open", "Ctrl+O"));
-		if (ImGui::MenuItem("Save", "Ctrl+S"));
-		if (ImGui::MenuItem("Save As", "Ctrl+Shift+S"));
+		if (ImGui::MenuItem("Open", "Ctrl+O")) Xenon::NoOp();
+		if (ImGui::MenuItem("Save", "Ctrl+S")) Xenon::NoOp();
+		if (ImGui::MenuItem("Save As", "Ctrl+Shift+S")) Xenon::NoOp();
 
 		ImGui::Separator();
 		if (ImGui::MenuItem("Close"))
@@ -550,9 +550,9 @@ void ImGuiLayer::showEditMenu()
 {
 	if (ImGui::BeginMenu("Edit"))
 	{
-		if (ImGui::MenuItem("Cut", "Ctrl+X"));
-		if (ImGui::MenuItem("Copy", "Ctrl+C"));
-		if (ImGui::MenuItem("Paste", "Ctrl+V"));
+		if (ImGui::MenuItem("Cut", "Ctrl+X")) Xenon::NoOp();
+		if (ImGui::MenuItem("Copy", "Ctrl+C")) Xenon::NoOp();
+		if (ImGui::MenuItem("Paste", "Ctrl+V")) Xenon::NoOp();
 
 		ImGui::EndMenu();
 	}
@@ -576,11 +576,11 @@ void ImGuiLayer::showHelpMenu()
 {
 	if (ImGui::BeginMenu("Help"))
 	{
-		if (ImGui::MenuItem("What's New?"));
+		if (ImGui::MenuItem("What's New?")) Xenon::NoOp();
 
 		ImGui::Separator();
-		if (ImGui::MenuItem("About"));
-		if (ImGui::MenuItem("License"));
+		if (ImGui::MenuItem("About")) Xenon::NoOp();
+		if (ImGui::MenuItem("License")) Xenon::NoOp();
 
 		ImGui::Separator();
 		ImGui::MenuItem("Version: 1.0.0", "", false, false);

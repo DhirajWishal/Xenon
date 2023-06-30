@@ -20,6 +20,9 @@ namespace Xenon
 		 */
 		struct DrawData final
 		{
+			DrawData() = default;
+			explicit DrawData(Geometry&& geometry) : m_Geometry(std::move(geometry)) {}
+
 			Geometry m_Geometry;
 
 			std::unique_ptr<Backend::BottomLevelAccelerationStructure> m_pBottomLevelAccelerationStructure;
