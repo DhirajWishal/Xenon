@@ -15,6 +15,10 @@
 #include "../UIComponents/PipelineEditor.hpp"
 #include "../UIComponents/Configuration.hpp"
 #include "../UIComponents/Logs.hpp"
+#include "../UIComponents/PopUp.hpp"
+
+constexpr auto g_WelcomePopUpID = "Welcome!";
+constexpr auto g_LoadingAssetsPopUpID = "Loading Asset";
 
 /**
  * ImGui layer class.
@@ -220,5 +224,8 @@ private:
 
 	UserData m_UserData;
 
+	std::vector<PopUp> m_PopUpList;
+
 	bool m_bIsClosingDisabled = false;
+	bool m_bShouldShowGreetingPopUp = true;
 };

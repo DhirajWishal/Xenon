@@ -229,6 +229,7 @@ void Studio::render()
 		// Load models dropped to the screen.
 		for (const auto& file : m_Renderer.getGeneralEvents().m_DragDropFiles)
 		{
+			ImGui::OpenPopup(g_LoadingAssetsPopUpID);
 			const auto loaderFunction = [this, file, &models]
 			{
 				XENON_STUDIO_LOG_INFORMATION("Loading model file: {}", file);
