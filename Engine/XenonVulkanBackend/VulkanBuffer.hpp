@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -67,7 +67,7 @@ namespace Xenon
 			 *
 			 * @return The const data pointer.
 			 */
-			[[nodiscard]] const std::byte* beginRead() override;
+			XENON_NODISCARD const std::byte* beginRead() override;
 
 			/**
 			 * End the buffer reading.
@@ -79,21 +79,21 @@ namespace Xenon
 			 *
 			 * @return The buffer handle.
 			 */
-			[[nodiscard]] VkBuffer getBuffer() const { return m_Buffer; }
+			XENON_NODISCARD VkBuffer getBuffer() const { return m_Buffer; }
 
 			/**
 			 * Get the descriptor buffer info structure.
 			 *
 			 * @return The buffer info structure.
 			 */
-			[[nodiscard]] const VkDescriptorBufferInfo& getDescriptorBufferInfo() const { return m_BufferInfo; }
+			XENON_NODISCARD const VkDescriptorBufferInfo& getDescriptorBufferInfo() const { return m_BufferInfo; }
 
 			/**
 			 * Get the buffer's device address.
 			 *
 			 * @return The device address.
 			 */
-			[[nodiscard]] VkDeviceAddress getDeviceAddress() const;
+			XENON_NODISCARD VkDeviceAddress getDeviceAddress() const;
 
 		private:
 			/**

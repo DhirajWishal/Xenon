@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -36,28 +36,28 @@ namespace Xenon
 			 *
 			 * @return The address range.
 			 */
-			[[nodiscard]] VkStridedDeviceAddressRegionKHR getRayGenerationAddressRegion() const noexcept { return m_RayGenAddressRegion; }
+			XENON_NODISCARD VkStridedDeviceAddressRegionKHR getRayGenerationAddressRegion() const noexcept { return m_RayGenAddressRegion; }
 
 			/**
 			 * Get the miss address range.
 			 *
 			 * @return The address range.
 			 */
-			[[nodiscard]] VkStridedDeviceAddressRegionKHR getMissAddressRegion() const noexcept { return m_MissAddressRegion; }
+			XENON_NODISCARD VkStridedDeviceAddressRegionKHR getMissAddressRegion() const noexcept { return m_MissAddressRegion; }
 
 			/**
 			 * Get the ray hit address range.
 			 *
 			 * @return The address range.
 			 */
-			[[nodiscard]] VkStridedDeviceAddressRegionKHR getHitAddressRegion() const noexcept { return m_HitAddressRegion; }
+			XENON_NODISCARD VkStridedDeviceAddressRegionKHR getHitAddressRegion() const noexcept { return m_HitAddressRegion; }
 
 			/**
 			 * Get the callable address range.
 			 *
 			 * @return The address range.
 			 */
-			[[nodiscard]] VkStridedDeviceAddressRegionKHR getCallableAddressRegion() const noexcept { return m_CallableAddressRegion; }
+			XENON_NODISCARD VkStridedDeviceAddressRegionKHR getCallableAddressRegion() const noexcept { return m_CallableAddressRegion; }
 
 		private:
 			/**
@@ -65,7 +65,7 @@ namespace Xenon
 			 *
 			 * @return The mapped memory pointer.
 			 */
-			[[nodiscard]] std::byte* map();
+			XENON_NODISCARD std::byte* map();
 
 			/**
 			 * Unmap the table memory.
@@ -77,7 +77,7 @@ namespace Xenon
 			 *
 			 * @return The device address.
 			 */
-			[[nodiscard]] VkDeviceAddress getDeviceAddress() const;
+			XENON_NODISCARD VkDeviceAddress getDeviceAddress() const;
 
 		private:
 			VkBuffer m_Table = VK_NULL_HANDLE;

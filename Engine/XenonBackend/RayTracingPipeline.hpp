@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -96,21 +96,21 @@ namespace Xenon
 			 * @param bindingGroups The binding groups.
 			 * @return The created shader binding table.
 			 */
-			[[nodiscard]] virtual std::unique_ptr<ShaderBindingTable> createShaderBindingTable(const std::vector<BindingGroup>& bindingGroups) = 0;
+			XENON_NODISCARD virtual std::unique_ptr<ShaderBindingTable> createShaderBindingTable(const std::vector<BindingGroup>& bindingGroups) = 0;
 
 			/**
 			 * Get the maximum possible ray recursion depth of the pipeline.
 			 *
 			 * @return The depth.
 			 */
-			[[nodiscard]] uint32_t getMaximumRayRecursionDepth() const noexcept { return m_MaximumRayRecursionDepth; }
+			XENON_NODISCARD uint32_t getMaximumRayRecursionDepth() const noexcept { return m_MaximumRayRecursionDepth; }
 
 			/**
 			 * Get the pipeline specification.
 			 *
 			 * @return The specification.
 			 */
-			[[nodiscard]] const RayTracingPipelineSpecification& getSpecification() const noexcept { return m_Specification; }
+			XENON_NODISCARD const RayTracingPipelineSpecification& getSpecification() const noexcept { return m_Specification; }
 
 		protected:
 			std::vector<ShaderGroup> m_ShaderGroups = {};
@@ -127,7 +127,7 @@ namespace Xenon
 	 * @return The 64-bit hash value.
 	 */
 	template<>
-	[[nodiscard]] inline uint64_t GenerateHashFor<Backend::ShaderGroup>(const Backend::ShaderGroup& shaderGroup, uint64_t seed) noexcept
+	XENON_NODISCARD inline uint64_t GenerateHashFor<Backend::ShaderGroup>(const Backend::ShaderGroup& shaderGroup, uint64_t seed) noexcept
 	{
 		const auto rgsHash = GenerateHashFor(shaderGroup.m_RayGenShader, seed);
 		const auto iHash = GenerateHashFor(shaderGroup.m_IntersectionShader, rgsHash);
@@ -145,7 +145,7 @@ namespace Xenon
 	 * @return The 64-bit hash value.
 	 */
 	template<>
-	[[nodiscard]] inline uint64_t GenerateHashFor<Backend::RayTracingPipelineSpecification>(const Backend::RayTracingPipelineSpecification& specification, uint64_t seed) noexcept
+	XENON_NODISCARD inline uint64_t GenerateHashFor<Backend::RayTracingPipelineSpecification>(const Backend::RayTracingPipelineSpecification& specification, uint64_t seed) noexcept
 	{
 		uint64_t shaderGroupHash = seed;
 		for (const auto& shaderGroup : specification.m_ShaderGroups)

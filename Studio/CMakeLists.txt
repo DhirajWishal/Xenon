@@ -1,4 +1,4 @@
-# Copyright 2022-2023 Nexonous
+# Copyright 2022-2023 Dhiraj Wishal
 # SPDX-License-Identifier: Apache-2.0
 
 # Set the basic project information.
@@ -40,6 +40,8 @@ set(
 	"UIComponents/Configuration.hpp"
 	"UIComponents/Logs.cpp"
 	"UIComponents/Logs.hpp"
+	"UIComponents/PopUp.cpp"
+	"UIComponents/PopUp.hpp"
 
 	${SHADERS}
 )

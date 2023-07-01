@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -50,21 +50,21 @@ namespace Xenon
 			 * @return True if triple buffering is enabled.
 			 * @return False if triple buffering is not enabled.
 			 */
-			[[nodiscard]] bool isTripleBufferingEnabled() const { return m_bEnableTripleBuffering; }
+			XENON_NODISCARD bool isTripleBufferingEnabled() const { return m_bEnableTripleBuffering; }
 
 			/**
 			 * Get the enabled multi-sampling count.
 			 *
 			 * @return The multi-sampling count.
 			 */
-			[[nodiscard]] MultiSamplingCount getMultiSamplingCount() const { return m_MultiSamplingCount; }
+			XENON_NODISCARD MultiSamplingCount getMultiSamplingCount() const { return m_MultiSamplingCount; }
 
 			/**
 			 * Get the current frame index.
 			 *
 			 * @return The frame index.
 			 */
-			[[nodiscard]] uint32_t getFrameIndex() const { return m_FrameIndex; }
+			XENON_NODISCARD uint32_t getFrameIndex() const { return m_FrameIndex; }
 
 		protected:
 			uint32_t m_FrameIndex = 0;

@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "DX12CommandRecorder.hpp"
@@ -159,7 +159,7 @@ namespace /* anonymous */
 	 * @param format The format to get the size of.
 	 * @return The byte size.
 	 */
-	[[nodiscard]] constexpr uint8_t GetFormatSize(DXGI_FORMAT format) noexcept
+	XENON_NODISCARD constexpr uint8_t GetFormatSize(DXGI_FORMAT format) noexcept
 	{
 		switch (format)
 		{
@@ -878,6 +878,14 @@ namespace Xenon
 			OPTICK_EVENT();
 
 			m_pCurrentCommandList->BeginQuery(pOcclusionQuery->as<DX12OcclusionQuery>()->getHeap(), D3D12_QUERY_TYPE_BINARY_OCCLUSION, index);
+		}
+
+		void DX12CommandRecorder::drawVertices(uint64_t vertexOffset, uint64_t veretxCount, uint32_t instanceCount /*= 1*/, uint32_t firstInstance /*= 0*/)
+		{
+			OPTICK_EVENT();
+
+			m_pCurrentCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			m_pCurrentCommandList->DrawInstanced(static_cast<UINT>(veretxCount), instanceCount, static_cast<UINT>(vertexOffset), firstInstance);
 		}
 
 		void DX12CommandRecorder::drawIndexed(uint64_t vertexOffset, uint64_t indexOffset, uint64_t indexCount, uint32_t instanceCount /*= 1*/, uint32_t firstInstance /*= 0*/)

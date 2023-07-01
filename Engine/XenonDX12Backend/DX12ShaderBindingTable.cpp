@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "DX12ShaderBindingTable.hpp"
@@ -15,7 +15,7 @@ namespace /* anonymous */
 	 * @param entry The entry to get the size of.
 	 * @return The size.
 	 */
-	[[nodiscard]] uint64_t GetEntrySize(const Xenon::Backend::BindingGroup::DataVariant& entry) noexcept
+	XENON_NODISCARD uint64_t GetEntrySize(const Xenon::Backend::BindingGroup::DataVariant& entry) noexcept
 	{
 		uint64_t entrySize = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
 
@@ -176,7 +176,7 @@ namespace Xenon
 			}
 
 			// Get the allocation sizes.
-			uint64_t rayGenCount = 0;
+			XENON_MAYBE_UNUSED uint64_t rayGenCount = 0;
 			uint64_t hitGroupCount = 0;
 			uint64_t missCount = 0;
 			uint64_t callableCount = 0;
@@ -317,7 +317,7 @@ namespace Xenon
 		std::byte* DX12ShaderBindingTable::map()
 		{
 			std::byte* pMemory = nullptr;
-			m_pAllocation->GetResource()->Map(0, nullptr, std::bit_cast<void**>(&pMemory));
+			m_pAllocation->GetResource()->Map(0, nullptr, XENON_BIT_CAST(void**, &pMemory));
 
 			return pMemory;
 		}

@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -37,7 +37,7 @@ namespace Xenon
 			 *
 			 * @return The swapchain image index.
 			 */
-			[[nodiscard]] uint32_t prepare() override;
+			XENON_NODISCARD uint32_t prepare() override;
 
 			/**
 			 * Present the swapchain to the window.
@@ -55,35 +55,35 @@ namespace Xenon
 			 *
 			 * @return The semaphore pointer.
 			 */
-			[[nodiscard]] VkSemaphore* getInFlightSemaphorePtr() { return &m_InFlightSemaphores[m_FrameIndex]; }
+			XENON_NODISCARD VkSemaphore* getInFlightSemaphorePtr() { return &m_InFlightSemaphores[m_FrameIndex]; }
 
 			/**
 			 * Get the in-flight semaphore pointer.
 			 *
 			 * @return The const semaphore pointer.
 			 */
-			[[nodiscard]] const VkSemaphore* getInFlightSemaphorePtr() const { return &m_InFlightSemaphores[m_FrameIndex]; }
+			XENON_NODISCARD const VkSemaphore* getInFlightSemaphorePtr() const { return &m_InFlightSemaphores[m_FrameIndex]; }
 
 			/**
 			 * Get the render-finished semaphore pointer.
 			 *
 			 * @return The semaphore pointer.
 			 */
-			[[nodiscard]] VkSemaphore* getRenderFinishedSemaphorePtr() { return &m_RenderFinishedSemaphores[m_FrameIndex]; }
+			XENON_NODISCARD VkSemaphore* getRenderFinishedSemaphorePtr() { return &m_RenderFinishedSemaphores[m_FrameIndex]; }
 
 			/**
 			 * Get the render-finished semaphore pointer.
 			 *
 			 * @return The const semaphore pointer.
 			 */
-			[[nodiscard]] const VkSemaphore* getRenderFinishedSemaphorePtr() const { return &m_RenderFinishedSemaphores[m_FrameIndex]; }
+			XENON_NODISCARD const VkSemaphore* getRenderFinishedSemaphorePtr() const { return &m_RenderFinishedSemaphores[m_FrameIndex]; }
 
 			/**
 			 * Get the current swapchain image.
 			 *
 			 * @return The current swapchain image.
 			 */
-			[[nodiscard]] VkImage getCurrentImage() const { return m_SwapchainImages[m_ImageIndex]; }
+			XENON_NODISCARD VkImage getCurrentImage() const { return m_SwapchainImages[m_ImageIndex]; }
 
 			/**
 			 * Get the render width.
@@ -91,7 +91,7 @@ namespace Xenon
 			 *
 			 * @return The width.
 			 */
-			[[nodiscard]] uint32_t getRenderWidth() const { return m_RenderWidth; }
+			XENON_NODISCARD uint32_t getRenderWidth() const { return m_RenderWidth; }
 
 			/**
 			 * Get the render height.
@@ -99,7 +99,7 @@ namespace Xenon
 			 *
 			 * @return The height.
 			 */
-			[[nodiscard]] uint32_t getRenderHeight() const { return m_RenderHeight; }
+			XENON_NODISCARD uint32_t getRenderHeight() const { return m_RenderHeight; }
 
 			/**
 			 * Check if the swapchain is renderable.
@@ -108,7 +108,7 @@ namespace Xenon
 			 * @return True if the swapchain is renderable.
 			 * @return False if the swapchain is not renderable.
 			 */
-			[[nodiscard]] bool isRenderable() const { return m_RenderWidth > 0 && m_RenderHeight > 0; }
+			XENON_NODISCARD bool isRenderable() const { return m_RenderWidth > 0 && m_RenderHeight > 0; }
 
 		private:
 			/**
@@ -137,7 +137,7 @@ namespace Xenon
 			 *
 			 * @return The surface capabilities.
 			 */
-			[[nodiscard]] VkSurfaceCapabilitiesKHR getSurfaceCapabilities() const;
+			XENON_NODISCARD VkSurfaceCapabilitiesKHR getSurfaceCapabilities() const;
 
 			/**
 			 * Setup the semaphores used for synchronization.

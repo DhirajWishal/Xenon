@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "GBufferLayer.hpp"
@@ -162,15 +162,25 @@ namespace Xenon
 					OPTICK_EVENT_DYNAMIC("Binding Mesh");
 
 					for (const auto& subMesh : mesh.m_SubMeshes)
-					{
-						OPTICK_EVENT_DYNAMIC("Issuing Occlusion Pass Draw Calls");
-
-						m_pCommandRecorder->bind(geometry.getIndexBuffer(), static_cast<Backend::IndexBufferStride>(subMesh.m_IndexSize));
-						m_pCommandRecorder->bind(m_pPipeline.get(), m_pUserDefinedDescriptor.get(), m_pMaterialDescriptors[subMesh].get(), nullptr, m_pSceneDescriptor.get());
-
-						m_pCommandRecorder->drawIndexed(subMesh.m_VertexOffset, subMesh.m_IndexOffset, subMesh.m_IndexCount);
-					}
+						performDraw(subMesh, geometry);
 				}
+			}
+		}
+
+		void GBufferLayer::performDraw(const SubMesh& subMesh, Geometry& geometry)
+		{
+			OPTICK_EVENT("Issuing Occlusion Pass Draw Calls");
+
+			m_pCommandRecorder->bind(m_pPipeline.get(), m_pUserDefinedDescriptor.get(), m_pMaterialDescriptors[subMesh].get(), nullptr, m_pSceneDescriptor.get());
+
+			if (subMesh.m_IndexCount > 0)
+			{
+				m_pCommandRecorder->bind(geometry.getIndexBuffer(), static_cast<Backend::IndexBufferStride>(subMesh.m_IndexSize));
+				m_pCommandRecorder->drawIndexed(subMesh.m_VertexOffset, subMesh.m_IndexOffset, subMesh.m_IndexCount);
+			}
+			else
+			{
+				m_pCommandRecorder->drawVertices(subMesh.m_VertexOffset, subMesh.m_VertexCount);
 			}
 		}
 
@@ -195,11 +205,11 @@ namespace Xenon
 			const auto position = m_pScene->getCamera()->m_Position;
 			const auto cameraUp = m_pScene->getCamera()->m_Up;
 			// const auto front = m_RotationMatrix * glm::vec4(m_Renderer.getCamera()->m_Front, 1.0f);
-			
+
 			// Calculate the view-model matrix.
 			// const auto matrix = glm::lookAt(position, position + glm::vec3(front), cameraUp);
 			const auto matrix = glm::lookAt(position, position + m_pScene->getCamera()->m_Front, cameraUp) * m_RotationMatrix;
-			
+
 			// Copy the rotation matrix.
 			m_pRotationBuffer->write(ToBytes(glm::value_ptr(matrix)), sizeof(glm::mat4));
 		}

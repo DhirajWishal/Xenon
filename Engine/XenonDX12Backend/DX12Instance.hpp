@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -38,7 +38,7 @@ namespace Xenon
 			 *
 			 * @return The flags.
 			 */
-			[[nodiscard]] UINT getFactoryFlags() const { return m_FactoryFlags; }
+			XENON_NODISCARD UINT getFactoryFlags() const { return m_FactoryFlags; }
 
 		private:
 			ComPtr<ID3D12Debug> m_Debugger;

@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "DX12Buffer.hpp"
@@ -154,7 +154,7 @@ namespace Xenon
 			{
 				// Map the memory.
 				std::byte* copyBufferMemory = nullptr;
-				getResource()->Map(0, nullptr, std::bit_cast<void**>(&copyBufferMemory));
+				getResource()->Map(0, nullptr, XENON_BIT_CAST(void**, &copyBufferMemory));
 
 				// Copy the data to the copy buffer.
 				std::copy_n(pData, size, copyBufferMemory + offset);
@@ -172,7 +172,7 @@ namespace Xenon
 
 				// Map the memory.
 				std::byte* copyBufferMemory = nullptr;
-				m_pTemporaryWriteBuffer->getResource()->Map(0, nullptr, std::bit_cast<void**>(&copyBufferMemory));
+				m_pTemporaryWriteBuffer->getResource()->Map(0, nullptr, XENON_BIT_CAST(void**, &copyBufferMemory));
 
 				// Copy the data to the copy buffer.
 				std::copy_n(pData, size, copyBufferMemory + offset);
@@ -216,7 +216,7 @@ namespace Xenon
 
 			// Map the resources now.
 			std::byte* tempBufferMemory = nullptr;
-			m_pTemporaryReadBuffer->getResource()->Map(0, nullptr, std::bit_cast<void**>(&tempBufferMemory));
+			m_pTemporaryReadBuffer->getResource()->Map(0, nullptr, XENON_BIT_CAST(void**, &tempBufferMemory));
 			return tempBufferMemory;
 		}
 

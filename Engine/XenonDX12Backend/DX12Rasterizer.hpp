@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -41,98 +41,98 @@ namespace Xenon
 			 * @param type The attachment type.
 			 * @return The attachment image.
 			 */
-			[[nodiscard]] Image* getImageAttachment(AttachmentType type) override;
+			XENON_NODISCARD Image* getImageAttachment(AttachmentType type) override;
 
 			/**
 			 * Get the color target heap pointer.
 			 *
 			 * @return The pointer.
 			 */
-			[[nodiscard]] ID3D12DescriptorHeap* getColorTargetHeap() { return m_ColorTargetHeap.Get(); }
+			XENON_NODISCARD ID3D12DescriptorHeap* getColorTargetHeap() { return m_ColorTargetHeap.Get(); }
 
 			/**
 			 * Get the color target heap pointer.
 			 *
 			 * @return The pointer.
 			 */
-			[[nodiscard]] const ID3D12DescriptorHeap* getColorTargetHeap() const { return m_ColorTargetHeap.Get(); }
+			XENON_NODISCARD const ID3D12DescriptorHeap* getColorTargetHeap() const { return m_ColorTargetHeap.Get(); }
 
 			/**
 			 * Get the CPU color target heap start.
 			 *
 			 * @return The pointer.
 			 */
-			[[nodiscard]] D3D12_CPU_DESCRIPTOR_HANDLE getColorTargetHeapStartCPU();
+			XENON_NODISCARD D3D12_CPU_DESCRIPTOR_HANDLE getColorTargetHeapStartCPU();
 
 			/**
 			 * Get the CPU color target heap start.
 			 *
 			 * @return The CPU handle.
 			 */
-			[[nodiscard]] D3D12_CPU_DESCRIPTOR_HANDLE getColorTargetHeapStartCPU() const;
+			XENON_NODISCARD D3D12_CPU_DESCRIPTOR_HANDLE getColorTargetHeapStartCPU() const;
 
 			/**
 			 * Get the depth target heap pointer.
 			 *
 			 * @return The pointer.
 			 */
-			[[nodiscard]] ID3D12DescriptorHeap* getDepthTargetHeap() { return m_DepthTargetHeap.Get(); }
+			XENON_NODISCARD ID3D12DescriptorHeap* getDepthTargetHeap() { return m_DepthTargetHeap.Get(); }
 
 			/**
 			 * Get the depth target heap pointer.
 			 *
 			 * @return The pointer.
 			 */
-			[[nodiscard]] const ID3D12DescriptorHeap* getDepthTargetHeap() const { return m_DepthTargetHeap.Get(); }
+			XENON_NODISCARD const ID3D12DescriptorHeap* getDepthTargetHeap() const { return m_DepthTargetHeap.Get(); }
 
 			/**
 			 * Get the CPU depth target heap start.
 			 *
 			 * @return The CPU handle.
 			 */
-			[[nodiscard]] D3D12_CPU_DESCRIPTOR_HANDLE getDepthTargetHeapStartCPU();
+			XENON_NODISCARD D3D12_CPU_DESCRIPTOR_HANDLE getDepthTargetHeapStartCPU();
 
 			/**
 			 * Get the CPU depth target heap start.
 			 *
 			 * @return The CPU handle.
 			 */
-			[[nodiscard]] D3D12_CPU_DESCRIPTOR_HANDLE getDepthTargetHeapStartCPU() const;
+			XENON_NODISCARD D3D12_CPU_DESCRIPTOR_HANDLE getDepthTargetHeapStartCPU() const;
 
 			/**
 			 * Get the color target descriptor size.
 			 *
 			 * @return The size.
 			 */
-			[[nodiscard]] UINT getColorTargetDescriptorSize() const { return m_ColorHeapSize; }
+			XENON_NODISCARD UINT getColorTargetDescriptorSize() const { return m_ColorHeapSize; }
 
 			/**
 			 * Get the depth target descriptor size.
 			 *
 			 * @return The size.
 			 */
-			[[nodiscard]] UINT getDepthTargetDescriptorSize() const { return m_DepthHeapSize; }
+			XENON_NODISCARD UINT getDepthTargetDescriptorSize() const { return m_DepthHeapSize; }
 
 			/**
 			 * Get the number of color targets stored.
 			 *
 			 * @return The color target count.
 			 */
-			[[nodiscard]] uint64_t getColorTargetCount() const noexcept { return m_RenderTargets.size() - (hasTarget(AttachmentType::Depth | AttachmentType::Stencil) ? 1 : 0); }
+			XENON_NODISCARD uint64_t getColorTargetCount() const noexcept { return m_RenderTargets.size() - (hasTarget(AttachmentType::Depth | AttachmentType::Stencil) ? 1 : 0); }
 
 			/**
 			 * Get the render targets.
 			 *
 			 * @return The render targets.
 			 */
-			[[nodiscard]] std::vector<DX12Image>& getRenderTargets() { return m_RenderTargets; }
+			XENON_NODISCARD std::vector<DX12Image>& getRenderTargets() { return m_RenderTargets; }
 
 			/**
 			 * Get the render targets.
 			 *
 			 * @return The render targets.
 			 */
-			[[nodiscard]] const std::vector<DX12Image>& getRenderTargets() const { return m_RenderTargets; }
+			XENON_NODISCARD const std::vector<DX12Image>& getRenderTargets() const { return m_RenderTargets; }
 
 			/**
 			 * Check if the given attachment type is present in the target.
@@ -141,7 +141,7 @@ namespace Xenon
 			 * @return True if the attachment type exists.
 			 * @return False if the attachment type does not exists.
 			 */
-			[[nodiscard]] bool hasTarget(AttachmentType type) const noexcept { return m_AttachmentTypes & type; }
+			XENON_NODISCARD bool hasTarget(AttachmentType type) const noexcept { return m_AttachmentTypes & type; }
 
 		private:
 			/**
@@ -150,7 +150,7 @@ namespace Xenon
 			 * @param type The attachment type.
 			 * @return The index.
 			 */
-			[[nodiscard]] uint8_t getAttachmentIndex(AttachmentType type) const;
+			XENON_NODISCARD uint8_t getAttachmentIndex(AttachmentType type) const;
 
 			/**
 			 * Setup the render target images.
@@ -164,7 +164,7 @@ namespace Xenon
 			 * @param formatSupport The format support to check.
 			 * @return The best format.
 			 */
-			[[nodiscard]] DataFormat getBestFormat(const std::vector<DataFormat>& candidates, D3D12_FORMAT_SUPPORT1 formatSupport) const;
+			XENON_NODISCARD DataFormat getBestFormat(const std::vector<DataFormat>& candidates, D3D12_FORMAT_SUPPORT1 formatSupport) const;
 
 		private:
 			std::vector<DX12Image> m_RenderTargets;

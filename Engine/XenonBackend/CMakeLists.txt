@@ -1,4 +1,4 @@
-# Copyright 2022-2023 Nexonous
+# Copyright 2022-2023 Dhiraj Wishal
 # SPDX-License-Identifier: Apache-2.0
 
 # Set the basic project information.
@@ -76,4 +76,8 @@ target_include_directories(
 if (MSVC)
 	target_compile_options(XenonBackend PRIVATE "/MP")	
 	target_link_libraries(XenonBackend XenonPlatformWindows)
+
+elseif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+	target_link_libraries(XenonBackend XenonPlatformLinux)
+
 endif ()

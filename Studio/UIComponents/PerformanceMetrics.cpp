@@ -1,7 +1,9 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "PerformanceMetrics.hpp"
+
+#include "XenonCore/Common.hpp"
 
 #include <imgui.h>
 
@@ -9,7 +11,7 @@
 
 void PerformanceMetrics::begin(std::chrono::nanoseconds delta)
 {
-	std::ranges::rotate(m_FrameRates, m_FrameRates.end() - 1);
+	XENON_NAMESPACE_RANGES::rotate(m_FrameRates.begin(), m_FrameRates.end() - 1, m_FrameRates.end());
 	m_FrameRates[0] = std::nano::den / static_cast<float>(delta.count());
 
 	if (m_bIsOpen)

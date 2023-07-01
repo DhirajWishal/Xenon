@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -49,42 +49,42 @@ namespace Xenon
 			 * @param entryPoint The shader's entry point. Default is main.
 			 * @return The shader source object.
 			 */
-			[[nodiscard]] static ShaderSource FromFile(const std::filesystem::path& shader, const std::string& entryPoint = "main");
+			XENON_NODISCARD static ShaderSource FromFile(const std::filesystem::path& shader, const std::string& entryPoint = "main");
 
 			/**
 			 * Get the shader binary.
 			 *
 			 * @return The shader binary.
 			 */
-			[[nodiscard]] const BinaryType& getBinary() const noexcept { return m_Binary; }
+			XENON_NODISCARD const BinaryType& getBinary() const noexcept { return m_Binary; }
 
 			/**
 			 * Get the binary data pointer.
 			 *
 			 * @return The data pointer.
 			 */
-			[[nodiscard]] const uint32_t* getBinaryData() const noexcept { return m_Binary.data(); }
+			XENON_NODISCARD const uint32_t* getBinaryData() const noexcept { return m_Binary.data(); }
 
 			/**
 			 * Get the shader binary size.
 			 *
 			 * @return The size of the binary container.
 			 */
-			[[nodiscard]] uint64_t getBinarySize() const noexcept { return m_Binary.size(); }
+			XENON_NODISCARD uint64_t getBinarySize() const noexcept { return m_Binary.size(); }
 
 			/**
 			 * Get the shader binary size in bytes.
 			 *
 			 * @return The size of the binary container in bytes.
 			 */
-			[[nodiscard]] uint64_t getBinarySizeInBytes() const noexcept { return m_Binary.size() * sizeof(uint32_t); }
+			XENON_NODISCARD uint64_t getBinarySizeInBytes() const noexcept { return m_Binary.size() * sizeof(uint32_t); }
 
 			/**
 			 * Get the shader's entry point.
 			 *
 			 * @return The entry point.
 			 */
-			[[nodiscard]] std::string_view getEntryPoint() const { return m_EntryPoint; }
+			XENON_NODISCARD std::string_view getEntryPoint() const { return m_EntryPoint; }
 
 			/**
 			 * Check if the shader source is valid or not.
@@ -93,7 +93,7 @@ namespace Xenon
 			 * @return True if the shader source is valid.
 			 * @return False if the shader source is not valid.
 			 */
-			[[nodiscard]] bool isValid() const noexcept { return !m_Binary.empty(); }
+			XENON_NODISCARD bool isValid() const noexcept { return !m_Binary.empty(); }
 
 		private:
 			BinaryType m_Binary;
@@ -109,7 +109,7 @@ namespace Xenon
 	 * @return The 64-bit hash value.
 	 */
 	template<>
-	[[nodiscard]] inline uint64_t GenerateHashFor<Backend::ShaderSource>(const Backend::ShaderSource& source, uint64_t seed) noexcept
+	XENON_NODISCARD inline uint64_t GenerateHashFor<Backend::ShaderSource>(const Backend::ShaderSource& source, uint64_t seed) noexcept
 	{
 		return GenerateHash(ToBytes(source.getBinaryData()), source.getBinarySizeInBytes(), seed);
 	}

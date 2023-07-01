@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -59,14 +59,14 @@ namespace Xenon
 			 *
 			 * @return The image pointer.
 			 */
-			[[nodiscard]] Backend::Image* getOutputImage() noexcept { return m_pOutputImage.get(); }
+			XENON_NODISCARD Backend::Image* getOutputImage() noexcept { return m_pOutputImage.get(); }
 
 			/**
 			 * Get the output image pointer.
 			 *
 			 * @return The image pointer.
 			 */
-			[[nodiscard]] const Backend::Image* getOutputImage() const noexcept { return m_pOutputImage.get(); }
+			XENON_NODISCARD const Backend::Image* getOutputImage() const noexcept { return m_pOutputImage.get(); }
 
 		private:
 			std::unique_ptr<Backend::ComputePipeline> m_pPipeline = nullptr;

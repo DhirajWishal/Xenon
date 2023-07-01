@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -40,14 +40,14 @@ namespace Xenon
 		 *
 		 * @return The layer reference.
 		 */
-		[[nodiscard]] Layer& getLayer() noexcept { return m_Layer; }
+		XENON_NODISCARD Layer& getLayer() noexcept { return m_Layer; }
 
 		/**
 		 * Get the parent layer reference.
 		 *
 		 * @return The layer reference.
 		 */
-		[[nodiscard]] const Layer& getLayer() const noexcept { return m_Layer; }
+		XENON_NODISCARD const Layer& getLayer() const noexcept { return m_Layer; }
 
 	private:
 		Layer& m_Layer;

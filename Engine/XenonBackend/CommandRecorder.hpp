@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -44,7 +44,7 @@ namespace Xenon
 			 * @param usage The command recorder usage.
 			 * @param bufferCount The backend primitive buffer count. Default is 1.
 			 */
-			explicit CommandRecorder([[maybe_unused]] const Device* pDevice, CommandRecorderUsage usage, uint32_t bufferCount = 1) : m_BufferCount(bufferCount), m_Usage(usage) {}
+			explicit CommandRecorder(XENON_MAYBE_UNUSED const Device* pDevice, CommandRecorderUsage usage, uint32_t bufferCount = 1) : m_BufferCount(bufferCount), m_Usage(usage) {}
 
 			/**
 			 * Set the command recorder state to recording.
@@ -243,6 +243,16 @@ namespace Xenon
 			virtual void beginQuery(OcclusionQuery* pOcclusionQuery, uint32_t index) = 0;
 
 			/**
+			 * Draw using the bound vertex buffer.
+			 *
+			 * @param vertexOffset The vertex offset of the buffer.
+			 * @param veretxCount The number of vertices to draw.
+			 * @param instanceCount The number of instances to draw. Default is 1.
+			 * @param firstInstance The first instance to render. Default is 0.
+			 */
+			virtual void drawVertices(uint64_t vertexOffset, uint64_t veretxCount, uint32_t instanceCount = 1, uint32_t firstInstance = 0) = 0;
+
+			/**
 			 * Draw using the bound index buffers.
 			 *
 			 * @param vertexOffset The vertex offset.
@@ -332,14 +342,14 @@ namespace Xenon
 			 *
 			 * @return The buffer count.
 			 */
-			[[nodiscard]] uint32_t getBufferCount() const { return m_BufferCount; }
+			XENON_NODISCARD uint32_t getBufferCount() const { return m_BufferCount; }
 
 			/**
 			 * Get the current buffer index.
 			 *
 			 * @return The buffer index.
 			 */
-			[[nodiscard]] uint32_t getCurrentIndex() const { return m_CurrentIndex; }
+			XENON_NODISCARD uint32_t getCurrentIndex() const { return m_CurrentIndex; }
 
 		protected:
 			/**
@@ -347,7 +357,7 @@ namespace Xenon
 			 *
 			 * @return The incremented index.
 			 */
-			[[nodiscard]] uint32_t incrementIndex() { return m_CurrentIndex = ++m_CurrentIndex % m_BufferCount; }
+			XENON_NODISCARD uint32_t incrementIndex() { return m_CurrentIndex = ++m_CurrentIndex % m_BufferCount; }
 
 		protected:
 			uint32_t m_BufferCount;

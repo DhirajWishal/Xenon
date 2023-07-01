@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "VulkanCommandRecorder.hpp"
@@ -150,7 +150,7 @@ namespace /* anonymous */
 	 * @param flags Access flags.
 	 * @return The stage flags.
 	 */
-	[[nodiscard]] constexpr VkPipelineStageFlags GetPipelineStageFlags(VkAccessFlags flags) noexcept
+	XENON_NODISCARD constexpr VkPipelineStageFlags GetPipelineStageFlags(VkAccessFlags flags) noexcept
 	{
 		switch (flags)
 		{
@@ -1084,6 +1084,14 @@ namespace Xenon
 			OPTICK_EVENT();
 
 			m_pDevice->getDeviceTable().vkCmdBeginQuery(*m_pCurrentBuffer, pOcclusionQuery->as<VulkanOcclusionQuery>()->getQueryPool(), index, 0);
+		}
+
+		void VulkanCommandRecorder::drawVertices(uint64_t vertexOffset, uint64_t veretxCount, uint32_t instanceCount /*= 1*/, uint32_t firstInstance /*= 0*/)
+		{
+			OPTICK_EVENT();
+
+			// m_pDevice->getDeviceTable().vkCmdSetPrimitiveTopology(*m_pCurrentBuffer, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+			m_pDevice->getDeviceTable().vkCmdDraw(*m_pCurrentBuffer, static_cast<uint32_t>(veretxCount), instanceCount, static_cast<uint32_t>(vertexOffset), firstInstance);
 		}
 
 		void VulkanCommandRecorder::drawIndexed(uint64_t vertexOffset, uint64_t indexOffset, uint64_t indexCount, uint32_t instanceCount /*= 1*/, uint32_t firstInstance /*= 0*/)

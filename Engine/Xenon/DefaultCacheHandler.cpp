@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "DefaultCacheHandler.hpp"
@@ -19,7 +19,7 @@ namespace Xenon
 			cacheFile.seekg(0);
 
 			cacheData.resize(size);
-			cacheFile.read(std::bit_cast<char*>(cacheData.data()), size);
+			cacheFile.read(XENON_BIT_CAST(char*, cacheData.data()), size);
 
 			cacheFile.close();
 		}
@@ -32,7 +32,7 @@ namespace Xenon
 		auto cacheFile = std::fstream(fmt::format("{}.bin", hash), std::ios::out | std::ios::binary);
 		if (cacheFile.is_open())
 		{
-			cacheFile.write(std::bit_cast<const char*>(bytes.data()), bytes.size());
+			cacheFile.write(XENON_BIT_CAST(const char*, bytes.data()), bytes.size());
 			cacheFile.close();
 		}
 	}

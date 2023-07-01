@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -20,7 +20,7 @@ namespace Xenon
 		 * @param hash The internal hash used to identify unique pipelines.
 		 * @return The pipeline cache.
 		 */
-		[[nodiscard]] std::vector<std::byte> load(uint64_t hash) override;
+		XENON_NODISCARD std::vector<std::byte> load(uint64_t hash) override;
 
 		/**
 		 * Store the cache data generated from the backend.

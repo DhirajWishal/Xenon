@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "VulkanDescriptorSetManager.hpp"
@@ -14,7 +14,7 @@ namespace /* anonymous */
 	 * @param type The type of the shader.
 	 * @return The shader stage flags.
 	 */
-	[[nodiscard]] constexpr VkShaderStageFlags GetStageFlags(Xenon::Backend::ShaderType type) noexcept
+	XENON_NODISCARD constexpr VkShaderStageFlags GetStageFlags(Xenon::Backend::ShaderType type) noexcept
 	{
 		VkShaderStageFlags flags = 0;
 		if (type & Xenon::Backend::ShaderType::Vertex) flags |= VK_SHADER_STAGE_VERTEX_BIT;

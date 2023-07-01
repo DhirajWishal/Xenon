@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "DX12OcclusionQuery.hpp"
@@ -55,7 +55,7 @@ namespace Xenon
 			const D3D12_RANGE mapRange = CD3DX12_RANGE(1, 0);
 
 			uint64_t* pSampleData = nullptr;
-			XENON_DX12_ASSERT(getBuffer()->Map(0, nullptr, std::bit_cast<void**>(&pSampleData)), "Failed to map the occlusion query buffer!");
+			XENON_DX12_ASSERT(getBuffer()->Map(0, nullptr, XENON_BIT_CAST(void**, &pSampleData)), "Failed to map the occlusion query buffer!");
 			getBuffer()->Unmap(0, &mapRange);
 
 			auto samples = std::vector<uint64_t>(m_SampleCount);

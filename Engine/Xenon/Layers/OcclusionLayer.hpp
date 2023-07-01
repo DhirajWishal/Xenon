@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -68,7 +68,7 @@ namespace Xenon
 		 * @paarm subMesh The sub-mesh.
 		 * @return The sample count.
 		 */
-		[[nodiscard]] uint64_t getSamples(const SubMesh& subMesh);
+		XENON_NODISCARD uint64_t getSamples(const SubMesh& subMesh);
 
 	private:
 		/**
@@ -77,12 +77,24 @@ namespace Xenon
 		void issueDrawCalls();
 
 		/**
+		 * Bind everything and perform the draw.
+		 *
+		 * @param subMesh The sub-mesh to draw.
+		 * @param geometry The geometry to draw.
+		 * @param pPerGeometryDescriptor The per-geometry descriptor.
+		 * @param pOcclusionSceneDescriptor The occlusion scene descriptor.
+		 * @param samples The occlusion samples.
+		 * @param index The index of the current call.
+		 */
+		void performDraw(const SubMesh& subMesh, Geometry& geometry, Backend::Descriptor* pPerGeometryDescriptor, Backend::Descriptor* pOcclusionSceneDescriptor, OcclusionQuerySamples& samples, uint32_t& index);
+
+		/**
 		 * Create a new per-geometry descriptor.
 		 *
 		 * @param group The group.
 		 * @return The created descriptor.
 		 */
-		[[nodiscard]] std::unique_ptr<Backend::Descriptor> createPerGeometryDescriptor(Group group);
+		XENON_NODISCARD std::unique_ptr<Backend::Descriptor> createPerGeometryDescriptor(Group group);
 
 	private:
 		std::mutex m_Mutex;

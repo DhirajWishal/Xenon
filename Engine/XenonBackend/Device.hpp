@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -41,7 +41,7 @@ namespace Xenon
 			 * @param pInstance The instance pointer.
 			 * @param requiredRenderTargets The render targets the device must support.
 			 */
-			explicit Device([[maybe_unused]] const Instance* pInstance, RenderTargetType requiredRenderTargets) : m_SupportedRenderTargetTypes(requiredRenderTargets) {}
+			explicit Device(XENON_MAYBE_UNUSED const Instance* pInstance, RenderTargetType requiredRenderTargets) : m_SupportedRenderTargetTypes(requiredRenderTargets) {}
 
 			/**
 			 * Finish all device operations and wait idle.
@@ -54,7 +54,7 @@ namespace Xenon
 			 *
 			 * @return The supported render target types.
 			 */
-			[[nodiscard]] RenderTargetType getSupportedRenderTargetTypes() const { return m_SupportedRenderTargetTypes; }
+			XENON_NODISCARD RenderTargetType getSupportedRenderTargetTypes() const { return m_SupportedRenderTargetTypes; }
 
 		protected:
 			RenderTargetType m_SupportedRenderTargetTypes = RenderTargetType::All;

@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -112,14 +112,14 @@ namespace Xenon
 			 * @param pDevice The device pointer.
 			 * @param specification The sampler specification.
 			 */
-			explicit ImageSampler([[maybe_unused]] const Device* pDevice, const ImageSamplerSpecification& specification) : m_Specification(specification) {}
+			explicit ImageSampler(XENON_MAYBE_UNUSED const Device* pDevice, const ImageSamplerSpecification& specification) : m_Specification(specification) {}
 
 			/**
 			 * Get the image sampler specification.
 			 *
 			 * @return The image sampler specification.
 			 */
-			[[nodiscard]] const ImageSamplerSpecification& getSpecification() const { return m_Specification; }
+			XENON_NODISCARD const ImageSamplerSpecification& getSpecification() const { return m_Specification; }
 
 		private:
 			ImageSamplerSpecification m_Specification = {};

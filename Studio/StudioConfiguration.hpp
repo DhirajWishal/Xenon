@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -30,7 +30,7 @@ public:
 	 *
 	 * @return The backend type.
 	 */
-	[[nodiscard]] Xenon::BackendType getCurrentBackendType() const;
+	XENON_NODISCARD Xenon::BackendType getCurrentBackendType() const;
 
 	/**
 	 * Set the current backend type.
@@ -45,7 +45,7 @@ public:
 	 * @return True if the application should exit.
 	 * @return False if the application should not exit.
 	 */
-	[[nodiscard]] bool shouldExitApplication() const noexcept { return m_bExitAppliation; }
+	XENON_NODISCARD bool shouldExitApplication() const noexcept { return m_bExitAppliation; }
 
 	/**
 	 * Toggle the internal variable to true and indicate that the application should exit.

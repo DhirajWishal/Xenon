@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "VulkanSwapchain.hpp"
@@ -6,6 +6,11 @@
 
 #if defined(XENON_PLATFORM_WINDOWS)
 #include "../XenonPlatformWindows/WindowsWindow.hpp"
+
+#elif defined(XENON_PLATFORM_LINUX)
+#include <SDL3/SDL_vulkan.h>
+
+#include "../XenonPlatformLinux/LinuxWindow.hpp"
 
 #endif // defined(XENON_PLATFORM_WINDOWS)
 
@@ -60,7 +65,7 @@ namespace Xenon
 				recreate();
 				return prepare();
 			}
-			
+
 			if (result == VK_TIMEOUT || result == VK_NOT_READY)
 			{
 				std::this_thread::sleep_for(std::chrono::microseconds(1));
@@ -131,7 +136,11 @@ namespace Xenon
 
 			XENON_VK_ASSERT(vkCreateWin32SurfaceKHR(m_pDevice->getInstance()->getInstance(), &createInfo, nullptr, &m_Surface), "Failed to create the Windows surface!");
 
-#else 
+#elif defined(XENON_PLATFORM_LINUX)
+			if (SDL_Vulkan_CreateSurface(static_cast<Platform::LinuxWindow*>(m_pWindow.get())->getWindowHandle(), m_pDevice->getInstance()->getInstance(), &m_Surface) == SDL_FALSE)
+				XENON_LOG_FATAL("Failed to create the Windows surface!");
+
+#else
 #error "Surface creation for the current platform is not supported!"
 
 #endif // defined(XENON_PLATFORM_WINDOWS)

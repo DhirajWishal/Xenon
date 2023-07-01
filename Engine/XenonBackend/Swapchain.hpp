@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -28,14 +28,14 @@ namespace Xenon
 			 * @param width The window's width.
 			 * @param height The window's height.
 			 */
-			explicit Swapchain([[maybe_unused]] const Device* pDevice, const std::string& title, uint32_t width, uint32_t height);
+			explicit Swapchain(XENON_MAYBE_UNUSED const Device* pDevice, const std::string& title, uint32_t width, uint32_t height);
 
 			/**
 			 * Prepare the swapchain to present.
 			 *
 			 * @return The swapchain image index.
 			 */
-			[[nodiscard]] virtual uint32_t prepare() = 0;
+			XENON_NODISCARD virtual uint32_t prepare() = 0;
 
 			/**
 			 * Present the swapchain to the window.
@@ -47,21 +47,21 @@ namespace Xenon
 			 *
 			 * @return The window pointer.
 			 */
-			[[nodiscard]] Platform::Window* getWindow() noexcept { return m_pWindow.get(); }
+			XENON_NODISCARD Platform::Window* getWindow() noexcept { return m_pWindow.get(); }
 
 			/**
 			 * Get the swapchain's window pointer.
 			 *
 			 * @return The const window pointer.
 			 */
-			[[nodiscard]] const Platform::Window* getWindow() const noexcept { return m_pWindow.get(); }
+			XENON_NODISCARD const Platform::Window* getWindow() const noexcept { return m_pWindow.get(); }
 
 			/**
 			 * Get the current frame index.
 			 *
 			 * @return The frame index.
 			 */
-			[[nodiscard]] uint32_t getFrameIndex() const noexcept { return m_FrameIndex; }
+			XENON_NODISCARD uint32_t getFrameIndex() const noexcept { return m_FrameIndex; }
 
 		protected:
 			/**

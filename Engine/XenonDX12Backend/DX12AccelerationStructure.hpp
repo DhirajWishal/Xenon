@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -33,7 +33,7 @@ namespace Xenon
 			 *
 			 * @return The GPU virtual address.
 			 */
-			[[nodiscard]] D3D12_GPU_VIRTUAL_ADDRESS getAccelerationStructureGPUVirtualAddress() const noexcept { return m_pAccelerationStructure->GetResource()->GetGPUVirtualAddress(); }
+			XENON_NODISCARD D3D12_GPU_VIRTUAL_ADDRESS getAccelerationStructureGPUVirtualAddress() const noexcept { return m_pAccelerationStructure->GetResource()->GetGPUVirtualAddress(); }
 
 		protected:
 			/**

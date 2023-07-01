@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "VulkanRayTracer.hpp"
@@ -9,7 +9,7 @@ namespace /* anonymous */
 	/**
 	 * Get the image specification used to create the color image.
 	 */
-	[[nodiscard]] Xenon::Backend::ImageSpecification GetImageSpecification(uint32_t width, uint32_t height) noexcept
+	XENON_NODISCARD Xenon::Backend::ImageSpecification GetImageSpecification(uint32_t width, uint32_t height) noexcept
 	{
 		Xenon::Backend::ImageSpecification specification;
 		specification.m_Width = width;

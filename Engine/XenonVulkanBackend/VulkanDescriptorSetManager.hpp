@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -47,7 +47,7 @@ namespace Xenon
 			 * @param descriptorType The descriptor type.
 			 * @return The descriptor set layout.
 			 */
-			[[nodicard]] VkDescriptorSetLayout getDescriptorSetLayout(const std::unordered_map<uint32_t, DescriptorBindingInfo>& bindingInfo);
+			XENON_NODISCARD VkDescriptorSetLayout getDescriptorSetLayout(const std::unordered_map<uint32_t, DescriptorBindingInfo>& bindingInfo);
 
 			/**
 			 * Create a new descriptor set.
@@ -56,7 +56,7 @@ namespace Xenon
 			 * @param descriptorType The descriptor type.
 			 * @return The descriptor pool and its set.
 			 */
-			[[nodiscard]] std::pair<VkDescriptorPool, VkDescriptorSet> createDescriptorSet(const std::unordered_map<uint32_t, DescriptorBindingInfo>& bindingInfo);
+			XENON_NODISCARD std::pair<VkDescriptorPool, VkDescriptorSet> createDescriptorSet(const std::unordered_map<uint32_t, DescriptorBindingInfo>& bindingInfo);
 
 			/**
 			 * Free the descriptor set.
@@ -75,7 +75,7 @@ namespace Xenon
 			 * @param bindingInfo The binding infos.
 			 * @return The generated hash.
 			 */
-			[[nodiscard]] uint64_t getBindingInfoHash(const std::unordered_map<uint32_t, DescriptorBindingInfo>& bindingInfo) const;
+			XENON_NODISCARD uint64_t getBindingInfoHash(const std::unordered_map<uint32_t, DescriptorBindingInfo>& bindingInfo) const;
 
 		private:
 			std::unordered_map<uint64_t, VulkanDescriptorStorage> m_DescriptorSetStorages;

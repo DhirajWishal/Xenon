@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -55,7 +55,7 @@ namespace Xenon
 			 *
 			 * @return The Vulkan descriptor set.
 			 */
-			[[nodiscard]] VkDescriptorSet getDescriptorSet() const noexcept { return m_DescriptorSet; }
+			XENON_NODISCARD VkDescriptorSet getDescriptorSet() const noexcept { return m_DescriptorSet; }
 
 		private:
 			VkDescriptorPool m_Pool = VK_NULL_HANDLE;

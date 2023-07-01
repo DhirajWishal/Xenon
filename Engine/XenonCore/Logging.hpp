@@ -1,11 +1,16 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
 
+#include "Features.hpp"
+
 #include <spdlog/spdlog.h>
 
+#ifdef XENON_FEATURE_SOURCE_LOCATION
 #include <source_location>
+
+#endif
 
 namespace Xenon
 {
@@ -26,6 +31,7 @@ namespace Xenon
 	 */
 	void HexDump(const std::byte* pBegin, const std::byte* pEnd);
 
+#ifdef XENON_FEATURE_SOURCE_LOCATION
 	/**
 	 * Log a trace to the console.
 	 *
@@ -38,7 +44,17 @@ namespace Xenon
 	{
 		spdlog::info("[Trace \"{}\":{}] {}", location.file_name(), location.line(), std::move(message));
 	}
+
+#endif
 }
+
+#ifdef XENON_FEATURE_SOURCE_LOCATION
+#	define XENON_TRACE_FUNCTION(...)	::Xenon::TraceLog(std::source_location::current(), fmt::format(__VA_ARGS__))
+
+#else
+#	define XENON_TRACE_FUNCTION(...)	::spdlog::info("[Trace \"{}\":{}] {}", __FILE__, __LINE__, fmt::format(__VA_ARGS__))
+
+#endif // XENONE_FEATURE_SOURCE_LOCATION
 
 /**
  * Xenon log level defines the types of logging that can be done by the engine.
@@ -65,7 +81,7 @@ namespace Xenon
 #					define XENON_LOG_INFORMATION(...)			::spdlog::info(__VA_ARGS__)
 
 #					if XENON_LOG_LEVEL > 4
-#						define XENON_LOG_TRACE(msg,...)			::Xenon::TraceLog(std::source_location::current(), fmt::format(msg, __VA_ARGS__))
+#						define XENON_LOG_TRACE(...)				XENON_TRACE_FUNCTION(__VA_ARGS__)
 
 #					endif
 #				endif

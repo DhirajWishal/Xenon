@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -54,7 +54,7 @@ namespace Xenon
 			 *
 			 * @return The image pointer.
 			 */
-			[[nodiscard]] Backend::Image* getColorAttachment() override { return m_pDiffusionPass->getOutputImage(); }
+			XENON_NODISCARD Backend::Image* getColorAttachment() override { return m_pDiffusionPass->getOutputImage(); }
 
 			/**
 			 * Set the source image pointer to perform diffusion.

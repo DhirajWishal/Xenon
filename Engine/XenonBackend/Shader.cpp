@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "Shader.hpp"
@@ -112,7 +112,7 @@ namespace /* anonymous */
 	 * @parma type The reflection type.
 	 * @return The binding type.
 	 */
-	[[nodiscard]] constexpr Xenon::Backend::ResourceType GetResourceType(SpvReflectDescriptorType type) noexcept
+	XENON_NODISCARD constexpr Xenon::Backend::ResourceType GetResourceType(SpvReflectDescriptorType type) noexcept
 	{
 		switch (type)
 		{
@@ -164,7 +164,7 @@ namespace /* anonymous */
 	 * @param dimensions The vector's dimensions.
 	 * @return The attribute data type.
 	 */
-	[[nodiscard]] constexpr Xenon::Backend::AttributeDataType ResolveVectorDataType(uint32_t dimensions) noexcept
+	XENON_NODISCARD constexpr Xenon::Backend::AttributeDataType ResolveVectorDataType(uint32_t dimensions) noexcept
 	{
 		switch (dimensions)
 		{
@@ -215,7 +215,7 @@ namespace Xenon
 				// Iterate through the attributes and load them.
 				for (auto& pResource : pInputs)
 				{
-					if (pResource->format == SPV_REFLECT_FORMAT_UNDEFINED || pResource->built_in != -1)
+					if (pResource->format == SPV_REFLECT_FORMAT_UNDEFINED || EnumToInt(pResource->built_in) != -1)
 						continue;
 
 					auto& input = m_InputAttributes.emplace_back();
@@ -235,7 +235,7 @@ namespace Xenon
 				// Iterate through the attributes and load them.
 				for (auto& pResource : pOutputs)
 				{
-					if (pResource->format == SPV_REFLECT_FORMAT_UNDEFINED || pResource->built_in != -1)
+					if (pResource->format == SPV_REFLECT_FORMAT_UNDEFINED || EnumToInt(pResource->built_in) != -1)
 						continue;
 
 					auto& output = m_OutputAttributes.emplace_back();

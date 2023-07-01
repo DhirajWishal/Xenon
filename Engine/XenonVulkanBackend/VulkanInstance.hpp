@@ -1,11 +1,11 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
 
 #include "../XenonBackend/Instance.hpp"
 
-#if defined(XENON_PLATFORM_WINDOWS)
+#ifdef XENON_PLATFORM_WINDOWS
 #define VK_USE_PLATFORM_WIN32_KHR
 
 #endif // defined(XENON_PLATFORM_WINDOWS)
@@ -49,14 +49,14 @@ namespace Xenon
 			 *
 			 * @return The Vulkan instance handle.
 			 */
-			[[nodiscard]] VkInstance getInstance() const { return m_Instance; }
+			XENON_NODISCARD VkInstance getInstance() const { return m_Instance; }
 
 			/**
 			 * Get the validation layers.
 			 *
 			 * @return The validation layers.
 			 */
-			[[nodiscard]] const std::vector<const char*>& getValidationLayers() const { return m_pValidationLayers; }
+			XENON_NODISCARD const std::vector<const char*>& getValidationLayers() const { return m_pValidationLayers; }
 
 			/**
 			 * Get the Vulkan's log file.
@@ -64,7 +64,7 @@ namespace Xenon
 			 *
 			 * @return The log file.
 			 */
-			[[nodiscard]] std::ofstream& getLogFile();
+			XENON_NODISCARD std::ofstream& getLogFile();
 
 		private:
 			/**

@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "ShadowMapLayer.hpp"
@@ -121,15 +121,25 @@ namespace Xenon
 					OPTICK_EVENT_DYNAMIC("Binding Mesh");
 
 					for (const auto& subMesh : mesh.m_SubMeshes)
-					{
-						OPTICK_EVENT_DYNAMIC("Issuing Draw Calls");
-
-						m_pCommandRecorder->bind(geometry.getIndexBuffer(), static_cast<Backend::IndexBufferStride>(subMesh.m_IndexSize));
-						m_pCommandRecorder->bind(m_pPipeline.get(), nullptr, nullptr, pPerGeometryDescriptor, m_LightCamera.m_pDescriptor.get());
-
-						m_pCommandRecorder->drawIndexed(subMesh.m_VertexOffset, subMesh.m_IndexOffset, subMesh.m_IndexCount);
-					}
+						performDraw(subMesh, geometry, pPerGeometryDescriptor);
 				}
+			}
+		}
+
+		void ShadowMapLayer::performDraw(const SubMesh& subMesh, Geometry& geometry, Backend::Descriptor* pDescriptor)
+		{
+			OPTICK_EVENT("Issuing Draw Calls");
+
+			m_pCommandRecorder->bind(m_pPipeline.get(), nullptr, nullptr, pDescriptor, m_LightCamera.m_pDescriptor.get());
+
+			if (subMesh.m_IndexCount > 0)
+			{
+				m_pCommandRecorder->bind(geometry.getIndexBuffer(), static_cast<Backend::IndexBufferStride>(subMesh.m_IndexSize));
+				m_pCommandRecorder->drawIndexed(subMesh.m_VertexOffset, subMesh.m_IndexOffset, subMesh.m_IndexCount);
+			}
+			else
+			{
+				m_pCommandRecorder->drawVertices(subMesh.m_VertexOffset, subMesh.m_VertexCount);
 			}
 		}
 

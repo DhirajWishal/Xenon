@@ -1,4 +1,4 @@
-# Copyright 2022-2023 Nexonous
+# Copyright 2022-2023 Dhiraj Wishal
 # SPDX-License-Identifier: Apache-2.0
 
 # Set the basic project information.
@@ -87,6 +87,7 @@ target_include_directories(
 	PRIVATE ${VULKAN_HEADERS_INCLUDE_DIR}
 	PRIVATE ${VOLK_INCLUDE_DIR}
 	PRIVATE ${VMA_INCLUDE_DIR}
+	PRIVATE ${SDL_INCLUDE_DIR}
 )
 
 # Make sure to specify the C++ standard to C++20.

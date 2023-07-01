@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "DefaultRasterizingLayer.hpp"
@@ -240,10 +240,17 @@ namespace Xenon
 				if (m_pOcclusionLayer && m_pOcclusionLayer->getSamples(subMesh) == 0)
 					continue;
 
-				m_pCommandRecorder->bind(geometry.getIndexBuffer(), static_cast<Backend::IndexBufferStride>(subMesh.m_IndexSize));
 				m_pCommandRecorder->bind(pipeline.m_pPipeline.get(), nullptr, pipeline.m_pMaterialDescriptors[subMesh].get(), pPerGeometryDescriptor, pipeline.m_pSceneDescriptor.get());
 
-				m_pCommandRecorder->drawIndexed(subMesh.m_VertexOffset, subMesh.m_IndexOffset, subMesh.m_IndexCount);
+				if (subMesh.m_IndexCount > 0)
+				{
+					m_pCommandRecorder->bind(geometry.getIndexBuffer(), static_cast<Backend::IndexBufferStride>(subMesh.m_IndexSize));
+					m_pCommandRecorder->drawIndexed(subMesh.m_VertexOffset, subMesh.m_IndexOffset, subMesh.m_IndexCount);
+				}
+				else
+				{
+					m_pCommandRecorder->drawVertices(subMesh.m_VertexOffset, subMesh.m_VertexCount);
+				}
 
 				m_DrawCount++;
 			}

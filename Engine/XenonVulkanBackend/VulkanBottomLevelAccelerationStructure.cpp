@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "VulkanBottomLevelAccelerationStructure.hpp"
@@ -15,7 +15,7 @@ namespace /* anonymous */
 	 * @param dataType The component data type.
 	 * @return The Vulkan format.
 	 */
-	[[nodiscard]] constexpr VkFormat GetElementFormat(uint8_t componentCount, Xenon::Backend::ComponentDataType dataType) noexcept
+	XENON_NODISCARD constexpr VkFormat GetElementFormat(uint8_t componentCount, Xenon::Backend::ComponentDataType dataType) noexcept
 	{
 		if (componentCount == 1)
 		{

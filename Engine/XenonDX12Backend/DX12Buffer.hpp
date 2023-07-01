@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -71,7 +71,7 @@ namespace Xenon
 			 *
 			 * @return The const data pointer.
 			 */
-			[[nodiscard]] const std::byte* beginRead() override;
+			XENON_NODISCARD const std::byte* beginRead() override;
 
 			/**
 			 * End the buffer reading.
@@ -108,21 +108,21 @@ namespace Xenon
 			 *
 			 * @return The resource pointer.
 			 */
-			[[nodiscard]] ID3D12Resource* getResource() { return m_pAllocation->GetResource(); }
+			XENON_NODISCARD ID3D12Resource* getResource() { return m_pAllocation->GetResource(); }
 
 			/**
 			 * Get the internally managed resource.
 			 *
 			 * @return The const resource pointer.
 			 */
-			[[nodiscard]] const ID3D12Resource* getResource() const { return m_pAllocation->GetResource(); }
+			XENON_NODISCARD const ID3D12Resource* getResource() const { return m_pAllocation->GetResource(); }
 
 			/**
 			 * Get the current resource state.
 			 *
 			 * @return The resource state.
 			 */
-			[[nodiscard]] D3D12_RESOURCE_STATES getResourceState() const noexcept { return m_CurrentState; }
+			XENON_NODISCARD D3D12_RESOURCE_STATES getResourceState() const noexcept { return m_CurrentState; }
 
 		private:
 			/**

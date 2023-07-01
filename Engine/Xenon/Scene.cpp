@@ -1,7 +1,9 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "Scene.hpp"
+
+#include "../XenonCore/Logging.hpp"
 
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -55,6 +57,14 @@ namespace Xenon
 		m_pCamera.reset();
 		m_pSceneInformationUniform.reset();
 		m_pLightSourceUniform.reset();
+	}
+
+	XENON_NODISCARD Material& Scene::createMaterial(Group group, MaterialBuilder& builder)
+	{
+		XENON_TODO_NOW("Find a better system to specialize using the create function.");
+
+		const auto lock = std::scoped_lock(m_Mutex);
+		return m_Registry.emplace<Material>(group, m_Instance.getMaterialDatabase().storeSpecification(static_cast<const MaterialSpecification&>(builder)));
 	}
 
 	void Scene::setupDescriptor(Backend::Descriptor* pSceneDescriptor, const Backend::RasterizingPipeline* pPipeline)

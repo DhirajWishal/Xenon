@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -52,7 +52,7 @@ namespace Xenon
 			 * @param type The descriptor type to create.
 			 * @return The descriptor pointer. It will return nullptr if the descriptor type is not present in the pipeline.
 			 */
-			[[nodiscard]] std::unique_ptr<Descriptor> createDescriptor(DescriptorType type) override;
+			XENON_NODISCARD std::unique_ptr<Descriptor> createDescriptor(DescriptorType type) override;
 
 			/**
 			 * Get the pipeline.
@@ -74,7 +74,7 @@ namespace Xenon
 			 *
 			 * @return The pipeline layout.
 			 */
-			[[nodiscard]] VkPipelineLayout getPipelineLayout() const noexcept { return m_PipelineLayout; }
+			XENON_NODISCARD VkPipelineLayout getPipelineLayout() const noexcept { return m_PipelineLayout; }
 
 		private:
 			/**

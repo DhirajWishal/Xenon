@@ -1,7 +1,9 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
+
+#include "../XenonCore/Common.hpp"
 
 #include <volk.h>
 
@@ -32,7 +34,7 @@ namespace Xenon
 			 * @param flag The queue flag.
 			 * @return The queue family.
 			 */
-			[[nodiscard]] static uint32_t FindFamily(VkPhysicalDevice physicalDevice, VkQueueFlagBits flag);
+			XENON_NODISCARD static uint32_t FindFamily(VkPhysicalDevice physicalDevice, VkQueueFlagBits flag);
 
 			/**
 			 * Set the queue's family.
@@ -54,14 +56,14 @@ namespace Xenon
 			 *
 			 * @return The optional family.
 			 */
-			[[nodiscard]] uint32_t getFamily() const { return m_Family; }
+			XENON_NODISCARD uint32_t getFamily() const { return m_Family; }
 
 			/**
 			 * Get the internally stored queue.
 			 *
 			 * @return The queue.
 			 */
-			[[nodiscard]] VkQueue getQueue() const { return m_Queue; }
+			XENON_NODISCARD VkQueue getQueue() const { return m_Queue; }
 
 		private:
 			VkQueue m_Queue = VK_NULL_HANDLE;

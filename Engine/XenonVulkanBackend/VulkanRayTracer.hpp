@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -37,7 +37,7 @@ namespace Xenon
 			 * @param type The attachment type.
 			 * @return The attachment image.
 			 */
-			[[nodiscard]] Image* getImageAttachment(AttachmentType type) override;
+			XENON_NODISCARD Image* getImageAttachment(AttachmentType type) override;
 
 		private:
 			VulkanImage m_ColorImage;

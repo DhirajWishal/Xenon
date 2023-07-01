@@ -1,4 +1,4 @@
-# Copyright 2022-2023 Nexonous
+# Copyright 2022-2023 Dhiraj Wishal
 # SPDX-License-Identifier: Apache-2.0
 
 # Main build script for Xenon.
@@ -52,6 +52,7 @@ set(FMT_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/fmt/include)
 set(ENTT_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/entt/src)
 set(IMGUIZMO_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/ImGuizmo)
 set(JSON_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/json/include)
+set(SDL_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/SDL/include)
 
 # Add the Optick library as a third party static link.
 add_library(
@@ -151,7 +152,6 @@ add_compile_definitions(
 	$<$<PLATFORM_ID:Linux>:XENON_PLATFORM_LINUX>
 	$<$<PLATFORM_ID:Darwin>:XENON_PLATFORM_MAC>
 
-	XENON_GLTF_ASSET_DIR="${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/glTF-Sample-Models/"
 	XENON_ASSET_DIR="${CMAKE_CURRENT_SOURCE_DIR}/Assets/"
 	XENON_LOG_LEVEL=${XENON_LOG_LEVEL}
 
@@ -168,6 +168,25 @@ add_compile_definitions(
 	# XENON_ENABLE_EXPERIMENTAL
 )
 
+# If we're in a Unix operating system, find out if we're using Wayland or X11.
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+	execute_process(
+		COMMAND "loginctl show-session $(loginctl | grep $(whoami) | awk '{print $1}') -p Type"
+		OUTPUT_VARIABLE PLATFORM_CHECK_RESULT
+	)
+	
+	if ("${PLATFORM_CHECK_RESULT}" STREQUAL "Type=x11")
+	   add_compile_definitions(XENON_PLATFORM_LINUX_X11)
+	   message(STATUS "X11 detected in Linux.")
+	else()
+	   add_compile_definitions(XENON_PLATFORM_LINUX_WAYLAND)
+	   message(STATUS "Wayland detected in Linux.")
+	endif()
+endif()
+
+# Add the SDL as a subdirectory.
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/SDL)
+
 # Include the main subdirectories.
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/Xenon)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonBackend)
@@ -176,6 +195,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonVulkanBackend)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonDX12Backend)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonPlatform)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonPlatformWindows)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonPlatformLinux)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonEvents)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonShaderBank)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Engine/XenonAssetPackager)
@@ -206,6 +226,10 @@ if (MSVC)
 		XenonThirdParty_Optick
 		XenonThirdParty_ImGui
 		XenonThirdParty_ImGuizmo
+
+		SDL3_test
+		SDL3-shared
+		uninstall
 			
 		PROPERTIES FOLDER "ThirdParty"
 	)

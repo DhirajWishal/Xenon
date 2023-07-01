@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -53,7 +53,7 @@ namespace Xenon
 		 * @return True if the two sub-meshes are equal.
 		 * @return False if the they're not equal.
 		 */
-		[[nodiscard]] bool operator==(const SubMesh& other) const = default;
+		XENON_NODISCARD bool operator==(const SubMesh& other) const = default;
 	};
 
 	/**
@@ -91,7 +91,7 @@ namespace Xenon
 		 * @param file The file path to load the data from.
 		 * @return The created geometry.
 		 */
-		[[nodiscard]] static Geometry FromFile(Instance& instance, const std::filesystem::path& file);
+		XENON_NODISCARD static Geometry FromFile(Instance& instance, const std::filesystem::path& file);
 
 		/**
 		 * Create a quad geometry.
@@ -99,7 +99,7 @@ namespace Xenon
 		 * @param instance The instance reference.
 		 * @return The created geometry.
 		 */
-		[[nodiscard]] static Geometry CreateQuad(Instance& instance);
+		XENON_NODISCARD static Geometry CreateQuad(Instance& instance);
 
 		/**
 		 * Create an image from loading the data from a file.
@@ -108,70 +108,70 @@ namespace Xenon
 		 * @param file The image file to load from.
 		 * @return The created image pointer.
 		 */
-		[[nodiscard]] static std::unique_ptr<Backend::Image> CreateImageFromFile(Instance& instance, const std::filesystem::path& file);
+		XENON_NODISCARD static std::unique_ptr<Backend::Image> CreateImageFromFile(Instance& instance, const std::filesystem::path& file);
 
 		/**
 		 * Get the vertex specification.
 		 *
 		 * @return The vertex specification.
 		 */
-		[[nodiscard]] const Backend::VertexSpecification& getVertexSpecification() const { return m_VertexSpecification; }
+		XENON_NODISCARD const Backend::VertexSpecification& getVertexSpecification() const { return m_VertexSpecification; }
 
 		/**
 		 * Get the index buffer.
 		 *
 		 * @return The index buffer pointer.
 		 */
-		[[nodiscard]] Backend::Buffer* getIndexBuffer() { return m_pIndexBuffer.get(); }
+		XENON_NODISCARD Backend::Buffer* getIndexBuffer() { return m_pIndexBuffer.get(); }
 
 		/**
 		 * Get the index buffer.
 		 *
 		 * @return The index buffer pointer.
 		 */
-		[[nodiscard]] const Backend::Buffer* getIndexBuffer() const { return m_pIndexBuffer.get(); }
+		XENON_NODISCARD const Backend::Buffer* getIndexBuffer() const { return m_pIndexBuffer.get(); }
 
 		/**
 		 * Get the vertex buffer.
 		 *
 		 * @return The vertex buffer pointer.
 		 */
-		[[nodiscard]] Backend::Buffer* getVertexBuffer() { return m_pVertexBuffer.get(); }
+		XENON_NODISCARD Backend::Buffer* getVertexBuffer() { return m_pVertexBuffer.get(); }
 
 		/**
 		 * Get the vertex buffer.
 		 *
 		 * @return The vertex buffer pointer.
 		 */
-		[[nodiscard]] const Backend::Buffer* getVertexBuffer() const { return m_pVertexBuffer.get(); }
+		XENON_NODISCARD const Backend::Buffer* getVertexBuffer() const { return m_pVertexBuffer.get(); }
 
 		/**
 		 * Get the meshes.
 		 *
 		 * @return The meshes.
 		 */
-		[[nodiscard]] std::vector<Mesh>& getMeshes() { return m_Meshes; }
+		XENON_NODISCARD std::vector<Mesh>& getMeshes() { return m_Meshes; }
 
 		/**
 		 * Get the meshes.
 		 *
 		 * @return The meshes.
 		 */
-		[[nodiscard]] const std::vector<Mesh>& getMeshes() const { return m_Meshes; }
+		XENON_NODISCARD const std::vector<Mesh>& getMeshes() const { return m_Meshes; }
 
 		/**
 		 * Get the image and it's image view objects.
 		 *
 		 * @return The image and image view container reference.
 		 */
-		[[nodiscard]] const ImageAndImageViewContainer& getImageAndImageViews() const noexcept { return m_pImageAndImageViews; }
+		XENON_NODISCARD const ImageAndImageViewContainer& getImageAndImageViews() const noexcept { return m_pImageAndImageViews; }
 
 		/**
 		 * Get the stored image samplers.
 		 *
 		 * @return The image samplers.
 		 */
-		[[nodiscard]] const ImageSamplerContainer& getImageSamplers() const noexcept { return m_pImageSamplers; }
+		XENON_NODISCARD const ImageSamplerContainer& getImageSamplers() const noexcept { return m_pImageSamplers; }
 
 	private:
 		std::unique_ptr<Backend::Buffer> m_pIndexBuffer = nullptr;

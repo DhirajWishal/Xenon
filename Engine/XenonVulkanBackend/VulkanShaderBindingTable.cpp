@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "VulkanShaderBindingTable.hpp"
@@ -22,7 +22,7 @@ namespace /* anonymous */
 	 * @param entryAlignment The alignment of the whole entry.
 	 * @return The size.
 	 */
-	[[nodiscard]] uint64_t GetEntrySize(const Xenon::Backend::BindingGroup::DataVariant& entry, uint32_t handleSize, uint64_t entryAlignment) noexcept
+	XENON_NODISCARD uint64_t GetEntrySize(const Xenon::Backend::BindingGroup::DataVariant& entry, uint32_t handleSize, uint64_t entryAlignment) noexcept
 	{
 		uint64_t entrySize = handleSize;
 
@@ -302,7 +302,7 @@ namespace Xenon
 			std::byte* pMemory = nullptr;
 			m_pDevice->getAllocator().access([this, &pMemory](VmaAllocator allocator)
 				{
-					XENON_VK_ASSERT(vmaMapMemory(allocator, m_Allocation, std::bit_cast<void**>(&pMemory)), "Failed to map the shader bindng table memory!");
+					XENON_VK_ASSERT(vmaMapMemory(allocator, m_Allocation, XENON_BIT_CAST(void**, &pMemory)), "Failed to map the shader bindng table memory!");
 				}
 			);
 
