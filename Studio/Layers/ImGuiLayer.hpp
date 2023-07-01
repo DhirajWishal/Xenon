@@ -15,6 +15,10 @@
 #include "../UIComponents/PipelineEditor.hpp"
 #include "../UIComponents/Configuration.hpp"
 #include "../UIComponents/Logs.hpp"
+#include "../UIComponents/PopUp.hpp"
+
+constexpr auto g_WelcomePopUpID = "Welcome!";
+constexpr auto g_LoadingAssetsPopUpID = "Loading Asset";
 
 /**
  * ImGui layer class.
@@ -121,6 +125,18 @@ public:
 	 */
 	XENON_NODISCARD LayerView& getLayerView() noexcept { return m_UIStorage.m_LayerViewUI; }
 
+	/**
+	 * Disable closing using the close button.
+	 * It'll also disable switching platforms.
+	 */
+	void disableClosing();
+
+	/**
+	 * Enable closing using the close button.
+	 * It'll also enable switching platforms.
+	 */
+	void enableClosing();
+
 private:
 	/**
 	 * Configure ImGui.
@@ -207,4 +223,9 @@ private:
 	Xenon::Backend::VertexSpecification m_VertexSpecification;
 
 	UserData m_UserData;
+
+	std::vector<PopUp> m_PopUpList;
+
+	bool m_bIsClosingDisabled = false;
+	bool m_bShouldShowGreetingPopUp = true;
 };

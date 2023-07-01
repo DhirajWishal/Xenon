@@ -240,6 +240,16 @@ namespace Xenon
 			void beginQuery(OcclusionQuery* pOcclusionQuery, uint32_t index) override;
 
 			/**
+			 * Draw using the bound vertex buffer.
+			 *
+			 * @param vertexOffset The vertex offset of the buffer.
+			 * @param veretxCount The number of vertices to draw.
+			 * @param instanceCount The number of instances to draw. Default is 1.
+			 * @param firstInstance The first instance to render. Default is 0.
+			 */
+			void drawVertices(uint64_t vertexOffset, uint64_t veretxCount, uint32_t instanceCount = 1, uint32_t firstInstance = 0) override;
+
+			/**
 			 * Draw using the bound index buffers.
 			 *
 			 * @param vertexOffset The vertex offset.

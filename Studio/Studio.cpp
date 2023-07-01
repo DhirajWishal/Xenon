@@ -16,8 +16,6 @@
 #include "XenonCore/Common.hpp"
 #include "XenonBackend/ShaderSource.hpp"
 
-#include "Xenon/Layers/DefaultRasterizingLayer.hpp"
-#include "Xenon/Layers/DefaultRayTracingLayer.hpp"
 #include "Xenon/Layers/ShadowMapLayer.hpp"
 #include "Xenon/Layers/DiffusionLayer.hpp"
 #include "Xenon/Layers/GBufferLayer.hpp"
@@ -126,8 +124,7 @@ Studio::Studio(Xenon::BackendType type /*= Xenon::BackendType::Any*/)
 void Studio::run()
 {
 	// Setup the main material.
-	Xenon::MaterialBuilder materialBuidler;
-	materialBuidler.addBaseColorTexture();	// Use the sub mesh's one.
+	m_MaterialBuidler.addBaseColorTexture();	// Use the sub mesh's one.
 
 	// Create the occlusion layer for occlusion culling.
 	auto pOcclusionLayer = m_Renderer.createLayer<Xenon::OcclusionLayer>(g_DefaultWidth, g_DefaultHeight, g_DefaultRenderingPriority);
@@ -145,13 +142,13 @@ void Studio::run()
 	auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRayTracingLayer>(g_DefaultWidth, g_DefaultHeight);
 	pRenderTarget->setScene(m_Scene);
 
-	materialBuidler.setRayTracingPipelineSpecification(getRayTracingPipelineSpecification());
-	auto pPipeline = m_Instance.getFactory()->createRayTracingPipeline(m_Instance.getBackendDevice(), std::make_unique<Xenon::DefaultCacheHandler>(), materialBuidler.getRayTracingPipelineSpecification());
+	m_MaterialBuidler.setRayTracingPipelineSpecification(getRayTracingPipelineSpecification());
+	auto pPipeline = m_Instance.getFactory()->createRayTracingPipeline(m_Instance.getBackendDevice(), std::make_unique<Xenon::DefaultCacheHandler>(), m_MaterialBuidler.getRayTracingPipelineSpecification());
 
 #else 
-	auto pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRasterizingLayer>(g_DefaultWidth, g_DefaultHeight, g_DefaultRenderingPriority);
-	pRenderTarget->setScene(m_Scene);
-	pRenderTarget->setOcclusionLayer(pOcclusionLayer);
+	m_pRenderTarget = m_Renderer.createLayer<Xenon::DefaultRasterizingLayer>(g_DefaultWidth, g_DefaultHeight, g_DefaultRenderingPriority);
+	m_pRenderTarget->setScene(m_Scene);
+	m_pRenderTarget->setOcclusionLayer(pOcclusionLayer);
 
 	Xenon::Backend::RasterizingPipelineSpecification specification;
 #ifndef XENON_ENABLE_EXPERIMENTAL
@@ -163,11 +160,11 @@ void Studio::run()
 	// specification.m_FragmentShader = Xenon::Generated::CreateShaderScene_frag();
 
 #endif // !XENON_ENABLE_EXPERIMENTAL
-	materialBuidler.setRasterizingPipelineSpecification(specification);
+	m_MaterialBuidler.setRasterizingPipelineSpecification(specification);
 
 #ifdef XENON_ENABLE_EXPERIMENTAL
-	materialBuidler.addShadowMap(pShadowMapLayer->getShadowTexture());
-	materialBuidler.addCustomProperty(pShadowMapLayer->getShadowCameraBuffer());
+	m_MaterialBuidler.addShadowMap(pShadowMapLayer->getShadowTexture());
+	m_MaterialBuidler.addCustomProperty(pShadowMapLayer->getShadowCameraBuffer());
 
 #endif // XENON_ENABLE_EXPERIMENTAL
 
@@ -175,81 +172,96 @@ void Studio::run()
 
 #ifdef XENON_ENABLE_EXPERIMENTAL
 	// Create the diffusion layer.
-	auto pDiffusionLayer = m_Renderer.createLayer<Xenon::Experimental::DiffusionLayer>(g_DefaultWidth, g_DefaultHeight, pRenderTarget->getPriority());
-	pDiffusionLayer->setSourceImage(pRenderTarget->getColorAttachment());
+	auto pDiffusionLayer = m_Renderer.createLayer<Xenon::Experimental::DiffusionLayer>(g_DefaultWidth, g_DefaultHeight, m_pRenderTarget->getPriority());
+	pDiffusionLayer->setSourceImage(m_pRenderTarget->getColorAttachment());
 
 #endif // XENON_ENABLE_EXPERIMENTAL
 
 	// Create the layers.
-	auto pImGui = m_Renderer.createLayer<ImGuiLayer>(g_DefaultWidth, g_DefaultHeight);
-	pImGui->setScene(m_Scene);
+	m_pImGuiLayer = m_Renderer.createLayer<ImGuiLayer>(g_DefaultWidth, g_DefaultHeight);
+	m_pImGuiLayer->setScene(m_Scene);
 	// m_Renderer.setScene(m_Scene);
 
 	// Set the layer to be shown.
-	pImGui->showLayer(pRenderTarget);
-	// pImGui->getLayerView().addLayerOption("GBuffer Positive X Color", m_Renderer.getPositiveXLayer());
-	// pImGui->getLayerView().addLayerOption("GBuffer Negative X Color", m_Renderer.getNegativeXLayer());
-	// pImGui->getLayerView().addLayerOption("GBuffer Positive Y Color", m_Renderer.getPositiveYLayer());
-	// pImGui->getLayerView().addLayerOption("GBuffer Negative Y Color", m_Renderer.getNegativeYLayer());
-	// pImGui->getLayerView().addLayerOption("GBuffer Positive Z Color", m_Renderer.getPositiveZLayer());
-	// pImGui->getLayerView().addLayerOption("GBuffer Negative Z Color", m_Renderer.getNegativeZLayer());
-	// pImGui->getLayerView().addLayerOption("Direct Lighting Layer", m_Renderer.getDirectLightingLayer());
+	m_pImGuiLayer->showLayer(m_pRenderTarget);
+	// m_pImGuiLayer->getLayerView().addLayerOption("GBuffer Positive X Color", m_Renderer.getPositiveXLayer());
+	// m_pImGuiLayer->getLayerView().addLayerOption("GBuffer Negative X Color", m_Renderer.getNegativeXLayer());
+	// m_pImGuiLayer->getLayerView().addLayerOption("GBuffer Positive Y Color", m_Renderer.getPositiveYLayer());
+	// m_pImGuiLayer->getLayerView().addLayerOption("GBuffer Negative Y Color", m_Renderer.getNegativeYLayer());
+	// m_pImGuiLayer->getLayerView().addLayerOption("GBuffer Positive Z Color", m_Renderer.getPositiveZLayer());
+	// m_pImGuiLayer->getLayerView().addLayerOption("GBuffer Negative Z Color", m_Renderer.getNegativeZLayer());
+	// m_pImGuiLayer->getLayerView().addLayerOption("Direct Lighting Layer", m_Renderer.getDirectLightingLayer());
 
 	// Create the light source.
 	m_LightGroups.emplace_back(createLightSource());
 
-	{
-		const auto loaderFunction = [this, &materialBuidler]
-		{
-			XENON_STUDIO_LOG_INFORMATION("Loading Sponza...");
-			const auto grouping = m_Scene.createGroup();
-			XENON_MAYBE_UNUSED const auto& geometry = m_Scene.create<Xenon::Geometry>(grouping, Xenon::Geometry::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"));
-			// XENON_MAYBE_UNUSED const auto& geometry = m_Scene.create<Xenon::Geometry>(grouping, Xenon::Geometry::FromFile(m_Instance, "E:\\Assets\\Sponza\\Main\\Main\\NewSponza_Main_Blender_glTF.gltf"));
-			XENON_MAYBE_UNUSED const auto& material = m_Scene.createMaterial(grouping, materialBuidler);
-			XENON_MAYBE_UNUSED const auto& transform = m_Scene.create<Xenon::Components::Transform>(grouping, glm::vec3(0), glm::vec3(0), glm::vec3(0.05f));
-			XENON_STUDIO_LOG_INFORMATION("Sponza model loaded!");
-		};
-		auto ret = Xenon::XObject::GetJobSystem().insert(loaderFunction);
-
-		Xenon::FrameTimer timer;
-		do
-		{
-			const auto delta = timer.tick();
-
-			// Begin updating the scene.
-			m_Scene.beginUpdate();
-
-			// Set the draw call count.
-			pImGui->setDrawCallCount(m_Scene.getDrawableCount(), pRenderTarget->getDrawCount());
-
-			// Begin the ImGui scene.
-			// Handle the inputs and update the camera only if we need to.
-			if (pImGui->beginFrame(delta))
-			{
-				updateCamera(delta);
-			}
-
-			// Show and update the light sources.
-			updateLightSources();
-
-			// End the ImGui scene.
-			pImGui->endFrame();
-
-			// End the scene updating process and update the scene object and render everything.
-			m_Scene.endUpdate();
-		} while (m_Renderer.update());
-
-		m_Scene.cleanup();
-
-		// Wait till the data has been added before quitting.
-		ret.get();
-	}
+	// Render the scene.
+	render();
 
 	// Cleanup the main objects.
+	m_Scene.cleanup();
 	m_Renderer.cleanup();
 	m_Instance.cleanup();
 
 	XENON_LOG_INFORMATION("Exiting the {}", GetRendererTitle(m_Instance.getBackendType()));
+}
+
+void Studio::render()
+{
+	std::atomic_uint8_t models;
+	Xenon::FrameTimer timer;
+
+	do
+	{
+		const auto delta = timer.tick();
+
+		// Begin updating the scene.
+		m_Scene.beginUpdate();
+
+		// Set the draw call count.
+		m_pImGuiLayer->setDrawCallCount(m_Scene.getDrawableCount(), m_pRenderTarget->getDrawCount());
+
+		// Begin the ImGui scene.
+		// Handle the inputs and update the camera only if we need to.
+		if (m_pImGuiLayer->beginFrame(delta))
+			updateCamera(delta);
+
+		// Load models dropped to the screen.
+		for (const auto& file : m_Renderer.getGeneralEvents().m_DragDropFiles)
+		{
+			ImGui::OpenPopup(g_LoadingAssetsPopUpID);
+			const auto loaderFunction = [this, file, &models]
+			{
+				XENON_STUDIO_LOG_INFORMATION("Loading model file: {}", file);
+				const auto grouping = m_Scene.createGroup();
+				XENON_MAYBE_UNUSED const auto& geometry = m_Scene.create<Xenon::Geometry>(grouping, Xenon::Geometry::FromFile(m_Instance, file));
+				XENON_MAYBE_UNUSED const auto& material = m_Scene.createMaterial(grouping, m_MaterialBuidler);
+				XENON_MAYBE_UNUSED const auto& transform = m_Scene.create<Xenon::Components::Transform>(grouping, glm::vec3(0), glm::vec3(0), glm::vec3(0.05f));
+				XENON_STUDIO_LOG_INFORMATION("{} model loaded!", file);
+
+				models--;
+			};
+
+			models++;
+			Xenon::XObject::GetJobSystem().insert(loaderFunction);
+		}
+
+		// Show and update the light sources.
+		updateLightSources();
+
+		// Disable closing till the models are loaded.
+		if (models > 0)
+			m_pImGuiLayer->disableClosing();
+
+		else
+			m_pImGuiLayer->enableClosing();
+
+		// End the ImGui scene.
+		m_pImGuiLayer->endFrame();
+
+		// End the scene updating process and update the scene object and render everything.
+		m_Scene.endUpdate();
+	} while (m_Renderer.update());
 }
 
 void Studio::updateCamera(std::chrono::nanoseconds delta)

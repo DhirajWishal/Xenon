@@ -880,6 +880,14 @@ namespace Xenon
 			m_pCurrentCommandList->BeginQuery(pOcclusionQuery->as<DX12OcclusionQuery>()->getHeap(), D3D12_QUERY_TYPE_BINARY_OCCLUSION, index);
 		}
 
+		void DX12CommandRecorder::drawVertices(uint64_t vertexOffset, uint64_t veretxCount, uint32_t instanceCount /*= 1*/, uint32_t firstInstance /*= 0*/)
+		{
+			OPTICK_EVENT();
+
+			m_pCurrentCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			m_pCurrentCommandList->DrawInstanced(static_cast<UINT>(veretxCount), instanceCount, static_cast<UINT>(vertexOffset), firstInstance);
+		}
+
 		void DX12CommandRecorder::drawIndexed(uint64_t vertexOffset, uint64_t indexOffset, uint64_t indexCount, uint32_t instanceCount /*= 1*/, uint32_t firstInstance /*= 0*/)
 		{
 			OPTICK_EVENT();

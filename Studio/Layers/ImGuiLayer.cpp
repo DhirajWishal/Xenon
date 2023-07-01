@@ -48,6 +48,10 @@ ImGuiLayer::ImGuiLayer(Xenon::Renderer& renderer, uint32_t width, uint32_t heigh
 	// Setup the ImGui logger.
 	auto logger = std::make_shared<spdlog::logger>(g_XenonLoggerName, m_UIStorage.m_pLogs);
 	spdlog::register_logger(logger);
+
+	// Setup the pop-ups.
+	m_PopUpList.emplace_back(PopUp(g_WelcomePopUpID, "Welcome to the Xenon Studio!", { PopUpOption("Ok", [this] { ImGui::CloseCurrentPopup(); m_bShouldShowGreetingPopUp = false; }) }, PopUpType::Overlay));
+	m_PopUpList.emplace_back(PopUp(g_LoadingAssetsPopUpID, "Please wait while the asset is loaded to the engine.", { PopUpOption("Ok", [this] { ImGui::CloseCurrentPopup(); }) }, PopUpType::PopUp));
 }
 
 ImGuiLayer::~ImGuiLayer()
@@ -272,8 +276,8 @@ void ImGuiLayer::onUpdate(Layer* pPreviousLayer, uint32_t imageIndex, uint32_t f
 				continue;
 
 			m_pCommandRecorder->setScissor(
-				static_cast<int32_t>(minClip.x),
-				static_cast<int32_t>(minClip.y),
+				std::max(static_cast<int32_t>(minClip.x), 0),
+				std::max(static_cast<int32_t>(minClip.y), 0),
 				static_cast<uint32_t>(maxClip.x),
 				static_cast<uint32_t>(maxClip.y)
 			);
@@ -310,6 +314,16 @@ uintptr_t ImGuiLayer::getImageID(Xenon::Backend::Image* pImage, Xenon::Backend::
 	}
 
 	return ID;
+}
+
+void ImGuiLayer::disableClosing()
+{
+	m_bIsClosingDisabled = true;
+}
+
+void ImGuiLayer::enableClosing()
+{
+	m_bIsClosingDisabled = false;
 }
 
 void ImGuiLayer::configureImGui() const
@@ -516,7 +530,7 @@ void ImGuiLayer::showFileMenu()
 		if (ImGui::MenuItem("Save As", "Ctrl+Shift+S")) Xenon::NoOp();
 
 		ImGui::Separator();
-		if (ImGui::MenuItem("Close"))
+		if (ImGui::MenuItem("Close", nullptr, false, !m_bIsClosingDisabled))
 		{
 			m_Renderer.close();
 			StudioConfiguration::GetInstance().toggleExitApplication();
@@ -527,13 +541,13 @@ void ImGuiLayer::showFileMenu()
 		ImGui::Separator();
 		if (ImGui::BeginMenu("Settings"))
 		{
-			if (ImGui::Selectable("Vulkan Backend", currentBackendType == Xenon::BackendType::Vulkan) && currentBackendType != Xenon::BackendType::Vulkan)
+			if (ImGui::Selectable("Vulkan Backend", currentBackendType == Xenon::BackendType::Vulkan, m_bIsClosingDisabled ? ImGuiSelectableFlags_Disabled : 0) && currentBackendType != Xenon::BackendType::Vulkan)
 			{
 				StudioConfiguration::GetInstance().setCurrentBackendType(Xenon::BackendType::Vulkan);
 				m_Renderer.close();
 			}
 
-			if (ImGui::Selectable("DirectX 12 Backend", currentBackendType == Xenon::BackendType::DirectX_12) && currentBackendType != Xenon::BackendType::DirectX_12)
+			if (ImGui::Selectable("DirectX 12 Backend", currentBackendType == Xenon::BackendType::DirectX_12, m_bIsClosingDisabled ? ImGuiSelectableFlags_Disabled : 0) && currentBackendType != Xenon::BackendType::DirectX_12)
 			{
 				StudioConfiguration::GetInstance().setCurrentBackendType(Xenon::BackendType::DirectX_12);
 				m_Renderer.close();
@@ -591,6 +605,9 @@ void ImGuiLayer::showHelpMenu()
 
 void ImGuiLayer::showUIs(std::chrono::nanoseconds delta)
 {
+	if (m_bShouldShowGreetingPopUp)
+		ImGui::OpenPopup(g_WelcomePopUpID);
+
 	m_UIStorage.m_LayerViewUI.begin(delta);
 	m_UIStorage.m_LayerViewUI.end();
 
@@ -605,4 +622,10 @@ void ImGuiLayer::showUIs(std::chrono::nanoseconds delta)
 
 	m_UIStorage.m_pLogs->begin(delta);
 	m_UIStorage.m_pLogs->end();
+
+	for (auto& popUp : m_PopUpList)
+	{
+		popUp.begin(delta);
+		popUp.end();
+	}
 }

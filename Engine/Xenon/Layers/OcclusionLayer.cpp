@@ -152,21 +152,34 @@ namespace Xenon
 				OPTICK_EVENT_DYNAMIC("Binding Mesh");
 
 				for (const auto& subMesh : mesh.m_SubMeshes)
-				{
-					OPTICK_EVENT_DYNAMIC("Issuing Occlusion Pass Draw Calls");
-
-					m_pCommandRecorder->bind(geometry.getIndexBuffer(), static_cast<Backend::IndexBufferStride>(subMesh.m_IndexSize));
-					m_pCommandRecorder->bind(m_pOcclusionPipeline.get(), nullptr, nullptr, pPerGeometryDescriptor, pOcclusionSceneDescriptor);
-
-					const auto subMeshIndex = querySample.m_SubMeshIndexMap[subMesh] = index;
-					m_pCommandRecorder->beginQuery(querySample.m_pOcclusionQuery.get(), subMeshIndex);
-					m_pCommandRecorder->drawIndexed(subMesh.m_VertexOffset, subMesh.m_IndexOffset, subMesh.m_IndexCount);
-					m_pCommandRecorder->endQuery(querySample.m_pOcclusionQuery.get(), subMeshIndex);
-
-					index++;
-				}
+					performDraw(subMesh, geometry, pPerGeometryDescriptor, pOcclusionSceneDescriptor, querySample, index);
 			}
 		}
+	}
+
+	void OcclusionLayer::performDraw(const SubMesh& subMesh, Geometry& geometry, Backend::Descriptor* pPerGeometryDescriptor, Backend::Descriptor* pOcclusionSceneDescriptor, OcclusionQuerySamples& samples, uint32_t& index)
+	{
+		OPTICK_EVENT("Issuing Occlusion Pass Draw Calls");
+
+		m_pCommandRecorder->bind(m_pOcclusionPipeline.get(), nullptr, nullptr, pPerGeometryDescriptor, pOcclusionSceneDescriptor);
+
+		samples.m_SubMeshIndexMap[subMesh] = index;
+		if (subMesh.m_IndexCount > 0)
+		{
+			m_pCommandRecorder->bind(geometry.getIndexBuffer(), static_cast<Backend::IndexBufferStride>(subMesh.m_IndexSize));
+
+			m_pCommandRecorder->beginQuery(samples.m_pOcclusionQuery.get(), index);
+			m_pCommandRecorder->drawIndexed(subMesh.m_VertexOffset, subMesh.m_IndexOffset, subMesh.m_IndexCount);
+			m_pCommandRecorder->endQuery(samples.m_pOcclusionQuery.get(), index);
+		}
+		else
+		{
+			m_pCommandRecorder->beginQuery(samples.m_pOcclusionQuery.get(), index);
+			m_pCommandRecorder->drawVertices(subMesh.m_VertexOffset, subMesh.m_VertexCount);
+			m_pCommandRecorder->endQuery(samples.m_pOcclusionQuery.get(), index);
+		}
+
+		index++;
 	}
 
 	std::unique_ptr<Xenon::Backend::Descriptor> OcclusionLayer::createPerGeometryDescriptor(Group group)

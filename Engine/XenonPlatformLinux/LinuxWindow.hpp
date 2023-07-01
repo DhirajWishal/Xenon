@@ -60,6 +60,31 @@ namespace Xenon
 			XENON_NODISCARD const SDL_Window* getWindowHandle() const { return m_pWindow; }
 
 		private:
+			/**
+			 * Handle a key event and decode it to the proper keyboard input.
+			 *
+			 * @param scanCode The key's scan code.
+			 * @param pressed Whether the key is pressed or not.
+			 */
+			void handleKeyEvent(int32_t scanCode, bool pressed);
+
+			/**
+			 * Handle special character events.
+			 *
+			 * @param characters The special character keys.
+			 * @param pressed Whether the key is pressed or not.
+			 */
+			void handleSpecialCharacter(uint64_t characters, bool pressed);
+
+			/**
+			 * Handle the mouse button event.
+			 *
+			 * @param button The button to which the event is received.
+			 * @param clicks The number of clicks recorded.
+			 */
+			void handleMouseButtonEvent(uint8_t button, uint8_t clicks);
+
+		private:
 			SDL_Window* m_pWindow = nullptr;
 
 			bool m_IsOpen = true;

@@ -8,6 +8,11 @@
 #include "Xenon/Renderers/DefaultRenderer.hpp"
 #include "Xenon/Scene.hpp"
 
+#include "Xenon/Material.hpp"
+
+#include "Xenon/Layers/DefaultRasterizingLayer.hpp"
+#include "Xenon/Layers/DefaultRayTracingLayer.hpp"
+
 /**
  * Studio class.
  */
@@ -42,6 +47,11 @@ public:
 
 private:
 	/**
+	 * Perform the rendering operations.
+	 */
+	void render();
+
+	/**
 	 * Update the camera.
 	 *
 	 * @param delta The delta time.
@@ -64,6 +74,18 @@ private:
 	Xenon::Instance m_Instance;
 	Xenon::Scene m_Scene;
 	RendererType m_Renderer;
+
+	Xenon::MaterialBuilder m_MaterialBuidler;
+
+	class ImGuiLayer* m_pImGuiLayer = nullptr;
+
+#ifdef XENON_DEV_ENABLE_RAY_TRACING
+	Xenon::DefaultRayTracingLayer* m_pRenderTarget = nullptr;
+
+#else 
+	Xenon::DefaultRasterizingLayer* m_pRenderTarget = nullptr;
+
+#endif
 
 	std::vector<Xenon::Group> m_LightGroups;
 
