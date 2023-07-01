@@ -101,6 +101,14 @@ namespace Xenon
 			void issueDrawCalls();
 
 			/**
+			 * Bind everything and perform the draw.
+			 *
+			 * @param subMesh The sub-mesh to draw.
+			 * @param geometry The geometry to draw.
+			 */
+			void performDraw(const SubMesh& subMesh, Geometry& geometry);
+
+			/**
 			 * Create a new material descriptor.
 			 *
 			 * @param subMesh The sub-mesh of the material.

@@ -90,6 +90,15 @@ namespace Xenon
 			void issueDrawCalls();
 
 			/**
+			 * Bind everything and perform the draw.
+			 * 
+			 * @param subMesh The sub-mesh to draw.
+			 * @param geometry The geometry to draw.
+			 * @param pDescriptor The per-geometry descriptor.
+			 */
+			void performDraw(const SubMesh& subMesh, Geometry& geometry, Backend::Descriptor* pDescriptor);
+
+			/**
 			 * Calculate the shadow camera using the light source.
 			 *
 			 * @param lightSource The light source.

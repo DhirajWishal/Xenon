@@ -40,6 +40,8 @@ set(
 	"UIComponents/Configuration.hpp"
 	"UIComponents/Logs.cpp"
 	"UIComponents/Logs.hpp"
+	"UIComponents/PopUp.cpp"
+	"UIComponents/PopUp.hpp"
 
 	${SHADERS}
 )

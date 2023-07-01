@@ -655,6 +655,19 @@ namespace Xenon
 			}
 		}
 
+		// Check if we have data to create the vertex buffers.
+		if (vertexBufferSize == 0)
+		{
+			XENON_LOG_ERROR("The submitted model file '{}' does not have any vertex data to load!", file.string());
+			return geometry;
+		}
+
+		// Check if we have data to create the index buffers.
+		if (indexBufferSize == 0)
+		{
+			XENON_LOG_WARNING("The submitted model file '{}' does not have any index data to load!", file.string());
+		}
+
 		// Setup the image synchronization primitive.
 		auto imageSynchronization = CountingFence(model.images.size());
 
@@ -696,9 +709,9 @@ namespace Xenon
 			geometry.m_pImageSamplers.emplace_back(instance.getFactory()->createImageSampler(instance.getBackendDevice(), GetImageSamplerSpecification(sampler)));
 
 		// Setup animations.
-		for (const auto& animation : model.animations)
-		{
-		}
+		// for (const auto& animation : model.animations)
+		// {
+		// }
 
 		// Wait till all the images are loaded before we proceed.
 		imageSynchronization.wait();
@@ -727,9 +740,12 @@ namespace Xenon
 		vertices.clear();
 
 		// Load the index data and clear the buffer.
-		geometry.m_pIndexBuffer = instance.getFactory()->createBuffer(instance.getBackendDevice(), indexBufferSize, Backend::BufferType::Index);
-		geometry.m_pIndexBuffer->write(ToBytes(indices.data()), indexBufferSize);
-		indices.clear();
+		if (indexBufferSize > 0)
+		{
+			geometry.m_pIndexBuffer = instance.getFactory()->createBuffer(instance.getBackendDevice(), indexBufferSize, Backend::BufferType::Index);
+			geometry.m_pIndexBuffer->write(ToBytes(indices.data()), indexBufferSize);
+			indices.clear();
+		}
 
 		return geometry;
 	}
