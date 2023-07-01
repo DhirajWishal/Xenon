@@ -235,7 +235,6 @@ void Studio::render()
 				XENON_STUDIO_LOG_INFORMATION("Loading model file: {}", file);
 				const auto grouping = m_Scene.createGroup();
 				XENON_MAYBE_UNUSED const auto& geometry = m_Scene.create<Xenon::Geometry>(grouping, Xenon::Geometry::FromFile(m_Instance, file));
-				// XENON_MAYBE_UNUSED const auto& geometry = m_Scene.create<Xenon::Geometry>(grouping, Xenon::Geometry::FromFile(m_Instance, "E:\\Assets\\Sponza\\Main\\Main\\NewSponza_Main_Blender_glTF.gltf"));
 				XENON_MAYBE_UNUSED const auto& material = m_Scene.createMaterial(grouping, m_MaterialBuidler);
 				XENON_MAYBE_UNUSED const auto& transform = m_Scene.create<Xenon::Components::Transform>(grouping, glm::vec3(0), glm::vec3(0), glm::vec3(0.05f));
 				XENON_STUDIO_LOG_INFORMATION("{} model loaded!", file);
