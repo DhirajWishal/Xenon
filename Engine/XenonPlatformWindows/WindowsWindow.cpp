@@ -81,7 +81,7 @@ namespace Xenon
 
 			// Create the window.
 			m_WindowHandle = CreateWindowEx(
-				0,								// Optional window styles. https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
+				WS_EX_ACCEPTFILES,				// Optional window styles. https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 				g_ClassName,					// Window class
 				wideString.data(),				// Window text
 				WS_BORDER,						// Window style
@@ -133,6 +133,7 @@ namespace Xenon
 			m_Keyboard.m_Character = 0;
 			m_Mouse.m_VScroll = 0.0f;
 			m_Mouse.m_HScroll = 0.0f;
+			m_GeneralEvents.m_DragDropFiles.clear();
 
 			if (MSG message = {}; PeekMessage(&message, m_WindowHandle, NULL, NULL, PM_REMOVE))
 			{
@@ -245,6 +246,7 @@ namespace Xenon
 
 				else
 					m_Keyboard.m_Character = static_cast<char>(wParam);
+
 				return 0;
 
 			case WM_SIZE:
@@ -260,6 +262,19 @@ namespace Xenon
 				}
 
 				break;
+
+			case WM_DROPFILES:
+			{
+				m_GeneralEvents.m_DragDropFiles.resize(DragQueryFile(XENON_BIT_CAST(HDROP, wParam), 0xFFFFFFFF, nullptr, 0));
+				for (UINT i = 0; i < m_GeneralEvents.m_DragDropFiles.size(); i++)
+				{
+					auto& buffer = m_GeneralEvents.m_DragDropFiles[i];
+					buffer.resize(DragQueryFile(XENON_BIT_CAST(HDROP, wParam), i, nullptr, 0) + 1);
+					if (DragQueryFileA(XENON_BIT_CAST(HDROP, wParam), i, buffer.data(), static_cast<UINT>(buffer.size())) == 0)
+						XENON_LOG_FATAL("Failed to get the drag drop file query!");
+				}
+			}
+			break;
 
 			default:
 				break;

@@ -108,6 +108,13 @@ namespace Xenon
 		XENON_NODISCARD const Keyboard& getKeyboard() const { return m_pSwapChain->getWindow()->getKeyboard(); }
 
 		/**
+		 * Get the general events from the associated window.
+		 *
+		 * @return The general events.
+		 */
+		XENON_NODISCARD const GeneralEvents& getGeneralEvents() const { return m_pSwapChain->getWindow()->getGeneralEvents(); }
+
+		/**
 		 * Get the command recorder pointer.
 		 *
 		 * @return The pointer.

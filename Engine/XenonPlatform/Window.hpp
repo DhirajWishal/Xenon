@@ -8,6 +8,7 @@
 
 #include "../XenonEvents/Mouse.hpp"
 #include "../XenonEvents/Keyboard.hpp"
+#include "../XenonEvents/GeneralEvents.hpp"
 
 #include <string>
 
@@ -92,6 +93,13 @@ namespace Xenon
 			 */
 			XENON_NODISCARD const Keyboard& getKeyboard() const { return m_Keyboard; }
 
+			/**
+			 * Get the general events.
+			 *
+			 * @return The general events container.
+			 */
+			XENON_NODISCARD const GeneralEvents& getGeneralEvents() const { return m_GeneralEvents; }
+
 		protected:
 			std::string m_Title;
 
@@ -100,6 +108,7 @@ namespace Xenon
 
 			Mouse m_Mouse;
 			Keyboard m_Keyboard;
+			GeneralEvents m_GeneralEvents;
 		};
 	}
 }

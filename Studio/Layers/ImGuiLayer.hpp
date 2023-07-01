@@ -121,6 +121,18 @@ public:
 	 */
 	XENON_NODISCARD LayerView& getLayerView() noexcept { return m_UIStorage.m_LayerViewUI; }
 
+	/**
+	 * Disable closing using the close button.
+	 * It'll also disable switching platforms.
+	 */
+	void disableClosing();
+
+	/**
+	 * Enable closing using the close button.
+	 * It'll also enable switching platforms.
+	 */
+	void enableClosing();
+
 private:
 	/**
 	 * Configure ImGui.
@@ -207,4 +219,6 @@ private:
 	Xenon::Backend::VertexSpecification m_VertexSpecification;
 
 	UserData m_UserData;
+
+	bool m_bIsClosingDisabled = false;
 };

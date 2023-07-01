@@ -15,6 +15,7 @@ set(
 	"Dummy.cpp"
 	"Mouse.hpp"
 	"Keyboard.hpp"
+	"GeneralEvents.hpp"
 )
 
 # Add the source group.

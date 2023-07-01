@@ -312,6 +312,16 @@ uintptr_t ImGuiLayer::getImageID(Xenon::Backend::Image* pImage, Xenon::Backend::
 	return ID;
 }
 
+void ImGuiLayer::disableClosing()
+{
+	m_bIsClosingDisabled = true;
+}
+
+void ImGuiLayer::enableClosing()
+{
+	m_bIsClosingDisabled = false;
+}
+
 void ImGuiLayer::configureImGui() const
 {
 	auto& io = ImGui::GetIO();
@@ -516,7 +526,7 @@ void ImGuiLayer::showFileMenu()
 		if (ImGui::MenuItem("Save As", "Ctrl+Shift+S")) Xenon::NoOp();
 
 		ImGui::Separator();
-		if (ImGui::MenuItem("Close"))
+		if (ImGui::MenuItem("Close", nullptr, false, !m_bIsClosingDisabled))
 		{
 			m_Renderer.close();
 			StudioConfiguration::GetInstance().toggleExitApplication();
@@ -527,13 +537,13 @@ void ImGuiLayer::showFileMenu()
 		ImGui::Separator();
 		if (ImGui::BeginMenu("Settings"))
 		{
-			if (ImGui::Selectable("Vulkan Backend", currentBackendType == Xenon::BackendType::Vulkan) && currentBackendType != Xenon::BackendType::Vulkan)
+			if (ImGui::Selectable("Vulkan Backend", currentBackendType == Xenon::BackendType::Vulkan, !m_bIsClosingDisabled ? ImGuiSelectableFlags_Disabled : 0) && currentBackendType != Xenon::BackendType::Vulkan)
 			{
 				StudioConfiguration::GetInstance().setCurrentBackendType(Xenon::BackendType::Vulkan);
 				m_Renderer.close();
 			}
 
-			if (ImGui::Selectable("DirectX 12 Backend", currentBackendType == Xenon::BackendType::DirectX_12) && currentBackendType != Xenon::BackendType::DirectX_12)
+			if (ImGui::Selectable("DirectX 12 Backend", currentBackendType == Xenon::BackendType::DirectX_12, !m_bIsClosingDisabled ? ImGuiSelectableFlags_Disabled : 0) && currentBackendType != Xenon::BackendType::DirectX_12)
 			{
 				StudioConfiguration::GetInstance().setCurrentBackendType(Xenon::BackendType::DirectX_12);
 				m_Renderer.close();
