@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -41,21 +41,21 @@ namespace Xenon
 		 *
 		 * @return The image pointer.
 		 */
-		[[nodiscard]] Backend::Image* getColorAttachment() override;
+		XENON_NODISCARD Backend::Image* getColorAttachment() override;
 
 		/**
 		 * Get the internally stored rasterizer.
 		 *
 		 * @return The rasterizer pointer.
 		 */
-		[[nodsicard]] Backend::Rasterizer* getRasterizer() { return m_pRasterizer.get(); }
+		XENON_NODISCARD Backend::Rasterizer* getRasterizer() { return m_pRasterizer.get(); }
 
 		/**
 		 * Get the internally stored rasterizer.
 		 *
 		 * @return The rasterizer pointer.
 		 */
-		[[nodsicard]] const Backend::Rasterizer* getRasterizer() const { return m_pRasterizer.get(); }
+		XENON_NODISCARD const Backend::Rasterizer* getRasterizer() const { return m_pRasterizer.get(); }
 
 	protected:
 		std::unique_ptr<Backend::Rasterizer> m_pRasterizer = nullptr;

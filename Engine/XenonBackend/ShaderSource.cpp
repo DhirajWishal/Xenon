@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "ShaderSource.hpp"
@@ -36,7 +36,7 @@ namespace Xenon
 
 				// Load the data to the vector.
 				binaryData.resize(size);
-				shaderFile.read(std::bit_cast<char*>(binaryData.data()), size);
+				shaderFile.read(XENON_BIT_CAST(char*, binaryData.data()), size);
 
 				// Close the file now.
 				shaderFile.close();

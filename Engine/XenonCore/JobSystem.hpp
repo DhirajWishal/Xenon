@@ -1,7 +1,9 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
+
+#include "Common.hpp"
 
 #include <thread>
 #include <functional>
@@ -112,14 +114,14 @@ namespace Xenon
 		 * @return True if the jobs have been completed.
 		 * @return False if the jobs have not been completed.
 		 */
-		[[nodiscard]] bool isComplete();
+		XENON_NODISCARD bool isComplete();
 
 		/**
 		 * Get the number of threads used by the system.
 		 *
 		 * @return The thread count.
 		 */
-		[[nodiscard]] uint64_t getThreadCount() const noexcept { return m_Workers.size(); }
+		XENON_NODISCARD uint64_t getThreadCount() const noexcept { return m_Workers.size(); }
 
 	private:
 		/**

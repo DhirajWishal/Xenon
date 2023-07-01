@@ -1,7 +1,8 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "Packager.hpp"
+#include "../XenonCore/Common.hpp"
 
 #include <nlohmann/json.hpp>
 
@@ -57,7 +58,7 @@ namespace Xenon
 		std::ofstream outputFile(m_OutputFile, std::ios::out | std::ios::binary);
 		if (outputFile.is_open())
 		{
-			outputFile.write(std::bit_cast<const char*>(output.data()), output.size());
+			outputFile.write(XENON_BIT_CAST(const char*, output.data()), output.size());
 		}
 		else
 		{
@@ -85,7 +86,7 @@ namespace Xenon
 			inputFile.seekg(0);
 
 			bytes.resize(size);
-			inputFile.read(std::bit_cast<char*>(bytes.data()), size);
+			inputFile.read(XENON_BIT_CAST(char*, bytes.data()), size);
 		}
 		else
 		{

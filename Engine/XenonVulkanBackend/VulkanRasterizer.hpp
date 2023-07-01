@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -40,21 +40,21 @@ namespace Xenon
 			 * @param type The attachment type.
 			 * @return The attachment image.
 			 */
-			[[nodiscard]] Image* getImageAttachment(AttachmentType type) override;
+			XENON_NODISCARD Image* getImageAttachment(AttachmentType type) override;
 
 			/**
 			 * Get the render pass.
 			 *
 			 * @return The render pass.
 			 */
-			[[nodiscard]] VkRenderPass getRenderPass() const { return m_RenderPass; }
+			XENON_NODISCARD VkRenderPass getRenderPass() const { return m_RenderPass; }
 
 			/**
 			 * Get the framebuffer.
 			 *
 			 * @return The framebuffer.
 			 */
-			[[nodiscard]] VkFramebuffer getFramebuffer() const { return m_Framebuffers[m_FrameIndex]; }
+			XENON_NODISCARD VkFramebuffer getFramebuffer() const { return m_Framebuffers[m_FrameIndex]; }
 
 		private:
 			/**

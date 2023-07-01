@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -48,7 +48,7 @@ namespace Xenon
 			 * @param type The descriptor type to create.
 			 * @return The descriptor pointer. It will return nullptr if the descriptor type is not present in the pipeline.
 			 */
-			[[nodiscard]] std::unique_ptr<Descriptor> createDescriptor(DescriptorType type) override;
+			XENON_NODISCARD std::unique_ptr<Descriptor> createDescriptor(DescriptorType type) override;
 
 			/**
 			 * Get a pipeline using the vertex specification.
@@ -57,21 +57,21 @@ namespace Xenon
 			 * @param vertexSpecification The vertex specification.
 			 * @return The pipeline storage.
 			 */
-			[[nodiscard]] const PipelineStorage& getPipeline(const VertexSpecification& vertexSpecification);
+			XENON_NODISCARD const PipelineStorage& getPipeline(const VertexSpecification& vertexSpecification);
 
 			/**
 			 * Get the root signature.
 			 *
 			 * @return The root signature.
 			 */
-			[[nodiscard]] ID3D12RootSignature* getRootSignature() { return m_RootSignature.Get(); }
+			XENON_NODISCARD ID3D12RootSignature* getRootSignature() { return m_RootSignature.Get(); }
 
 			/**
 			 * Get the root signature.
 			 *
 			 * @return The root signature.
 			 */
-			[[nodiscard]] const ID3D12RootSignature* getRootSignature() const { return m_RootSignature.Get(); }
+			XENON_NODISCARD const ID3D12RootSignature* getRootSignature() const { return m_RootSignature.Get(); }
 
 		private:
 			/**
@@ -92,7 +92,7 @@ namespace Xenon
 			 * @param hash The pipeline hash.
 			 * @return The pipeline cache.
 			 */
-			[[nodiscard]] std::vector<std::byte> loadPipelineStateCache(uint64_t hash) const;
+			XENON_NODISCARD std::vector<std::byte> loadPipelineStateCache(uint64_t hash) const;
 
 			/**
 			 * Store the pipeline cache.

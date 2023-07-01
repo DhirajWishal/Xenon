@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "DX12RayTracingPipeline.hpp"
@@ -75,7 +75,7 @@ namespace /* anonymous */
 	 * @param type The descriptor type.
 	 * @return The descriptor type bit.
 	 */
-	[[nodiscard]] constexpr uint8_t GetDescriptorTypeBit(Xenon::Backend::DescriptorType type) noexcept
+	XENON_NODISCARD constexpr uint8_t GetDescriptorTypeBit(Xenon::Backend::DescriptorType type) noexcept
 	{
 		return static_cast<uint8_t>(1 << Xenon::EnumToInt(type));
 	}
@@ -165,7 +165,7 @@ namespace Xenon
 
 				// Sort the ranges to the correct binding order.
 				auto sortedRanges = std::vector<std::pair<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>>(rangeMap.begin(), rangeMap.end());
-				std::ranges::sort(sortedRanges, [](const auto& lhs, const auto& rhs) { return lhs.first < rhs.first; });
+				XENON_RANGES(sort, sortedRanges, [](const auto& lhs, const auto& rhs) { return lhs.first < rhs.first; });
 
 				// Create the global root signature.
 				auto pRootSignature = createLocalRootSignature(std::move(sortedRanges));
@@ -221,7 +221,7 @@ namespace Xenon
 
 			// Sort the ranges to the correct binding order.
 			auto sortedRanges = std::vector<std::pair<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>>(globalRangeMap.begin(), globalRangeMap.end());
-			std::ranges::sort(sortedRanges, [](const auto& lhs, const auto& rhs) { return lhs.first < rhs.first; });
+			XENON_RANGES(sort, sortedRanges, [](const auto& lhs, const auto& rhs) { return lhs.first < rhs.first; });
 
 			// Create the global root signature.
 			createGlobalRootSignature(std::move(sortedRanges));

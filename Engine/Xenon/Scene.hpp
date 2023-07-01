@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -80,7 +80,7 @@ namespace Xenon
 		 *
 		 * @return The created group.
 		 */
-		[[nodiscard]] Group createGroup() { const auto lock = std::scoped_lock(m_Mutex); return m_Registry.create(); }
+		XENON_NODISCARD Group createGroup() { const auto lock = std::scoped_lock(m_Mutex); return m_Registry.create(); }
 
 		/**
 		 * Create a new object.
@@ -92,7 +92,7 @@ namespace Xenon
 		 * @return The created object reference.
 		 */
 		template<class Object, class... Arguments>
-		[[nodiscard]] Object& create(Group group, Arguments&&... arguments)
+		XENON_NODISCARD Object& create(Group group, Arguments&&... arguments)
 		{
 			const auto lock = std::scoped_lock(m_Mutex);
 			return m_Registry.emplace<Object>(group, std::forward<Arguments>(arguments)...);
@@ -100,18 +100,12 @@ namespace Xenon
 
 		/**
 		 * Create a new material object.
-		 * This is a specialization function since materials are handles a little differently.
 		 *
 		 * @param group The object's grouping.
 		 * @param builder The material builder class.
 		 * @return The created material reference.
 		 */
-		template<>
-		[[nodiscard]] Material& create<Material>(Group group, MaterialBuilder& builder)
-		{
-			const auto lock = std::scoped_lock(m_Mutex);
-			return m_Registry.emplace<Material>(group, m_Instance.getMaterialDatabase().storeSpecification(static_cast<const MaterialSpecification&>(builder)));
-		}
+		XENON_NODISCARD Material& createMaterial(Group group, MaterialBuilder& builder);
 
 		/**
 		 * Get a stored object from the registry.
@@ -121,7 +115,7 @@ namespace Xenon
 		 * @return The stored object reference.
 		 */
 		template<class Object>
-		[[nodiscard]] Object& get(Group group)
+		XENON_NODISCARD Object& get(Group group)
 		{
 			const auto lock = std::scoped_lock(m_Mutex);
 			return m_Registry.get<Object>(group);
@@ -135,7 +129,7 @@ namespace Xenon
 		 * @return The stored object reference.
 		 */
 		template<class Object>
-		[[nodiscard]] const Object& get(Group group) const
+		XENON_NODISCARD const Object& get(Group group) const
 		{
 			return m_Registry.get<Object>(group);
 		}
@@ -153,42 +147,42 @@ namespace Xenon
 		 *
 		 * @return The registry reference.
 		 */
-		[[nodiscard]] entt::registry& getRegistry() noexcept { return m_Registry; }
+		XENON_NODISCARD entt::registry& getRegistry() noexcept { return m_Registry; }
 
 		/**
 		 * Get the object registry.
 		 *
 		 * @return The registry reference.
 		 */
-		[[nodiscard]] const entt::registry& getRegistry() const noexcept { return m_Registry; }
+		XENON_NODISCARD const entt::registry& getRegistry() const noexcept { return m_Registry; }
 
 		/**
 		 * Get the instance.
 		 *
 		 * @return The instance reference.
 		 */
-		[[nodiscard]] Instance& getInstance() noexcept { return m_Instance; }
+		XENON_NODISCARD Instance& getInstance() noexcept { return m_Instance; }
 
 		/**
 		 * Get the instance.
 		 *
 		 * @return The instance reference.
 		 */
-		[[nodiscard]] const Instance& getInstance() const noexcept { return m_Instance; }
+		XENON_NODISCARD const Instance& getInstance() const noexcept { return m_Instance; }
 
 		/**
 		 * Get the camera pointer.
 		 *
 		 * @return The pointer.
 		 */
-		[[nodiscard]] Backend::Camera* getCamera() noexcept { return m_pCamera.get(); }
+		XENON_NODISCARD Backend::Camera* getCamera() noexcept { return m_pCamera.get(); }
 
 		/**
 		 * Get the camera pointer.
 		 *
 		 * @return The pointer.
 		 */
-		[[nodiscard]] const Backend::Camera* getCamera() const noexcept { return m_pCamera.get(); }
+		XENON_NODISCARD const Backend::Camera* getCamera() const noexcept { return m_pCamera.get(); }
 
 		/**
 		 * Get the drawable count.
@@ -196,14 +190,14 @@ namespace Xenon
 		 *
 		 * @return The total sub-mesh count.
 		 */
-		[[nodiscard]] uint64_t getDrawableCount() const noexcept { return m_DrawableCount; }
+		XENON_NODISCARD uint64_t getDrawableCount() const noexcept { return m_DrawableCount; }
 
 		/**
 		 * Get the drawable geometry count.
 		 *
 		 * @return The geometry count.
 		 */
-		[[nodiscard]] uint64_t getDrawableGeometryCount() const noexcept { return m_DrawableGeometryCount; }
+		XENON_NODISCARD uint64_t getDrawableGeometryCount() const noexcept { return m_DrawableGeometryCount; }
 
 		/**
 		 * Get the scene object's mutex.
@@ -211,7 +205,7 @@ namespace Xenon
 		 *
 		 * @return The mutex reference.
 		 */
-		[[nodiscard]] std::mutex& getMutex() noexcept { return m_Mutex; }
+		XENON_NODISCARD std::mutex& getMutex() noexcept { return m_Mutex; }
 
 	private:
 		/**

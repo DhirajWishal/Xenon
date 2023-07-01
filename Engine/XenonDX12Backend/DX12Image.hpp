@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -75,28 +75,28 @@ namespace Xenon
 			 *
 			 * @return The resource pointer.
 			 */
-			[[nodiscard]] ID3D12Resource* getResource() { return m_pAllocation->GetResource(); }
+			XENON_NODISCARD ID3D12Resource* getResource() { return m_pAllocation->GetResource(); }
 
 			/**
 			 * Get the backend resource.
 			 *
 			 * @return The const resource pointer.
 			 */
-			[[nodiscard]] const ID3D12Resource* getResource() const { return m_pAllocation->GetResource(); }
+			XENON_NODISCARD const ID3D12Resource* getResource() const { return m_pAllocation->GetResource(); }
 
 			/**
 			 * Get the current resource state.
 			 *
 			 * @return The current resource state.
 			 */
-			[[nodiscard]] D3D12_RESOURCE_STATES getCurrentState() const noexcept { return m_CurrentState; }
+			XENON_NODISCARD D3D12_RESOURCE_STATES getCurrentState() const noexcept { return m_CurrentState; }
 
 			/**
 			 * Get the sample description of the image.
 			 *
 			 * @return The sample description used in the image.
 			 */
-			[[nodiscard]] DXGI_SAMPLE_DESC getSampleDesc() const noexcept { return m_SampleDesc; }
+			XENON_NODISCARD DXGI_SAMPLE_DESC getSampleDesc() const noexcept { return m_SampleDesc; }
 
 			/**
 			 * Set the current image state.

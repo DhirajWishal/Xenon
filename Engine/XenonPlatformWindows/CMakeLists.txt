@@ -1,11 +1,11 @@
-# Copyright 2022-2023 Nexonous
+# Copyright 2022-2023 Dhiraj Wishal
 # SPDX-License-Identifier: Apache-2.0
 
 # Set the basic project information.
 project(
 	XenonPlatformWindows
 	VERSION 1.0.0
-	DESCRIPTION "The platform windows library."
+	DESCRIPTION "The platform Windows library."
 )
 
 # Set the sources.

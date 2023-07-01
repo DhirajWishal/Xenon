@@ -1,8 +1,9 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
 
+#include "../XenonCore/Common.hpp"
 #include <chrono>
 
 namespace Xenon
@@ -27,7 +28,7 @@ namespace Xenon
 		 *
 		 * @return The time taken in nanoseconds.
 		 */
-		[[nodiscard]] std::chrono::nanoseconds tick();
+		XENON_NODISCARD std::chrono::nanoseconds tick();
 
 	private:
 		TimePoint m_OldTime = Clock::now();

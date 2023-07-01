@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "WindowsWindow.hpp"
@@ -36,7 +36,7 @@ namespace /* anonymous */
 	{
 		auto userPtr = GetProp(hwnd, TEXT("WindowsWindow"));
 		if (userPtr)
-			return std::bit_cast<Xenon::Platform::WindowsWindow*>(userPtr)->handleEvent(uMsg, wParam, lParam);
+			return XENON_BIT_CAST(Xenon::Platform::WindowsWindow*, userPtr)->handleEvent(uMsg, wParam, lParam);
 
 		return DefWindowProc(hwnd, uMsg, wParam, lParam);
 	}

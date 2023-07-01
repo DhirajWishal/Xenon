@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -27,7 +27,7 @@ namespace Xenon
 			 * @param type The shader type.
 			 * @param pBuffer The buffer pointer to bind.
 			 */
-			[[nodiscard]] BindingGroup& attach(ShaderType type, Buffer* pBuffer) { m_Entries.emplace_back(type, pBuffer); return *this; }
+			XENON_NODISCARD BindingGroup& attach(ShaderType type, Buffer* pBuffer) { m_Entries.emplace_back(type, pBuffer); return *this; }
 
 			/**
 			 * Attach a image to the binding table.
@@ -35,7 +35,7 @@ namespace Xenon
 			 * @param type The shader type.
 			 * @param pImage The image pointer to bind.
 			 */
-			[[nodiscard]] BindingGroup& attach(ShaderType type, Image* pImage) { m_Entries.emplace_back(type, pImage); return *this; }
+			XENON_NODISCARD BindingGroup& attach(ShaderType type, Image* pImage) { m_Entries.emplace_back(type, pImage); return *this; }
 
 			/**
 			 * Attach raw data to the binding table.
@@ -44,7 +44,7 @@ namespace Xenon
 			 * @param pData The data pointer to bind.
 			 * @param size The size of the data to bind.
 			 */
-			[[nodiscard]] BindingGroup& attach(ShaderType type, const std::byte* pData, uint64_t size) { m_Entries.emplace_back(type, std::make_pair(pData, size)); return *this; }
+			XENON_NODISCARD BindingGroup& attach(ShaderType type, const std::byte* pData, uint64_t size) { m_Entries.emplace_back(type, std::make_pair(pData, size)); return *this; }
 
 			std::vector<std::pair<ShaderType, DataVariant>> m_Entries;
 		};
@@ -66,14 +66,14 @@ namespace Xenon
 			 *
 			 * @return The created group reference.
 			 */
-			[[nodiscard]] BindingGroup& createGroup() { return m_BindingGroups.emplace_back(); }
+			XENON_NODISCARD BindingGroup& createGroup() { return m_BindingGroups.emplace_back(); }
 
 			/**
 			 * Get the stored binding groups.
 			 *
 			 * @return The binding groups.
 			 */
-			[[nodiscard]] const std::vector<BindingGroup>& getBindingGroups() const noexcept { return m_BindingGroups; }
+			XENON_NODISCARD const std::vector<BindingGroup>& getBindingGroups() const noexcept { return m_BindingGroups; }
 
 		private:
 			std::vector<BindingGroup> m_BindingGroups;
@@ -93,7 +93,7 @@ namespace Xenon
 			 * @param pPipeline The ray tracing pipeline pointer.
 			 * @param bindingGroups The binding groups.
 			 */
-			explicit ShaderBindingTable([[maybe_unused]] const Device* pDevice, [[maybe_unused]] const RayTracingPipeline* pPipeline, const std::vector<BindingGroup>& bindingGroups) : m_BindingGroups(bindingGroups) {}
+			explicit ShaderBindingTable(XENON_MAYBE_UNUSED const Device* pDevice, XENON_MAYBE_UNUSED const RayTracingPipeline* pPipeline, const std::vector<BindingGroup>& bindingGroups) : m_BindingGroups(bindingGroups) {}
 
 		protected:
 			std::vector<BindingGroup> m_BindingGroups;

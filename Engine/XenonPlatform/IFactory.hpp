@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -26,7 +26,7 @@ namespace Xenon
 		 *
 		 * @return The platform.
 		 */
-		[[nodiscard]] SupportedPlatforms GetCurrentPlatform();
+		XENON_NODISCARD SupportedPlatforms GetCurrentPlatform();
 
 		/**
 		 * Interface factory class.
@@ -50,7 +50,7 @@ namespace Xenon
 			 *
 			 * @return The factory pointer.
 			 */
-			[[nodiscard]] static IFactory* Get();
+			XENON_NODISCARD static IFactory* Get();
 
 			/**
 			 * Create a new window.
@@ -60,7 +60,7 @@ namespace Xenon
 			 * @param height The height of the window.
 			 * @return The window pointer.
 			 */
-			[[nodiscard]] virtual std::unique_ptr<Window> createWindow(const std::string& title, uint32_t width, uint32_t height) = 0;
+			XENON_NODISCARD virtual std::unique_ptr<Window> createWindow(const std::string& title, uint32_t width, uint32_t height) = 0;
 		};
 	}
 }

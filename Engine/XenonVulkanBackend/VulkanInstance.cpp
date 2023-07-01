@@ -1,11 +1,14 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "VulkanInstance.hpp"
 #include "VulkanMacros.hpp"
 
-#if defined(XENON_PLATFORM_WINDOWS)
+#ifdef XENON_PLATFORM_WINDOWS
 #include <vulkan/vulkan_win32.h>
+
+#else 
+#include <SDL3/SDL_vulkan.h>
 
 #endif // defined(XENON_PLATFORM_WINDOWS)
 
@@ -53,52 +56,24 @@ namespace /* anonymous */
 	 */
 	std::vector<const char*> GetRequiredInstanceExtensions()
 	{
-		std::vector<const char*> extensions = { VK_KHR_SURFACE_EXTENSION_NAME , VK_KHR_DISPLAY_EXTENSION_NAME };
+#if defined(XENON_PLATFORM_WINDOWS)
+		std::vector<const char*> extensions = { VK_KHR_SURFACE_EXTENSION_NAME , VK_KHR_DISPLAY_EXTENSION_NAME, VK_KHR_WIN32_SURFACE_EXTENSION_NAME };
 
-#if defined(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME)
-		extensions.emplace_back(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME);
+#else
+		// Get the extensions.
+		unsigned int count = 0;
+		if (SDL_Vulkan_GetInstanceExtensions(&count, nullptr) == SDL_FALSE)
+		{
+			XENON_LOG_FATAL("Failed to get the instance extension count from SDL!");
+			return {};
+		}
 
-#elif defined(VK_FUCHSIA_IMAGEPIPE_SURFACE_EXTENSION_NAME)
-		extensions.emplace_back(VK_FUCHSIA_IMAGEPIPE_SURFACE_EXTENSION_NAME);
-
-#elif defined(VK_FUCHSIA_IMAGEPIPE_SURFACE_EXTENSION_NAME)
-		extensions.emplace_back(VK_FUCHSIA_IMAGEPIPE_SURFACE_EXTENSION_NAME);
-
-#elif defined(VK_MVK_IOS_SURFACE_EXTENSION_NAME)
-		extensions.emplace_back(VK_MVK_IOS_SURFACE_EXTENSION_NAME);
-
-#elif defined(VK_MVK_MACOS_SURFACE_EXTENSION_NAME)
-		extensions.emplace_back(VK_MVK_MACOS_SURFACE_EXTENSION_NAME);
-
-#elif defined(VK_EXT_METAL_SURFACE_EXTENSION_NAME)
-		extensions.emplace_back(VK_EXT_METAL_SURFACE_EXTENSION_NAME);
-
-#elif defined(VK_NN_VI_SURFACE_EXTENSION_NAME)
-		extensions.emplace_back(VK_NN_VI_SURFACE_EXTENSION_NAME);
-
-#elif defined(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME)
-		extensions.emplace_back(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME);
-
-#elif defined(XENON_PLATFORM_WINDOWS)
-		extensions.emplace_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
-
-#elif defined(VK_KHR_XCB_SURFACE_EXTENSION_NAME)
-		extensions.emplace_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
-
-#elif defined(VK_KHR_XLIB_SURFACE_EXTENSION_NAME)
-		extensions.emplace_back(VK_KHR_XLIB_SURFACE_EXTENSION_NAME);
-
-#elif defined(VK_EXT_DIRECTFB_SURFACE_EXTENSION_NAME)
-		extensions.emplace_back(VK_EXT_DIRECTFB_SURFACE_EXTENSION_NAME);
-
-#elif defined(VK_EXT_ACQUIRE_XLIB_DISPLAY_EXTENSION_NAME)
-		extensions.emplace_back(VK_EXT_ACQUIRE_XLIB_DISPLAY_EXTENSION_NAME);
-
-#elif defined(VK_GGP_STREAM_DESCRIPTOR_SURFACE_EXTENSION_NAME)
-		extensions.emplace_back(VK_GGP_STREAM_DESCRIPTOR_SURFACE_EXTENSION_NAME);
-
-#elif defined(VK_QNX_SCREEN_SURFACE_EXTENSION_NAME)
-		extensions.emplace_back(VK_QNX_SCREEN_SURFACE_EXTENSION_NAME);
+		std::vector<const char*> extensions(count);
+		if (SDL_Vulkan_GetInstanceExtensions(&count, extensions.data()) == SDL_FALSE)
+		{
+			XENON_LOG_FATAL("Failed to get the instance extensions from SDL!");
+			return {};
+		}
 
 #endif
 
@@ -139,7 +114,7 @@ namespace /* anonymous */
 		// Else log to the file.
 		else
 		{
-			auto& logFile = std::bit_cast<Xenon::Backend::VulkanInstance*>(pUserData)->getLogFile();
+			auto& logFile = XENON_BIT_CAST(Xenon::Backend::VulkanInstance*, pUserData)->getLogFile();
 
 			// Log if the log file is open.
 			if (logFile.is_open())
@@ -170,7 +145,7 @@ namespace /* anonymous */
 	 * @param pUserData The user data to pass into the structure.
 	 * @return The created structure.
 	 */
-	[[nodiscard]] constexpr VkDebugUtilsMessengerCreateInfoEXT CreateDebugMessengerCreateInfo(void* pUserData)
+	XENON_NODISCARD constexpr VkDebugUtilsMessengerCreateInfoEXT CreateDebugMessengerCreateInfo(void* pUserData)
 	{
 		VkDebugUtilsMessengerCreateInfoEXT createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -183,22 +158,6 @@ namespace /* anonymous */
 
 		return createInfo;
 	}
-
-	/**
-	 * Static initializer struct.
-	 * These structs are used to initialize data that are to be initialized just once in the application.
-	 */
-	struct StaticInitializer final
-	{
-		/**
-		 * Default constructor.
-		 */
-		StaticInitializer()
-		{
-			// Initialize volk.
-			XENON_VK_ASSERT(volkInitialize(), "Failed to initialize volk!");
-		}
-	};
 }
 
 namespace Xenon
@@ -208,8 +167,15 @@ namespace Xenon
 		VulkanInstance::VulkanInstance(const std::string& applicationName, uint32_t applicationVersion)
 			: Instance(applicationName, applicationVersion)
 		{
-			// Setup the static initializer to initialize volk.
-			static StaticInitializer initializer;
+#ifdef XENON_PLATFORM_WINDOWS
+			// Initialize Volk.
+			volkInitialize();
+
+#else
+			// Initialize Volk.
+			volkInitializeCustom(XENON_BIT_CAST(PFN_vkGetInstanceProcAddr, SDL_Vulkan_GetVkGetInstanceProcAddr()));
+
+#endif
 
 			// Create the instance.
 			createInstance(applicationName, applicationVersion);
@@ -220,7 +186,7 @@ namespace Xenon
 
 			// Create the debugger.
 			const auto debugMessengerCreateInfo = CreateDebugMessengerCreateInfo(this);
-			const auto vkCreateDebugUtilsMessengerEXT = std::bit_cast<PFN_vkCreateDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(m_Instance, "vkCreateDebugUtilsMessengerEXT"));
+			const auto vkCreateDebugUtilsMessengerEXT = XENON_BIT_CAST(PFN_vkCreateDebugUtilsMessengerEXT, vkGetInstanceProcAddr(m_Instance, "vkCreateDebugUtilsMessengerEXT"));
 			XENON_VK_ASSERT(vkCreateDebugUtilsMessengerEXT(m_Instance, &debugMessengerCreateInfo, nullptr, &m_DebugMessenger), "Failed to create the debug messenger.");
 
 #endif // XENON_DEBUG
@@ -230,7 +196,7 @@ namespace Xenon
 		{
 #ifdef XENON_DEBUG
 			// Destroy the debugger.
-			const auto vkDestroyDebugUtilsMessengerEXT = std::bit_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(m_Instance, "vkDestroyDebugUtilsMessengerEXT"));
+			const auto vkDestroyDebugUtilsMessengerEXT = XENON_BIT_CAST(PFN_vkDestroyDebugUtilsMessengerEXT, vkGetInstanceProcAddr(m_Instance, "vkDestroyDebugUtilsMessengerEXT"));
 			vkDestroyDebugUtilsMessengerEXT(m_Instance, m_DebugMessenger, nullptr);
 
 #endif // XENON_DEBUG

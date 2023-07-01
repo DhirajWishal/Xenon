@@ -1,7 +1,9 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
+
+#include "Common.hpp"
 
 #include <atomic>
 #include <mutex>
@@ -36,7 +38,7 @@ namespace Xenon
 		 * @return True if the fence is complete (the counter is 0).
 		 * @return False if the fence is not complete (the counter is not 0).
 		 */
-		[[nodiscard]] bool isComplete() const noexcept { return m_Counter == 0; }
+		XENON_NODISCARD bool isComplete() const noexcept { return m_Counter == 0; }
 
 		/**
 		 * Wait till the counter has reached 0.
@@ -73,7 +75,7 @@ namespace Xenon
 		 *
 		 * @return The value.
 		 */
-		[[nodiscard]] uint64_t getValue() const { return m_Counter; }
+		XENON_NODISCARD uint64_t getValue() const { return m_Counter; }
 
 	private:
 		std::mutex m_Mutex;

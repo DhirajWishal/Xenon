@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "DX12RasterizingPipeline.hpp"
@@ -224,7 +224,7 @@ namespace /* anonymous */
 	 * @param mode The polygon mode.
 	 * @return The D3D12 fill mode.
 	 */
-	[[nodiscard]] constexpr D3D12_FILL_MODE GetFillMode(Xenon::Backend::PolygonMode mode) noexcept
+	XENON_NODISCARD constexpr D3D12_FILL_MODE GetFillMode(Xenon::Backend::PolygonMode mode) noexcept
 	{
 		switch (mode)
 		{
@@ -246,7 +246,7 @@ namespace /* anonymous */
 	 * @param cull The flint cull mode.
 	 * @return The D3D12 cull mode.
 	 */
-	[[nodiscard]] constexpr D3D12_CULL_MODE GetCullMode(Xenon::Backend::CullMode cull) noexcept
+	XENON_NODISCARD constexpr D3D12_CULL_MODE GetCullMode(Xenon::Backend::CullMode cull) noexcept
 	{
 		switch (cull)
 		{
@@ -271,7 +271,7 @@ namespace /* anonymous */
 	 * @param face The flint front face.
 	 * @return The D3D12 front face.
 	 */
-	[[nodiscard]] constexpr BOOL GetFrontFace(Xenon::Backend::FrontFace face) noexcept
+	XENON_NODISCARD constexpr BOOL GetFrontFace(Xenon::Backend::FrontFace face) noexcept
 	{
 		switch (face)
 		{
@@ -293,7 +293,7 @@ namespace /* anonymous */
 	 * @param blendFactor The blend factor.
 	 * @return The D3D12 blend.
 	 */
-	[[nodiscard]] constexpr D3D12_BLEND GetBlend(Xenon::Backend::ColorBlendFactor blendFactor) noexcept
+	XENON_NODISCARD constexpr D3D12_BLEND GetBlend(Xenon::Backend::ColorBlendFactor blendFactor) noexcept
 	{
 		switch (blendFactor)
 		{
@@ -339,7 +339,7 @@ namespace /* anonymous */
 	 * @param blendOperator The blend operator.
 	 * @return The D3D12 blend operator.
 	 */
-	[[nodiscard]] constexpr D3D12_BLEND_OP GetBlendOperator(Xenon::Backend::ColorBlendOperator blendOperator) noexcept
+	XENON_NODISCARD constexpr D3D12_BLEND_OP GetBlendOperator(Xenon::Backend::ColorBlendOperator blendOperator) noexcept
 	{
 		switch (blendOperator)
 		{
@@ -370,7 +370,7 @@ namespace /* anonymous */
 	 * @param logic The Xenon logic.
 	 * @return The D3D12 logic operator.
 	 */
-	[[nodiscard]] constexpr D3D12_LOGIC_OP GetColorBlendLogic(Xenon::Backend::ColorBlendLogic logic) noexcept
+	XENON_NODISCARD constexpr D3D12_LOGIC_OP GetColorBlendLogic(Xenon::Backend::ColorBlendLogic logic) noexcept
 	{
 		switch (logic)
 		{
@@ -434,7 +434,7 @@ namespace /* anonymous */
 	 * @param writeMash The Xenon write mask.
 	 * @return The D3D12 write enable.
 	 */
-	[[nodiscard]] constexpr D3D12_COLOR_WRITE_ENABLE GetWriteEnable(Xenon::Backend::ColorWriteMask writeMask)
+	XENON_NODISCARD constexpr D3D12_COLOR_WRITE_ENABLE GetWriteEnable(Xenon::Backend::ColorWriteMask writeMask)
 	{
 		if (writeMask & Xenon::Backend::ColorWriteMask::R &&
 			writeMask & Xenon::Backend::ColorWriteMask::G &&
@@ -464,7 +464,7 @@ namespace /* anonymous */
 	 * @param logic The logic.
 	 * @return The D3D12 comparison function.
 	 */
-	[[nodiscard]] constexpr D3D12_COMPARISON_FUNC GetComparisonFunction(Xenon::Backend::DepthCompareLogic logic)
+	XENON_NODISCARD constexpr D3D12_COMPARISON_FUNC GetComparisonFunction(Xenon::Backend::DepthCompareLogic logic)
 	{
 		switch (logic)
 		{
@@ -505,7 +505,7 @@ namespace /* anonymous */
 	 * @param dataType The component data type.
 	 * @return The DXGI format.
 	 */
-	[[nodiscard]] constexpr DXGI_FORMAT GetElementFormat(uint8_t componentCount, Xenon::Backend::ComponentDataType dataType) noexcept
+	XENON_NODISCARD constexpr DXGI_FORMAT GetElementFormat(uint8_t componentCount, Xenon::Backend::ComponentDataType dataType) noexcept
 	{
 		if (componentCount == 1)
 		{
@@ -638,7 +638,7 @@ namespace Xenon
 
 			// Sort the ranges to the correct binding order.
 			auto sortedranges = std::vector<std::pair<uint8_t, std::vector<CD3DX12_DESCRIPTOR_RANGE1>>>(rangeMap.begin(), rangeMap.end());
-			std::ranges::sort(sortedranges, [](const auto& lhs, const auto& rhs) { return lhs.first < rhs.first; });
+			XENON_RANGES(sort, sortedranges, [](const auto& lhs, const auto& rhs) { return lhs.first < rhs.first; });
 
 			// Setup the descriptor heap manager.
 			setupDescriptorHeapManager(std::move(bindingMap));
@@ -701,7 +701,7 @@ namespace Xenon
 				}
 
 				// Sort the inputs.
-				std::ranges::sort(pipeline.m_Inputs, [](const auto& lhs, const auto& rhs) { return lhs.AlignedByteOffset < rhs.AlignedByteOffset; });
+				XENON_RANGES(sort, pipeline.m_Inputs, [](const auto& lhs, const auto& rhs) { return lhs.AlignedByteOffset < rhs.AlignedByteOffset; });
 
 				// Create the pipeline.
 				D3D12_GRAPHICS_PIPELINE_STATE_DESC pipelineState = m_PipelineStateDescriptor;

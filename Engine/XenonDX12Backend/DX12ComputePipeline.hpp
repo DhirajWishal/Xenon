@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -37,35 +37,35 @@ namespace Xenon
 			 * @param type The descriptor type to create.
 			 * @return The descriptor pointer. It will return nullptr if the descriptor type is not present in the pipeline.
 			 */
-			[[nodiscard]] std::unique_ptr<Descriptor> createDescriptor(DescriptorType type) override;
+			XENON_NODISCARD std::unique_ptr<Descriptor> createDescriptor(DescriptorType type) override;
 
 			/**
 			 * Get the root signature object.
 			 *
 			 * @return The root signature pointer.
 			 */
-			[[nodiscard]] ID3D12RootSignature* getRootSignature() noexcept { return m_RootSignature.Get(); }
+			XENON_NODISCARD ID3D12RootSignature* getRootSignature() noexcept { return m_RootSignature.Get(); }
 
 			/**
 			 * Get the root signature object.
 			 *
 			 * @return The root signature pointer.
 			 */
-			[[nodiscard]] const ID3D12RootSignature* getRootSignature() const noexcept { return m_RootSignature.Get(); }
+			XENON_NODISCARD const ID3D12RootSignature* getRootSignature() const noexcept { return m_RootSignature.Get(); }
 
 			/**
 			 * Get the pipeline state.
 			 *
 			 * @return The pipeline state pointer.
 			 */
-			[[nodiscard]] ID3D12PipelineState* getPipelineState() noexcept { return m_PipelineState.Get(); }
+			XENON_NODISCARD ID3D12PipelineState* getPipelineState() noexcept { return m_PipelineState.Get(); }
 
 			/**
 			 * Get the pipeline state.
 			 *
 			 * @return The pipeline state pointer.
 			 */
-			[[nodiscard]] const ID3D12PipelineState* getPipelineState() const noexcept { return m_PipelineState.Get(); }
+			XENON_NODISCARD const ID3D12PipelineState* getPipelineState() const noexcept { return m_PipelineState.Get(); }
 
 		private:
 			/**
@@ -80,7 +80,7 @@ namespace Xenon
 			 *
 			 * @return The pipeline state cache.
 			 */
-			[[nodiscard]] std::vector<std::byte> loadPipelineSateCache() const;
+			XENON_NODISCARD std::vector<std::byte> loadPipelineSateCache() const;
 
 			/**
 			 * Store the pipeline state cache using the cache handler.

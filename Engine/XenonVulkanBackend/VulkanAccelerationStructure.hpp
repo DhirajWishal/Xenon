@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -33,7 +33,7 @@ namespace Xenon
 			 *
 			 * @return The acceleration structure's device address.
 			 */
-			[[nodiscard]] VkDeviceAddress getDeviceAddress() const noexcept { return m_DeviceAddress; }
+			XENON_NODISCARD VkDeviceAddress getDeviceAddress() const noexcept { return m_DeviceAddress; }
 
 		protected:
 			/**

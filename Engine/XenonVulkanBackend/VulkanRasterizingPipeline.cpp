@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "VulkanRasterizingPipeline.hpp"
@@ -122,7 +122,7 @@ namespace /* anonymous */
 	 * @param topology The flint primitive topology.
 	 * @return The Vulkan primitive topology.
 	 */
-	[[nodiscard]] constexpr VkPrimitiveTopology GetPrimitiveTopology(Xenon::Backend::PrimitiveTopology topology) noexcept
+	XENON_NODISCARD constexpr VkPrimitiveTopology GetPrimitiveTopology(Xenon::Backend::PrimitiveTopology topology) noexcept
 	{
 		switch (topology)
 		{
@@ -171,7 +171,7 @@ namespace /* anonymous */
 	 * @param cull The flint cull mode.
 	 * @return The Vulkan cull mode.
 	 */
-	[[nodiscard]] constexpr VkCullModeFlags GetCullMode(Xenon::Backend::CullMode cull) noexcept
+	XENON_NODISCARD constexpr VkCullModeFlags GetCullMode(Xenon::Backend::CullMode cull) noexcept
 	{
 		switch (cull)
 		{
@@ -199,7 +199,7 @@ namespace /* anonymous */
 	 * @param face The flint front face.
 	 * @return The Vulkan front face.
 	 */
-	[[nodiscard]] constexpr VkFrontFace GetFrontFace(Xenon::Backend::FrontFace face) noexcept
+	XENON_NODISCARD constexpr VkFrontFace GetFrontFace(Xenon::Backend::FrontFace face) noexcept
 	{
 		switch (face)
 		{
@@ -221,7 +221,7 @@ namespace /* anonymous */
 	 * @param mode The flint polygon mode.
 	 * @return The Vulkan polygon mode.
 	 */
-	[[nodiscard]] constexpr VkPolygonMode GetPolygonMode(Xenon::Backend::PolygonMode mode) noexcept
+	XENON_NODISCARD constexpr VkPolygonMode GetPolygonMode(Xenon::Backend::PolygonMode mode) noexcept
 	{
 		switch (mode)
 		{
@@ -246,7 +246,7 @@ namespace /* anonymous */
 	 * @param logic The flint logic.
 	 * @return The Vulkan logic.
 	 */
-	[[nodiscard]] constexpr VkLogicOp GetLogicOp(Xenon::Backend::ColorBlendLogic logic) noexcept
+	XENON_NODISCARD constexpr VkLogicOp GetLogicOp(Xenon::Backend::ColorBlendLogic logic) noexcept
 	{
 		switch (logic)
 		{
@@ -310,7 +310,7 @@ namespace /* anonymous */
 	 * @param logic the flint logic.
 	 * @return The Vulkan logic operator.
 	 */
-	[[nodiscard]] constexpr VkCompareOp GetCompareOp(Xenon::Backend::DepthCompareLogic logic) noexcept
+	XENON_NODISCARD constexpr VkCompareOp GetCompareOp(Xenon::Backend::DepthCompareLogic logic) noexcept
 	{
 		switch (logic)
 		{
@@ -344,13 +344,14 @@ namespace /* anonymous */
 		}
 	}
 
+#ifdef XENON_FEATURE_CONSTEXPR_VECTOR
 	/**
 	 * Get the dynamic states.
 	 *
 	 * @param flags The flint flags.
 	 * @return The Vulkan flags.
 	 */
-	[[nodiscard]] constexpr std::vector<VkDynamicState> GetDynamicStates(Xenon::Backend::DynamicStateFlags flags) noexcept
+	XENON_NODISCARD constexpr std::vector<VkDynamicState> GetDynamicStates(Xenon::Backend::DynamicStateFlags flags) noexcept
 	{
 		std::vector<VkDynamicState> states = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
 		if (flags & Xenon::Backend::DynamicStateFlags::LineWidth) states.emplace_back(VK_DYNAMIC_STATE_LINE_WIDTH);
@@ -361,13 +362,33 @@ namespace /* anonymous */
 		return states;
 	}
 
+#else
+	/**
+	 * Get the dynamic states.
+	 *
+	 * @param flags The flint flags.
+	 * @return The Vulkan flags.
+	 */
+	XENON_NODISCARD std::vector<VkDynamicState> GetDynamicStates(Xenon::Backend::DynamicStateFlags flags) noexcept
+	{
+		std::vector<VkDynamicState> states = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
+		if (flags & Xenon::Backend::DynamicStateFlags::LineWidth) states.emplace_back(VK_DYNAMIC_STATE_LINE_WIDTH);
+		if (flags & Xenon::Backend::DynamicStateFlags::DepthBias) states.emplace_back(VK_DYNAMIC_STATE_DEPTH_BIAS);
+		if (flags & Xenon::Backend::DynamicStateFlags::BlendConstants) states.emplace_back(VK_DYNAMIC_STATE_BLEND_CONSTANTS);
+		if (flags & Xenon::Backend::DynamicStateFlags::DepthBounds) states.emplace_back(VK_DYNAMIC_STATE_DEPTH_BOUNDS);
+
+		return states;
+	}
+
+#endif // XENON_FEATURE_CONSTEXPR_VECTOR
+
 	/**
 	 * Get the blend factor.
 	 *
 	 * @param factor The flint factor.
 	 * @return The Vulkan factor.
 	 */
-	[[nodiscard]] constexpr VkBlendFactor GetBlendFactor(Xenon::Backend::ColorBlendFactor factor) noexcept
+	XENON_NODISCARD constexpr VkBlendFactor GetBlendFactor(Xenon::Backend::ColorBlendFactor factor) noexcept
 	{
 		switch (factor)
 		{
@@ -440,7 +461,7 @@ namespace /* anonymous */
 	 * @param op The flint operator.
 	 * @return The Vulkan blend operator.
 	 */
-	[[nodiscard]] constexpr VkBlendOp GetBlendOp(Xenon::Backend::ColorBlendOperator op) noexcept
+	XENON_NODISCARD constexpr VkBlendOp GetBlendOp(Xenon::Backend::ColorBlendOperator op) noexcept
 	{
 		switch (op)
 		{
@@ -609,7 +630,7 @@ namespace /* anonymous */
 	 * @param mask The color write mask.
 	 * @return The VUlkan mask.
 	 */
-	[[nodiscard]] constexpr VkColorComponentFlags GetComponentFlags(Xenon::Backend::ColorWriteMask mask) noexcept
+	XENON_NODISCARD constexpr VkColorComponentFlags GetComponentFlags(Xenon::Backend::ColorWriteMask mask) noexcept
 	{
 		VkColorComponentFlags flags = 0;
 		if (mask & Xenon::Backend::ColorWriteMask::R) flags |= VK_COLOR_COMPONENT_R_BIT;
@@ -627,7 +648,7 @@ namespace /* anonymous */
 	 * @param dataType The component data type.
 	 * @return The Vulkan format.
 	 */
-	[[nodiscard]] constexpr VkFormat GetElementFormat(uint8_t componentCount, Xenon::Backend::ComponentDataType dataType) noexcept
+	XENON_NODISCARD constexpr VkFormat GetElementFormat(uint8_t componentCount, Xenon::Backend::ComponentDataType dataType) noexcept
 	{
 		if (componentCount == 1)
 		{
@@ -905,7 +926,7 @@ namespace Xenon
 				}
 
 				// Sort the inputs.
-				std::ranges::sort(pipeline.m_InputAttributeDescriptions, [](const auto& lhs, const auto& rhs) { return lhs.offset < rhs.offset; });
+				XENON_RANGES(sort, pipeline.m_InputAttributeDescriptions, [](const auto& lhs, const auto& rhs) { return lhs.offset < rhs.offset; });
 
 				// Setup the input bindings if we have vertex data (stride is not 0).
 				if (hasVertexData)

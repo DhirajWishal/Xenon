@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -50,14 +50,14 @@ namespace Xenon
 		 *
 		 * @return The view ports of the camera.
 		 */
-		[[nodiscard]] std::vector<Backend::Viewport> getViewports() override { return { m_Viewport }; }
+		XENON_NODISCARD std::vector<Backend::Viewport> getViewports() override { return { m_Viewport }; }
 
 		/**
 		 * Get the camera buffer with the camera's matrices.
 		 *
 		 * @return The camera buffer.
 		 */
-		[[nodiscard]] const CameraBuffer& getCameraBuffer() const noexcept { return m_CameraBuffer; }
+		XENON_NODISCARD const CameraBuffer& getCameraBuffer() const noexcept { return m_CameraBuffer; }
 
 	private:
 		BackendType m_BackendType = BackendType::Any;

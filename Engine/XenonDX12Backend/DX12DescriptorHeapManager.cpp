@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "DX12DescriptorHeapManager.hpp"
@@ -14,7 +14,7 @@ namespace /* anonymous */
 	 * @param resource The Xenon resource type.
 	 * @return The D3D12 descriptor range type.
 	 */
-	[[nodiscard]] constexpr D3D12_DESCRIPTOR_RANGE_TYPE GetDescriptorRangeType(Xenon::Backend::ResourceType resource) noexcept
+	XENON_NODISCARD constexpr D3D12_DESCRIPTOR_RANGE_TYPE GetDescriptorRangeType(Xenon::Backend::ResourceType resource) noexcept
 	{
 		switch (resource)
 		{

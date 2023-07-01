@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -336,14 +336,14 @@ namespace Xenon
 			 *
 			 * @return The command buffer pointer.
 			 */
-			[[nodiscard]] VulkanCommandBuffer* getCurrentCommandBuffer() noexcept { return m_pCurrentBuffer; }
+			XENON_NODISCARD VulkanCommandBuffer* getCurrentCommandBuffer() noexcept { return m_pCurrentBuffer; }
 
 			/**
 			 * Get the current command buffer pointer.
 			 *
 			 * @return The command buffer pointer.
 			 */
-			[[nodiscard]] const VulkanCommandBuffer* getCurrentCommandBuffer() const noexcept { return m_pCurrentBuffer; }
+			XENON_NODISCARD const VulkanCommandBuffer* getCurrentCommandBuffer() const noexcept { return m_pCurrentBuffer; }
 
 		private:
 			std::mutex m_Mutex;

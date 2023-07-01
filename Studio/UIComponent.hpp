@@ -1,7 +1,9 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
+
+#include "XenonCore/Common.hpp"
 
 #include <chrono>
 
@@ -45,7 +47,7 @@ public:
 	 * @return True if the component is shown.
 	 * @return False if the component is hidden.
 	 */
-	[[nodiscard]] bool isVisible() const noexcept { return m_bIsOpen; }
+	XENON_NODISCARD bool isVisible() const noexcept { return m_bIsOpen; }
 
 protected:
 	bool m_bIsOpen = false;

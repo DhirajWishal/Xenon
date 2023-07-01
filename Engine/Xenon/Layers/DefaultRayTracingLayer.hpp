@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -20,6 +20,9 @@ namespace Xenon
 		 */
 		struct DrawData final
 		{
+			DrawData() = default;
+			explicit DrawData(Geometry&& geometry) : m_Geometry(std::move(geometry)) {}
+
 			Geometry m_Geometry;
 
 			std::unique_ptr<Backend::BottomLevelAccelerationStructure> m_pBottomLevelAccelerationStructure;
@@ -69,7 +72,7 @@ namespace Xenon
 		 *
 		 * @return The count.
 		 */
-		[[nodiscard]] uint64_t getTotalDrawCount() const noexcept { return m_SubMeshCount; }
+		XENON_NODISCARD uint64_t getTotalDrawCount() const noexcept { return m_SubMeshCount; }
 
 		/**
 		 * Get the draw count.
@@ -77,7 +80,7 @@ namespace Xenon
 		 *
 		 * @return The count.
 		 */
-		[[nodiscard]] uint64_t getDrawCount() const noexcept { return m_DrawCount; }
+		XENON_NODISCARD uint64_t getDrawCount() const noexcept { return m_DrawCount; }
 
 	private:
 		std::mutex m_Mutex;

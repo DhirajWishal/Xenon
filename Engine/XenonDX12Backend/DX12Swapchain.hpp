@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -56,7 +56,7 @@ namespace Xenon
 			 *
 			 * @return The swapchain image index.
 			 */
-			[[nodiscard]] uint32_t prepare() override;
+			XENON_NODISCARD uint32_t prepare() override;
 
 			/**
 			 * Present the swapchain to the window.
@@ -74,21 +74,21 @@ namespace Xenon
 			 *
 			 * @return The image resource.
 			 */
-			[[nodiscard]] ID3D12Resource* getCurrentSwapchainImageResource() { return m_SwapchainImages[m_ImageIndex].Get(); }
+			XENON_NODISCARD ID3D12Resource* getCurrentSwapchainImageResource() { return m_SwapchainImages[m_ImageIndex].Get(); }
 
 			/**
 			 * Get the current swapchain image resource.
 			 *
 			 * @return The image resource.
 			 */
-			[[nodiscard]] const ID3D12Resource* getCurrentSwapchainImageResource() const { return m_SwapchainImages[m_ImageIndex].Get(); }
+			XENON_NODISCARD const ID3D12Resource* getCurrentSwapchainImageResource() const { return m_SwapchainImages[m_ImageIndex].Get(); }
 
 			/**
 			 * Get the current CPU descriptor handle.
 			 *
 			 * @return The descriptor handle.
 			 */
-			[[nodiscard]] D3D12_CPU_DESCRIPTOR_HANDLE getCPUDescriptorHandle() const;
+			XENON_NODISCARD D3D12_CPU_DESCRIPTOR_HANDLE getCPUDescriptorHandle() const;
 
 			/**
 			 * Prepare the internal descriptor to copy the incoming image.
@@ -102,7 +102,7 @@ namespace Xenon
 			 *
 			 * @return The container.
 			 */
-			[[nodiscard]] const ImageToSwapchainContainer& getImageToSwapchainCopyContainer() const { return m_ImageCopyContainer; }
+			XENON_NODISCARD const ImageToSwapchainContainer& getImageToSwapchainCopyContainer() const { return m_ImageCopyContainer; }
 
 		private:
 			/**
@@ -110,7 +110,7 @@ namespace Xenon
 			 *
 			 * @return The best supported format.
 			 */
-			[[nodiscard]] DXGI_FORMAT getBestSwapchainFormat() const;
+			XENON_NODISCARD DXGI_FORMAT getBestSwapchainFormat() const;
 
 			/**
 			 * Setup the image copy container.

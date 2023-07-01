@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "IFactory.hpp"
@@ -7,9 +7,10 @@
 #if defined(XENON_PLATFORM_WINDOWS)
 #include "../XenonPlatformWindows/WindowsFactory.hpp"
 
-#elif defiend(XENON_PLATFORM_LINUX)
+#elif defined(XENON_PLATFORM_LINUX)
+#include "../XenonPlatformLinux/LinuxFactory.hpp"
 
-#elif defiend(XENON_PLATFORM_MAC)
+#elif defined(XENON_PLATFORM_MAC)
 
 #else
 #error "The platform is not supported!"
@@ -25,10 +26,10 @@ namespace Xenon
 #if defined(XENON_PLATFORM_WINDOWS)
 			return SupportedPlatforms::Windows;
 
-#elif defiend(XENON_PLATFORM_LINUX)
+#elif defined(XENON_PLATFORM_LINUX)
 			return SupportedPlatforms::Linux;
 
-#elif defiend(XENON_PLATFORM_MAC)
+#elif defined(XENON_PLATFORM_MAC)
 			return SupportedPlatforms::MacOS;
 
 #else
@@ -43,9 +44,11 @@ namespace Xenon
 			static Xenon::Platform::WindowsFactory factory;
 			return &factory;
 
-#elif defiend(XENON_PLATFORM_LINUX)
+#elif defined(XENON_PLATFORM_LINUX)
+			static Xenon::Platform::LinuxFactory factory;
+			return &factory;
 
-#elif defiend(XENON_PLATFORM_MAC)
+#elif defined(XENON_PLATFORM_MAC)
 
 #else
 			return nullptr;

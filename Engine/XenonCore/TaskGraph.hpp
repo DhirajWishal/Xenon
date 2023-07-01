@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -32,7 +32,7 @@ namespace Xenon
 		 * @return The task pointer.
 		 */
 		template<class Function, class... TaskNodes>
-		[[nodiscard]] std::shared_ptr<TaskNode> create(Function&& function, const std::shared_ptr<TaskNodes>&... pTasks)
+		XENON_NODISCARD std::shared_ptr<TaskNode> create(Function&& function, const std::shared_ptr<TaskNodes>&... pTasks)
 		{
 			constexpr auto parentCount = sizeof...(pTasks);
 			auto pChild = std::make_shared<TaskNode>(m_JobSystem, std::forward<Function>(function), parentCount);
@@ -53,7 +53,7 @@ namespace Xenon
 		 * @return The task pointer.
 		 */
 		template<class Function>
-		[[nodiscard]] std::shared_ptr<TaskNode> create(Function&& function, const std::vector<std::shared_ptr<TaskNode>>& pTasks)
+		XENON_NODISCARD std::shared_ptr<TaskNode> create(Function&& function, const std::vector<std::shared_ptr<TaskNode>>& pTasks)
 		{
 			auto pChild = std::make_shared<TaskNode>(m_JobSystem, std::forward<Function>(function), pTasks.size());
 			for (const auto& pTask : pTasks)

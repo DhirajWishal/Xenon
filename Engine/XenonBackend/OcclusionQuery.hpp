@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -30,14 +30,14 @@ namespace Xenon
 			 *
 			 * @return The samples.
 			 */
-			[[nodiscard]] virtual std::vector<uint64_t> getSamples() = 0;
+			XENON_NODISCARD virtual std::vector<uint64_t> getSamples() = 0;
 
 			/**
 			 * Get the sample count.
 			 *
 			 * @return The sample count.
 			 */
-			[[nodiscard]] uint64_t getSampleCount() const noexcept { return m_SampleCount; }
+			XENON_NODISCARD uint64_t getSampleCount() const noexcept { return m_SampleCount; }
 
 		protected:
 			uint64_t m_SampleCount = 0;

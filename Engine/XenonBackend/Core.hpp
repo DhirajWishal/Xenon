@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -99,7 +99,7 @@ namespace Xenon
 		 * @param format The format to check.
 		 * @return The number of candidate formats. The count will be 0 if undefined.
 		 */
-		[[nodiscard]] constexpr uint32_t CountCandiateFormats(DataFormat format)
+		XENON_NODISCARD constexpr uint32_t CountCandiateFormats(DataFormat format)
 		{
 			uint32_t count = 0;
 			if (format == DataFormat::Undefined)
@@ -115,13 +115,14 @@ namespace Xenon
 			return count;
 		}
 
+#ifdef XENON_FEATURE_CONSTEXPR_VECTOR
 		/**
 		 * Get the candidate formats from the format list.
 		 *
 		 * @param format The format with candidates.
 		 * @return The candidate format vector with the most to least important order.
 		 */
-		[[nodiscard]] constexpr std::vector<DataFormat> GetCandidateFormats(DataFormat format)
+		XENON_NODISCARD constexpr std::vector<DataFormat> GetCandidateFormats(DataFormat format)
 		{
 			std::vector<DataFormat> candidates;
 			for (auto i = (sizeof(std::underlying_type_t<DataFormat>) * 8) - 1; i > 0; i--)
@@ -133,6 +134,27 @@ namespace Xenon
 			return candidates;
 		}
 
+#else
+		/**
+		 * Get the candidate formats from the format list.
+		 *
+		 * @param format The format with candidates.
+		 * @return The candidate format vector with the most to least important order.
+		 */
+		XENON_NODISCARD std::vector<DataFormat> GetCandidateFormats(DataFormat format)
+		{
+			std::vector<DataFormat> candidates;
+			for (auto i = (sizeof(std::underlying_type_t<DataFormat>) * 8) - 1; i > 0; i--)
+			{
+				if (EnumToInt(format) & (1 << i))
+					candidates.push_back(static_cast<DataFormat>(1 << i));
+			}
+
+			return candidates;
+		}
+
+#endif
+
 		/**
 		 * Check if the format is a depth format.
 		 *
@@ -140,7 +162,7 @@ namespace Xenon
 		 * @return True if the format is a depth format.
 		 * @return False if the format is not a depth format.
 		 */
-		[[nodiscard]] constexpr bool IsDepthFormat(DataFormat format) noexcept
+		XENON_NODISCARD constexpr bool IsDepthFormat(DataFormat format) noexcept
 		{
 			switch (format)
 			{
@@ -189,7 +211,7 @@ namespace Xenon
 		 * @return True if the format has a stencil component.
 		 * @return False if the format doesn't have a stencil component.
 		 */
-		[[nodiscard]] constexpr bool HasStencilComponent(DataFormat format) noexcept
+		XENON_NODISCARD constexpr bool HasStencilComponent(DataFormat format) noexcept
 		{
 			switch (format)
 			{
@@ -385,7 +407,7 @@ namespace Xenon
 		 * @return True if the element is a vertex element.
 		 * @return False if the element is not a vertex element.
 		 */
-		[[nodiscard]] constexpr bool IsVertexElement(InputElement element) noexcept
+		XENON_NODISCARD constexpr bool IsVertexElement(InputElement element) noexcept
 		{
 			return EnumToInt(element) <= EnumToInt(InputElement::VertexJointWeight);
 		}
@@ -397,7 +419,7 @@ namespace Xenon
 		 * @return True if the element is an instance element.
 		 * @return False if the element is not an instance element.
 		 */
-		[[nodiscard]] constexpr bool IsInstanceElement(InputElement element) noexcept
+		XENON_NODISCARD constexpr bool IsInstanceElement(InputElement element) noexcept
 		{
 			return EnumToInt(element) >= EnumToInt(InputElement::InstancePosition) && EnumToInt(element) <= EnumToInt(InputElement::InstanceID);
 		}
@@ -425,7 +447,7 @@ namespace Xenon
 		 * @param type The type of the attribute.
 		 * @return The component count.
 		 */
-		[[nodiscard]] constexpr uint8_t GetAttributeDataTypeComponentCount(AttributeDataType type) noexcept
+		XENON_NODISCARD constexpr uint8_t GetAttributeDataTypeComponentCount(AttributeDataType type) noexcept
 		{
 			switch (type)
 			{
@@ -483,7 +505,7 @@ namespace Xenon
 		 * @type The component type.
 		 * @return The byte size of the component.
 		 */
-		[[nodiscard]] constexpr uint8_t GetComponentTypeSize(ComponentDataType type) noexcept
+		XENON_NODISCARD constexpr uint8_t GetComponentTypeSize(ComponentDataType type) noexcept
 		{
 			switch (type)
 			{
@@ -533,6 +555,10 @@ namespace Xenon
 			 */
 			struct VertexElement final
 			{
+				constexpr VertexElement() = default;
+				constexpr explicit VertexElement(InputElement element, uint8_t size, uint8_t offset, AttributeDataType attributeDataType, ComponentDataType componentDataType)
+					: m_Element(element), m_Size(size),m_Offset(offset), m_AttributeDataType(attributeDataType), m_ComponentDataType(componentDataType) {}
+
 				InputElement m_Element = InputElement::Undefined;
 
 				uint8_t m_Size = 0;
@@ -543,10 +569,19 @@ namespace Xenon
 			};
 
 		public:
+#ifdef XENON_FEATURE_CONSTEXPR_VECTOR
 			/**
 			 * Default constructor.
 			 */
 			constexpr VertexSpecification() = default;
+
+#else
+			/**
+			 * Default constructor.
+			 */
+			VertexSpecification() = default;
+
+#endif
 
 			/**
 			 * Add a vertex element to the specification.
@@ -584,7 +619,7 @@ namespace Xenon
 			 * @param element The element to get the offset of.
 			 * @return The offset in bytes.
 			 */
-			[[nodiscard]] uint8_t offsetOf(InputElement element) const { return m_Elements[m_ElementIndexMap[EnumToInt(element)]].m_Offset; }
+			XENON_NODISCARD uint8_t offsetOf(InputElement element) const { return m_Elements[m_ElementIndexMap[EnumToInt(element)]].m_Offset; }
 
 			/**
 			 * Get the size of a single element.
@@ -592,7 +627,7 @@ namespace Xenon
 			 * @param element The element to get the size of.
 			 * @return The element's size.
 			 */
-			[[nodiscard]] uint8_t getElementSize(InputElement element) const { return m_Elements[m_ElementIndexMap[EnumToInt(element)]].m_Size; }
+			XENON_NODISCARD uint8_t getElementSize(InputElement element) const { return m_Elements[m_ElementIndexMap[EnumToInt(element)]].m_Size; }
 
 			/**
 			 * Get the element component data type of a given element.
@@ -600,7 +635,7 @@ namespace Xenon
 			 * @param element The element type.
 			 * @return The component data type.
 			 */
-			[[nodsicard]] ComponentDataType getElementComponentDataType(InputElement element) const { return m_Elements[m_ElementIndexMap[EnumToInt(element)]].m_ComponentDataType; }
+			XENON_NODISCARD ComponentDataType getElementComponentDataType(InputElement element) const { return m_Elements[m_ElementIndexMap[EnumToInt(element)]].m_ComponentDataType; }
 
 			/**
 			 * Get the element attribute data type of a given element.
@@ -608,14 +643,14 @@ namespace Xenon
 			 * @param element The element type.
 			 * @return The attribute data type.
 			 */
-			[[nodsicard]] AttributeDataType getElementAttributeDataType(InputElement element) const { return m_Elements[m_ElementIndexMap[EnumToInt(element)]].m_AttributeDataType; }
+			XENON_NODISCARD AttributeDataType getElementAttributeDataType(InputElement element) const { return m_Elements[m_ElementIndexMap[EnumToInt(element)]].m_AttributeDataType; }
 
 			/**
 			 * Get the size of the vertex.
 			 *
 			 * @return The size in bytes.
 			 */
-			[[nodiscard]] uint32_t getSize() const noexcept
+			XENON_NODISCARD uint32_t getSize() const noexcept
 			{
 				uint32_t size = 0;
 				for (const auto& element : m_Elements)
@@ -631,14 +666,14 @@ namespace Xenon
 			 * @return True if the element is present.
 			 * @return False if the element is not present.
 			 */
-			[[nodiscard]] bool isAvailable(InputElement element) const noexcept { return m_VertexElements & (1 << EnumToInt(element)); }
+			XENON_NODISCARD bool isAvailable(InputElement element) const noexcept { return m_VertexElements & (1 << EnumToInt(element)); }
 
 			/**
 			 * Generate hash for the vertex specification.
 			 *
 			 * @return The hash value.
 			 */
-			[[nodiscard]] uint64_t generateHash() const { return GenerateHash(ToBytes(m_Elements.data()), sizeof(VertexElement) * m_Elements.size(), m_VertexElements); }
+			XENON_NODISCARD uint64_t generateHash() const { return GenerateHash(ToBytes(m_Elements.data()), sizeof(VertexElement) * m_Elements.size(), m_VertexElements); }
 
 		private:
 			uint32_t m_VertexElements = 0;

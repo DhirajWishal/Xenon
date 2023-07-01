@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -68,7 +68,7 @@ namespace Xenon
 		 * @paarm subMesh The sub-mesh.
 		 * @return The sample count.
 		 */
-		[[nodiscard]] uint64_t getSamples(const SubMesh& subMesh);
+		XENON_NODISCARD uint64_t getSamples(const SubMesh& subMesh);
 
 	private:
 		/**
@@ -82,7 +82,7 @@ namespace Xenon
 		 * @param group The group.
 		 * @return The created descriptor.
 		 */
-		[[nodiscard]] std::unique_ptr<Backend::Descriptor> createPerGeometryDescriptor(Group group);
+		XENON_NODISCARD std::unique_ptr<Backend::Descriptor> createPerGeometryDescriptor(Group group);
 
 	private:
 		std::mutex m_Mutex;

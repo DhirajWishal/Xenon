@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "Studio.hpp"
@@ -13,6 +13,7 @@
 #include "Xenon/DefaultCacheHandler.hpp"
 
 #include "XenonCore/Logging.hpp"
+#include "XenonCore/Common.hpp"
 #include "XenonBackend/ShaderSource.hpp"
 
 #include "Xenon/Layers/DefaultRasterizingLayer.hpp"
@@ -49,7 +50,7 @@ namespace /* anonymous */
 	 * @param type The type of the backend.
 	 * @return The renderer title.
 	 */
-	[[nodiscard]] constexpr std::string GetRendererTitle(Xenon::BackendType type)
+	XENON_NODISCARD constexpr const char* GetRendererTitle(Xenon::BackendType type)
 	{
 		switch (type)
 		{
@@ -76,7 +77,7 @@ namespace /* anonymous */
 	 * @return False if the future is not ready to be read from.
 	 */
 	template<typename R>
-	[[nodiscard]] bool is_ready(std::future<R> const& f)
+	XENON_NODISCARD bool is_ready(std::future<R> const& f)
 	{
 		return f.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
 	}
@@ -99,7 +100,7 @@ namespace /* anonymous */
 	 *
 	 * @return The pipeline specification.
 	 */
-	[[nodiscard]] Xenon::Backend::RayTracingPipelineSpecification getRayTracingPipelineSpecification()
+	XENON_NODISCARD Xenon::Backend::RayTracingPipelineSpecification getRayTracingPipelineSpecification()
 	{
 		Xenon::Backend::RayTracingPipelineSpecification specification = {};
 		specification.m_ShaderGroups.emplace_back().m_RayGenShader = Xenon::Generated::CreateShaderRayGen_rgen();
@@ -202,10 +203,10 @@ void Studio::run()
 		{
 			XENON_STUDIO_LOG_INFORMATION("Loading Sponza...");
 			const auto grouping = m_Scene.createGroup();
-			[[maybe_unused]] const auto& geometry = m_Scene.create<Xenon::Geometry>(grouping, Xenon::Geometry::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"));
-			// [[maybe_unused]] const auto& geometry = m_Scene.create<Xenon::Geometry>(grouping, Xenon::Geometry::FromFile(m_Instance, "E:\\Assets\\Sponza\\Main\\Main\\NewSponza_Main_Blender_glTF.gltf"));
-			[[maybe_unused]] const auto& material = m_Scene.create<Xenon::Material>(grouping, materialBuidler);
-			[[maybe_unused]] const auto& transform = m_Scene.create<Xenon::Components::Transform>(grouping, glm::vec3(0), glm::vec3(0), glm::vec3(0.05f));
+			XENON_MAYBE_UNUSED const auto& geometry = m_Scene.create<Xenon::Geometry>(grouping, Xenon::Geometry::FromFile(m_Instance, XENON_GLTF_ASSET_DIR "2.0/Sponza/glTF/Sponza.gltf"));
+			// XENON_MAYBE_UNUSED const auto& geometry = m_Scene.create<Xenon::Geometry>(grouping, Xenon::Geometry::FromFile(m_Instance, "E:\\Assets\\Sponza\\Main\\Main\\NewSponza_Main_Blender_glTF.gltf"));
+			XENON_MAYBE_UNUSED const auto& material = m_Scene.createMaterial(grouping, materialBuidler);
+			XENON_MAYBE_UNUSED const auto& transform = m_Scene.create<Xenon::Components::Transform>(grouping, glm::vec3(0), glm::vec3(0), glm::vec3(0.05f));
 			XENON_STUDIO_LOG_INFORMATION("Sponza model loaded!");
 		};
 		auto ret = Xenon::XObject::GetJobSystem().insert(loaderFunction);
@@ -304,11 +305,11 @@ Xenon::Group Studio::createLightSource()
 {
 	// Setup the group and add the light source and the quad.
 	const auto lighting = m_Scene.createGroup();
-	[[maybe_unused]] const auto& lightSource = m_Scene.create<Xenon::Components::LightSource>(lighting, glm::vec4(1.0f), glm::vec3(2.0f), glm::vec3(0.0f), 1.0f, 45.0f);
+	XENON_MAYBE_UNUSED const auto& lightSource = m_Scene.create<Xenon::Components::LightSource>(lighting, glm::vec4(1.0f), glm::vec3(2.0f), glm::vec3(0.0f), 1.0f, 45.0f);
 
 #ifdef XENON_DEBUG_G
-	[[maybe_unused]] const auto& quad = m_Scene.create<Xenon::Geometry>(lighting, Xenon::Geometry::CreateQuad(m_Scene.getInstance()));
-	[[maybe_unused]] const auto& transform = m_Scene.create<Xenon::Components::Transform>(lighting, glm::vec3(0), glm::vec3(0), glm::vec3(0.5f));
+	XENON_MAYBE_UNUSED const auto& quad = m_Scene.create<Xenon::Geometry>(lighting, Xenon::Geometry::CreateQuad(m_Scene.getInstance()));
+	XENON_MAYBE_UNUSED const auto& transform = m_Scene.create<Xenon::Components::Transform>(lighting, glm::vec3(0), glm::vec3(0), glm::vec3(0.5f));
 
 	// Setup the light bulb image and it's view and sampler.
 	auto& bulb = m_Scene.create<LightBulb>(lighting);
@@ -329,7 +330,7 @@ Xenon::Group Studio::createLightSource()
 	materialBuidler.setRasterizingPipelineSpecification(specification);
 
 	// Create the material.
-	[[maybe_unused]] const auto& material = m_Scene.create<Xenon::Material>(lighting, materialBuidler);
+	XENON_MAYBE_UNUSED const auto& material = m_Scene.createMaterial(lighting, materialBuidler);
 
 #endif // XENON_DEBUG
 

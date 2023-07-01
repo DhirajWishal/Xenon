@@ -1,7 +1,9 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
+
+#include "../XenonCore/Common.hpp"
 
 #include <nlohmann/json.hpp>
 
@@ -61,7 +63,7 @@ namespace Xenon
 			if (outputFile.is_open())
 			{
 				const auto cborData = JsonDocument::to_cbor(m_Document);
-				outputFile.write(std::bit_cast<const char*>(cborData.data()), cborData.size());
+				outputFile.write(XENON_BIT_CAST(const char*, cborData.data()), cborData.size());
 			}
 		}
 
@@ -70,7 +72,7 @@ namespace Xenon
 		 *
 		 * @return The object reference.
 		 */
-		[[nodiscard]] static Derived& GetInstance()
+		XENON_NODISCARD static Derived& GetInstance()
 		{
 			static Derived config;
 			return config;
@@ -81,14 +83,14 @@ namespace Xenon
 		 *
 		 * @return The document.
 		 */
-		[[nodiscard]] JsonDocumentType& getDocument() noexcept { return m_Document; }
+		XENON_NODISCARD JsonDocumentType& getDocument() noexcept { return m_Document; }
 
 		/**
 		 * Get the JSON document.
 		 *
 		 * @return The document.
 		 */
-		[[nodiscard]] const JsonDocumentType& getDocument() const noexcept { return m_Document; }
+		XENON_NODISCARD const JsonDocumentType& getDocument() const noexcept { return m_Document; }
 
 	protected:
 		JsonDocumentType m_Document;

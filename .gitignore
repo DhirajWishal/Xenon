@@ -358,3 +358,7 @@ Build/
 
 **/Generated/**.dxil.hpp
 **/Generated/**.spirv.hpp
+
+Studio/Shaders/ImGuiLayer/ImGuiLayer.frag.hpp
+
+Studio/Shaders/ImGuiLayer/ImGuiLayer.vert.hpp

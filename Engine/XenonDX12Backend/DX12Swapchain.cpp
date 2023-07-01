@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "DX12Swapchain.hpp"
@@ -22,7 +22,8 @@ namespace Xenon
 			: Swapchain(pDevice, title, width, height)
 			, DX12DeviceBoundObject(pDevice)
 		{
-			m_FrameCount = 3;	XENON_TODO(0, 0, 0, "(Dhiraj) Find a better system.");
+			m_FrameCount = 3;	
+			XENON_TODO(0, 0, 0, "(Dhiraj) Find a better system.");
 			m_SwapChainFormat = getBestSwapchainFormat();
 
 			// Create the swapchain.

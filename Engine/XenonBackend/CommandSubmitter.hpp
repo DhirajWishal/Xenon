@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -21,7 +21,7 @@ namespace Xenon
 			 *
 			 * @param pDevice The device pointer.
 			 */
-			explicit CommandSubmitter([[maybe_unused]] const Device* pDevice) {}
+			explicit CommandSubmitter(XENON_MAYBE_UNUSED const Device* pDevice) {}
 
 			/**
 			 * Submit the command recorders to the GPU.
@@ -46,7 +46,7 @@ namespace Xenon
 			 * @return True if all the commands have been executed.
 			 * @return False if the commands are still being executed.
 			 */
-			[[nodiscard]] bool isWaiting() const noexcept { return m_bIsWaiting; }
+			XENON_NODISCARD bool isWaiting() const noexcept { return m_bIsWaiting; }
 
 		protected:
 			bool m_bIsWaiting = false;

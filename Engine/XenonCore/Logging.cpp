@@ -1,7 +1,8 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "Logging.hpp"
+#include "../XenonCore/Common.hpp"
 
 namespace Xenon
 {
@@ -10,7 +11,7 @@ namespace Xenon
 		constexpr auto rowSize = 16;
 
 		const auto size = std::distance(pBegin, pEnd);
-		const auto pointerInteger = std::bit_cast<std::ptrdiff_t>(pBegin);
+		const auto pointerInteger = XENON_BIT_CAST(std::ptrdiff_t, pBegin);
 
 		// Calculate the number of rows.
 		const uint32_t rows = std::ceil(static_cast<float>(size) / rowSize);

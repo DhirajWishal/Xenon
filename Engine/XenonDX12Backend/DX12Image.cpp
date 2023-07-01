@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "DX12Image.hpp"
@@ -15,7 +15,7 @@ namespace /* anonymous */
 	 * @param format The format to get the size of.
 	 * @return The byte size.
 	 */
-	[[nodiscard]] constexpr uint8_t GetFormatSize(DXGI_FORMAT format) noexcept
+	XENON_NODISCARD constexpr uint8_t GetFormatSize(DXGI_FORMAT format) noexcept
 	{
 		switch (format)
 		{
@@ -101,7 +101,7 @@ namespace Xenon
 				m_Specification.m_Width = dataPitch / formatSize;
 			}
 
-			if (specification.m_Usage & ImageUsage::Storage) /* Do nothing here. */;
+			if (specification.m_Usage & ImageUsage::Storage) NoOp();
 
 			if (specification.m_Usage & ImageUsage::ColorAttachment)
 				flags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;

@@ -1,4 +1,4 @@
-# Copyright 2022-2023 Nexonous
+# Copyright 2022-2023 Dhiraj Wishal
 # SPDX-License-Identifier: Apache-2.0
 
 # Set the basic project information.
@@ -28,6 +28,7 @@ set(
 	"CountingFence.cpp"
 	"CountingFence.hpp"
 	"GlobalConfiguration.hpp"
+	"Features.hpp"
 )
 
 # Add the source group.

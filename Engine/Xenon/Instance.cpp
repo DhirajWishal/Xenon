@@ -1,7 +1,8 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "Instance.hpp"
+#include "../XenonCore/Logging.hpp"
 
 #include "../XenonVulkanBackend/VulkanFactory.hpp"
 

@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "ImGuiLayer.hpp"
@@ -29,7 +29,7 @@ namespace /* anonymous */
 	 * @param value The color value.
 	 * @return The created color value.
 	 */
-	[[nodiscard]] constexpr float CreateColor256(float value) noexcept { return value / 256; }
+	XENON_NODISCARD constexpr float CreateColor256(float value) noexcept { return value / 256; }
 }
 
 ImGuiLayer::ImGuiLayer(Xenon::Renderer& renderer, uint32_t width, uint32_t height)
@@ -278,7 +278,7 @@ void ImGuiLayer::onUpdate(Layer* pPreviousLayer, uint32_t imageIndex, uint32_t f
 				static_cast<uint32_t>(maxClip.y)
 			);
 
-			m_pCommandRecorder->bind(m_pPipeline.get(), m_pUserDescriptor.get(), m_pMaterialDescriptors[std::bit_cast<uintptr_t>(pCommandBuffer->TextureId)].get(), nullptr, nullptr);
+			m_pCommandRecorder->bind(m_pPipeline.get(), m_pUserDescriptor.get(), m_pMaterialDescriptors[XENON_BIT_CAST(uintptr_t, pCommandBuffer->TextureId)].get(), nullptr, nullptr);
 			m_pCommandRecorder->drawIndexed(pCommandBuffer->VtxOffset + vertexOffset, pCommandBuffer->IdxOffset + indexOffset, pCommandBuffer->ElemCount);
 		}
 
@@ -301,7 +301,7 @@ void ImGuiLayer::setDrawCallCount(uint64_t totalCount, uint64_t actualCount)
 
 uintptr_t ImGuiLayer::getImageID(Xenon::Backend::Image* pImage, Xenon::Backend::ImageView* pImageView, Xenon::Backend::ImageSampler* pImageSampler)
 {
-	const std::array<uintptr_t, 3> pointers = { std::bit_cast<uintptr_t>(pImage), std::bit_cast<uintptr_t>(pImageView), std::bit_cast<uintptr_t>(pImageSampler) };
+	const std::array<uintptr_t, 3> pointers = { XENON_BIT_CAST(uintptr_t, pImage), XENON_BIT_CAST(uintptr_t, pImageView), XENON_BIT_CAST(uintptr_t, pImageSampler) };
 	const auto ID = Xenon::GenerateHash(Xenon::ToBytes(pointers.data()), pointers.size() * sizeof(uintptr_t));
 	if (!m_pMaterialDescriptors.contains(ID))
 	{
@@ -511,9 +511,9 @@ void ImGuiLayer::showFileMenu()
 {
 	if (ImGui::BeginMenu("File"))
 	{
-		if (ImGui::MenuItem("Open", "Ctrl+O"));
-		if (ImGui::MenuItem("Save", "Ctrl+S"));
-		if (ImGui::MenuItem("Save As", "Ctrl+Shift+S"));
+		if (ImGui::MenuItem("Open", "Ctrl+O")) Xenon::NoOp();
+		if (ImGui::MenuItem("Save", "Ctrl+S")) Xenon::NoOp();
+		if (ImGui::MenuItem("Save As", "Ctrl+Shift+S")) Xenon::NoOp();
 
 		ImGui::Separator();
 		if (ImGui::MenuItem("Close"))
@@ -550,9 +550,9 @@ void ImGuiLayer::showEditMenu()
 {
 	if (ImGui::BeginMenu("Edit"))
 	{
-		if (ImGui::MenuItem("Cut", "Ctrl+X"));
-		if (ImGui::MenuItem("Copy", "Ctrl+C"));
-		if (ImGui::MenuItem("Paste", "Ctrl+V"));
+		if (ImGui::MenuItem("Cut", "Ctrl+X")) Xenon::NoOp();
+		if (ImGui::MenuItem("Copy", "Ctrl+C")) Xenon::NoOp();
+		if (ImGui::MenuItem("Paste", "Ctrl+V")) Xenon::NoOp();
 
 		ImGui::EndMenu();
 	}
@@ -576,11 +576,11 @@ void ImGuiLayer::showHelpMenu()
 {
 	if (ImGui::BeginMenu("Help"))
 	{
-		if (ImGui::MenuItem("What's New?"));
+		if (ImGui::MenuItem("What's New?")) Xenon::NoOp();
 
 		ImGui::Separator();
-		if (ImGui::MenuItem("About"));
-		if (ImGui::MenuItem("License"));
+		if (ImGui::MenuItem("About")) Xenon::NoOp();
+		if (ImGui::MenuItem("License")) Xenon::NoOp();
 
 		ImGui::Separator();
 		ImGui::MenuItem("Version: 1.0.0", "", false, false);

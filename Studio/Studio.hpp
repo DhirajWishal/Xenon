@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -53,7 +53,7 @@ private:
 	 *
 	 * @return The light source group.
 	 */
-	[[nodiscard]] Xenon::Group createLightSource();
+	XENON_NODISCARD Xenon::Group createLightSource();
 
 	/**
 	 * Update the light sources.

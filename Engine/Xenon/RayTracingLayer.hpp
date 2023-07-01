@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -31,21 +31,21 @@ namespace Xenon
 		 *
 		 * @return The image pointer.
 		 */
-		[[nodiscard]] Backend::Image* getColorAttachment() override;
+		XENON_NODISCARD Backend::Image* getColorAttachment() override;
 
 		/**
 		 * Get the internally stored ray tracer.
 		 *
 		 * @return The ray tracer pointer.
 		 */
-		[[nodsicard]] Backend::RayTracer* getRayTracer() { return m_pRayTracer.get(); }
+		XENON_NODISCARD Backend::RayTracer* getRayTracer() { return m_pRayTracer.get(); }
 
 		/**
 		 * Get the internally stored ray tracer.
 		 *
 		 * @return The ray tracer pointer.
 		 */
-		[[nodsicard]] const Backend::RayTracer* getRayTracer() const { return m_pRayTracer.get(); }
+		XENON_NODISCARD const Backend::RayTracer* getRayTracer() const { return m_pRayTracer.get(); }
 
 	protected:
 		std::unique_ptr<Backend::RayTracer> m_pRayTracer = nullptr;

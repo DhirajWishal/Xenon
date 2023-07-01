@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "Swapchain.hpp"
@@ -9,7 +9,7 @@ namespace Xenon
 {
 	namespace Backend
 	{
-		Swapchain::Swapchain([[maybe_unused]] const Device* pDevice, const std::string& title, uint32_t width, uint32_t height)
+		Swapchain::Swapchain(XENON_MAYBE_UNUSED const Device* pDevice, const std::string& title, uint32_t width, uint32_t height)
 			: m_pWindow(Platform::IFactory::Get()->createWindow(title, width, height))
 		{
 		}

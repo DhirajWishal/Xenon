@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -49,14 +49,14 @@ namespace Xenon
 			 * @return True if the window is open.
 			 * @return False if the window is closed.
 			 */
-			[[nodiscard]] bool isOpen() const override;
+			XENON_NODISCARD bool isOpen() const override;
 
 			/**
 			 * Get the window handle.
 			 *
 			 * @return The window handle.
 			 */
-			[[nodiscard]] HWND getWindowHandle() const { return m_WindowHandle; }
+			XENON_NODISCARD HWND getWindowHandle() const { return m_WindowHandle; }
 
 			/**
 			 * Set the on paint callback function.
@@ -77,7 +77,7 @@ namespace Xenon
 			 * @param lParam The lParam.
 			 * @return The result.
 			 */
-			[[nodiscard]] LRESULT handleEvent(UINT uMsg, WPARAM wParam, LPARAM lParam);
+			XENON_NODISCARD LRESULT handleEvent(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 			/**
 			 * Handle the key input.
@@ -85,7 +85,7 @@ namespace Xenon
 			 * @param wParam The wparam.
 			 * @param state The key state. true = key down, false = key up.
 			 */
-			[[nodiscard]] LRESULT handleKeyInput(WPARAM wParam, bool state);
+			XENON_NODISCARD LRESULT handleKeyInput(WPARAM wParam, bool state);
 
 		private:
 			std::function<void()> m_OnPaintCallback = nullptr;

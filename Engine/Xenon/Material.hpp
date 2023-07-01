@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -27,7 +27,7 @@ namespace Xenon
 		 * @return True if the two textures are equal.
 		 * @return False if the they're not equal.
 		 */
-		[[nodiscard]] bool operator==(const Texture& other) const = default;
+		XENON_NODISCARD bool operator==(const Texture& other) const = default;
 	};
 
 	/**
@@ -60,6 +60,9 @@ namespace Xenon
 	 */
 	struct MaterialProperty final
 	{
+		constexpr MaterialProperty() = default;
+		constexpr explicit MaterialProperty(const MaterialPayload& payload, MaterialPropertyType type) : m_Payload(payload), m_Type(type) {}
+
 		MaterialPayload m_Payload;
 		MaterialPropertyType m_Type;
 	};
@@ -180,28 +183,28 @@ namespace Xenon
 		 *
 		 * @return The specification reference.
 		 */
-		[[nodiscard]] const Backend::RasterizingPipelineSpecification& getRasterizingPipelineSpecification() const noexcept;
+		XENON_NODISCARD const Backend::RasterizingPipelineSpecification& getRasterizingPipelineSpecification() const noexcept;
 
 		/**
 		 * Get the ray tracing pipeline specification.
 		 *
 		 * @return The specification reference.
 		 */
-		[[nodiscard]] const Backend::RayTracingPipelineSpecification& getRayTracingPipelineSpecification() const noexcept;
+		XENON_NODISCARD const Backend::RayTracingPipelineSpecification& getRayTracingPipelineSpecification() const noexcept;
 
 		/**
 		 * Get the material specification.
 		 *
 		 * @return The material specification.
 		 */
-		[[nodiscard]] explicit operator MaterialSpecification& () noexcept;
+		XENON_NODISCARD explicit operator MaterialSpecification& () noexcept;
 
 		/**
 		 * Get the material specification.
 		 *
 		 * @return The material specification.
 		 */
-		[[nodiscard]] explicit operator const MaterialSpecification& () const noexcept;
+		XENON_NODISCARD explicit operator const MaterialSpecification& () const noexcept;
 
 	private:
 		MaterialSpecification m_MaterialSpecification;
@@ -215,7 +218,7 @@ namespace Xenon
 	 * @return The 64-bit hash value.
 	 */
 	template<>
-	[[nodiscard]] inline uint64_t GenerateHashFor<MaterialSpecification>(const MaterialSpecification& specification, uint64_t seed) noexcept
+	XENON_NODISCARD inline uint64_t GenerateHashFor<MaterialSpecification>(const MaterialSpecification& specification, uint64_t seed) noexcept
 	{
 		const auto rpsHash = GenerateHashFor(specification.m_RasterizingPipelineSpecification, seed);
 		const auto rtpsHash = GenerateHashFor(specification.m_RayTracingPipelineSpecification, rpsHash);

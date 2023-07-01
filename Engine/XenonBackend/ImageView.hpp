@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -54,14 +54,14 @@ namespace Xenon
 			 * @param pImage The image pointer.
 			 * @param specification The view specification.
 			 */
-			explicit ImageView([[maybe_unused]] const Device* pDevice, [[maybe_unused]] const Image* pImage, const ImageViewSpecification& specification) : m_Specification(specification) {}
+			explicit ImageView(XENON_MAYBE_UNUSED const Device* pDevice, XENON_MAYBE_UNUSED const Image* pImage, const ImageViewSpecification& specification) : m_Specification(specification) {}
 
 			/**
 			 * Get the image view specification.
 			 *
 			 * @return The image view specification.
 			 */
-			[[nodiscard]] const ImageViewSpecification& getSpecification() const { return m_Specification; }
+			XENON_NODISCARD const ImageViewSpecification& getSpecification() const { return m_Specification; }
 
 		private:
 			ImageViewSpecification m_Specification = {};

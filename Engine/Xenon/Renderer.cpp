@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "Renderer.hpp"
@@ -81,7 +81,7 @@ namespace Xenon
 
 	void Renderer::insertLayer(std::unique_ptr<Layer>&& pLayer)
 	{
-		const auto itr = std::ranges::upper_bound(m_pLayers, pLayer, [](const auto& lhs, const auto& rhs) { return lhs->getPriority() < rhs->getPriority(); });
+		const auto itr = XENON_RANGES(upper_bound, m_pLayers, pLayer, [](const auto& lhs, const auto& rhs) { return lhs->getPriority() < rhs->getPriority(); });
 		m_pLayers.emplace(itr, std::move(pLayer));
 
 		// Update the command recorders.

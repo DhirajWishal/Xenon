@@ -1,7 +1,9 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
+
+#include "../XenonCore/Common.hpp"
 
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
@@ -39,7 +41,7 @@ namespace Xenon
 			 *
 			 * @return The model matrix which will be passed to the shader.
 			 */
-			[[nodiscard]] glm::mat4 computeModelMatrix() const;
+			XENON_NODISCARD glm::mat4 computeModelMatrix() const;
 		};
 
 		/**

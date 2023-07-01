@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #include "VulkanImageView.hpp"
@@ -12,7 +12,7 @@ namespace /* anonymous */
 	 * @param swizzle The component swizzle.
 	 * @return The Vulkan component swizzle.
 	 */
-	[[nodiscard]] constexpr VkComponentSwizzle GetComponentSwizzle(Xenon::Backend::ComponentSwizzle swizzle) noexcept
+	XENON_NODISCARD constexpr VkComponentSwizzle GetComponentSwizzle(Xenon::Backend::ComponentSwizzle swizzle) noexcept
 	{
 		switch (swizzle)
 		{

@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -36,28 +36,28 @@ namespace Xenon
 			 *
 			 * @return The address range.
 			 */
-			[[nodiscard]] D3D12_GPU_VIRTUAL_ADDRESS_RANGE getRayGenerationAddresRange() const noexcept { return m_RayGenerationAddressRange; }
+			XENON_NODISCARD D3D12_GPU_VIRTUAL_ADDRESS_RANGE getRayGenerationAddresRange() const noexcept { return m_RayGenerationAddressRange; }
 
 			/**
 			 * Get the miss shader address range.
 			 *
 			 * @return The address range and stride.
 			 */
-			[[nodiscard]] D3D12_GPU_VIRTUAL_ADDRESS_RANGE_AND_STRIDE getMissAddressRange() const noexcept { return m_MissAddressRange;}
+			XENON_NODISCARD D3D12_GPU_VIRTUAL_ADDRESS_RANGE_AND_STRIDE getMissAddressRange() const noexcept { return m_MissAddressRange;}
 
 			/**
 			 * Get the hit group address range.
 			 *
 			 * @return The address range and stride.
 			 */
-			[[nodiscard]] D3D12_GPU_VIRTUAL_ADDRESS_RANGE_AND_STRIDE getHitGroupAddressRange() const noexcept { return m_HitGroupAddressRange;}
+			XENON_NODISCARD D3D12_GPU_VIRTUAL_ADDRESS_RANGE_AND_STRIDE getHitGroupAddressRange() const noexcept { return m_HitGroupAddressRange;}
 
 			/**
 			 * Get the callable shader address range.
 			 *
 			 * @return The address range and stride.
 			 */
-			[[nodiscard]] D3D12_GPU_VIRTUAL_ADDRESS_RANGE_AND_STRIDE getCallableAddressRange() const noexcept { return m_CallableAddressRange;}
+			XENON_NODISCARD D3D12_GPU_VIRTUAL_ADDRESS_RANGE_AND_STRIDE getCallableAddressRange() const noexcept { return m_CallableAddressRange;}
 
 		private:
 			/**
@@ -65,7 +65,7 @@ namespace Xenon
 			 *
 			 * @return The mapped memory.
 			 */
-			[[nodiscard]] std::byte* map();
+			XENON_NODISCARD std::byte* map();
 
 			/**
 			 * Unmap the mapped memory.

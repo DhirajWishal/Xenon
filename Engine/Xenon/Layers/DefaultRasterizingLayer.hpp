@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Nexonous
+// Copyright 2022-2023 Dhiraj Wishal
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -63,7 +63,7 @@ namespace Xenon
 		 *
 		 * @return The count.
 		 */
-		[[nodiscard]] uint64_t getDrawCount() const noexcept { return m_DrawCount; }
+		XENON_NODISCARD uint64_t getDrawCount() const noexcept { return m_DrawCount; }
 
 		/**
 		 * Set the occlusion layer to get occlusion results from.
@@ -80,7 +80,7 @@ namespace Xenon
 		 * @param pipeline The pipeline reference.
 		 * @param group The geometry's group.
 		 */
-		[[nodiscard]] std::unique_ptr<Backend::Descriptor> createPerGeometryDescriptor(Pipeline& pipeline, Group group);
+		XENON_NODISCARD std::unique_ptr<Backend::Descriptor> createPerGeometryDescriptor(Pipeline& pipeline, Group group);
 
 		/**
 		 * Setup the material descriptor.
